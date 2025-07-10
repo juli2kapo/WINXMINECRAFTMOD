@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "#S#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "minewinx:low_quality_mana_crystal"
+    },
+    "S": {
+      "item": "minecraft:fire_charge"
+    }
+  },
+  "result": {
+    "item": "minewinx:fire_stage_1"
+  }
+}

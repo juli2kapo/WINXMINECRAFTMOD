@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "minewinx:item/fire_stage_1"
+  }
+}

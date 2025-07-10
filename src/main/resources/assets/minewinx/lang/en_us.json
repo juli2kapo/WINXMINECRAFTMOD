@@ -1,0 +1,13 @@
+{
+  "item.minewinx.low_quality_mana_crystal": "Cristal de mana inferior",
+  "item.minewinx.medium_quality_mana_crystal": "Cristal de mana comun",
+  "item.minewinx.high_quality_mana_crystal": "Cristal de mana superior",
+  "item.minewinx.fire_stage_1": "Semilla de fuego",
+  "item.minewinx.fire_stage_2": "Fuego upgrade 1",
+  "item.minewinx.fire_stage_3": "Fuego upgrade 2",
+  "item.minewinx.mana_radar": "Radar de mana",
+  "block.minewinx.mana_crystal_ore": "Mena de cristal de mana",
+  "block.minewinx.deepslate_mana_crystal_ore": "Mena de cristal de mana de pizarra profunda",
+  "tooltip.minewinx.manaradar": "Herramienta para buscar menas de cristal",
+  "creativetab.minewinxore_tab": "MineWinx"
+}
