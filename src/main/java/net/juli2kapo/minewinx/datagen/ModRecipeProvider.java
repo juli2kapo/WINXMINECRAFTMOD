@@ -23,8 +23,8 @@ public class ModRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> pWriter) {
-        oreBlasting(pWriter, MANA_SMELTABLES, RecipeCategory.MISC, ModItems.LOWQMANACRYSTAL.get(), 0.25f, 100, "mana_crystals");
-        oreSmelting(pWriter, MANA_SMELTABLES, RecipeCategory.MISC, ModItems.LOWQMANACRYSTAL.get(), 0.25f, 200, "mana_crystals");
+        oreBlasting(pWriter, MANA_SMELTABLES, RecipeCategory.MISC, ModItems.MEDIUMQMANACRYSTAL.get(), 0.25f, 500, "mana_crystals");
+        oreSmelting(pWriter, MANA_SMELTABLES, RecipeCategory.MISC, ModItems.MEDIUMQMANACRYSTAL.get(), 0.25f, 800, "mana_crystals");
 
         createCompactRecipe(pWriter, ModItems.LOWQMANACRYSTAL.get(), ModItems.MEDIUMQMANACRYSTAL.get());
         createCompactRecipe(pWriter, ModItems.MEDIUMQMANACRYSTAL.get(), ModItems.HIGHQMANACRYSTAL.get());
@@ -32,6 +32,9 @@ public class ModRecipeProvider extends RecipeProvider {
         buildCenteredCraftingRecipe(pWriter, ModItems.FIRESTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.FIRE_CHARGE);
         buildCenteredCraftingRecipe(pWriter, ModItems.FIRESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.MAGMA_CREAM);
         buildCenteredCraftingRecipe(pWriter, ModItems.FIRESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.DRAGON_BREATH);
+        buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.KELP);
+        buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.PRISMARINE_SHARD);
+        buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.HEART_OF_THE_SEA);
         buildCenteredCraftingRecipe(pWriter, ModItems.MANARADAR.get(), ModItems.LOWQMANACRYSTAL.get(), Items.COMPASS);
     }
 
@@ -71,6 +74,6 @@ public class ModRecipeProvider extends RecipeProvider {
                     .group(pGroup).unlockedBy(getHasName(itemlike), has(itemlike))
                     .save(pFinishedRecipeConsumer, MineWinx.MOD_ID + ":" + getItemName(pResult) + pRecipeName + "_" + getItemName(itemlike));
         }
-
     }
+
 }

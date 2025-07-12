@@ -9,5 +9,11 @@
   "block.minewinx.mana_crystal_ore": "Mena de cristal de mana",
   "block.minewinx.deepslate_mana_crystal_ore": "Mena de cristal de mana de pizarra profunda",
   "tooltip.minewinx.manaradar": "Herramienta para buscar menas de cristal",
-  "creativetab.minewinxore_tab": "MineWinx"
+  "creativetab.minewinxore_tab": "MineWinx",
+  "key.category.minewinx": "Minewinx",
+  "key.minewinx.transform": "Transformarse",
+  "key.minewinx.use_power": "Usar poder 1",
+  "key.minewinx.use_power_2": "Usar poder 2",
+  "key.minewinx.use_power_3": "Usar poder 3"
+
 }

@@ -2,8 +2,11 @@ package net.juli2kapo.minewinx;
 
 import com.mojang.logging.LogUtils;
 import net.juli2kapo.minewinx.block.ModBlocks;
+import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.item.ModCreativeModTabs;
 import net.juli2kapo.minewinx.item.ModItems;
+import net.juli2kapo.minewinx.network.PacketHandler;
+import net.juli2kapo.minewinx.particles.ModParticles;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -35,6 +38,8 @@ public class MineWinx
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModEffects.register(modEventBus);
+        ModParticles.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
@@ -47,6 +52,7 @@ public class MineWinx
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
+        event.enqueueWork(PacketHandler::register);
     }
 
     // Add the example block item to the building blocks tab

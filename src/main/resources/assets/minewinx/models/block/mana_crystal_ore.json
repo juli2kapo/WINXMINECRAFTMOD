@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "minewinx:block/mana_crystal_ore"
-  }
-}
