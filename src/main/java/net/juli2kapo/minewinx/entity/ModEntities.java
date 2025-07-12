@@ -18,6 +18,12 @@ public class ModEntities {
                             .sized(1f, 1f)
                             .build("tsunami"));
 
+//    public static final RegistryObject<EntityType<SporeBombEntity>> SPOREBOMB =
+//        ENTITY_TYPES.register("spore_bomb",
+//                () -> EntityType.Builder.<SporeBombEntity>of(SporeBombEntity::new, MobCategory.MISC)
+//                        .sized(1f, 1f)
+//                        .build("spore_bomb"));
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

@@ -32,6 +32,9 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.WATERSTAGE1.get());
                         output.accept(ModItems.WATERSTAGE2.get());
                         output.accept(ModItems.WATERSTAGE3.get());
+                        output.accept(ModItems.NATURESTAGE1.get());
+                        output.accept(ModItems.NATURESTAGE2.get());
+                        output.accept(ModItems.NATURESTAGE3.get());
                         output.accept(ModItems.CLEANSER.get());
                     })
                     .build());

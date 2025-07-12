@@ -26,6 +26,9 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.WATERSTAGE1);
         simpleItem(ModItems.WATERSTAGE2);
         simpleItem(ModItems.WATERSTAGE3);
+        simpleItem(ModItems.NATURESTAGE1);
+        simpleItem(ModItems.NATURESTAGE2);
+        simpleItem(ModItems.NATURESTAGE3);
         simpleItem(ModItems.MANARADAR);
     }
 

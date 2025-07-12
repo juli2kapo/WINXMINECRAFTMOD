@@ -35,6 +35,10 @@ public class ModRecipeProvider extends RecipeProvider {
         buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.KELP);
         buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.PRISMARINE_SHARD);
         buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.HEART_OF_THE_SEA);
+        buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.WHEAT_SEEDS);
+        buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.SCUTE);
+        buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.OAK_SAPLING); //TODO CHANGE WITH MIXTURE OF EVERY SAPLING
+
         buildCenteredCraftingRecipe(pWriter, ModItems.MANARADAR.get(), ModItems.LOWQMANACRYSTAL.get(), Items.COMPASS);
     }
 

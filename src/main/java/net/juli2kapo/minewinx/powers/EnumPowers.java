@@ -12,6 +12,7 @@ public enum EnumPowers {
     DROWN_TARGET(Element.WATER, 1, WaterPowers::startDrowningTarget),
     SUMMON_TSUNAMI(Element.WATER, 2, WaterPowers::summonTsunami),
     THROW_SNOWBALL(Element.ICE, 1, player -> {}), // TODO: Implementar
+    SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
 
     UNKNOWN(Element.UNKNOWN, 0, player -> {});
 
@@ -57,7 +58,8 @@ public enum EnumPowers {
         UNKNOWN(0, "unknown"),
         FIRE(1, "fire"),
         WATER(2, "water"),
-        ICE(3, "ice");
+        NATURE(3, "nature"),
+        ICE(4, "ice");
 
         private final int id;
         private final String name;
