@@ -3,7 +3,8 @@ package net.juli2kapo.minewinx.event;
 import net.juli2kapo.minewinx.MineWinx;
 import net.juli2kapo.minewinx.client.KeyBindings;
 import net.juli2kapo.minewinx.client.gui.DrowningOverlay;
-import net.juli2kapo.minewinx.client.renderer.WaterBlockOnHead;
+import net.juli2kapo.minewinx.client.gui.SleepOverlay;
+import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.network.TransformC2SPacket;
 import net.juli2kapo.minewinx.network.UsePowerC2SPacket;
@@ -16,7 +17,6 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -26,6 +26,9 @@ public class ClientEvents {
     public static class ClientForgeEvents {
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
+            if (Minecraft.getInstance().player != null && Minecraft.getInstance().player.hasEffect(ModEffects.SLEEP.get())) {
+                return; // Si el jugador está dormido, no procesar ninguna tecla personalizada.
+            }
             if (KeyBindings.TRANSFORM_KEY.consumeClick()) {
                 Minecraft.getInstance().player.sendSystemMessage(Component.literal("Tecla de transformación presionada. Enviando paquete..."));
                 PacketHandler.sendToServer(new TransformC2SPacket());
@@ -63,12 +66,13 @@ public class ClientEvents {
         @SubscribeEvent
         public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
             event.registerAboveAll("drowning_overlay", DrowningOverlay.HUD_DROWNING);
+            event.registerBelowAll("sleep_overlay", SleepOverlay.HUD_SLEEP);
         }
 
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             // Registrar el renderer del bloque de agua en la cabeza
-            MinecraftForge.EVENT_BUS.register(WaterBlockOnHead.class);
+            //MinecraftForge.EVENT_BUS.register(WaterBlockOnHead.class);
         }
     }
 }

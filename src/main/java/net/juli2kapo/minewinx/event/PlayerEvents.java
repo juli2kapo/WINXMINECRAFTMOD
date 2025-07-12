@@ -1,6 +1,7 @@
 package net.juli2kapo.minewinx.event;
 
 import net.juli2kapo.minewinx.MineWinx;
+import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +19,16 @@ public class PlayerEvents {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.START && event.player instanceof ServerPlayer player) {
+            // Si el jugador está dormido, no se le permite volar.
+            if (player.hasEffect(ModEffects.SLEEP.get())) {
+                if (player.getAbilities().mayfly || player.getAbilities().flying) {
+                    player.getAbilities().mayfly = false;
+                    player.getAbilities().flying = false;
+                    player.onUpdateAbilities();
+                }
+                return; // Salta el resto de la lógica si está dormido.
+            }
+
             boolean isTransformed = PlayerDataProvider.isTransformed(player);
             boolean needsUpdate = false;
 
@@ -39,14 +50,9 @@ public class PlayerEvents {
                 }
 
             } else if (!player.isCreative() && !player.isSpectator()) {
-                // Si no está transformado, quitamos la habilidad de volar.
-                if (player.getAbilities().mayfly) {
+                if (player.getAbilities().mayfly || player.getAbilities().flying) {
                     player.getAbilities().mayfly = false;
                     player.getAbilities().flying = false;
-                    needsUpdate = true;
-                }
-                // Y restauramos la velocidad de vuelo por defecto.
-                if (player.getAbilities().getFlyingSpeed() != DEFAULT_FLY_SPEED) {
                     player.getAbilities().setFlyingSpeed(DEFAULT_FLY_SPEED);
                     needsUpdate = true;
                 }
@@ -60,12 +66,7 @@ public class PlayerEvents {
 
     // Devuelve la velocidad de vuelo correspondiente a la etapa.
     private static float getFlySpeedForStage(int stage) {
-        return switch (stage) {
-            case 1 -> DEFAULT_FLY_SPEED;      // Etapa 1: Velocidad normal
-            case 2 -> DEFAULT_FLY_SPEED * 1.5f; // Etapa 2: 50% más rápido
-            case 3 -> DEFAULT_FLY_SPEED * 2.0f; // Etapa 3: 100% más rápido
-            default -> DEFAULT_FLY_SPEED;
-        };
+        return DEFAULT_FLY_SPEED + (stage - 1) * 0.025f;
     }
 
     // Asegura que el estado de vuelo se aplique al reaparecer o cambiar de dimensión
@@ -76,7 +77,9 @@ public class PlayerEvents {
 
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        updateFlight((Player) event.getEntity());
+        if (!event.isEndConquered()) {
+            updateFlight((Player) event.getEntity());
+        }
     }
 
     @SubscribeEvent
@@ -86,6 +89,16 @@ public class PlayerEvents {
 
     private static void updateFlight(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
+            // No permitir volar si el jugador tiene el efecto SLEEP
+            if (serverPlayer.hasEffect(ModEffects.SLEEP.get())) {
+                if (serverPlayer.getAbilities().mayfly) {
+                    serverPlayer.getAbilities().mayfly = false;
+                    serverPlayer.getAbilities().flying = false;
+                    serverPlayer.onUpdateAbilities();
+                }
+                return;
+            }
+
             if (PlayerDataProvider.isTransformed(serverPlayer)) {
                 if (!serverPlayer.getAbilities().mayfly) {
                     serverPlayer.getAbilities().mayfly = true;

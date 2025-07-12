@@ -9,7 +9,9 @@ import net.juli2kapo.minewinx.item.ModCreativeModTabs;
 import net.juli2kapo.minewinx.item.ModItems;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.particles.ModParticles;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -78,6 +80,7 @@ public class MineWinx
         public static void onClientSetup(FMLClientSetupEvent event)
         {
             EntityRenderers.register(ModEntities.TSUNAMI.get(), TsunamiEntityRenderer::new);
+            EntityRenderers.register(ModEntities.SPOREBOMB.get(), ThrownItemRenderer::new);
         }
     }
 }

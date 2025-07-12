@@ -46,13 +46,13 @@ public class ModItems {
             ITEMS.register("water_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Water", 3));
 
     public static final RegistryObject<Item> NATURESTAGE1 =
-            ITEMS.register("nature_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "Water", 1));
+            ITEMS.register("nature_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "Nature", 1));
 
     public static final RegistryObject<Item> NATURESTAGE2 =
-            ITEMS.register("nature_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "Water", 2));
+            ITEMS.register("nature_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "Nature", 2));
 
     public static final RegistryObject<Item> NATURESTAGE3 =
-            ITEMS.register("nature_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Water", 3));
+            ITEMS.register("nature_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Nature", 3));
 
 
     public static final RegistryObject<Item> CLEANSER =

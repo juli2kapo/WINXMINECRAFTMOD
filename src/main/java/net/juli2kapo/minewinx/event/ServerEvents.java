@@ -1,17 +1,21 @@
 package net.juli2kapo.minewinx.event;
 
 import net.juli2kapo.minewinx.MineWinx;
+import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.powers.EnumPowers;
+import net.juli2kapo.minewinx.powers.NaturePowers;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = MineWinx.MOD_ID)
-public class ModEvents {
+public class ServerEvents {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -27,10 +31,20 @@ public class ModEvents {
 //                case EARTH -> applyEarthEffects(player);
 //                case AIR -> applyAirEffects(player);
                 case WATER -> applyWaterEffects(player, stage);
+                case NATURE -> applyNatureEffects(player, stage);
 
             }
         }
     }
+
+    @SubscribeEvent
+    public static void onLivingDamage(LivingDamageEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (!entity.level().isClientSide() && entity.hasEffect(ModEffects.SLEEP.get())) {
+            entity.removeEffect(ModEffects.SLEEP.get());
+        }
+    }
+
     private static void applyFireEffects(Player player, int stage) {
         if (!player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
             player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 200, 0, false, false));
@@ -53,5 +67,9 @@ public class ModEvents {
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 205, stage-1, false, false, true));
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 205, stage-1, false, false, true));
         }
+    }
+
+    private static void applyNatureEffects(Player player, int stage) {
+        NaturePowers.applyPassiveNatureGrowth(player);
     }
 }

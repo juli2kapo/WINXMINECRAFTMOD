@@ -24,6 +24,12 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> WATER_PRESSURE = MOB_EFFECTS.register("water_pressure",
             () -> new WaterPressureEffect(MobEffectCategory.HARMFUL, 0x0000FF));
 
+    public static final RegistryObject<MobEffect> SLEEPY = MOB_EFFECTS.register("sleepy",
+            () -> new SleepyEffect(MobEffectCategory.HARMFUL, 0x99cc33));
+
+    public static final RegistryObject<MobEffect> SLEEP = MOB_EFFECTS.register("sleep",
+            () -> new SleepEffect(MobEffectCategory.HARMFUL, 0x336600));
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

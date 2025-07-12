@@ -3,6 +3,7 @@ package net.juli2kapo.minewinx.network;
 import net.juli2kapo.minewinx.powers.EnumPowers;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -37,9 +38,11 @@ public class UsePowerC2SPacket {
 
             if (element != EnumPowers.Element.UNKNOWN) {
                 EnumPowers power = EnumPowers.getPower(element, this.powerSlot);
+                // Si el poder es UNKNOWN, no hacemos nada.
                 if (power != EnumPowers.UNKNOWN) {
                     power.execute(player);
                 }
+                player.sendSystemMessage(Component.literal("Casteando: " + power.name() + " (" + element.name() + ")"));
             }
         });
         return true;
