@@ -15,12 +15,12 @@ public class DrowningTargetEffect extends MobEffect {
     @Override
     public void applyEffectTick(LivingEntity pLivingEntity, int pAmplifier) {
         if (pLivingEntity instanceof Player targetPlayer) {
-
-            targetPlayer.setAirSupply(Math.max(-20, targetPlayer.getAirSupply() - 5));
+            int airReduction = 5 * (pAmplifier + 1);
+            targetPlayer.setAirSupply(Math.max(-20, targetPlayer.getAirSupply() - airReduction));
 
             // Aplicar daño cada segundo si el aire se ha agotado.
             if (targetPlayer.getAirSupply() <= 0 && targetPlayer.tickCount % 20 == 0) {
-                targetPlayer.hurt(pLivingEntity.damageSources().drown(), 2.0F);
+                targetPlayer.hurt(pLivingEntity.damageSources().drown(), 2.0F + pAmplifier);
                 targetPlayer.level().playSound(null, targetPlayer.blockPosition(), SoundEvents.PLAYER_HURT_DROWN, SoundSource.PLAYERS, 1.0F, 1.0F);
             }
         } else {

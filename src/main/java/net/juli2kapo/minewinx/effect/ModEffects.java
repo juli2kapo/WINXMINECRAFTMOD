@@ -21,6 +21,8 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> DROWNING_TARGET = MOB_EFFECTS.register("drowning_target",
             () -> new DrowningTargetEffect(MobEffectCategory.HARMFUL, 0x4287f5));
 
+    public static final RegistryObject<MobEffect> WATER_PRESSURE = MOB_EFFECTS.register("water_pressure",
+            () -> new WaterPressureEffect(MobEffectCategory.HARMFUL, 0x0000FF));
 
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);

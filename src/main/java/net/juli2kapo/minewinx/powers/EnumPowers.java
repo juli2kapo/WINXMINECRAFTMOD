@@ -10,6 +10,7 @@ public enum EnumPowers {
     FIRE_BARRIER(Element.FIRE, 1, FirePowers::activateFireBarrier),
     FIRE_LASER(Element.FIRE, 2, FirePowers::fireLaser),
     DROWN_TARGET(Element.WATER, 1, WaterPowers::startDrowningTarget),
+    SUMMON_TSUNAMI(Element.WATER, 2, WaterPowers::summonTsunami),
     THROW_SNOWBALL(Element.ICE, 1, player -> {}), // TODO: Implementar
 
     UNKNOWN(Element.UNKNOWN, 0, player -> {});

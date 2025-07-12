@@ -3,10 +3,13 @@ package net.juli2kapo.minewinx;
 import com.mojang.logging.LogUtils;
 import net.juli2kapo.minewinx.block.ModBlocks;
 import net.juli2kapo.minewinx.effect.ModEffects;
+import net.juli2kapo.minewinx.entity.ModEntities;
+import net.juli2kapo.minewinx.entity.client.TsunamiEntityRenderer;
 import net.juli2kapo.minewinx.item.ModCreativeModTabs;
 import net.juli2kapo.minewinx.item.ModItems;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.particles.ModParticles;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -40,6 +43,7 @@ public class MineWinx
         ModBlocks.register(modEventBus);
         ModEffects.register(modEventBus);
         ModParticles.register(modEventBus);
+        ModEntities.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
@@ -73,7 +77,7 @@ public class MineWinx
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event)
         {
-
+            EntityRenderers.register(ModEntities.TSUNAMI.get(), TsunamiEntityRenderer::new);
         }
     }
 }
