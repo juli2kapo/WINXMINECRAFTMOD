@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minewinx:high_quality_mana_crystal"
+    },
+    "S": {
+      "item": "minecraft:dragon_breath"
+    }
+  },
+  "pattern": [
+    "###",
+    "#S#",
+    "###"
+  ],
+  "result": {
+    "item": "minewinx:fire_stage_3"
+  },
+  "show_notification": true
+}

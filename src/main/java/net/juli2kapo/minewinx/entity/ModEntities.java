@@ -19,10 +19,24 @@ public class ModEntities {
                             .build("tsunami"));
 
     public static final RegistryObject<EntityType<SporeBombEntity>> SPOREBOMB =
-        ENTITY_TYPES.register("spore_bomb",
-                () -> EntityType.Builder.<SporeBombEntity>of(SporeBombEntity::new, MobCategory.MISC)
-                        .sized(1f, 1f)
-                        .build("spore_bomb"));
+            ENTITY_TYPES.register("spore_bomb",
+                    () -> EntityType.Builder.<SporeBombEntity>of(SporeBombEntity::new, MobCategory.MISC)
+                            .sized(1f, 1f)
+                            .build("spore_bomb"));
+
+    public static final RegistryObject<EntityType<WaterBlobProjectileEntity>> WATER_BLOB_PROJECTILE =
+            ENTITY_TYPES.register("water_blob_projectile",
+                    () -> EntityType.Builder.<WaterBlobProjectileEntity>of(WaterBlobProjectileEntity::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .clientTrackingRange(4)
+                            .updateInterval(10)
+                            .build("water_blob_projectile"));
+
+    public static final RegistryObject<EntityType<KnutEntity>> KNUTMOB = ENTITY_TYPES.register("hostile_mob",
+            () -> EntityType.Builder.of(KnutEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F)
+                    .build("hostile_mob"));
+
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

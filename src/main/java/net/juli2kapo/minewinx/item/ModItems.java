@@ -1,6 +1,7 @@
 package net.juli2kapo.minewinx.item;
 
 import net.juli2kapo.minewinx.MineWinx;
+import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.item.custom.*;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -53,7 +54,6 @@ public class ModItems {
 
     public static final RegistryObject<Item> NATURESTAGE3 =
             ITEMS.register("nature_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Nature", 3));
-
 
     public static final RegistryObject<Item> CLEANSER =
             ITEMS.register("cleanser", ()-> new ElementAndStageRemover( new Item.Properties().durability(1)));

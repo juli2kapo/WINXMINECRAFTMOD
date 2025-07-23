@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 500,
+  "experience": 0.25,
+  "group": "mana_crystals",
+  "ingredient": {
+    "item": "minewinx:deepslate_mana_crystal_ore"
+  },
+  "result": "minewinx:medium_quality_mana_crystal"
+}

@@ -1,0 +1,4 @@
+// 1.20.1	2025-07-12T15:57:24.6407404	Tags for minecraft:block mod id minewinx
+20a8906e903ee7b75ca487e7246e48db8b309229 data/minecraft/tags/blocks/mineable/pickaxe.json
+20a8906e903ee7b75ca487e7246e48db8b309229 data/minecraft/tags/blocks/needs_iron_tool.json
+20a8906e903ee7b75ca487e7246e48db8b309229 data/minewinx/tags/blocks/manaores.json

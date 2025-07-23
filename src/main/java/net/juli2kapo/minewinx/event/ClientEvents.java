@@ -5,21 +5,30 @@ import net.juli2kapo.minewinx.client.KeyBindings;
 import net.juli2kapo.minewinx.client.gui.DrowningOverlay;
 import net.juli2kapo.minewinx.client.gui.SleepOverlay;
 import net.juli2kapo.minewinx.effect.ModEffects;
+import net.juli2kapo.minewinx.entity.ModEntities;
+import net.juli2kapo.minewinx.entity.client.TsunamiEntityRenderer;
+import net.juli2kapo.minewinx.entity.client.WaterBlobProjectileRenderer;
+import net.juli2kapo.minewinx.entity.client.layer.WaterBlobOnHeadLayer;
+import net.juli2kapo.minewinx.entity.client.model.WaterBlobModel;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.network.TransformC2SPacket;
 import net.juli2kapo.minewinx.network.UsePowerC2SPacket;
 import net.juli2kapo.minewinx.particles.ModParticles;
 import net.juli2kapo.minewinx.particles.custom.FireParticles;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+
+import java.util.Map;
 
 public class ClientEvents {
     @Mod.EventBusSubscriber(modid = MineWinx.MOD_ID, value = Dist.CLIENT)
@@ -27,22 +36,18 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
             if (Minecraft.getInstance().player != null && Minecraft.getInstance().player.hasEffect(ModEffects.SLEEP.get())) {
-                return; // Si el jugador está dormido, no procesar ninguna tecla personalizada.
+                return;
             }
             if (KeyBindings.TRANSFORM_KEY.consumeClick()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("Tecla de transformación presionada. Enviando paquete..."));
                 PacketHandler.sendToServer(new TransformC2SPacket());
             }
             if (KeyBindings.USE_POWER_KEY1.consumeClick()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("[CLIENTE] Tecla de poder presionada. Enviando paquete..."));
                 PacketHandler.sendToServer(new UsePowerC2SPacket(1));
             }
             if (KeyBindings.USE_POWER_KEY2.consumeClick()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("[CLIENTE] Tecla de poder presionada. Enviando paquete..."));
                 PacketHandler.sendToServer(new UsePowerC2SPacket(2));
             }
             if (KeyBindings.USE_POWER_KEY3.consumeClick()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("[CLIENTE] Tecla de poder presionada. Enviando paquete..."));
                 PacketHandler.sendToServer(new UsePowerC2SPacket(3));
             }
         }
@@ -61,6 +66,7 @@ public class ClientEvents {
         @SubscribeEvent
         public static void registerParticleFactories(final RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(ModParticles.FIRE_PARTICLE.get(), FireParticles.Factory::new);
+            event.registerSpriteSet(ModParticles.SPORE_PARTICLE.get(), FireParticles.Factory::new);
         }
 
         @SubscribeEvent
@@ -70,9 +76,33 @@ public class ClientEvents {
         }
 
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            // Registrar el renderer del bloque de agua en la cabeza
-            //MinecraftForge.EVENT_BUS.register(WaterBlockOnHead.class);
+        public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+            event.registerLayerDefinition(WaterBlobModel.LAYER_LOCATION, WaterBlobModel::createBodyLayer);
+        }
+
+        @SubscribeEvent
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(ModEntities.WATER_BLOB_PROJECTILE.get(), WaterBlobProjectileRenderer::new);
+            event.registerEntityRenderer(ModEntities.TSUNAMI.get(), TsunamiEntityRenderer::new);
+        }
+
+        @SubscribeEvent
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public static void addLayers(EntityRenderersEvent.AddLayers event) {
+            // Añadir la capa a los renderizadores de jugadores (default y slim)
+            for (String skin : event.getSkins()) {
+                LivingEntityRenderer renderer = event.getSkin(skin);
+                if (renderer instanceof PlayerRenderer) {
+                    addWaterBlobLayer(renderer);
+                }
+            }
+            
+        }
+
+        private static <T extends LivingEntity, M extends EntityModel<T>> void addWaterBlobLayer(LivingEntityRenderer<T, M> renderer) {
+            ModelLayerLocation location = WaterBlobModel.LAYER_LOCATION;
+            WaterBlobModel<T> model = new WaterBlobModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(location));
+            renderer.addLayer(new WaterBlobOnHeadLayer<>(renderer, model));
         }
     }
 }

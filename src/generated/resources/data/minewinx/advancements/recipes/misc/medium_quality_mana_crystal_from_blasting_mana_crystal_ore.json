@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mana_crystal_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minewinx:mana_crystal_ore"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "minewinx:medium_quality_mana_crystal_from_blasting_mana_crystal_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_mana_crystal_ore",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minewinx:medium_quality_mana_crystal_from_blasting_mana_crystal_ore"
+    ]
+  },
+  "sends_telemetry_event": false
+}

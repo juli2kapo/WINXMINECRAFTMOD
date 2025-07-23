@@ -13,7 +13,7 @@ public class ModParticles {
             DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, MineWinx.MOD_ID);
 
     public static final RegistryObject<SimpleParticleType> FIRE_PARTICLE =
-            PARTICLE_TYPES.register("fire_particle", () -> new SimpleParticleType(false));
+            PARTICLE_TYPES.register("fire_particle", () -> new SimpleParticleType(true));
     public static final RegistryObject<SimpleParticleType> SPORE_PARTICLE =
             PARTICLE_TYPES.register("spore_particle", () -> new SimpleParticleType(true));
 

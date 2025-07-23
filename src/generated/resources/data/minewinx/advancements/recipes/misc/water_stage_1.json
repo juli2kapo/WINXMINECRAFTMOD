@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_low_quality_mana_crystal": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minewinx:low_quality_mana_crystal"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "minewinx:water_stage_1"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_low_quality_mana_crystal",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minewinx:water_stage_1"
+    ]
+  },
+  "sends_telemetry_event": false
+}

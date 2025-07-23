@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minewinx:item/medium_quality_mana_crystal"
+  }
+}

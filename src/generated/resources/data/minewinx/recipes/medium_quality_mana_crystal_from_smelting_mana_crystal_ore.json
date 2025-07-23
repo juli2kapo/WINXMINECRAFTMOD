@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 800,
+  "experience": 0.25,
+  "group": "mana_crystals",
+  "ingredient": {
+    "item": "minewinx:mana_crystal_ore"
+  },
+  "result": "minewinx:medium_quality_mana_crystal"
+}
