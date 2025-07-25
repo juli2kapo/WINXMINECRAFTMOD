@@ -11,7 +11,8 @@ public enum EnumPowers {
     FIRE_LASER(Element.FIRE, 2, FirePowers::fireLaser),
     DROWN_TARGET(Element.WATER, 1, WaterPowers::startDrowningTarget),
     SUMMON_TSUNAMI(Element.WATER, 2, WaterPowers::summonTsunami),
-    THROW_SNOWBALL(Element.ICE, 1, player -> {}), // TODO: Implementar
+    ACTIVATE_ICE_RING(Element.ICE, 1, IcePowers::activateIceRing),
+    FIRE_ICE_VALLEY(Element.ICE, 2, IcePowers::fireIceVolley),
     SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
 
     UNKNOWN(Element.UNKNOWN, 0, player -> {});

@@ -55,6 +55,15 @@ public class ModItems {
     public static final RegistryObject<Item> NATURESTAGE3 =
             ITEMS.register("nature_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Nature", 3));
 
+    public static final RegistryObject<Item> ICESTAGE1 =
+            ITEMS.register("ice_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "Ice", 1));
+
+    public static final RegistryObject<Item> ICESTAGE2 =
+            ITEMS.register("ice_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "Ice", 2));
+
+    public static final RegistryObject<Item> ICESTAGE3 =
+            ITEMS.register("ice_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Ice", 3));
+
     public static final RegistryObject<Item> CLEANSER =
             ITEMS.register("cleanser", ()-> new ElementAndStageRemover( new Item.Properties().durability(1)));
     public static void register(IEventBus eventBus){

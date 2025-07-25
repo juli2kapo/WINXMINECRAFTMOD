@@ -31,7 +31,10 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                         ModItems.WATERSTAGE3.get(),
                         ModItems.NATURESTAGE1.get(),
                         ModItems.NATURESTAGE2.get(),
-                        ModItems.NATURESTAGE3.get()
+                        ModItems.NATURESTAGE3.get(),
+                        ModItems.ICESTAGE1.get(),
+                        ModItems.ICESTAGE2.get(),
+                        ModItems.ICESTAGE3.get()
                 );
     }
 }

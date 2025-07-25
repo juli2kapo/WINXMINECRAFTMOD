@@ -35,6 +35,9 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.NATURESTAGE1.get());
                         output.accept(ModItems.NATURESTAGE2.get());
                         output.accept(ModItems.NATURESTAGE3.get());
+                        output.accept(ModItems.ICESTAGE1.get());
+                        output.accept(ModItems.ICESTAGE2.get());
+                        output.accept(ModItems.ICESTAGE3.get());
                         output.accept(ModItems.CLEANSER.get());
                     })
                     .build());

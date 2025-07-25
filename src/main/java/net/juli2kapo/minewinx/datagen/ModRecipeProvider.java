@@ -38,6 +38,10 @@ public class ModRecipeProvider extends RecipeProvider {
         buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.WHEAT_SEEDS);
         buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.SCUTE);
         buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.OAK_SAPLING); //TODO CHANGE WITH MIXTURE OF EVERY SAPLING
+        buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.SNOW_BLOCK);
+        buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.BLUE_ICE);
+        buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.END_STONE); //TODO CHANGE WITH COMBINATION OF ICE + END BLOCKS
+
 
         buildCenteredCraftingRecipe(pWriter, ModItems.MANARADAR.get(), ModItems.LOWQMANACRYSTAL.get(), Items.COMPASS);
     }
