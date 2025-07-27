@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.juli2kapo.minewinx.block.ModBlocks;
 import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.entity.ModEntities;
+import net.juli2kapo.minewinx.entity.client.IceCrystalRenderer;
 import net.juli2kapo.minewinx.entity.client.TsunamiEntityRenderer;
 import net.juli2kapo.minewinx.item.ModCreativeModTabs;
 import net.juli2kapo.minewinx.item.ModItems;
@@ -81,6 +82,7 @@ public class MineWinx
         {
             EntityRenderers.register(ModEntities.TSUNAMI.get(), TsunamiEntityRenderer::new);
             EntityRenderers.register(ModEntities.SPOREBOMB.get(), ThrownItemRenderer::new);
+            EntityRenderers.register(ModEntities.ICE_CRYSTAL.get(), IceCrystalRenderer::new);
         }
     }
 }

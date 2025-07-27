@@ -5,12 +5,17 @@ import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.powers.EnumPowers;
 import net.juli2kapo.minewinx.powers.NaturePowers;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -66,6 +71,34 @@ public class ServerEvents {
         if (player.isInWaterOrRain()) {
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 205, stage-1, false, false, true));
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 205, stage-1, false, false, true));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
+        Player player = event.getEntity();
+        ItemStack crafted = event.getCrafting();
+        if (crafted.getItem() == Items.DIAMOND_CHESTPLATE) {
+            String element = PlayerDataProvider.getElement(player);
+            if (!"Technology".equalsIgnoreCase(element)) {
+                crafted.setCount(0); // Elimina el ítem
+                // Opcional: mensaje al jugador
+                player.sendSystemMessage(Component.literal("A casa."));
+            }
+        }
+    }
+    @SubscribeEvent
+    public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            ItemStack newItem = event.getTo();
+            if (newItem.getItem() == Items.DIAMOND_CHESTPLATE) {
+                String element = PlayerDataProvider.getElement(player);
+                if (!"Technology".equalsIgnoreCase(element)) {
+                    event.setCanceled(true); // Cancela el equipamiento
+                    // Opcional: mensaje al jugador
+                    player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor si tienes el elemento Tecnología."));
+                }
+            }
         }
     }
 

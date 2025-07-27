@@ -1,10 +1,16 @@
 package net.juli2kapo.minewinx.powers;
 
+import net.juli2kapo.minewinx.entity.IceArrowEntity;
+import net.juli2kapo.minewinx.entity.IceCrystalEntity;
+import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -13,11 +19,17 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.phys.Vec3;
-import java.util.Collections;
 import net.minecraft.world.level.ClipContext; // Add this import
 import net.minecraft.world.phys.HitResult;   // Add this import
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.AABB;
+import java.util.function.Predicate;
 
 public class IcePowers {
 
@@ -28,6 +40,28 @@ public class IcePowers {
             net.minecraft.world.entity.projectile.Snowball snowball = new net.minecraft.world.entity.projectile.Snowball(level, player);
             snowball.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
             level.addFreshEntity(snowball);
+        }
+    }
+    // for now just spawn an IceCrystalEntity at where the player is looking
+    public static void encapsuleInIceCrystal(Player player){
+        Level level = player.level();
+        if (level.isClientSide()) {
+            player.sendSystemMessage(Component.literal("[IceCrystal] Abortado: lado cliente."));
+            return;
+        }
+
+        BlockPos playerPos = player.blockPosition();
+        player.sendSystemMessage(Component.literal("[IceCrystal] Posición del jugador: " + playerPos));
+
+        try {
+            IceCrystalEntity iceCrystal = new IceCrystalEntity(ModEntities.ICE_CRYSTAL.get(), level);
+            level.addFreshEntity(iceCrystal);
+            player.sendSystemMessage(Component.literal("[IceCrystal] Entidad creada y añadida al mundo."));
+            iceCrystal.setPos(player.getX(), player.getY(), player.getZ());
+            player.sendSystemMessage(Component.literal("[IceCrystal] Entidad posicionada en: " + iceCrystal.position()));
+        } catch (Exception e) {
+            player.sendSystemMessage(Component.literal("[IceCrystal] Error: " + e.getMessage()));
+            e.printStackTrace();
         }
     }
 
@@ -142,53 +176,44 @@ public class IcePowers {
         Level level = player.level();
         if (level.isClientSide()) return;
 
-        double maxDistance = 64.0;
-        // Use ClipContext for precise ray trace including block outlines
-        HitResult hitResult = level.clip(new ClipContext(
-                player.getEyePosition(1.0F),
-                player.getEyePosition(1.0F).add(player.getLookAngle().scale(maxDistance)),
-                ClipContext.Block.OUTLINE,
-                ClipContext.Fluid.NONE,
-                player
-        ));
-
         Vec3 targetPos;
-        if (hitResult.getType() != HitResult.Type.MISS) {
-            targetPos = hitResult.getLocation();
-        } else {
-            targetPos = player.getEyePosition(1.0F).add(player.getLookAngle().scale(maxDistance));
-        }
+        HitResult hitResult = getBowShotHitResult(player, level);
+        targetPos = hitResult != null ? hitResult.getLocation() : player.getEyePosition(1.0F).add(player.getLookAngle().scale(64.0D));
 
         BlockPos center = player.blockPosition();
         ServerLevel serverLevel = (ServerLevel) level;
         int searchRadius = 10 + stage * 5;
 
-        for (BlockPos pos : BlockPos.betweenClosed(
+        for (BlockPos blockPos : BlockPos.betweenClosed(
                 center.offset(-searchRadius, -searchRadius, -searchRadius),
                 center.offset( searchRadius,  searchRadius,  searchRadius)
         )) {
-            if (!level.getBlockState(pos).is(Blocks.PACKED_ICE) || pos.getY() == center.getY() - 1) continue;
-            if (!hasHorizontalIceNeighbor(level, pos)) continue;
+            if (!level.getBlockState(blockPos).is(Blocks.PACKED_ICE) || blockPos.getY() == center.getY() - 1) continue;
+            if (!hasHorizontalIceNeighbor(level, blockPos)) continue;
 
-            // Spawn arrows from just above the ice block center
             Vec3 sourcePos = new Vec3(
-                    pos.getX() + 0.5D,
-                    pos.getY() + 1.0D,
-                    pos.getZ() + 0.5D
+                    blockPos.getX() + 0.5D,
+                    blockPos.getY() + 1.0D,
+                    blockPos.getZ() + 0.5D
             );
 
-            Vec3 direction = targetPos.subtract(sourcePos).normalize();
-
-            // Offset spawn slightly to avoid intersection
-            Vec3 spawnPos = sourcePos.add(direction.scale(0.6D));
-
-            Arrow arrow = new Arrow(level, spawnPos.x, spawnPos.y, spawnPos.z);
+            Vec3 dir = targetPos.subtract(sourcePos).normalize();
+            Vec3 spawnPos = sourcePos.add(dir);
+            Vec3 shootDirection  = calculateProjectileVelocity(
+                    spawnPos,
+                    targetPos,
+                    2.2F // Adjusted velocity for the ice arrow
+            );
+            player.sendSystemMessage(Component.literal("Calculated shootDirection: " + shootDirection));
+            IceArrowEntity arrow = new IceArrowEntity(level, spawnPos.x, spawnPos.y, spawnPos.z);
             arrow.setOwner(player);
-            arrow.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 2));
             arrow.setCritArrow(true);
+            arrow.pickup = Arrow.Pickup.DISALLOWED;
 
-            // Use zero inaccuracy to ensure arrows go straight
-            arrow.shoot(direction.x, direction.y, direction.z, 2.2F, 0.0F);
+            //arrow.shoot(dir.x, dir.y, dir.z, 2.2F, 0.0F);
+//            arrow.shoot(targetPos.x, targetPos.y, targetPos.z, 2.2F, 0.0F);
+            arrow.shoot(shootDirection.x, shootDirection.y, shootDirection.z, 2.2F, 0.0F);
+
             level.addFreshEntity(arrow);
             serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
                     sourcePos.x, sourcePos.y, sourcePos.z,
@@ -206,5 +231,137 @@ public class IcePowers {
         }
         return false;
     }
+
+    public static HitResult getBowShotHitResult(Player player, Level level) {
+        // Properties directly from BowItem.releaseUsing for a max strength shot:
+        float power = 1.0F; // Corresponds to 'f' in BowItem.releaseUsing after getPowerForTime(20)
+        float velocityMultiplier = 3.0F; // The multiplier applied to 'f' in shootFromRotation
+        float inaccuracy = 1.0F; // The inaccuracy parameter passed to shootFromRotation
+
+        // The arrow generally spawns slightly below the player's eye position.
+        // This mimics the origin point used by AbstractArrow when created from a LivingEntity.
+        Vec3 startVec = new Vec3(player.getX(), player.getEyeY() - 0.1D, player.getZ());
+
+        // Get player's pitch and yaw (in degrees)
+        float playerPitch = player.getXRot();
+        float playerYaw = player.getYRot();
+
+        // This is equivalent to what shootFromRotation() does internally for the base direction.
+        // Note: Mth.sin/cos expect radians, so convert degrees to radians.
+        float yawRad = playerYaw * Mth.DEG_TO_RAD;
+        float pitchRad = playerPitch * Mth.DEG_TO_RAD;
+
+        float xDir = -Mth.sin(yawRad) * Mth.cos(pitchRad);
+        float yDir = -Mth.sin(pitchRad);
+        float zDir = Mth.cos(yawRad) * Mth.cos(pitchRad);
+
+        Vec3 initialDirectionBase = new Vec3(xDir, yDir, zDir);
+
+        // Apply randomness for inaccuracy, matching BowItem's 'shootFromRotation'
+        // The random component is added *before* normalization and scaling.
+        RandomSource random = level.getRandom(); // Use the level's random for consistent results
+
+        Vec3 initialMotionWithInaccuracy = initialDirectionBase.add(
+                random.nextGaussian() * 0.0075D * inaccuracy, // 0.0075D is a common "noise factor"
+                random.nextGaussian() * 0.0075D * inaccuracy,
+                random.nextGaussian() * 0.0075D * inaccuracy
+        );
+
+        // Normalize and then scale by the full velocity (power * velocityMultiplier)
+        Vec3 initialMotion = initialMotionWithInaccuracy.normalize().scale(power * velocityMultiplier);
+
+        // Simulation parameters
+        double maxDistance = 120.0D; // Increased to cover typical arrow range
+        Vec3 currentPos = startVec;
+        Vec3 currentMotion = initialMotion;
+
+        // Simplified physics: apply gravity and air resistance over steps
+        float resistance = 0.99F; // Air resistance for arrows
+        float gravity = 0.05F;    // Gravity for arrows
+
+        // Predicate to define which entities can be hit.
+        // Excludes the shooter.
+        Predicate<Entity> canHitEntityPredicate = (entity) -> {
+            return entity.isPickable() && entity != player;
+        };
+
+        // Increased simulation steps for better range coverage
+        for (int i = 0; i < 400; i++) { // Simulate up to 400 ticks (approx 20 seconds of flight)
+            Vec3 nextPos = currentPos.add(currentMotion);
+
+            // 1. Check for block collision
+            ClipContext blockClipContext = new ClipContext(currentPos, nextPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player);
+            BlockHitResult blockHitResult = level.clip(blockClipContext);
+
+            // 2. Check for entity collision
+            // Use a small bounding box for the 'arrow' for collision checks.
+            // The inflate amount can be slightly tuned, 0.1D is a reasonable approximation.
+            AABB arrowBoundingBox = new AABB(currentPos, nextPos).inflate(0.1D);
+            EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
+                    level,
+                    player, // The shooting entity (owner of the simulated projectile)
+                    currentPos,
+                    nextPos,
+                    arrowBoundingBox,
+                    canHitEntityPredicate
+            );
+
+            // Determine which hit occurred first (if any)
+            if (entityHitResult != null) {
+                if (blockHitResult.getType() == HitResult.Type.MISS || entityHitResult.getLocation().distanceToSqr(currentPos) < blockHitResult.getLocation().distanceToSqr(currentPos)) {
+                    player.sendSystemMessage(Component.literal("Disparando flecha de hielo hacia entidad: " + entityHitResult.getEntity().getName()));
+                    return entityHitResult; // Entity hit first
+                }
+            }
+            if (blockHitResult.getType() != HitResult.Type.MISS) {
+                player.sendSystemMessage(Component.literal("Disparando flecha de hielo hacia bloque: " + blockHitResult.getBlockPos()));
+                return blockHitResult; // Block hit
+            }
+
+            // If nothing hit, update position and motion for the next step
+            currentPos = nextPos;
+
+            // Apply air resistance and gravity
+            currentMotion = currentMotion.scale(resistance);
+            // Apply gravity downwards
+            currentMotion = currentMotion.subtract(0.0D, gravity, 0.0D);
+
+            // If the arrow has traveled too far, or its speed is negligible, consider it a miss.
+            // The lengthSqr() check is important to prevent infinite loops for tiny motions.
+            if (currentPos.distanceToSqr(startVec) > maxDistance * maxDistance || currentMotion.lengthSqr() < 0.001D) {
+                break;
+            }
+        }
+
+        // If no hit occurred within the simulated range, return a miss result.
+        // It's better to return HitResult.miss(currentPos) than null for consistency.
+        return null;
+    }
+
+
+
+    public static Vec3 calculateProjectileVelocity(Vec3 origin, Vec3 target, float velocity) {
+        // Difference between origin and target
+        Vec3 diff = target.subtract(origin);
+        double dx = diff.x;
+        double dz = diff.z;
+        double dy = diff.y;
+
+        double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+
+        // Calculate the angle (theta) for pitch to arc to the target (assumes flat ground target)
+        double angle = Math.atan2(dy, horizontalDistance);
+
+        // Calculate unit direction in x/z and apply angle to y
+        double directionX = dx / horizontalDistance;
+        double directionZ = dz / horizontalDistance;
+
+        double vx = directionX * Math.cos(angle) * velocity;
+        double vz = directionZ * Math.cos(angle) * velocity;
+        double vy = Math.sin(angle) * velocity;
+
+        return new Vec3(vx, vy, vz);
+    }
+
 
 }

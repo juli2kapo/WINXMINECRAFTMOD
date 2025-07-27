@@ -32,11 +32,22 @@ public class ModEntities {
                             .updateInterval(10)
                             .build("water_blob_projectile"));
 
-    public static final RegistryObject<EntityType<KnutEntity>> KNUTMOB = ENTITY_TYPES.register("hostile_mob",
-            () -> EntityType.Builder.of(KnutEntity::new, MobCategory.MONSTER)
-                    .sized(0.6F, 1.95F)
-                    .build("hostile_mob"));
+    public static final RegistryObject<EntityType<IceCrystalEntity>> ICE_CRYSTAL =
+            ENTITY_TYPES.register("ice_crystal",
+                    () -> EntityType.Builder.<IceCrystalEntity>of(IceCrystalEntity::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .clientTrackingRange(4)
+                            .updateInterval(10)
+                            .build("ice_crystal"));
 
+
+    public static final RegistryObject<EntityType<IceArrowEntity>> ICE_ARROW =
+            ENTITY_TYPES.register("ice_arrow",
+                    () -> EntityType.Builder.<IceArrowEntity>of(IceArrowEntity::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .clientTrackingRange(4)
+                            .updateInterval(20)
+                            .build("ice_arrow"));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

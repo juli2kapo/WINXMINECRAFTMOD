@@ -42,7 +42,7 @@ public class ModRecipeProvider extends RecipeProvider {
         buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.BLUE_ICE);
         buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.END_STONE); //TODO CHANGE WITH COMBINATION OF ICE + END BLOCKS
 
-
+        tecnoArmor(pWriter);
         buildCenteredCraftingRecipe(pWriter, ModItems.MANARADAR.get(), ModItems.LOWQMANACRYSTAL.get(), Items.COMPASS);
     }
 
@@ -65,6 +65,17 @@ public class ModRecipeProvider extends RecipeProvider {
                 .define('S', centerItem)
                 .unlockedBy(getHasName(outerMaterial), has(outerMaterial))
                 .save(writer);
+    }
+    private void tecnoArmor(Consumer<FinishedRecipe> writer){
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.DIAMOND_CHESTPLATE) //TODO, replace with tecno armor
+                .pattern("   ")
+                .pattern("#SC")
+                .pattern("   ")
+                .define('#', Items.NETHERITE_CHESTPLATE)
+                .define('S', Items.NETHER_STAR)
+                .define('C', Items.DIAMOND_CHESTPLATE)
+                .unlockedBy(getHasName(Items.NETHER_STAR), has(Items.DIAMOND_CHESTPLATE))
+                .save(writer, MineWinx.MOD_ID + ":tecno_chestplate");
     }
 
 
