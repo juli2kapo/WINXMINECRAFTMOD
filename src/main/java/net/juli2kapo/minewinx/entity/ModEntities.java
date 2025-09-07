@@ -49,6 +49,15 @@ public class ModEntities {
                             .updateInterval(20)
                             .build("ice_arrow"));
 
+    public static final RegistryObject<EntityType<SpeakerEntity>> SPEAKER =
+            ENTITY_TYPES.register("speaker",
+                    () -> EntityType.Builder.<SpeakerEntity>of(SpeakerEntity::new, MobCategory.MISC)
+                            .sized(1.0f, 1.0f)
+                            .clientTrackingRange(10)
+                            .updateInterval(5)
+                            .build("speaker"));
+
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

@@ -16,6 +16,10 @@ public class ModParticles {
             PARTICLE_TYPES.register("fire_particle", () -> new SimpleParticleType(true));
     public static final RegistryObject<SimpleParticleType> SPORE_PARTICLE =
             PARTICLE_TYPES.register("spore_particle", () -> new SimpleParticleType(true));
+    public static final RegistryObject<SimpleParticleType> SOUND_WAVE_PARTICLE =
+            PARTICLE_TYPES.register("sound_wave_particle", () -> new SimpleParticleType(true));
+    public static final RegistryObject<SimpleParticleType> MUSIC_NOTE_PARTICLE =
+            PARTICLE_TYPES.register("music_note_particle", () -> new SimpleParticleType(true));
 
     public static void register(IEventBus eventBus) {
         PARTICLE_TYPES.register(eventBus);

@@ -30,6 +30,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> SLEEP = MOB_EFFECTS.register("sleep",
             () -> new SleepEffect(MobEffectCategory.HARMFUL, 0x336600));
 
+    public static final RegistryObject<MobEffect> CONFUSION = MOB_EFFECTS.register("confusion",
+            () -> new ConfusionEffect(MobEffectCategory.HARMFUL, 0xFF69B4));
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }
