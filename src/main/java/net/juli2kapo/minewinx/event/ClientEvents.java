@@ -6,10 +6,7 @@ import net.juli2kapo.minewinx.client.gui.DrowningOverlay;
 import net.juli2kapo.minewinx.client.gui.SleepOverlay;
 import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.entity.ModEntities;
-import net.juli2kapo.minewinx.entity.client.IceArrowRenderer;
-import net.juli2kapo.minewinx.entity.client.IceCrystalRenderer;
-import net.juli2kapo.minewinx.entity.client.TsunamiEntityRenderer;
-import net.juli2kapo.minewinx.entity.client.WaterBlobProjectileRenderer;
+import net.juli2kapo.minewinx.entity.client.*;
 import net.juli2kapo.minewinx.entity.client.layer.WaterBlobOnHeadLayer;
 import net.juli2kapo.minewinx.entity.client.model.IceCrystalModel;
 import net.juli2kapo.minewinx.entity.client.model.WaterBlobModel;
@@ -90,6 +87,7 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.TSUNAMI.get(), TsunamiEntityRenderer::new);
             event.registerEntityRenderer(ModEntities.ICE_ARROW.get(), IceArrowRenderer::new);
             event.registerEntityRenderer(ModEntities.ICE_CRYSTAL.get(), IceCrystalRenderer::new);
+            event.registerEntityRenderer(ModEntities.SPEAKER.get(), SpeakerRenderer::new);
         }
 
         @SubscribeEvent

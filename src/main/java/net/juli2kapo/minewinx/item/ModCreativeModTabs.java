@@ -38,6 +38,10 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.ICESTAGE1.get());
                         output.accept(ModItems.ICESTAGE2.get());
                         output.accept(ModItems.ICESTAGE3.get());
+                        output.accept(ModItems.MUSICSTAGE1.get());
+                        output.accept(ModItems.MUSICSTAGE2.get());
+                        output.accept(ModItems.MUSICSTAGE3.get());
+
                         output.accept(ModItems.CLEANSER.get());
                     })
                     .build());
