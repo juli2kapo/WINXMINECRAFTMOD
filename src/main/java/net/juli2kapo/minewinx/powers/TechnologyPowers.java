@@ -1,10 +1,12 @@
 package net.juli2kapo.minewinx.powers;
 
+import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -53,7 +55,7 @@ public class TechnologyPowers {
 
     // Apply both night vision and X-ray vision effects
     player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, duration, amplifier, false, false, true));
-    player.addEffect(new MobEffectInstance(ModEffects.XRAY_VISION.get(), duration, amplifier, false, false, true));
+    player.addEffect(new MobEffectInstance(ModEffects.X_RAY_VISION.get(), duration, amplifier, false, false, true));
     
     // Play tech sound
     level.playSound(null, player.getX(), player.getY(), player.getZ(), 
@@ -120,7 +122,8 @@ public class TechnologyPowers {
 
         if (nonEmptySlots.isEmpty()) return;
 
-        Random random = level.getRandom();
+        RandomSource random = level.getRandom();
+
         int actualDrops = Math.min(itemsToDrop, nonEmptySlots.size());
 
         for (int i = 0; i < actualDrops; i++) {

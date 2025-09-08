@@ -25,6 +25,11 @@ public enum EnumPowers {
     VOCAL_BLAST(Element.MUSIC, 2, MusicPowers::vocalBlast),
     CONFUSION_SONG(Element.MUSIC, 3, MusicPowers::confusionSong),
 
+    // TECHNOLOGY POWERS
+    SHORT_RANGE_XRAY(Element.TECHNOLOGY, 1, TechnologyPowers::shortRangeXray),
+    ITEM_DROP(Element.TECHNOLOGY, 2, TechnologyPowers::itemDrop),
+    PISTON_SMASH(Element.TECHNOLOGY, 3, TechnologyPowers::pistonSmash),
+
     // NATURE POWERS
     SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
 
@@ -74,7 +79,8 @@ public enum EnumPowers {
         WATER(2, "water"),
         NATURE(3, "nature"),
         ICE(4, "ice"),
-        MUSIC(5, "music");
+        MUSIC(5, "music"),
+        TECHNOLOGY(6, "technology");
 
         private final int id;
         private final String name;

@@ -37,7 +37,10 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                         ModItems.ICESTAGE3.get(),
                         ModItems.MUSICSTAGE1.get(),
                         ModItems.MUSICSTAGE2.get(),
-                        ModItems.MUSICSTAGE3.get()
+                        ModItems.MUSICSTAGE3.get(),
+                        ModItems.TECHNOLOGYSTAGE1.get(),
+                        ModItems.TECHNOLOGYSTAGE2.get(),
+                        ModItems.TECHNOLOGYSTAGE3.get()
                 );
     }
 }

@@ -41,7 +41,9 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.MUSICSTAGE1.get());
                         output.accept(ModItems.MUSICSTAGE2.get());
                         output.accept(ModItems.MUSICSTAGE3.get());
-
+                        output.accept(ModItems.TECHNOLOGYSTAGE1.get());
+                        output.accept(ModItems.TECHNOLOGYSTAGE2.get());
+                        output.accept(ModItems.TECHNOLOGYSTAGE3.get());
                         output.accept(ModItems.CLEANSER.get());
                     })
                     .build());
