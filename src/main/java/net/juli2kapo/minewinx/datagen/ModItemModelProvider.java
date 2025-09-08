@@ -32,6 +32,9 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.ICESTAGE1);
         simpleItem(ModItems.ICESTAGE2);
         simpleItem(ModItems.ICESTAGE3);
+        simpleItem(ModItems.MUSICSTAGE1);
+        simpleItem(ModItems.MUSICSTAGE2);
+        simpleItem(ModItems.MUSICSTAGE3);
         simpleItem(ModItems.MANARADAR);
     }
 

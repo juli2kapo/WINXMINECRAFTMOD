@@ -7,15 +7,25 @@ import java.util.function.Consumer;
 
 public enum EnumPowers {
 
+    // FIRE POWERS
     FIRE_BARRIER(Element.FIRE, 1, FirePowers::activateFireBarrier),
     FIRE_LASER(Element.FIRE, 2, FirePowers::fireLaser),
+
+    // WATER POWERS
     DROWN_TARGET(Element.WATER, 1, WaterPowers::startDrowningTarget),
     SUMMON_TSUNAMI(Element.WATER, 2, WaterPowers::summonTsunami),
 
+    // ICE POWERS
     ACTIVATE_ICE_RING(Element.ICE, 1, IcePowers::activateIceRing),
     FIRE_ICE_VALLEY(Element.ICE, 2, IcePowers::fireIceVolley),
     ENCAPSULE_IN_ICE(Element.ICE, 3, IcePowers::encapsuleInIceCrystal),
 
+    // MUSIC POWERS
+    SUMMON_SPEAKERS(Element.MUSIC, 1, MusicPowers::summonSpeakers),
+    VOCAL_BLAST(Element.MUSIC, 2, MusicPowers::vocalBlast),
+    CONFUSION_SONG(Element.MUSIC, 3, MusicPowers::confusionSong),
+
+    // NATURE POWERS
     SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
 
     UNKNOWN(Element.UNKNOWN, 0, player -> {});
@@ -63,7 +73,8 @@ public enum EnumPowers {
         FIRE(1, "fire"),
         WATER(2, "water"),
         NATURE(3, "nature"),
-        ICE(4, "ice");
+        ICE(4, "ice"),
+        MUSIC(5, "music");
 
         private final int id;
         private final String name;
