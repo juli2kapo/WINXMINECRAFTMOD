@@ -127,9 +127,9 @@ public class PlayerEvents {
             if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS) return;
             
             LocalPlayer player = Minecraft.getInstance().player;
-            if (player == null || !player.hasEffect(ModEffects.XRAY_VISION.get())) return;
+            if (player == null || !player.hasEffect(ModEffects.X_RAY_VISION.get())) return;
             
-            int amplifier = player.getEffect(ModEffects.XRAY_VISION.get()).getAmplifier();
+            int amplifier = player.getEffect(ModEffects.X_RAY_VISION.get()).getAmplifier();
             int range = 8 + ((amplifier + 1) * 4); // Match the range calculation from TechnologyPowers
             
             // Highlight valuable blocks within range
