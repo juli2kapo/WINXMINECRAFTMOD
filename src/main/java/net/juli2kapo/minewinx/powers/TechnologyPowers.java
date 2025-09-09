@@ -1,6 +1,5 @@
 package net.juli2kapo.minewinx.powers;
 
-import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.entity.PistonEntity;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
@@ -9,8 +8,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -18,8 +15,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -33,45 +28,80 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.damagesource.DamageSource;
 
 import java.util.List;
-import java.util.Random;
 
 public class TechnologyPowers {
 
-    /**
-     * Short-range X-ray vision that allows seeing through blocks for a limited time/range
-     */
-    public static void shortRangeXray(Player player) {
-    int stage = PlayerDataProvider.getStage(player);
-    if (stage == 0) return;
+    public static void freezeTime(Player player) {
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage == 0) return;
+        
+        Level level = player.level();
+        if (level.isClientSide()) return;
+        
+        // Define size and duration based on stage
+        int size = stage * 5; // 5, 10, or 15 blocks
+        float duration = 1.5f + (stage - 1) * 0.5f; // 1.5, 2.0, or 2.5 seconds
+        
+        // Get dimension ID
+        String dimension = level.dimension().location().toString();
+        
+        // Calculate cube coordinates around player
+        BlockPos playerPos = player.blockPosition();
+        int x1 = playerPos.getX() - size;
+        int y1 = playerPos.getY() - size;
+        int z1 = playerPos.getZ() - size;
+        int x2 = playerPos.getX() + size;
+        int y2 = playerPos.getY() + size;
+        int z2 = playerPos.getZ() + size;
+        
+        // Server instance for command execution
+        ServerLevel serverLevel = (ServerLevel) level;
+        
+        // First, make player immune to time freeze
+        String excludeCommand = "setTickrate exclude " + player.getName().getString() + " true";
+        serverLevel.getServer().getCommands().performPrefixedCommand(
+            serverLevel.getServer().createCommandSourceStack(), excludeCommand);
+        
+        // Freeze time in the area
+        String freezeCommand = "setTickrate area " + dimension + " " + 
+                            x1 + " " + y1 + " " + z1 + " " + 
+                            x2 + " " + y2 + " " + z2 + " 0";
+        serverLevel.getServer().getCommands().performPrefixedCommand(
+            serverLevel.getServer().createCommandSourceStack(), freezeCommand);
+        
+        // Play sound effect
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0F, 0.5F);
+        
+        // Schedule restoration of normal time
+        int tickDuration = (int)(duration * 20); // Convert seconds to ticks
 
-    Level level = player.level();
-    if (level.isClientSide()) return;
-
-    // Duration and range scale with stage
-    int duration = 100 + (stage * 60); // 5s base + 3s per stage
-    int range = 8 + (stage * 4); // 8 blocks base + 4 per stage
-    int amplifier = stage - 1; // Amplifier affects range
-
-    // Apply both night vision and X-ray vision effects
-    player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, duration, amplifier, false, false, true));
-    player.addEffect(new MobEffectInstance(ModEffects.X_RAY_VISION.get(), duration, amplifier, false, false, true));
-    
-    // Play tech sound
-    level.playSound(null, player.getX(), player.getY(), player.getZ(), 
-        SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.5F, 2.0F);
-
-    // Create particle effect to show activation
-    if (level instanceof ServerLevel serverLevel) {
-        serverLevel.sendParticles(ParticleTypes.END_ROD, 
-            player.getX(), player.getEyeY(), player.getZ(), 
-            10, 0.5, 0.5, 0.5, 0.1);
+        // Use Minecraft's built-in scheduler instead of TickFreezeManager
+        serverLevel.getServer().getLevel(serverLevel.dimension()).getServer().tell(new net.minecraft.server.TickTask(
+            serverLevel.getServer().getTickCount() + tickDuration, () -> {
+                // Restore normal time
+                String unfreezeCommand = "setTickrate area " + dimension + " " + 
+                                    x1 + " " + y1 + " " + z1 + " " + 
+                                    x2 + " " + y2 + " " + z2 + " 20";
+                serverLevel.getServer().getCommands().performPrefixedCommand(
+                    serverLevel.getServer().createCommandSourceStack(), unfreezeCommand);
+                
+                // Remove player from exclusion list
+                String removeExcludeCommand = "setTickrate exclude " + player.getName().getString() + " false";
+                serverLevel.getServer().getCommands().performPrefixedCommand(
+                    serverLevel.getServer().createCommandSourceStack(), removeExcludeCommand);
+            }
+        ));
+        
+        // Visual effects
+        if (serverLevel != null) {
+            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                player.getX(), player.getY() + 1.0, player.getZ(),
+                50, size/2.0, size/2.0, size/2.0, 0.05);
+        }
     }
-}
-
     /**
      * Forces targeted player to drop items or damages mobs and drops loot
      */

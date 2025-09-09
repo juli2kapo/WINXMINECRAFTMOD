@@ -26,7 +26,7 @@ public enum EnumPowers {
     CONFUSION_SONG(Element.MUSIC, 3, MusicPowers::confusionSong),
 
     // TECHNOLOGY POWERS
-    SHORT_RANGE_XRAY(Element.TECHNOLOGY, 1, TechnologyPowers::shortRangeXray),
+    SHORT_RANGE_XRAY(Element.TECHNOLOGY, 1, TechnologyPowers::freezeTime),
     ITEM_DROP(Element.TECHNOLOGY, 2, TechnologyPowers::itemDrop),
     PISTON_SMASH(Element.TECHNOLOGY, 3, TechnologyPowers::pistonSmash),
 

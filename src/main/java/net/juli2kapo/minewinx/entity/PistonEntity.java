@@ -173,32 +173,58 @@ public class PistonEntity extends Entity {
         }
 
         int breakRadius = (int) (scale / 2.0f);
-        int y = layer; // Layer depth
+        int layerY = -layer; // Layer depth (negative Y)
+        int blocksDestroyed = 0;
+        
+        // Calculate drop chance based on explosion mechanics (30-50% chance)
+        float dropChance = 0.3f + (0.2f * serverLevel.getRandom().nextFloat());
 
-        // Break blocks in this layer
+        // Break blocks in this layer - use a more efficient approach
+        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
         for (int x = -breakRadius; x <= breakRadius; x++) {
             for (int z = -breakRadius; z <= breakRadius; z++) {
-                BlockPos blockPos = impactPos.offset(x, -y, z);
-                BlockState state = serverLevel.getBlockState(blockPos);
+                mutablePos.set(impactPos.getX() + x, impactPos.getY() + layerY, impactPos.getZ() + z);
+                BlockState state = serverLevel.getBlockState(mutablePos);
 
-                if (!state.isAir() && state.getDestroySpeed(serverLevel, blockPos) >= 0) {
-                    serverLevel.destroyBlock(blockPos, true, caster);
+                // Skip air blocks and unbreakable blocks
+                if (state.isAir() || state.getDestroySpeed(serverLevel, mutablePos) < 0) {
+                    continue;
                 }
+
+                // Destroy block with explosion-like behavior
+                boolean shouldDrop = serverLevel.getRandom().nextFloat() < dropChance;
+                
+                if (shouldDrop && caster != null) {
+                    // Drop items with reduced chance (like explosions)
+                    serverLevel.destroyBlock(mutablePos, true, caster);
+                } else {
+                    // Just destroy without dropping
+                    serverLevel.destroyBlock(mutablePos, false, null);
+                }
+                
+                blocksDestroyed++;
             }
         }
 
-        // Add particles for this layer
-        serverLevel.sendParticles(ParticleTypes.CLOUD,
-                impactPos.getX(), impactPos.getY() - layer, impactPos.getZ(),
-                15, scale / 2.0, 0.2, scale / 2.0, 0.1);
+        // Only create effects if blocks were actually destroyed
+        if (blocksDestroyed > 0) {
+            // Scale particle count based on blocks destroyed
+            int particleCount = Math.min(15, Math.max(5, blocksDestroyed / 3));
+            
+            serverLevel.sendParticles(ParticleTypes.CLOUD,
+                    impactPos.getX(), impactPos.getY() + layerY, impactPos.getZ(),
+                    particleCount, scale / 2.0, 0.2, scale / 2.0, 0.1);
 
-        // Play breaking sound for each layer
-        if (layer > 0) {
-            serverLevel.playSound(null, impactPos.getX(), impactPos.getY() - layer, impactPos.getZ(),
-                    SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F + (layer * 0.1F));
+            // Play breaking sound for each layer (skip for surface layer)
+            if (layer > 0) {
+                float pitch = 1.0F + (layer * 0.1F);
+                float volume = Math.min(1.0F, 0.5F + (blocksDestroyed * 0.05F));
+                
+                serverLevel.playSound(null, impactPos.getX(), impactPos.getY() + layerY, impactPos.getZ(),
+                        SoundEvents.STONE_BREAK, SoundSource.BLOCKS, volume, pitch);
+            }
         }
     }
-
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putBoolean("hasStartedImpact", hasStartedImpact);
