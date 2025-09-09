@@ -9,6 +9,7 @@ import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.entity.client.*;
 import net.juli2kapo.minewinx.entity.client.layer.WaterBlobOnHeadLayer;
 import net.juli2kapo.minewinx.entity.client.model.IceCrystalModel;
+import net.juli2kapo.minewinx.entity.client.model.PistonModel;
 import net.juli2kapo.minewinx.entity.client.model.WaterBlobModel;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.network.TransformC2SPacket;
@@ -79,6 +80,7 @@ public class ClientEvents {
         public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
             event.registerLayerDefinition(WaterBlobModel.LAYER_LOCATION, WaterBlobModel::createBodyLayer);
             event.registerLayerDefinition(IceCrystalModel.LAYER_LOCATION, IceCrystalModel::createBodyLayer);
+            event.registerLayerDefinition(PistonModel.LAYER_LOCATION, PistonModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -88,6 +90,7 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.ICE_ARROW.get(), IceArrowRenderer::new);
             event.registerEntityRenderer(ModEntities.ICE_CRYSTAL.get(), IceCrystalRenderer::new);
             event.registerEntityRenderer(ModEntities.SPEAKER.get(), SpeakerRenderer::new);
+            event.registerEntityRenderer(ModEntities.PISTON.get(), PistonRenderer::new);
         }
 
         @SubscribeEvent

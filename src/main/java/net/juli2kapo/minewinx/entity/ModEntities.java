@@ -57,6 +57,13 @@ public class ModEntities {
                             .updateInterval(5)
                             .build("speaker"));
 
+        public static final RegistryObject<EntityType<PistonEntity>> PISTON =
+                ENTITY_TYPES.register("piston",
+                        () -> EntityType.Builder.<PistonEntity>of(PistonEntity::new, MobCategory.MISC)
+                                .sized(1f, 1f)
+                                .clientTrackingRange(4)
+                                .updateInterval(10)
+                                .build("piston"));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

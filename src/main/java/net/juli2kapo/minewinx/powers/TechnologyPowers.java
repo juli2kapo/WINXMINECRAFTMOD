@@ -1,6 +1,8 @@
 package net.juli2kapo.minewinx.powers;
 
 import net.juli2kapo.minewinx.effect.ModEffects;
+import net.juli2kapo.minewinx.entity.ModEntities;
+import net.juli2kapo.minewinx.entity.PistonEntity;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -232,14 +235,14 @@ public class TechnologyPowers {
             targetPos = hit.getBlockPos().above();
         } else {
             targetPos = new BlockPos((int)eyePos.add(lookVec.scale(range)).x, 
-                                   (int)eyePos.add(lookVec.scale(range)).y, 
-                                   (int)eyePos.add(lookVec.scale(range)).z);
+                                (int)eyePos.add(lookVec.scale(range)).y, 
+                                (int)eyePos.add(lookVec.scale(range)).z);
         }
 
-        executePistonSmash(player, targetPos, stage);
+        executePistonSmashWithEntity(player, targetPos, stage);
     }
 
-    private static void executePistonSmash(Player caster, BlockPos targetPos, int stage) {
+        private static void executePistonSmashWithEntity(Player caster, BlockPos targetPos, int stage) {
         Level level = caster.level();
         ServerLevel serverLevel = (ServerLevel) level;
 
@@ -248,94 +251,54 @@ public class TechnologyPowers {
         if (surfacePos == null) return;
 
         // Size and damage scale with stage
-        int pistonSize = 1 + stage; // 2x2, 3x3, 4x4
-        float damage = 6.0F + (stage * 4.0F);
-        int depth = stage; // 1, 2, 3 blocks deep
+        float scale = 4.0f + (stage - 1) * 6f; // stage 1: 4, stage 2: 10, stage 3: 16
+        float damage = 6.0F + (stage - 1) * 8.0F;
+        int depth = stage * 2; // 2, 4, 6 blocks deep
 
-        // Spawn piston above surface
-        BlockPos pistonPos = surfacePos.above(3 + stage);
+        // Spawn single piston entity above surface center
+        BlockPos pistonPos = surfacePos.above(-2 + (stage - 1) * 4);
+
+        // Create single piston entity at center
+        Vec3 spawnPos = new Vec3(
+            pistonPos.getX() + 0.5, 
+            pistonPos.getY() + 0.5, 
+            pistonPos.getZ() + 0.5
+        );
         
-        // Create piston blocks temporarily for visual effect
-        for (int x = -pistonSize/2; x <= pistonSize/2; x++) {
-            for (int z = -pistonSize/2; z <= pistonSize/2; z++) {
-                BlockPos blockPos = pistonPos.offset(x, 0, z);
-                level.setBlockAndUpdate(blockPos, Blocks.PISTON.defaultBlockState());
-            }
-        }
-
+        PistonEntity pistonEntity = new PistonEntity(ModEntities.PISTON.get(), level);
+        pistonEntity.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
+        
+        // Store impact data in the entity for later use
+        pistonEntity.getPersistentData().putInt("impactX", surfacePos.getX());
+        pistonEntity.getPersistentData().putInt("impactY", surfacePos.getY());
+        pistonEntity.getPersistentData().putInt("impactZ", surfacePos.getZ());
+        pistonEntity.getPersistentData().putFloat("damage", damage);
+        pistonEntity.getPersistentData().putInt("depth", depth);
+        pistonEntity.getPersistentData().putString("casterUUID", caster.getUUID().toString());
+        pistonEntity.getPersistentData().putInt("stage", stage);
+        pistonEntity.getPersistentData().putFloat("scale", scale); // Store the scale
+        
+        level.addFreshEntity(pistonEntity);
         // Play piston sound
         level.playSound(null, pistonPos.getX(), pistonPos.getY(), pistonPos.getZ(),
             SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 2.0F, 0.5F);
+    }
 
-        // Schedule the smash effect after a short delay
-        level.scheduleTick(pistonPos, Blocks.PISTON, 10);
+
+    // private static BlockPos findSurfaceBlock(Level level, BlockPos startPos) {
         
-        // Execute smash after delay (simplified immediate execution)
-        executePistonImpact(serverLevel, surfacePos, pistonSize, damage, depth, caster);
-    }
-
-    private static void executePistonImpact(ServerLevel level, BlockPos impactPos, int size, float damage, int depth, Player caster) {
-        // Remove temporary piston blocks
-        for (int x = -size/2; x <= size/2; x++) {
-            for (int z = -size/2; z <= size/2; z++) {
-                BlockPos blockPos = impactPos.above(3 + PlayerDataProvider.getStage(caster)).offset(x, 0, z);
-                if (level.getBlockState(blockPos).is(Blocks.PISTON)) {
-                    level.removeBlock(blockPos, false);
-                }
-            }
-        }
-
-        // Damage entities in impact area
-        AABB damageArea = new AABB(impactPos).inflate(size);
-        List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, damageArea,
-            entity -> entity != caster && entity.isAlive());
-
-        for (LivingEntity entity : entities) {
-            entity.hurt(caster.damageSources().indirectMagic(caster, caster), damage);
-            
-            // Push entities down
-            Vec3 pushDirection = new Vec3(0, -1.5, 0);
-            entity.setDeltaMovement(entity.getDeltaMovement().add(pushDirection));
-        }
-
-        // Break blocks to create hole
-        for (int x = -size/2; x <= size/2; x++) {
-            for (int z = -size/2; z <= size/2; z++) {
-                for (int y = 0; y <= depth; y++) {
-                    BlockPos blockPos = impactPos.offset(x, -y, z);
-                    BlockState state = level.getBlockState(blockPos);
-                    
-                    if (!state.isAir() && state.getDestroySpeed(level, blockPos) >= 0) {
-                        level.destroyBlock(blockPos, true, caster);
-                    }
-                }
-            }
-        }
-
-        // Create impact effects
-        level.sendParticles(ParticleTypes.EXPLOSION,
-            impactPos.getX(), impactPos.getY(), impactPos.getZ(),
-            20, size / 2.0, 1.0, size / 2.0, 0.2);
-
-        level.sendParticles(ParticleTypes.CLOUD,
-            impactPos.getX(), impactPos.getY(), impactPos.getZ(),
-            30, size / 2.0, 0.5, size / 2.0, 0.1);
-
-        // Play impact sound
-        level.playSound(null, impactPos.getX(), impactPos.getY(), impactPos.getZ(),
-            SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2.0F, 0.8F);
-    }
-
+    //     // Find the highest solid block at the given x,z coordinates
+    //     for (int y = level.getMaxBuildHeight(); y >= level.getMinBuildHeight(); y--) {
+    //         BlockPos checkPos = new BlockPos(startPos.getX(), y, startPos.getZ());
+    //         BlockState state = level.getBlockState(checkPos);
+    //         if (!state.isAir() && state.isSolidRender(level, checkPos)) {
+    //             return checkPos;
+    //         }
+    //     }
+    //     return startPos; // Fallback to original position
+    // }
     private static BlockPos findSurfaceBlock(Level level, BlockPos startPos) {
-        // Find the highest solid block at the given x,z coordinates
-        for (int y = level.getMaxBuildHeight(); y >= level.getMinBuildHeight(); y--) {
-            BlockPos checkPos = new BlockPos(startPos.getX(), y, startPos.getZ());
-            BlockState state = level.getBlockState(checkPos);
-            
-            if (!state.isAir() && state.isSolidRender(level, checkPos)) {
-                return checkPos;
-            }
-        }
-        return startPos; // Fallback to original position
+        int y = level.getHeight(Heightmap.Types.WORLD_SURFACE, startPos.getX(), startPos.getZ());
+        return new BlockPos(startPos.getX(), y, startPos.getZ());
     }
 }

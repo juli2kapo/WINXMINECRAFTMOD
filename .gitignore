@@ -23,4 +23,6 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
-/run-data/
+run-data/
+src/generated/
+run-data/logs/2025-07-12-5.log.gz
