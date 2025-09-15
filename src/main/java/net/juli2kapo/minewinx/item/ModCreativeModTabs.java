@@ -44,6 +44,9 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.TECHNOLOGYSTAGE1.get());
                         output.accept(ModItems.TECHNOLOGYSTAGE2.get());
                         output.accept(ModItems.TECHNOLOGYSTAGE3.get());
+                        output.accept(ModItems.DARKSTAGE1.get());
+                        output.accept(ModItems.DARKSTAGE2.get());
+                        output.accept(ModItems.DARKSTAGE3.get());
                         output.accept(ModItems.CLEANSER.get());
                     })
                     .build());

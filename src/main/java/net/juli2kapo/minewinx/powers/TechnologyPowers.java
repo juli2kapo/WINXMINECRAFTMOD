@@ -154,8 +154,16 @@ public class TechnologyPowers {
 
     private static void handlePlayerItemDrop(Player caster, Player target, int stage) {
         Level level = caster.level();
-        int itemsToDrop = stage; // 1-3 items based on stage
-
+        int itemsToDrop = 1 + (stage - 1 * 2); // 1-3 items based on stage
+        float damage = 1.0F + (stage - 1); // 1, 2, 3 damage
+        target.hurt(caster.damageSources().indirectMagic(caster, caster), damage);
+        boolean willDie = target.getHealth() <= damage;
+        if (willDie) {
+            ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
+            playerHead.getOrCreateTag().putString("SkullOwner", target.getGameProfile().getName());
+            ItemEntity headEntity = new ItemEntity(level, target.getX(), target.getY(), target.getZ(), playerHead);
+            level.addFreshEntity(headEntity);
+        }
         // Find non-empty inventory slots
         List<Integer> nonEmptySlots = target.getInventory().items.stream()
                 .map(target.getInventory().items::indexOf)
@@ -226,7 +234,7 @@ public class TechnologyPowers {
         float headDropChance = 0.02F + (stage * 0.03F); // 2% base + 3% per stage
         if (level.getRandom().nextFloat() < headDropChance) {
             ItemStack head = getMobHead(target);
-            if (!head.isEmpty()) {
+            if (head != null && !head.isEmpty()) {
                 ItemEntity headEntity = new ItemEntity(level, target.getX(), target.getY(), target.getZ(), head);
                 level.addFreshEntity(headEntity);
             }
@@ -250,7 +258,7 @@ public class TechnologyPowers {
             case "minecraft:dragon" -> new ItemStack(Items.DRAGON_HEAD);
             case "minecraft:piglin" -> new ItemStack(Items.PIGLIN_HEAD);
             // For other mobs, return player head with custom texture (simplified)
-            default -> new ItemStack(Items.PLAYER_HEAD);
+            default -> null; 
         };
     }
 

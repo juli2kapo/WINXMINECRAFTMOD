@@ -30,6 +30,12 @@ public enum EnumPowers {
     ITEM_DROP(Element.TECHNOLOGY, 2, TechnologyPowers::itemDrop),
     PISTON_SMASH(Element.TECHNOLOGY, 3, TechnologyPowers::pistonSmash),
 
+    // DARK POWERS
+    COMMAND_ILLUSION(Element.DARK, 1, DarkPowers::commandIllusions),
+    SWAP_ILLUSION(Element.DARK, 2, DarkPowers::swapWithIllusion),
+    EXPLODE_ILLUSION(Element.DARK, 3, DarkPowers::detonateIllusions),
+
+
     // NATURE POWERS
     SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
 
@@ -80,7 +86,8 @@ public enum EnumPowers {
         NATURE(3, "nature"),
         ICE(4, "ice"),
         MUSIC(5, "music"),
-        TECHNOLOGY(6, "technology");
+        TECHNOLOGY(6, "technology"),
+        DARK(7, "dark");
 
         private final int id;
         private final String name;

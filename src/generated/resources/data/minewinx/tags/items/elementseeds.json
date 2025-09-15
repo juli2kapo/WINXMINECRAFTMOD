@@ -11,6 +11,12 @@
     "minewinx:nature_stage_3",
     "minewinx:ice_stage_1",
     "minewinx:ice_stage_2",
-    "minewinx:ice_stage_3"
+    "minewinx:ice_stage_3",
+    "minewinx:music_stage_1",
+    "minewinx:music_stage_2",
+    "minewinx:music_stage_3",
+    "minewinx:technology_stage_1",
+    "minewinx:technology_stage_2",
+    "minewinx:technology_stage_3"
   ]
 }

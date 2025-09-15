@@ -21,6 +21,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Random;
 
 public class MusicPowers {
 
@@ -28,51 +29,98 @@ public class MusicPowers {
      * Summons speakers at the location where the player is looking using ray tracing.
      * The speakers damage nearby entities and can be destroyed.
      */
-    public static void summonSpeakers(Player player) {
-        int stage = PlayerDataProvider.getStage(player);
-        if (stage <= 0) return;
+        public static void summonSpeakers(Player player) {
+            int stage = PlayerDataProvider.getStage(player);
+            if (stage <= 0) return;
 
-        Level level = player.level();
-        if (level.isClientSide()) return;
+            Level level = player.level();
+            if (level.isClientSide()) return;
 
-        // Calculate range based on stage
-        double maxRange = 15.0 + (stage * 10.0); // Stage 1: 25, Stage 2: 35, Stage 3: 45
+            // Determine number of speakers based on stage
+            int numSpeakers;
+            double maxSpreadDistance;
+            switch (stage) {
+                case 1:
+                    numSpeakers = 4;
+                    maxSpreadDistance = 4.0;
+                    break;
+                case 2:
+                    numSpeakers = 10;
+                    maxSpreadDistance = 9.0;
+                    break;
+                case 3:
+                    numSpeakers = 18;
+                    maxSpreadDistance = 14.0;
+                    break;
+                default:
+                    return;
+            }
 
-        // Perform raycast to find target location
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 lookVec = player.getViewVector(1.0F);
-        Vec3 endPos = eyePos.add(lookVec.scale(maxRange));
+            // Calculate range for raycast
+            double maxRange = 45.0;
 
-        BlockHitResult blockHit = level.clip(new ClipContext(
-            eyePos, endPos, 
-            ClipContext.Block.OUTLINE, 
-            ClipContext.Fluid.NONE, 
-            player
-        ));
+            // Perform raycast to find target center location
+            Vec3 eyePos = player.getEyePosition();
+            Vec3 lookVec = player.getViewVector(1.0F);
+            Vec3 endPos = eyePos.add(lookVec.scale(maxRange));
 
-        Vec3 targetPos = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
+            BlockHitResult blockHit = level.clip(new ClipContext(
+                eyePos, endPos,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
+                player
+            ));
 
-        // Create and spawn speaker entity
-        try {
-            SpeakerEntity speaker = new SpeakerEntity(ModEntities.SPEAKER.get(), level);
-            speaker.setPos(targetPos.x, targetPos.y, targetPos.z);
-            speaker.setOwner(player);
-            level.addFreshEntity(speaker);
-
-            // Play summoning sound
+            Vec3 centerPos = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
             ServerLevel serverLevel = (ServerLevel) level;
-            serverLevel.playSound(null, targetPos.x, targetPos.y, targetPos.z, 
-                SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1.0F, 0.8F);
+            Random random = new Random();
 
-            // Spawn summoning particles
-            serverLevel.sendParticles(ParticleTypes.NOTE, 
-                targetPos.x, targetPos.y + 1.0, targetPos.z, 
-                20, 0.5, 0.5, 0.5, 0.1);
+            for (int i = 0; i < numSpeakers; i++) {
+                try {
+                    // Calculate random position around the center point
+                    double angle = random.nextDouble() * 2 * Math.PI;
+                    double distance = 1.0 + random.nextDouble() * maxSpreadDistance; // 1 to maxSpreadDistance blocks
+                    double offsetX = Math.cos(angle) * distance;
+                    double offsetZ = Math.sin(angle) * distance;
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                    Vec3 speakerPos = new Vec3(centerPos.x + offsetX, centerPos.y, centerPos.z + offsetZ);
+
+                    // Find a suitable ground position
+                    BlockHitResult groundHit = level.clip(new ClipContext(
+                        new Vec3(speakerPos.x, speakerPos.y + 5, speakerPos.z),
+                        new Vec3(speakerPos.x, speakerPos.y - 5, speakerPos.z),
+                        ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+
+                    Vec3 finalPos = groundHit.getType() == HitResult.Type.MISS ? speakerPos : groundHit.getLocation();
+
+                    // Create and spawn speaker entity
+                    SpeakerEntity speaker = new SpeakerEntity(ModEntities.SPEAKER.get(), level);
+                    speaker.setPos(finalPos.x, finalPos.y, finalPos.z);
+                    speaker.setOwner(player);
+
+                    // Make the speaker face the center point
+                    double dX = centerPos.x - finalPos.x;
+                    double dZ = centerPos.z - finalPos.z;
+                    float yaw = (float) (Mth.atan2(dZ, dX) * (180.0 / Math.PI)) - 90.0F;
+                    speaker.setYRot(yaw);
+
+                    level.addFreshEntity(speaker);
+
+                    // Play summoning sound
+                    serverLevel.playSound(null, finalPos.x, finalPos.y, finalPos.z,
+                        SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1.0F, 0.8F);
+
+                    // Spawn summoning particles
+                    serverLevel.sendParticles(ParticleTypes.NOTE,
+                        finalPos.x, finalPos.y + 1.0, finalPos.z,
+                        20, 0.5, 0.5, 0.5, 0.1);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
-    }
+
 
     /**
      * Creates a cone-shaped vocal blast that damages entities in front of the player.
@@ -89,14 +137,14 @@ public class MusicPowers {
 
         // Calculate cone properties based on stage
         double range = 8.0 + (stage * 4.0); // Stage 1: 12, Stage 2: 16, Stage 3: 20
-        double coneAngle = Math.toRadians(30.0 + (stage * 15.0)); // Stage 1: 45°, Stage 2: 60°, Stage 3: 75°
-        float damage = 3.0F + (stage * 2.0F); // Stage 1: 5.0, Stage 2: 7.0, Stage 3: 9.0
+        double coneAngle = Math.toRadians(30.0 + ((stage - 1) * 7.5)); // Stage 1: 45°, Stage 2: 60°, Stage 3: 75°
+        float damage = 3.0F + (stage * 4.0F); // Stage 1: 7.0, Stage 2: 11.0, Stage 3: 15.0
 
         Vec3 playerPos = player.getEyePosition();
         Vec3 lookDirection = player.getViewVector(1.0F);
-
+        Vec3 coneOrigin = playerPos.add(lookDirection.scale(0.25)); // 0.25 block in front of eyes
         // Draw cone particles
-        drawConeParticles(serverLevel, playerPos, lookDirection, range, coneAngle);
+        drawConeParticles(serverLevel, coneOrigin, lookDirection, range, coneAngle);
 
         // Find entities in cone area
         AABB searchArea = player.getBoundingBox().inflate(range);
@@ -170,8 +218,11 @@ public class MusicPowers {
                 Vec3 particlePos = origin.add(direction.scale(distance)).add(offset);
                 
                 // Use sound wave particles (note particles with purple color)
+                // level.sendParticles(ParticleTypes.NOTE,
+                //     particlePos.x, particlePos.y, particlePos.z, 1, 0, 0, 0, 0);
                 level.sendParticles(new DustParticleOptions(new org.joml.Vector3f(0.6f, 0.2f, 0.8f), 1.0f),
                     particlePos.x, particlePos.y, particlePos.z, 1, 0, 0, 0, 0);
+
             }
         }
     }
@@ -215,16 +266,13 @@ public class MusicPowers {
                 // Apply additional effects based on stage
                 if (stage >= 2) {
                     // Stage 2+: Add slowness
-                    entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 2));
                 }
                 
                 if (stage >= 3) {
-                    // Stage 3: Add weakness and occasional levitation
-                    entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, duration, 0));
+                    // Stage 3: Add weakness
+                    entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, duration, 2));
                     
-                    if (level.random.nextFloat() < 0.3F) {
-                        entity.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 40, 0));
-                    }
                 }
 
                 // Spawn confusion particles around affected entity

@@ -65,6 +65,23 @@ public class ModEntities {
                                 .updateInterval(10)
                                 .build("piston"));
 
+    public static final RegistryObject<EntityType<SunRay>> SUN_RAY =
+            ENTITY_TYPES.register("sun_ray",
+                    () -> EntityType.Builder.<SunRay>of(SunRay::new, MobCategory.MISC)
+                            .sized(1f, 1f)
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build("sun_ray"));
+
+    public static final RegistryObject<EntityType<PlayerIllusionEntity>> PLAYER_ILLUSION =
+            ENTITY_TYPES.register("player_illusion",
+                    () -> EntityType.Builder.of(PlayerIllusionEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F) // Dimensiones similares a las de un jugador/zombie
+                            .build("player_illusion"));
+
+
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

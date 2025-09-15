@@ -78,7 +78,7 @@ public class ServerEvents {
     public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();
         ItemStack crafted = event.getCrafting();
-        if (crafted.getItem() == Items.DIAMOND_CHESTPLATE) {
+        if (crafted.getItem() == Items.DIAMOND_CHESTPLATE) { //TODO CAMBIAR POR TECNOARMOR
             String element = PlayerDataProvider.getElement(player);
             if (!"Technology".equalsIgnoreCase(element)) {
                 crafted.setCount(0); // Elimina el ítem
@@ -91,7 +91,7 @@ public class ServerEvents {
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getEntity() instanceof Player player) {
             ItemStack newItem = event.getTo();
-            if (newItem.getItem() == Items.DIAMOND_CHESTPLATE) {
+            if (newItem.getItem() == Items.DIAMOND_CHESTPLATE) {//TODO CAMBIAR POR TECNOARMOR
                 String element = PlayerDataProvider.getElement(player);
                 if (!"Technology".equalsIgnoreCase(element)) {
                     event.setCanceled(true); // Cancela el equipamiento

@@ -10,6 +10,7 @@ import net.juli2kapo.minewinx.entity.client.*;
 import net.juli2kapo.minewinx.entity.client.layer.WaterBlobOnHeadLayer;
 import net.juli2kapo.minewinx.entity.client.model.IceCrystalModel;
 import net.juli2kapo.minewinx.entity.client.model.PistonModel;
+import net.juli2kapo.minewinx.entity.client.model.SpeakerModel;
 import net.juli2kapo.minewinx.entity.client.model.WaterBlobModel;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.network.TransformC2SPacket;
@@ -24,8 +25,10 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -81,6 +84,7 @@ public class ClientEvents {
             event.registerLayerDefinition(WaterBlobModel.LAYER_LOCATION, WaterBlobModel::createBodyLayer);
             event.registerLayerDefinition(IceCrystalModel.LAYER_LOCATION, IceCrystalModel::createBodyLayer);
             event.registerLayerDefinition(PistonModel.LAYER_LOCATION, PistonModel::createBodyLayer);
+            event.registerLayerDefinition(SpeakerModel.LAYER_LOCATION, SpeakerModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -91,6 +95,12 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.ICE_CRYSTAL.get(), IceCrystalRenderer::new);
             event.registerEntityRenderer(ModEntities.SPEAKER.get(), SpeakerRenderer::new);
             event.registerEntityRenderer(ModEntities.PISTON.get(), PistonRenderer::new);
+            event.registerEntityRenderer(ModEntities.SUN_RAY.get(), SunRayRenderer::new);
+            event.registerEntityRenderer(ModEntities.PLAYER_ILLUSION.get(), PlayerIllusionEntityRenderer::new);
+        }
+        @SubscribeEvent
+        public static void registerAttributes(EntityAttributeCreationEvent event) {
+            event.put(ModEntities.PLAYER_ILLUSION.get(), Zombie.createAttributes().build());
         }
 
         @SubscribeEvent

@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,11 +21,13 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class SpeakerEntity extends Entity {
+    private static final int ANIMATION_DURATION = 40;
+    private final AnimationState animationState = new AnimationState();
     private static final EntityDataAccessor<Integer> LIFETIME = SynchedEntityData.defineId(SpeakerEntity.class, EntityDataSerializers.INT);
     private static final int MAX_LIFETIME = 600; // 30 segundos (20 ticks por segundo)
-    private static final double DAMAGE_RADIUS = 5.0;
-    private static final float DAMAGE_AMOUNT = 4.0F;
-    private static final int DAMAGE_INTERVAL = 40; // 2 segundos
+    private static final double DAMAGE_RADIUS = 12.0;
+    private static final float DAMAGE_AMOUNT = 6.0F;
+    private static final int DAMAGE_INTERVAL = 20; // 2 segundos
 
     private Player owner;
     private int damageTimer = 0;
@@ -42,8 +45,10 @@ public class SpeakerEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-
-        if (!this.level().isClientSide()) {
+        if (this.level().isClientSide()) {
+            this.animationState.startIfStopped(this.tickCount);
+        }
+        else {
             // Incrementar tiempo de vida
             int currentLifetime = this.entityData.get(LIFETIME);
             currentLifetime++;
@@ -167,4 +172,16 @@ public class SpeakerEntity extends Entity {
             // El owner se restablecerá cuando el jugador esté disponible
         }
     }
+
+    public AnimationState getAnimationState() {
+        return animationState;
+    }
+
+    public float getAnimationProgress() {
+        if (this.tickCount <= ANIMATION_DURATION) {
+            return Math.min(1.0f, (float) this.tickCount / ANIMATION_DURATION);
+        }
+        return 1.0f;
+    }
+    
 }

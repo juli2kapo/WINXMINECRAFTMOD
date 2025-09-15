@@ -1,8 +1,8 @@
 package net.juli2kapo.minewinx.item;
 
 import net.juli2kapo.minewinx.MineWinx;
-import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.item.custom.*;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -81,6 +81,21 @@ public class ModItems {
 
     public static final RegistryObject<Item> TECHNOLOGYSTAGE3 =
             ITEMS.register("technology_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Technology", 3));
+
+    public static final RegistryObject<Item> DARKSTAGE1 =
+            ITEMS.register("dark_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 1));
+
+    public static final RegistryObject<Item> DARKSTAGE2 =
+            ITEMS.register("dark_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 2));
+
+    public static final RegistryObject<Item> DARKSTAGE3 =
+            ITEMS.register("dark_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 3));
+
+    public static final RegistryObject<Item> COWILLUSION =
+            ITEMS.register("skeleton_illusion", ()-> new IllusionCreator( new Item.Properties().durability(1), EntityType.SKELETON));
+
+    public static final RegistryObject<Item> PLAYERILLUSION =
+            ITEMS.register("player_illusion", ()-> new PlayerIllusion( new Item.Properties().durability(1)));
 
 
 
