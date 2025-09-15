@@ -1,6 +1,7 @@
 package net.juli2kapo.minewinx.powers;
 
 import net.juli2kapo.minewinx.entity.PlayerIllusionEntity;
+import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -24,7 +25,7 @@ import java.util.UUID;
 
 public class DarkPowers {
     private static final float EXPLOSION_RADIUS = 3.0F;
-    private static final float EXPLOSION_DAMAGE = 4.0F;
+    private static final float EXPLOSION_DAMAGE = 6.0F;
 
     // Etiqueta NBT para identificar el creador de la ilusión
     public static final String CREATOR_UUID_TAG = "IllusionCreatorUUID";
@@ -114,54 +115,56 @@ public class DarkPowers {
      */
     public static int detonateIllusions(Player player) {
         if (player.level().isClientSide()) return 0;
-
+        int stage = PlayerDataProvider.getStage(player);
         ServerLevel serverLevel = (ServerLevel) player.level();
         int count = 0;
 
-        // Buscar todas las entidades en un radio amplio alrededor del jugador
+        // Daño base escalado por la etapa
+        float explosionDamage = EXPLOSION_DAMAGE * Math.max(1, stage);
+
         List<Entity> nearbyEntities = serverLevel.getEntities(player,
                 player.getBoundingBox().inflate(32.0D),
                 entity -> isOwnedIllusion(entity, player.getUUID()));
 
         for (Entity entity : nearbyEntities) {
-            // Detonar la ilusión
             Vec3 pos = entity.position();
 
-            // Efecto de explosión
+            // Partículas de explosión mejoradas
             serverLevel.sendParticles(ParticleTypes.EXPLOSION,
                     pos.x, pos.y + 0.5, pos.z,
-                    1, 0, 0, 0, 0);
-
+                    3, 0.3, 0.3, 0.3, 0.2);
             serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE,
                     pos.x, pos.y + 0.5, pos.z,
+                    30, 0.4, 0.4, 0.4, 0.2);
+            serverLevel.sendParticles(ParticleTypes.FLAME,
+                    pos.x, pos.y + 0.5, pos.z,
                     20, 0.2, 0.2, 0.2, 0.1);
+            serverLevel.sendParticles(ParticleTypes.SMOKE,
+                    pos.x, pos.y + 0.5, pos.z,
+                    20, 0.3, 0.3, 0.3, 0.1);
 
             serverLevel.playSound(null, pos.x, pos.y, pos.z,
                     SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0F, 1.0F);
 
-            // Daño en área
             List<Entity> victims = serverLevel.getEntities(entity,
                     new AABB(pos.x - EXPLOSION_RADIUS, pos.y - EXPLOSION_RADIUS, pos.z - EXPLOSION_RADIUS,
                             pos.x + EXPLOSION_RADIUS, pos.y + EXPLOSION_RADIUS, pos.z + EXPLOSION_RADIUS),
                     e -> !(e instanceof PlayerIllusionEntity) && e != player);
 
             for (Entity victim : victims) {
-                // El daño disminuye con la distancia
                 double distance = victim.distanceTo(entity);
                 if (distance <= EXPLOSION_RADIUS) {
-                    float damage = EXPLOSION_DAMAGE * (1.0F - (float)(distance / EXPLOSION_RADIUS));
+                    float damage = explosionDamage * (1.0F - (float)(distance / EXPLOSION_RADIUS));
                     victim.hurt(victim.damageSources().explosion(null, player), damage);
                 }
             }
 
-            // Eliminar la ilusión
             entity.discard();
             count++;
         }
 
         return count;
     }
-
     /**
      * Verifica si una entidad es una ilusión creada por el jugador indicado
      */
@@ -300,8 +303,6 @@ public class DarkPowers {
 
             } else if (illusion instanceof PlayerIllusionEntity playerIllusion) {
                 if (targetEntity != null) {
-                    // Equipar espada si hay un objetivo
-                    playerIllusion.equipSwordIfNeeded();
                     // Hacer que se mueva hacia el objetivo
                     playerIllusion.attackTarget(targetEntity);
                 } else {
