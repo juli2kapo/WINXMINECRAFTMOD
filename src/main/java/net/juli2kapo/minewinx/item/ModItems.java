@@ -128,7 +128,6 @@ public class ModItems {
     public static final RegistryObject<Item> PLAYERILLUSION =
             ITEMS.register("player_illusion", ()-> new PlayerIllusion( new Item.Properties().durability(1)));
 
-    // Utility
     public static final RegistryObject<Item> CLEANSER =
             ITEMS.register("cleanser", ()-> new ElementAndStageRemover( new Item.Properties().durability(1)));
     public static void register(IEventBus eventBus){

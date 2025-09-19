@@ -8,10 +8,7 @@ import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.entity.client.*;
 import net.juli2kapo.minewinx.entity.client.layer.WaterBlobOnHeadLayer;
-import net.juli2kapo.minewinx.entity.client.model.IceCrystalModel;
-import net.juli2kapo.minewinx.entity.client.model.PistonModel;
-import net.juli2kapo.minewinx.entity.client.model.SpeakerModel;
-import net.juli2kapo.minewinx.entity.client.model.WaterBlobModel;
+import net.juli2kapo.minewinx.entity.client.model.*;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.network.TransformC2SPacket;
 import net.juli2kapo.minewinx.network.UsePowerC2SPacket;
@@ -85,6 +82,7 @@ public class ClientEvents {
             event.registerLayerDefinition(IceCrystalModel.LAYER_LOCATION, IceCrystalModel::createBodyLayer);
             event.registerLayerDefinition(PistonModel.LAYER_LOCATION, PistonModel::createBodyLayer);
             event.registerLayerDefinition(SpeakerModel.LAYER_LOCATION, SpeakerModel::createBodyLayer);
+            event.registerLayerDefinition(LightRayModel.LAYER_LOCATION, LightRayModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -97,6 +95,7 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.PISTON.get(), PistonRenderer::new);
             event.registerEntityRenderer(ModEntities.SUN_RAY.get(), SunRayRenderer::new);
             event.registerEntityRenderer(ModEntities.PLAYER_ILLUSION.get(), PlayerIllusionEntityRenderer::new);
+            event.registerEntityRenderer(ModEntities.LIGHT_RAY.get(), LightRayRenderer::new);
         }
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {

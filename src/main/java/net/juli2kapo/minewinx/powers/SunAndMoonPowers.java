@@ -1,5 +1,6 @@
 package net.juli2kapo.minewinx.powers;
 
+import net.juli2kapo.minewinx.entity.LightRayEntity;
 import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.entity.SunRay;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.SpectralArrow;
+import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
@@ -167,7 +169,7 @@ public class SunAndMoonPowers {
             Player caster = serverLevel.getPlayerByUUID(pending.casterUUID);
             Entity arrowEntity = serverLevel.getEntity(pending.arrowUUID);
 
-            if (caster == null || !(arrowEntity instanceof SpectralArrow arrow) || !arrow.isAlive()) {
+            if (caster == null || !(arrowEntity instanceof ThrowableProjectile arrow) || !arrow.isAlive()) {
                 return true; // Remove if caster is gone, arrow is dead, or arrow is not a SpectralArrow
             }
 
@@ -180,8 +182,13 @@ public class SunAndMoonPowers {
             // 1. Calculate the player's current target
             Vec3 eyePos = caster.getEyePosition();
             Vec3 lookVec = caster.getViewVector(1.0F);
-            double convergenceDistance = 40.0; // This is where you define the focal point distance
-            Vec3 focalPoint = eyePos.add(lookVec.scale(convergenceDistance));
+            double convergenceDistance = 8.0; // This is where you define the focal point distance
+            double verticalOffset = -1.0;
+//            Vec3 focalPoint = eyePos.add(lookVec.scale(convergenceDistance));
+            Vec3 focalPoint = eyePos
+                    .add(lookVec.scale(convergenceDistance))
+                    .add(0, verticalOffset, 0); // shift target downward
+
             Vec3 targetDirection = focalPoint.subtract(arrow.position()).normalize();
 
             // 2. If this is the first redirection tick, set the initial state.
@@ -217,15 +224,27 @@ public class SunAndMoonPowers {
 
         double totalWidth = 3.0;
         double randomHOffset = (random.nextDouble() - 0.5) * totalWidth;
-        double randomVOffset = (random.nextDouble() - 0.5) * 1.5;
-        Vec3 spawnPos = spawnCenter.add(rightVec.scale(randomHOffset)).add(0, randomVOffset, 0);
+        double randomVOffset = (random.nextDouble() - 0.5);
+//        Vec3 spawnPos = spawnCenter.add(rightVec.scale(randomHOffset)).add(0, randomVOffset, 0);
+
+        double verticalShift = -1;
+        Vec3 spawnPos = spawnCenter
+                .add(rightVec.scale(randomHOffset))
+                .add(0, randomVOffset + verticalShift, 0);
 
         // 2. Create and configure the spectral arrow. (This is also fine)
-        SpectralArrow arrow = new SpectralArrow(EntityType.SPECTRAL_ARROW, serverLevel);
-        arrow.setPos(spawnPos);
-        arrow.setOwner(player);
-        arrow.setBaseDamage(state.damagePerRay);
-        arrow.pickup = AbstractArrow.Pickup.DISALLOWED;
+//        SpectralArrow arrow = new SpectralArrow(EntityType.SPECTRAL_ARROW, serverLevel);
+//        arrow.setPos(spawnPos);
+//        arrow.setOwner(player);
+//        arrow.setBaseDamage(state.damagePerRay);
+//        arrow.pickup = AbstractArrow.Pickup.DISALLOWED;
+
+        LightRayEntity lightRay = new LightRayEntity(serverLevel, player);
+        lightRay.setPos(spawnPos);
+        lightRay.setDamage(state.damagePerRay);
+
+
+
 
         // 3. Set an initial trajectory - sideways relative to the player's view.
         // This is the section we are changing.
@@ -247,13 +266,17 @@ public class SunAndMoonPowers {
         double angle = Math.toRadians(angleDeg);
         Vec3 initialDirection = rightVec.scale(Math.cos(angle)).add(upVec.scale(Math.sin(angle))).normalize();
 
+
         // A low speed and slight inaccuracy makes the initial spread look more natural.
-        arrow.shoot(initialDirection.x, initialDirection.y, initialDirection.z, 0.4F, 0.0F);
-        serverLevel.addFreshEntity(arrow);
+//        arrow.shoot(initialDirection.x, initialDirection.y, initialDirection.z, 0.4F, 0.0F);
+//        serverLevel.addFreshEntity(arrow);
+        lightRay.shoot(initialDirection.x, initialDirection.y, initialDirection.z, 0.4F, 0.0F);
+        serverLevel.addFreshEntity(lightRay);
+
 
         // 4. Schedule the arrow to be redirected. (This part is perfect)
         int delayTicks = 1 + random.nextInt(2); // 0.05 to 0.1 seconds delay.
-        pendingArrows.add(new PendingArrow(arrow, player, delayTicks, state.velocity));
+        pendingArrows.add(new PendingArrow(lightRay, player, delayTicks, state.velocity));
     }
 
     // --- Helper Class to store the state of an ongoing cast ---
@@ -263,7 +286,7 @@ public class SunAndMoonPowers {
         final float damagePerRay;
 
         // Ability constants
-        final float velocity = 8F;
+        final float velocity = 2.5F;
         final float distanceBehind = 1F;
 
         // Timing and rate variables
@@ -305,7 +328,7 @@ public class SunAndMoonPowers {
         private Vec3 startVelocity;
         private Vec3 targetVelocity;
 
-        PendingArrow(SpectralArrow arrow, Player caster, int delayTicks, float finalVelocity) {
+        PendingArrow(ThrowableProjectile arrow, Player caster, int delayTicks, float finalVelocity) {
             this.arrowUUID = arrow.getUUID();
             this.casterUUID = caster.getUUID();
             this.ticksUntilRedirect = delayTicks;

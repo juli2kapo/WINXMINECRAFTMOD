@@ -80,6 +80,14 @@ public class ModEntities {
                             .sized(0.6F, 1.8F) // Dimensiones similares a las de un jugador/zombie
                             .build("player_illusion"));
 
+    public static final RegistryObject<EntityType<LightRayEntity>> LIGHT_RAY =
+            ENTITY_TYPES.register("light_ray", // The unique ID for the entity (e.g., /summon minewinx:light_ray)
+                    () -> EntityType.Builder.<LightRayEntity>of(LightRayEntity::new, MobCategory.MISC) // The factory and category
+                            .sized(0.25F, 0.25F) // The hitbox size (width, height). Small for a projectile.
+                            .clientTrackingRange(4) // How far away (in chunks) clients will see the entity.
+                            .updateInterval(10) // How often (in ticks) the server sends position updates. 10 is the default for arrows.
+                            .build("light_ray")); // Finalizes the builder with the name.
+
 
 
     public static void register(IEventBus eventBus) {
