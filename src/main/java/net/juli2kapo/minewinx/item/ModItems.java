@@ -77,6 +77,13 @@ public class ModItems {
     public static final RegistryObject<Item> DARKSTAGE3 =
             ITEMS.register("dark_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 3));
 
+    public static final RegistryObject<Item> SUNANDMOONSTAGE1 =
+            ITEMS.register("sunandmoon_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "SunAndMoon", 1));
+    public static final RegistryObject<Item> SUNANDMOONSTAGE2 =
+            ITEMS.register("sunandmoon_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "SunAndMoon", 2));
+    public static final RegistryObject<Item> SUNANDMOONSTAGE3 =
+            ITEMS.register("sunandmoon_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "SunAndMoon", 3));
+
     // Illusion Items
     public static final RegistryObject<Item> SKELETON_ILLUSION =
             ITEMS.register("skeleton_illusion", ()-> new IllusionCreator( new Item.Properties().durability(1), EntityType.SKELETON));

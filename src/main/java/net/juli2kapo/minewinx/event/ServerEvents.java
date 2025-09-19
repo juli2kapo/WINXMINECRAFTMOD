@@ -4,6 +4,7 @@ import net.juli2kapo.minewinx.MineWinx;
 import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.powers.EnumPowers;
 import net.juli2kapo.minewinx.powers.NaturePowers;
+import net.juli2kapo.minewinx.powers.SunAndMoonPowers;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -99,6 +100,14 @@ public class ServerEvents {
                     player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor si tienes el elemento Tecnología."));
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            // Pass the server level from the event
+            SunAndMoonPowers.onServerTick(event.getServer().overworld());
         }
     }
 
