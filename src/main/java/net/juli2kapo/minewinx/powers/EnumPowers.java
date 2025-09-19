@@ -39,6 +39,11 @@ public enum EnumPowers {
     // NATURE POWERS
     SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
 
+    // SUNANDMOON POWERS
+    CAST_SUN_RAY(Element.SUNANDMOON, 1, SunAndMoonPowers::castSunRay),
+    LIGHTRAYS(Element.SUNANDMOON, 2, SunAndMoonPowers::castLightBarrage),
+    TEST_ARROWS(Element.SUNANDMOON, 3, SunAndMoonPowers::castAngleTest),
+
     UNKNOWN(Element.UNKNOWN, 0, player -> {});
 
     private final Element element;
@@ -87,7 +92,8 @@ public enum EnumPowers {
         ICE(4, "ice"),
         MUSIC(5, "music"),
         TECHNOLOGY(6, "technology"),
-        DARK(7, "dark");
+        DARK(7, "dark"),
+        SUNANDMOON(8, "sunandmoon");
 
         private final int id;
         private final String name;

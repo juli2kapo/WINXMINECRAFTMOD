@@ -1,6 +1,9 @@
 package net.juli2kapo.minewinx.powers;
 
 import net.juli2kapo.minewinx.entity.ModEntities;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.EntityHitResult;
 import net.juli2kapo.minewinx.entity.SpeakerEntity;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -29,98 +32,130 @@ public class MusicPowers {
      * Summons speakers at the location where the player is looking using ray tracing.
      * The speakers damage nearby entities and can be destroyed.
      */
-        public static void summonSpeakers(Player player) {
-            int stage = PlayerDataProvider.getStage(player);
-            if (stage <= 0) return;
+    public static void summonSpeakers(Player player) {
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage <= 0) return;
 
-            Level level = player.level();
-            if (level.isClientSide()) return;
+        Level level = player.level();
+        if (level.isClientSide()) return;
 
-            // Determine number of speakers based on stage
-            int numSpeakers;
-            double maxSpreadDistance;
-            switch (stage) {
-                case 1:
-                    numSpeakers = 4;
-                    maxSpreadDistance = 4.0;
-                    break;
-                case 2:
-                    numSpeakers = 10;
-                    maxSpreadDistance = 9.0;
-                    break;
-                case 3:
-                    numSpeakers = 18;
-                    maxSpreadDistance = 14.0;
-                    break;
-                default:
-                    return;
-            }
+        // Determine number of speakers based on stage
+        int numSpeakers;
+        double maxSpreadDistance;
+        switch (stage) {
+            case 1:
+                numSpeakers = 4;
+                maxSpreadDistance = 4.0;
+                break;
+            case 2:
+                numSpeakers = 10;
+                maxSpreadDistance = 9.0;
+                break;
+            case 3:
+                numSpeakers = 18;
+                maxSpreadDistance = 14.0;
+                break;
+            default:
+                return;
+        }
 
-            // Calculate range for raycast
-            double maxRange = 45.0;
+        // Calculate range for raycast
+        double maxRange = 45.0;
 
-            // Perform raycast to find target center location
-            Vec3 eyePos = player.getEyePosition();
-            Vec3 lookVec = player.getViewVector(1.0F);
-            Vec3 endPos = eyePos.add(lookVec.scale(maxRange));
+        // --- START OF MODIFIED RAYCASTING LOGIC ---
 
-            BlockHitResult blockHit = level.clip(new ClipContext(
+        // Define the start and end points of the raycast
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 lookVec = player.getViewVector(1.0F);
+        Vec3 endPos = eyePos.add(lookVec.scale(maxRange));
+
+        // 1. Perform the original raycast for blocks
+        BlockHitResult blockHit = level.clip(new ClipContext(
                 eyePos, endPos,
                 ClipContext.Block.OUTLINE,
                 ClipContext.Fluid.NONE,
                 player
-            ));
+        ));
 
-            Vec3 centerPos = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
-            ServerLevel serverLevel = (ServerLevel) level;
-            Random random = new Random();
+        // 2. Perform a second raycast for entities
+        // Define a search area along the ray's path to look for entities
+        AABB searchBox = player.getBoundingBox().expandTowards(lookVec.scale(maxRange)).inflate(1.0D);
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                level,
+                player, // The entity shooting the ray (to ignore itself)
+                eyePos,
+                endPos,
+                searchBox,
+                (entity) -> !entity.isSpectator() && entity.isPickable(), // A filter for which entities to target
+                (float) (maxRange * maxRange) // The squared distance check
+        );
 
-            for (int i = 0; i < numSpeakers; i++) {
-                try {
-                    // Calculate random position around the center point
-                    double angle = random.nextDouble() * 2 * Math.PI;
-                    double distance = 1.0 + random.nextDouble() * maxSpreadDistance; // 1 to maxSpreadDistance blocks
-                    double offsetX = Math.cos(angle) * distance;
-                    double offsetZ = Math.sin(angle) * distance;
+        // 3. Compare the hits and choose the closer one
+        Vec3 centerPos;
+        if (entityHit != null) {
+            double entityDistSq = eyePos.distanceToSqr(entityHit.getLocation());
+            // If the block hit was a miss OR the entity is closer than the block...
+            if (blockHit.getType() == HitResult.Type.MISS || entityDistSq < eyePos.distanceToSqr(blockHit.getLocation())) {
+                // ...target the entity.
+                centerPos = entityHit.getLocation();
+            } else {
+                // Otherwise, the block is closer, so target it.
+                centerPos = blockHit.getLocation();
+            }
+        } else {
+            // If no entity was hit, just use the block hit result (or the max range if it was a miss).
+            centerPos = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
+        }
+        // --- END OF MODIFIED RAYCASTING LOGIC ---
 
-                    Vec3 speakerPos = new Vec3(centerPos.x + offsetX, centerPos.y, centerPos.z + offsetZ);
+        ServerLevel serverLevel = (ServerLevel) level;
+        Random random = new Random();
 
-                    // Find a suitable ground position
-                    BlockHitResult groundHit = level.clip(new ClipContext(
+        for (int i = 0; i < numSpeakers; i++) {
+            try {
+                // Calculate random position around the center point
+                double angle = random.nextDouble() * 2 * Math.PI;
+                double distance = 1.0 + random.nextDouble() * maxSpreadDistance; // 1 to maxSpreadDistance blocks
+                double offsetX = Math.cos(angle) * distance;
+                double offsetZ = Math.sin(angle) * distance;
+
+                Vec3 speakerPos = new Vec3(centerPos.x + offsetX, centerPos.y, centerPos.z + offsetZ);
+
+                // Find a suitable ground position
+                BlockHitResult groundHit = level.clip(new ClipContext(
                         new Vec3(speakerPos.x, speakerPos.y + 5, speakerPos.z),
                         new Vec3(speakerPos.x, speakerPos.y - 5, speakerPos.z),
                         ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
 
-                    Vec3 finalPos = groundHit.getType() == HitResult.Type.MISS ? speakerPos : groundHit.getLocation();
+                Vec3 finalPos = groundHit.getType() == HitResult.Type.MISS ? speakerPos : groundHit.getLocation();
 
-                    // Create and spawn speaker entity
-                    SpeakerEntity speaker = new SpeakerEntity(ModEntities.SPEAKER.get(), level);
-                    speaker.setPos(finalPos.x, finalPos.y, finalPos.z);
-                    speaker.setOwner(player);
+                // Create and spawn speaker entity
+                SpeakerEntity speaker = new SpeakerEntity(ModEntities.SPEAKER.get(), level);
+                speaker.setPos(finalPos.x, finalPos.y, finalPos.z);
+                speaker.setOwner(player);
 
-                    // Make the speaker face the center point
-                    double dX = centerPos.x - finalPos.x;
-                    double dZ = centerPos.z - finalPos.z;
-                    float yaw = (float) (Mth.atan2(dZ, dX) * (180.0 / Math.PI)) - 90.0F;
-                    speaker.setYRot(yaw);
+                // Make the speaker face the center point
+                double dX = centerPos.x - finalPos.x;
+                double dZ = centerPos.z - finalPos.z;
+                float yaw = (float) (Mth.atan2(dZ, dX) * (180.0 / Math.PI)) - 90.0F;
+                speaker.setYRot(yaw);
 
-                    level.addFreshEntity(speaker);
+                level.addFreshEntity(speaker);
 
-                    // Play summoning sound
-                    serverLevel.playSound(null, finalPos.x, finalPos.y, finalPos.z,
+                // Play summoning sound
+                serverLevel.playSound(null, finalPos.x, finalPos.y, finalPos.z,
                         SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1.0F, 0.8F);
 
-                    // Spawn summoning particles
-                    serverLevel.sendParticles(ParticleTypes.NOTE,
+                // Spawn summoning particles
+                serverLevel.sendParticles(ParticleTypes.NOTE,
                         finalPos.x, finalPos.y + 1.0, finalPos.z,
                         20, 0.5, 0.5, 0.5, 0.1);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-
+    }
 
     /**
      * Creates a cone-shaped vocal blast that damages entities in front of the player.

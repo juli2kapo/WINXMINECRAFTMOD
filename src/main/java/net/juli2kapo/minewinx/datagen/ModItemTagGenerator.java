@@ -43,7 +43,11 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                         ModItems.TECHNOLOGYSTAGE3.get(),
                         ModItems.DARKSTAGE1.get(),
                         ModItems.DARKSTAGE2.get(),
-                        ModItems.DARKSTAGE3.get()
-                );
+                        ModItems.DARKSTAGE3.get(),
+                        ModItems.SUNANDMOONSTAGE1.get(),
+                        ModItems.SUNANDMOONSTAGE2.get(),
+                        ModItems.SUNANDMOONSTAGE3.get()
+
+                        );
     }
 }
