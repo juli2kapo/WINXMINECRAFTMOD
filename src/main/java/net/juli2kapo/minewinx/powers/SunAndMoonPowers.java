@@ -114,15 +114,15 @@ public class SunAndMoonPowers {
         switch (stage) {
             case 1:
                 durationSeconds = 3;
-                raysPerSecond = 4;
+                raysPerSecond = 6;
                 break;
             case 2:
                 durationSeconds = 5;
-                raysPerSecond = 8;
+                raysPerSecond = 12;
                 break;
             default: // Stage 3 and above
                 durationSeconds = 10;
-                raysPerSecond = 12;
+                raysPerSecond = 24;
                 break;
         }
 
@@ -161,55 +161,43 @@ public class SunAndMoonPowers {
             return false; // keep in map
         });
 
-        // Process pending arrows to redirect them mid-flight
         pendingArrows.removeIf(pending -> {
-            // Update the pending arrow state
             pending.updateTick();
 
             Player caster = serverLevel.getPlayerByUUID(pending.casterUUID);
             Entity arrowEntity = serverLevel.getEntity(pending.arrowUUID);
 
             if (caster == null || !(arrowEntity instanceof SpectralArrow arrow) || !arrow.isAlive()) {
-                return true; // Remove if caster is gone or arrow is dead
+                return true; // Remove if caster is gone, arrow is dead, or arrow is not a SpectralArrow
             }
 
             if (pending.isWaitingToStart()) {
                 return false; // Still waiting for initial delay, keep it
             }
 
+            // --- CORE LOGIC FIX ---
+            // The arrow is now ready to be redirected.
+            // 1. Calculate the player's current target
+            Vec3 eyePos = caster.getEyePosition();
+            Vec3 lookVec = caster.getViewVector(1.0F);
+            double convergenceDistance = 40.0; // This is where you define the focal point distance
+            Vec3 focalPoint = eyePos.add(lookVec.scale(convergenceDistance));
+            Vec3 targetDirection = focalPoint.subtract(arrow.position()).normalize();
+
+            // 2. If this is the first redirection tick, set the initial state.
             if (!pending.isRedirecting()) {
-                // Start redirecting - calculate target direction
-                Vec3 eyePos = caster.getEyePosition();
-                Vec3 lookVec = caster.getViewVector(1.0F);
-                double convergenceDistance = 40.0;
-                Vec3 focalPoint = eyePos.add(lookVec.scale(convergenceDistance));
-                Vec3 targetDirection = focalPoint.subtract(arrow.position()).normalize();
-
-                pending.startRedirecting(arrow.getDeltaMovement(), targetDirection);
+                pending.startRedirecting(arrow.getDeltaMovement());
             }
 
-            // Perform gradual redirection with proper client sync
+            // 3. Update the arrow's target direction EVERY tick.
+            pending.updateTargetDirection(targetDirection);
+
+            // 4. Get the new interpolated velocity and apply it.
             Vec3 newVelocity = pending.updateVelocity();
+            arrow.setDeltaMovement(newVelocity);
+            arrow.hasImpulse = true; // Force client sync
 
-            // Use shoot() method instead of setDeltaMovement for better client sync
-            // But scale down the velocity change to make it more gradual
-            Vec3 currentVel = arrow.getDeltaMovement();
-            Vec3 velocityDiff = newVelocity.subtract(currentVel);
-
-            // Apply only a fraction of the velocity change each tick for smoother transition
-            double maxChangePerTick = 0.1; // Adjust this value to control smoothness
-            double changeAmount = Math.min(velocityDiff.length(), maxChangePerTick);
-
-            if (velocityDiff.length() > 0.001) { // Avoid division by zero
-                Vec3 appliedVelocity = currentVel.add(velocityDiff.normalize().scale(changeAmount));
-
-                // Force client synchronization by marking the entity as dirty
-                arrow.setDeltaMovement(appliedVelocity);
-                arrow.hasImpulse = true; // This forces client sync
-            }
-
-            // Remove when redirection is complete
-            return pending.isComplete();
+            return pending.isComplete(); // Remove when redirection is finished.
         });
     }
 
@@ -342,10 +330,16 @@ public class SunAndMoonPowers {
             return this.redirecting;
         }
 
-        void startRedirecting(Vec3 currentVelocity, Vec3 targetDirection) {
+//        void startRedirecting(Vec3 currentVelocity, Vec3 targetDirection) {
+//            this.redirecting = true;
+//            this.startVelocity = currentVelocity;
+//            this.targetVelocity = targetDirection.scale(this.finalVelocity);
+//            this.redirectionTicks = 0;
+//        }
+
+        void startRedirecting(Vec3 currentVelocity) {
             this.redirecting = true;
             this.startVelocity = currentVelocity;
-            this.targetVelocity = targetDirection.scale(this.finalVelocity);
             this.redirectionTicks = 0;
         }
 
