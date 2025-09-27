@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class DarkPowers {
     private static final float EXPLOSION_RADIUS = 3.0F;
-    private static final float EXPLOSION_DAMAGE = 6.0F;
+    private static final float EXPLOSION_DAMAGE = 12.0F;
 
     // Etiqueta NBT para identificar el creador de la ilusión
     public static final String CREATOR_UUID_TAG = "IllusionCreatorUUID";
