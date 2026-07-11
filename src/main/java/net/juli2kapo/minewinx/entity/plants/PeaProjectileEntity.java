@@ -91,9 +91,8 @@ public class PeaProjectileEntity extends ThrowableProjectile {
     protected void onHitEntity(EntityHitResult result) {
         if (this.level().isClientSide()) return;
         if (!(result.getEntity() instanceof LivingEntity victim)) return;
-        // No dañar a la dueña ni a otras plantas
-        if (victim instanceof PlantEntity) return;
-        if (victim instanceof Player p && p.getUUID().equals(ownerPlayerUUID)) return;
+        // No dañar a la dueña, su equipo ni sus plantas/ilusiones
+        if (net.juli2kapo.minewinx.util.Targeting.isAlly(victim, ownerPlayerUUID)) return;
 
         Variant variant = getVariant();
         float damage = variant == Variant.FIRE ? 7.0F : 4.0F;

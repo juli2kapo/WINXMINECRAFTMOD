@@ -39,8 +39,13 @@ public class IceCrystalEntity extends Entity {
         this.victimUUID = victim.getUUID();
         this.durationTicks = durationTicks;
         this.setPos(victim.getX(), victim.getY(), victim.getZ());
-        // El modelo mide 1.5 bloques: escalar para envolver a la víctima con margen
-        this.setVisualScale(Math.max(1.0F, (victim.getBbHeight() + 0.6F) / 1.5F));
+        // Escalar para envolver a la víctima con margen en AMBAS dimensiones:
+        // el modelo mide ~1.5 bloques de alto y sus picos llegan a ~0.53 de radio.
+        // (Un slime grande es bajo pero ancho: sin el término de ancho, el
+        // cristal quedaba escondido adentro del cuerpo.)
+        float byHeight = (victim.getBbHeight() + 0.6F) / 1.5F;
+        float byWidth = (victim.getBbWidth() + 0.7F) / 1.05F;
+        this.setVisualScale(Math.max(1.0F, Math.max(byHeight, byWidth)));
     }
 
     @Override

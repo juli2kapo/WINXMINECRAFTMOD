@@ -310,17 +310,13 @@ public class PlantEntity extends Mob {
     // ------------------------------------------------------------ helpers
 
     private boolean isFriendly(LivingEntity entity) {
-        if (ownerUUID != null && ownerUUID.equals(entity.getUUID())) return true;
-        if (entity instanceof PlantEntity plant) {
-            return ownerUUID != null && ownerUUID.equals(plant.getOwnerUUID());
-        }
-        return entity instanceof Player; // las bombas no matan jugadores aliados del regalo
+        return net.juli2kapo.minewinx.util.Targeting.isAlly(entity, ownerUUID);
     }
 
     @Nullable
     private LivingEntity findNearestHostile(ServerLevel level, double range) {
-        return level.getEntitiesOfClass(Monster.class, this.getBoundingBox().inflate(range),
-                        m -> m.isAlive() && !m.getTags().contains("Illusion") && this.hasLineOfSight(m))
+        return level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(range),
+                        e -> net.juli2kapo.minewinx.util.Targeting.isValidTarget(e, ownerUUID) && this.hasLineOfSight(e))
                 .stream()
                 .min(Comparator.comparingDouble(this::distanceToSqr))
                 .orElse(null);
@@ -328,8 +324,8 @@ public class PlantEntity extends Mob {
 
     @Nullable
     private LivingEntity findFarthestHostile(ServerLevel level, double range) {
-        return level.getEntitiesOfClass(Monster.class, this.getBoundingBox().inflate(range),
-                        m -> m.isAlive() && !m.getTags().contains("Illusion"))
+        return level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(range),
+                        e -> net.juli2kapo.minewinx.util.Targeting.isValidTarget(e, ownerUUID))
                 .stream()
                 .max(Comparator.comparingDouble(this::distanceToSqr))
                 .orElse(null);

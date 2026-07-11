@@ -29,15 +29,13 @@ public class TransformC2SPacket {
 
                 player.sendSystemMessage(Component.literal("Servidor: Estado de transformación cambiado a: " + isTransformed));
 
-                if (isTransformed) {
-                    player.getAbilities().mayfly = true;
-                } else {
-                    if (!player.isCreative() && !player.isSpectator()) {
-                        player.getAbilities().mayfly = false;
-                        player.getAbilities().flying = false;
-                    }
+                // Las winx ya no vuelan: la transformación no otorga mayfly.
+                // Por las dudas, limpiar el vuelo si quedó de una versión anterior.
+                if (!player.isCreative() && !player.isSpectator()) {
+                    player.getAbilities().mayfly = false;
+                    player.getAbilities().flying = false;
+                    player.onUpdateAbilities();
                 }
-                player.onUpdateAbilities();
             }
         });
         return true;

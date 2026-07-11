@@ -34,6 +34,18 @@ public class PacketHandler {
                 .encoder(UsePowerC2SPacket::toBytes)
                 .consumerMainThread(UsePowerC2SPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(HudStateS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(HudStateS2CPacket::new)
+                .encoder(HudStateS2CPacket::toBytes)
+                .consumerMainThread(HudStateS2CPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(CooldownS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(CooldownS2CPacket::new)
+                .encoder(CooldownS2CPacket::toBytes)
+                .consumerMainThread(CooldownS2CPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {

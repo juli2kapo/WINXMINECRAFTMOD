@@ -388,41 +388,42 @@ public class SunAndMoonPowers {
         }
     }
 
-    public static void castAngleTest(Player player) {
+    /**
+     * Slot 3: Prisma de Luz. Invoca cristales flotantes en el punto apuntado;
+     * los impactos de Rayo de Sol y Lluvia de Luz cercanos se refractan en
+     * haces que buscan enemigos. Escala con stage: 1/2/3 prismas por lanzamiento
+     * y 3/4/5 haces por refracción.
+     */
+    public static void castLightPrism(Player player) {
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage <= 0) return;
+
         Level level = player.level();
         if (level.isClientSide()) return;
         ServerLevel serverLevel = (ServerLevel) level;
 
+        double maxRange = 25.0;
         Vec3 eyePos = player.getEyePosition();
-        Vec3 lookVec = player.getViewVector(1.0F);
-        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-        Vec3 upVec = lookVec.cross(rightVec).normalize();
-        Vec3 spawnPos = eyePos.add(lookVec.scale(-2.0)); // spawn a bit behind player
+        Vec3 endPos = eyePos.add(player.getViewVector(1.0F).scale(maxRange));
+        BlockHitResult blockHit = level.clip(new ClipContext(
+                eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        Vec3 center = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
 
-        int baseDelay = 5; // ticks between arrows (0.25s)
-        float velocity = 1.0F;
-        float damage = 2.0F;
-
-        // Loop through 0 -> 360 in 10° increments
-        for (int i = 0; i < 36; i++) {
-            double angle = Math.toRadians(i * 10.0);
-            Vec3 dir = rightVec.scale(Math.cos(angle)).add(upVec.scale(Math.sin(angle))).normalize();
-
-            SpectralArrow arrow = new SpectralArrow(EntityType.SPECTRAL_ARROW, serverLevel);
-            arrow.setPos(spawnPos);
-            arrow.setOwner(player);
-            arrow.setBaseDamage(damage);
-            arrow.pickup = AbstractArrow.Pickup.DISALLOWED;
-
-            int range = i * 10; // you can replace this with your own formula
-            String name = "Range: " + range;
-            arrow.setCustomName(Component.literal(name));
-            arrow.setCustomNameVisible(true);
-
-            // Shoot with fixed direction + small speed
-            arrow.shoot(dir.x, dir.y, dir.z, 0.6F, 0.0F);
-            serverLevel.addFreshEntity(arrow);
-
+        int count = Math.min(3, Math.max(1, stage));
+        double ringRadius = count == 1 ? 0.0 : 2.5;
+        for (int i = 0; i < count; i++) {
+            double angle = i * (Math.PI * 2.0 / count);
+            net.juli2kapo.minewinx.entity.PrismEntity prism =
+                    new net.juli2kapo.minewinx.entity.PrismEntity(ModEntities.PRISM.get(), level);
+            prism.init(player, stage);
+            prism.setPos(center.x + Math.cos(angle) * ringRadius,
+                    center.y + 1.8,
+                    center.z + Math.sin(angle) * ringRadius);
+            serverLevel.addFreshEntity(prism);
         }
+
+        serverLevel.playSound(null, center.x, center.y, center.z,
+                net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE,
+                net.minecraft.sounds.SoundSource.PLAYERS, 1.5F, 1.2F);
     }
 }

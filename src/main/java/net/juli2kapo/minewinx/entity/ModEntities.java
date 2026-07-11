@@ -98,6 +98,14 @@ public class ModEntities {
 
 
 
+    public static final RegistryObject<EntityType<PrismEntity>> PRISM =
+            ENTITY_TYPES.register("prism",
+                    () -> EntityType.Builder.<PrismEntity>of(PrismEntity::new, MobCategory.MISC)
+                            .sized(0.8f, 1.2f)
+                            .clientTrackingRange(10)
+                            .updateInterval(10)
+                            .build("prism"));
+
     public static final RegistryObject<EntityType<net.juli2kapo.minewinx.entity.plants.PlantEntity>> PLANT =
             ENTITY_TYPES.register("plant",
                     () -> EntityType.Builder.<net.juli2kapo.minewinx.entity.plants.PlantEntity>of(net.juli2kapo.minewinx.entity.plants.PlantEntity::new, MobCategory.MISC)

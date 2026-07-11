@@ -76,6 +76,7 @@ public class ClientEvents {
         public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
             event.registerAboveAll("drowning_overlay", DrowningOverlay.HUD_DROWNING);
             event.registerBelowAll("sleep_overlay", SleepOverlay.HUD_SLEEP);
+            event.registerAboveAll("power_hud", net.juli2kapo.minewinx.client.gui.PowerHudOverlay.HUD_POWERS);
         }
 
         @SubscribeEvent
@@ -86,6 +87,7 @@ public class ClientEvents {
             event.registerLayerDefinition(SpeakerModel.LAYER_LOCATION, SpeakerModel::createBodyLayer);
             event.registerLayerDefinition(LightRayModel.LAYER_LOCATION, LightRayModel::createBodyLayer);
             event.registerLayerDefinition(TornadoModel.LAYER_LOCATION, TornadoModel::createBodyLayer);
+            event.registerLayerDefinition(PrismModel.LAYER_LOCATION, PrismModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -103,6 +105,7 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.PLANT.get(), PlantRenderer::new);
             event.registerEntityRenderer(ModEntities.PEA_PROJECTILE.get(), PeaRenderer::new);
             event.registerEntityRenderer(ModEntities.COB_PROJECTILE.get(), CobRenderer::new);
+            event.registerEntityRenderer(ModEntities.PRISM.get(), PrismRenderer::new);
         }
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -121,14 +124,23 @@ public class ClientEvents {
                 }
             }
             // ...y a TODOS los mobs (el poder de ahogo se lanza contra mobs;
-            // antes la capa solo existía en jugadores y la burbuja nunca se veía)
+            // antes la capa solo existía en jugadores y la burbuja nunca se veía).
+            // OJO: getRenderer castea internamente a LivingEntityRenderer y explota
+            // con renderers no-living (botes, tornado, plantas) — por eso el try/catch.
+            int layered = 0;
             for (EntityType<?> entityType : net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES) {
                 if (entityType == EntityType.PLAYER) continue;
-                EntityRenderer<?> renderer = event.getRenderer((EntityType) entityType);
-                if (renderer instanceof LivingEntityRenderer living) {
-                    addWaterBlobLayer(living);
+                try {
+                    LivingEntityRenderer renderer = event.getRenderer((EntityType) entityType);
+                    if (renderer != null) {
+                        addWaterBlobLayer(renderer);
+                        layered++;
+                    }
+                } catch (ClassCastException ignored) {
+                    // renderer no-living: esta entidad no puede tener la burbuja
                 }
             }
+            MineWinx.LOGGER.info("WaterBlob layer añadida a {} renderers de mobs", layered);
         }
 
         private static <T extends LivingEntity, M extends EntityModel<T>> void addWaterBlobLayer(LivingEntityRenderer<T, M> renderer) {

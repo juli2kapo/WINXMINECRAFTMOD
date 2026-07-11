@@ -53,6 +53,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.TECNO_LEGGINGS);
         simpleItem(ModItems.TECNO_BOOTS);
         simpleItem(ModItems.ORIGIN_SAPLING);
+        simpleItem(ModItems.CLEANSER);
     }
 
     private ItemModelBuilder simpleItem(RegistryObject<Item> item){

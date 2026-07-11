@@ -73,6 +73,8 @@ public class SunRay extends Entity {
             if (this.life == 20) {
                 this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIRE_AMBIENT, SoundSource.WEATHER, 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
                 this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.WEATHER, 2.0F, 0.5F + this.random.nextFloat() * 0.2F);
+                // Refracción del Prisma de Luz: el impacto del rayo de sol alimenta prismas cercanos
+                PrismEntity.refractAt((ServerLevel) this.level(), this.position(), this.cause, this.damage * 0.6F);
             }
 
             --this.life;

@@ -14,7 +14,7 @@ public class FireLaserEffect extends MobEffect {
 
     @Override
     public void applyEffectTick(LivingEntity pLivingEntity, int pAmplifier) {
-        if (pLivingEntity instanceof Player player && PlayerDataProvider.isTransformed(player)) {
+        if (pLivingEntity instanceof Player player) {
             FirePowers.performRaycast(player, 25.0, PlayerDataProvider.getStage(player));
         } else {
             pLivingEntity.removeEffect(this);

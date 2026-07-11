@@ -16,7 +16,7 @@ public class PassiveFireResistanceEffect extends MobEffect {
     public void applyEffectTick(LivingEntity pLivingEntity, int pAmplifier) {
         if (pLivingEntity instanceof Player player) {
             String element = PlayerDataProvider.getElement(player);
-            if (PlayerDataProvider.isTransformed(player) && "fire".equalsIgnoreCase(element)) {
+            if ("fire".equalsIgnoreCase(element)) {
                 FirePowers.applyPassiveFireResistance(player);
             } else {
                 // Si el jugador ya no cumple las condiciones, se elimina el efecto.

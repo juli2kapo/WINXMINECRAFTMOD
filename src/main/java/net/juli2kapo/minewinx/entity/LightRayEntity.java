@@ -11,6 +11,7 @@ import net.minecraft.world.phys.HitResult;
 public class LightRayEntity extends ThrowableProjectile {
 
     private float damage = 2.0F; // Default damage value
+    private boolean fromPrism = false; // los haces refractados no vuelven a refractar
 
     // --- Constructors ---
 
@@ -32,6 +33,10 @@ public class LightRayEntity extends ThrowableProjectile {
      */
     public void setDamage(float damage) {
         this.damage = damage;
+    }
+
+    public void setFromPrism(boolean fromPrism) {
+        this.fromPrism = fromPrism;
     }
 
 
@@ -77,6 +82,11 @@ public class LightRayEntity extends ThrowableProjectile {
         // No matter what we hit (entity or block), the projectile should be removed.
         // The !this.level().isClientSide() check ensures we only remove it on the server, which then syncs to the client.
         if (!this.level().isClientSide()) {
+            // Refracción del Prisma de Luz (solo rayos originales, no los refractados)
+            if (!fromPrism) {
+                PrismEntity.refractAt((net.minecraft.server.level.ServerLevel) this.level(),
+                        this.position(), this.getOwner(), Math.max(2.0F, this.damage * 0.8F));
+            }
             this.discard();
         }
     }

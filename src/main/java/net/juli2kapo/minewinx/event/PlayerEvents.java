@@ -39,44 +39,18 @@ public class PlayerEvents {
                     return; // Salta el resto de la lógica si está dormido.
                 }
 
-                boolean isTransformed = PlayerDataProvider.isTransformed(player);
-                boolean needsUpdate = false;
-
-                if (isTransformed) {
-                    // Si está transformado, concedemos la habilidad de volar.
-                    if (!player.getAbilities().mayfly) {
-                        player.getAbilities().mayfly = true;
-                        needsUpdate = true;
-                    }
-
-                    // Ajustamos la velocidad de vuelo según la etapa.
-                    // Asume que tienes un método getStage(player) en PlayerDataProvider.
-                    int stage = PlayerDataProvider.getStage(player);
-                    float newFlySpeed = getFlySpeedForStage(stage);
-
-                    if (player.getAbilities().getFlyingSpeed() != newFlySpeed) {
-                        player.getAbilities().setFlyingSpeed(newFlySpeed);
-                        needsUpdate = true;
-                    }
-
-                } else if (!player.isCreative() && !player.isSpectator()) {
+                // Las winx ya no vuelan: la transformación no otorga vuelo.
+                // Solo limpiamos vuelo residual (p. ej. guardados viejos donde
+                // mayfly quedó persistido en el NBT del jugador).
+                if (!player.isCreative() && !player.isSpectator()) {
                     if (player.getAbilities().mayfly || player.getAbilities().flying) {
                         player.getAbilities().mayfly = false;
                         player.getAbilities().flying = false;
                         player.getAbilities().setFlyingSpeed(DEFAULT_FLY_SPEED);
-                        needsUpdate = true;
+                        player.onUpdateAbilities();
                     }
                 }
-
-                if (needsUpdate) {
-                    player.onUpdateAbilities();
-                }
             }
-        }
-
-        // Devuelve la velocidad de vuelo correspondiente a la etapa.
-        private static float getFlySpeedForStage(int stage) {
-            return DEFAULT_FLY_SPEED + (stage - 1) * 0.025f;
         }
 
         // Asegura que el estado de vuelo se aplique al reaparecer o cambiar de dimensión
@@ -99,19 +73,12 @@ public class PlayerEvents {
 
         private static void updateFlight(Player player) {
             if (player instanceof ServerPlayer serverPlayer) {
-                // No permitir volar si el jugador tiene el efecto SLEEP
-                if (serverPlayer.hasEffect(ModEffects.SLEEP.get())) {
-                    if (serverPlayer.getAbilities().mayfly) {
+                // Las winx ya no vuelan: al entrar/reaparecer, limpiar cualquier
+                // vuelo residual de guardados anteriores.
+                if (!serverPlayer.isCreative() && !serverPlayer.isSpectator()) {
+                    if (serverPlayer.getAbilities().mayfly || serverPlayer.getAbilities().flying) {
                         serverPlayer.getAbilities().mayfly = false;
                         serverPlayer.getAbilities().flying = false;
-                        serverPlayer.onUpdateAbilities();
-                    }
-                    return;
-                }
-
-                if (PlayerDataProvider.isTransformed(serverPlayer)) {
-                    if (!serverPlayer.getAbilities().mayfly) {
-                        serverPlayer.getAbilities().mayfly = true;
                         serverPlayer.onUpdateAbilities();
                     }
                 }

@@ -9,6 +9,7 @@ import net.juli2kapo.minewinx.powers.EnumPowers;
 import net.juli2kapo.minewinx.powers.NaturePowers;
 import net.juli2kapo.minewinx.powers.StormPowers;
 import net.juli2kapo.minewinx.powers.SunAndMoonPowers;
+import net.juli2kapo.minewinx.powers.WaterPowers;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -55,6 +56,22 @@ public class ServerEvents {
             }
 
             applyTecnoArmorSetBonus(player);
+            syncHudState(player, elementStr, stage);
+        }
+    }
+
+    // Sincroniza elemento/stage al cliente para el HUD cuando cambian
+    // (chequeo cada segundo, envío solo ante cambios)
+    private static final java.util.Map<java.util.UUID, String> lastSyncedHud = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static void syncHudState(Player player, String element, int stage) {
+        if (player.tickCount % 20 != 0) return;
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) return;
+        String state = element + "|" + stage;
+        if (!state.equals(lastSyncedHud.get(player.getUUID()))) {
+            lastSyncedHud.put(player.getUUID(), state);
+            net.juli2kapo.minewinx.network.PacketHandler.sendToPlayer(
+                    new net.juli2kapo.minewinx.network.HudStateS2CPacket(element, stage), serverPlayer);
         }
     }
 
@@ -182,7 +199,11 @@ public class ServerEvents {
                 String element = PlayerDataProvider.getElement(player);
                 int stage = PlayerDataProvider.getStage(player);
                 if (!"Technology".equalsIgnoreCase(element) || stage < 3) {
-                    event.setCanceled(true); // Cancela el equipamiento
+                    // El evento NO es cancelable: revertir el equipamiento a mano.
+                    // (Devolver la pieza al inventario y restaurar lo que había.)
+                    ItemStack rejected = newItem.copy();
+                    player.setItemSlot(event.getSlot(), event.getFrom());
+                    player.getInventory().placeItemBackInInventory(rejected);
                     player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor con el elemento Tecnología al máximo nivel."));
                 }
             }
@@ -195,6 +216,7 @@ public class ServerEvents {
             // Pass the server level from the event
             SunAndMoonPowers.onServerTick(event.getServer().overworld());
             StormPowers.onServerTick(event.getServer().overworld());
+            WaterPowers.onServerTick(event.getServer().overworld());
         }
     }
 

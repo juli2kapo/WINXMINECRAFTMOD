@@ -33,6 +33,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> X_RAY_VISION = MOB_EFFECTS.register("x_ray_vision",
             () -> new XRayVisionEffect(MobEffectCategory.BENEFICIAL, 0xFFFF00));
 
+    public static final RegistryObject<MobEffect> WATER_REPELLENT = MOB_EFFECTS.register("water_repellent",
+            () -> new WaterRepellentEffect(MobEffectCategory.HARMFUL, 0x66CCFF));
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

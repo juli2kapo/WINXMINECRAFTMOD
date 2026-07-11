@@ -61,8 +61,7 @@ public class CobProjectileEntity extends ThrowableProjectile {
 
         List<LivingEntity> victims = serverLevel.getEntitiesOfClass(LivingEntity.class,
                 this.getBoundingBox().inflate(RADIUS),
-                e -> e.isAlive() && !(e instanceof PlantEntity)
-                        && !(e instanceof Player p && p.getUUID().equals(ownerPlayerUUID)));
+                e -> e.isAlive() && !net.juli2kapo.minewinx.util.Targeting.isAlly(e, ownerPlayerUUID));
         for (LivingEntity victim : victims) {
             double dist = victim.distanceTo(this);
             if (dist <= RADIUS) {

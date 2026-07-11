@@ -14,7 +14,7 @@ public class FireBarrierEffect extends MobEffect {
 
     @Override
     public void applyEffectTick(LivingEntity pLivingEntity, int pAmplifier) {
-        if (pLivingEntity instanceof Player player && PlayerDataProvider.isTransformed(player) && PlayerDataProvider.getStage(player) > 0) {
+        if (pLivingEntity instanceof Player player && PlayerDataProvider.getStage(player) > 0) {
             FirePowers.executeFireBarrierTick(player);
         } else {
             pLivingEntity.removeEffect(this);

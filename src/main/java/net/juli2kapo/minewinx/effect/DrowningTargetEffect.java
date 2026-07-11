@@ -14,6 +14,18 @@ public class DrowningTargetEffect extends MobEffect {
 
     @Override
     public void applyEffectTick(LivingEntity pLivingEntity, int pAmplifier) {
+        // Burbujas visibles alrededor de la cabeza (server-side, independiente
+        // de la capa de render — así el efecto SIEMPRE se ve sobre el mob)
+        if (pLivingEntity.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
+                && pLivingEntity.tickCount % 3 == 0) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SPLASH,
+                    pLivingEntity.getX(), pLivingEntity.getEyeY() + 0.15, pLivingEntity.getZ(),
+                    3, 0.25, 0.2, 0.25, 0.02);
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE_POP,
+                    pLivingEntity.getX(), pLivingEntity.getEyeY() + 0.2, pLivingEntity.getZ(),
+                    2, 0.2, 0.15, 0.2, 0.02);
+        }
+
         if (pLivingEntity instanceof Player targetPlayer) {
             int airReduction = 5 * (pAmplifier + 1);
             targetPlayer.setAirSupply(Math.max(-20, targetPlayer.getAirSupply() - airReduction));
