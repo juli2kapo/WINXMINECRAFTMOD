@@ -225,9 +225,10 @@ public class MusicPowers {
             }
         }
 
-        // Play vocal blast sound
+        // Play vocal blast sound (boom sónico: bien vocal, y distinto del
+        // rugido del puñetazo de dragón de Bloom)
         serverLevel.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 1.5F, 1.2F);
+            SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.5F, 1.3F);
     }
 
     /**

@@ -24,7 +24,7 @@ import java.util.UUID;
 public class CobProjectileEntity extends ThrowableProjectile {
 
     private static final float RADIUS = 4.0F;
-    private static final float DAMAGE = 24.0F;
+    private static final float DAMAGE = 35.0F;
 
     @Nullable
     private UUID ownerPlayerUUID;
@@ -66,7 +66,7 @@ public class CobProjectileEntity extends ThrowableProjectile {
             double dist = victim.distanceTo(this);
             if (dist <= RADIUS) {
                 victim.hurt(serverLevel.damageSources().explosion(this, this),
-                        DAMAGE * (1.0F - (float) (dist / (RADIUS + 1))));
+                        DAMAGE * (1.0F - (float) (dist / (RADIUS * 2.0))));
             }
         }
 

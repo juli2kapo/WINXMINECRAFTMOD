@@ -37,41 +37,33 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MineWinx.MOD_ID)
 public class ServerEvents {
 
-    @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.player != null && !event.player.level().isClientSide()) {
-            Player player = event.player;
+    // NOTA: PlayerTickEvent NO llega en este entorno (verificado con logs);
+    // todas las pasivas por jugador corren desde onServerTick → tickPlayer.
 
-            String elementStr = PlayerDataProvider.getElement(player);
-            int stage = PlayerDataProvider.getStage(player);
-            EnumPowers.Element element = EnumPowers.Element.fromName(elementStr);
-
-            switch (element){
-                case FIRE -> applyFireEffects(player, stage);
-//                case EARTH -> applyEarthEffects(player);
-//                case AIR -> applyAirEffects(player);
-                case WATER -> applyWaterEffects(player, stage);
-                case NATURE -> applyNatureEffects(player, stage);
-
-            }
-
-            applyTecnoArmorSetBonus(player);
-            syncHudState(player, elementStr, stage);
-        }
-    }
-
-    // Sincroniza elemento/stage al cliente para el HUD cuando cambian
-    // (chequeo cada segundo, envío solo ante cambios)
     private static final java.util.Map<java.util.UUID, String> lastSyncedHud = new java.util.concurrent.ConcurrentHashMap<>();
 
-    private static void syncHudState(Player player, String element, int stage) {
-        if (player.tickCount % 20 != 0) return;
-        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) return;
-        String state = element + "|" + stage;
-        if (!state.equals(lastSyncedHud.get(player.getUUID()))) {
-            lastSyncedHud.put(player.getUUID(), state);
-            net.juli2kapo.minewinx.network.PacketHandler.sendToPlayer(
-                    new net.juli2kapo.minewinx.network.HudStateS2CPacket(element, stage), serverPlayer);
+    /** Pasivas por elemento, bonus de armadura y limpieza de vuelo — cada tick. */
+    private static void tickPlayer(net.minecraft.server.level.ServerPlayer player) {
+        String elementStr = PlayerDataProvider.getElement(player);
+        int stage = PlayerDataProvider.getStage(player);
+        EnumPowers.Element element = EnumPowers.Element.fromName(elementStr);
+
+        switch (element) {
+            case FIRE -> applyFireEffects(player, stage);
+            case WATER -> applyWaterEffects(player, stage);
+            case NATURE -> applyNatureEffects(player, stage);
+            default -> {}
+        }
+
+        applyTecnoArmorSetBonus(player);
+
+        // Las winx no vuelan: limpiar vuelo residual (NUNCA tocar creativo/espectador)
+        if (!player.isCreative() && !player.isSpectator()) {
+            if (player.getAbilities().mayfly || player.getAbilities().flying) {
+                player.getAbilities().mayfly = false;
+                player.getAbilities().flying = false;
+                player.onUpdateAbilities();
+            }
         }
     }
 
@@ -217,6 +209,32 @@ public class ServerEvents {
             SunAndMoonPowers.onServerTick(event.getServer().overworld());
             StormPowers.onServerTick(event.getServer().overworld());
             WaterPowers.onServerTick(event.getServer().overworld());
+
+            net.juli2kapo.minewinx.util.TransientLights.tick(event.getServer().overworld());
+
+            // Pasivas + HUD por acá: este handler está VERIFICADO en juego
+            // (los géiseres corren por él); PlayerTickEvent no nos llega.
+            boolean hudTick = event.getServer().getTickCount() % 20 == 0;
+            for (net.minecraft.server.level.ServerPlayer sp : event.getServer().getPlayerList().getPlayers()) {
+                tickPlayer(sp);
+                if (hudTick) {
+                    syncHudNow(sp);
+                }
+            }
+        }
+    }
+
+    private static void syncHudNow(net.minecraft.server.level.ServerPlayer serverPlayer) {
+        String element = PlayerDataProvider.getElement(serverPlayer);
+        int stage = PlayerDataProvider.getStage(serverPlayer);
+        String plant = "Nature".equalsIgnoreCase(element)
+                ? net.juli2kapo.minewinx.powers.NaturePowers.getSelectedPlant(serverPlayer).name() : "";
+        String state = element + "|" + stage + "|" + plant;
+        if (!state.equals(lastSyncedHud.get(serverPlayer.getUUID()))) {
+            lastSyncedHud.put(serverPlayer.getUUID(), state);
+            MineWinx.LOGGER.info("[HUD] sync a {}: {}", serverPlayer.getName().getString(), state);
+            net.juli2kapo.minewinx.network.PacketHandler.sendToPlayer(
+                    new net.juli2kapo.minewinx.network.HudStateS2CPacket(element, stage, plant), serverPlayer);
         }
     }
 

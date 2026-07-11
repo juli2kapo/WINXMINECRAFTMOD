@@ -13,25 +13,29 @@ public class HudStateS2CPacket {
 
     private final String element;
     private final int stage;
+    private final String selectedPlant;
 
-    public HudStateS2CPacket(String element, int stage) {
+    public HudStateS2CPacket(String element, int stage, String selectedPlant) {
         this.element = element;
         this.stage = stage;
+        this.selectedPlant = selectedPlant == null ? "" : selectedPlant;
     }
 
     public HudStateS2CPacket(FriendlyByteBuf buf) {
         this.element = buf.readUtf();
         this.stage = buf.readInt();
+        this.selectedPlant = buf.readUtf();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeUtf(element);
         buf.writeInt(stage);
+        buf.writeUtf(selectedPlant);
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         supplier.get().enqueueWork(() ->
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHudState.setState(element, stage)));
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHudState.setState(element, stage, selectedPlant)));
         return true;
     }
 }

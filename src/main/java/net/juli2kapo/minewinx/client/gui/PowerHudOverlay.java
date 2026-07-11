@@ -42,15 +42,28 @@ public class PowerHudOverlay {
                 key -> new ResourceLocation(MineWinx.MOD_ID, "textures/gui/hud/" + key + ".png"));
         graphics.blit(bar, BAR_X, BAR_Y, 0, 0, BAR_W, BAR_H, BAR_W, BAR_H);
 
-        for (int slot = 1; slot <= 3; slot++) {
-            int sx = BAR_X + SOCKETS[slot - 1][0] + 1;
-            int sy = BAR_Y + SOCKETS[slot - 1][1] + 1;
+        // Orden visual = orden de teclas (Z, X, C de izquierda a derecha).
+        // Flora dispara slots 2/3/1 con esas teclas, así que se muestran así.
+        boolean floraOrder = el == EnumPowers.Element.NATURE;
+        int[] slotForSocket = floraOrder ? new int[]{2, 3, 1} : new int[]{1, 2, 3};
+
+        for (int socket = 0; socket < 3; socket++) {
+            int slot = slotForSocket[socket];
+            int sx = BAR_X + SOCKETS[socket][0] + 1;
+            int sy = BAR_Y + SOCKETS[socket][1] + 1;
 
             EnumPowers power = EnumPowers.getPower(el, slot);
             if (power == EnumPowers.UNKNOWN) continue; // socket vacío (p. ej. Storm slot 3)
 
-            ResourceLocation icon = ICON_CACHE.computeIfAbsent(power.name().toLowerCase(Locale.ROOT),
-                    key -> new ResourceLocation(MineWinx.MOD_ID, "textures/gui/powers/" + key + ".png"));
+            // Flora: el socket 3 muestra la PLANTA seleccionada (lo que vas a plantar)
+            ResourceLocation icon;
+            if (power == EnumPowers.PLANT_SEED && !ClientHudState.getSelectedPlant().isEmpty()) {
+                icon = ICON_CACHE.computeIfAbsent("plant:" + ClientHudState.getSelectedPlant().toLowerCase(Locale.ROOT),
+                        key -> new ResourceLocation(MineWinx.MOD_ID, "textures/gui/plants/" + key.substring(6) + ".png"));
+            } else {
+                icon = ICON_CACHE.computeIfAbsent(power.name().toLowerCase(Locale.ROOT),
+                        key -> new ResourceLocation(MineWinx.MOD_ID, "textures/gui/powers/" + key + ".png"));
+            }
             graphics.blit(icon, sx, sy, 0, 0, 16, 16, 16, 16);
 
             // Cooldown: barrido oscuro de arriba hacia abajo + segundos
@@ -63,9 +76,16 @@ public class PowerHudOverlay {
                 graphics.drawString(minecraft.font, seconds, sx + 8 - tw / 2, sy + 4, 0xFFF3C4, true);
             }
 
-            // Tecla (1/2/3) en la esquina inferior derecha del socket
-            String key = String.valueOf(slot);
-            graphics.drawString(minecraft.font, key, sx + 13, sy + 11, 0xFFF3C4, true);
+            // Con el orden visual por teclas, el socket i siempre se dispara con
+            // la tecla física i (Z, X, C de izquierda a derecha). Respeta rebinds.
+            net.minecraft.client.KeyMapping mapping = switch (socket) {
+                case 0 -> net.juli2kapo.minewinx.client.KeyBindings.USE_POWER_KEY1;
+                case 1 -> net.juli2kapo.minewinx.client.KeyBindings.USE_POWER_KEY2;
+                default -> net.juli2kapo.minewinx.client.KeyBindings.USE_POWER_KEY3;
+            };
+            String key = mapping.getTranslatedKeyMessage().getString().toUpperCase(Locale.ROOT);
+            if (key.length() > 1) key = key.substring(0, 1);
+            graphics.drawString(minecraft.font, key, sx + 12, sy + 11, 0xFFF3C4, true);
         }
     };
 }

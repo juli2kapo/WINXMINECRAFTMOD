@@ -20,6 +20,8 @@ public class KeyBindings {
     );
 
 
+    // Z/X/C = poderes 1/2/3. OJO: para Flora los slots se remapean en
+    // ClientEvents (C = bomba de esporas, Z = elegir planta, X = plantar).
     public static final KeyMapping USE_POWER_KEY1 = new KeyMapping(
             KEY_USE_POWER_1,
             KeyConflictContext.IN_GAME,

@@ -46,6 +46,12 @@ public class PacketHandler {
                 .encoder(CooldownS2CPacket::toBytes)
                 .consumerMainThread(CooldownS2CPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(DrowningVisualS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(DrowningVisualS2CPacket::new)
+                .encoder(DrowningVisualS2CPacket::toBytes)
+                .consumerMainThread(DrowningVisualS2CPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -54,5 +60,9 @@ public class PacketHandler {
 
     public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), message);
+    }
+
+    public static <MSG> void sendToTracking(MSG message, net.minecraft.world.entity.Entity entity) {
+        INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity), message);
     }
 }

@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 public class PrismEntity extends Entity {
 
-    private static final double REFRACT_RADIUS = 6.0;   // qué tan cerca debe impactar un rayo
+    private static final double REFRACT_RADIUS = 8.0;   // qué tan cerca debe impactar un rayo
     private static final double BEAM_RANGE = 14.0;      // alcance de los haces refractados
     private static final int REFRACT_COOLDOWN = 8;      // ticks entre refracciones (la lluvia no lo satura)
     private static final int LIFETIME = 20 * 20;        // 20 segundos
@@ -42,6 +42,12 @@ public class PrismEntity extends Entity {
         this.setNoGravity(true);
     }
 
+    /** Apuntable: así el Rayo de Sol que mira AL prisma impacta justo ahí y refracta. */
+    @Override
+    public boolean isPickable() {
+        return true;
+    }
+
     public void init(Player owner, int stage) {
         this.ownerUUID = owner.getUUID();
         this.splits = 2 + Math.max(1, stage); // 3 / 4 / 5
@@ -53,6 +59,11 @@ public class PrismEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        // Aura de luz real: el prisma ilumina su entorno mientras vive
+        if (!this.level().isClientSide() && this.tickCount % 20 == 1) {
+            net.juli2kapo.minewinx.util.TransientLights.place((ServerLevel) this.level(),
+                    this.blockPosition().above(), 14, 40);
+        }
         if (this.level().isClientSide()) {
             // Destello suave alrededor del cristal
             if (this.tickCount % 4 == 0) {
@@ -103,8 +114,10 @@ public class PrismEntity extends Entity {
             if (owner instanceof LivingEntity living) beam.setOwner(living);
             beam.setDamage(Math.max(2.0F, beamDamage));
             beam.setFromPrism(true);
-            beam.setPos(from.x, from.y, from.z);
             Vec3 dir = target.getEyePosition().subtract(from).normalize();
+            // Nace fuera del cristal para no chocar consigo mismo
+            Vec3 spawn = from.add(dir.scale(1.2));
+            beam.setPos(spawn.x, spawn.y, spawn.z);
             beam.shoot(dir.x, dir.y, dir.z, 1.5F, 0.0F);
             level.addFreshEntity(beam);
             fired++;

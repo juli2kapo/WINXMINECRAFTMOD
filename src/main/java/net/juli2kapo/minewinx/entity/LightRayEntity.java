@@ -50,6 +50,20 @@ public class LightRayEntity extends ThrowableProjectile {
     @Override
     public void tick() {
         super.tick(); // Handles movement physics
+        // Estela de luz real: ilumina los bloques que atraviesa (luces temporales)
+        if (!this.level().isClientSide() && this.tickCount % 2 == 0) {
+            net.juli2kapo.minewinx.util.TransientLights.place(
+                    (net.minecraft.server.level.ServerLevel) this.level(),
+                    this.blockPosition(), 12, 6);
+        }
+    }
+
+    @Override
+    protected boolean canHitEntity(net.minecraft.world.entity.Entity entity) {
+        // Los rayos atraviesan los prismas (si no, los haces refractados morirían
+        // al nacer y apuntar al prisma taparía el rayo)
+        if (entity instanceof PrismEntity) return false;
+        return super.canHitEntity(entity);
     }
 
 

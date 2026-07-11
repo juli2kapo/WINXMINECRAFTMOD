@@ -33,6 +33,14 @@ public class NaturePowers {
 
     private static final String SELECTED_PLANT_KEY = "MinewinxSelectedPlant";
 
+    /** Planta seleccionada del jugador, garantizada dentro del roster de su stage. */
+    public static PlantType getSelectedPlant(Player player) {
+        int stage = Math.max(1, PlayerDataProvider.getStage(player));
+        java.util.List<PlantType> roster = PlantType.rosterForStage(stage);
+        PlantType selected = PlantType.byName(player.getPersistentData().getString(SELECTED_PLANT_KEY));
+        return roster.contains(selected) ? selected : roster.get(0);
+    }
+
     /**
      * Slot 2: rota qué planta está seleccionada para plantar (roster según stage).
      */
@@ -52,6 +60,12 @@ public class NaturePowers {
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 net.juli2kapo.minewinx.sound.ModSounds.TAP.get(),
                 net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.0F);
+        // Actualizar el HUD al instante (sin esperar el sync periódico)
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            net.juli2kapo.minewinx.network.PacketHandler.sendToPlayer(
+                    new net.juli2kapo.minewinx.network.HudStateS2CPacket(
+                            PlayerDataProvider.getElement(player), stage, next.name()), serverPlayer);
+        }
     }
 
     /**
@@ -72,7 +86,7 @@ public class NaturePowers {
             player.getPersistentData().putString(SELECTED_PLANT_KEY, selected.name());
         }
 
-        double maxRange = 10.0;
+        double maxRange = 20.0;
         net.minecraft.world.phys.Vec3 eyePos = player.getEyePosition();
         net.minecraft.world.phys.Vec3 endPos = eyePos.add(player.getViewVector(1.0F).scale(maxRange));
         net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(

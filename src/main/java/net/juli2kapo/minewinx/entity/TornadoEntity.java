@@ -27,6 +27,8 @@ public class TornadoEntity extends Entity {
     private double pullRadius;
     private float flingDamage;
     private int lifetime;
+    private double driftX;
+    private double driftZ;
     @Nullable
     private UUID ownerUUID;
 
@@ -55,6 +57,15 @@ public class TornadoEntity extends Entity {
         }
 
         ServerLevel serverLevel = (ServerLevel) this.level();
+
+        // --- Deambular: el tornado se desplaza y así SUELTA a las víctimas
+        // en altura (daño de caída) en vez de tenerlas flotando eternamente ---
+        if (this.tickCount % 40 == 0) {
+            double angle = this.random.nextDouble() * Math.PI * 2.0;
+            this.driftX = Math.cos(angle) * 0.14;
+            this.driftZ = Math.sin(angle) * 0.14;
+        }
+        this.move(net.minecraft.world.entity.MoverType.SELF, new Vec3(driftX, 0, driftZ));
 
         // --- Física en espiral ---
         AABB pullBox = this.getBoundingBox().inflate(pullRadius, pullRadius / 2.0, pullRadius);

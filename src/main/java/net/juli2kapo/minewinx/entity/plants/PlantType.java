@@ -20,7 +20,9 @@ public enum PlantType {
 
     public static final List<PlantType> STAGE_1 = List.of(PEASHOOTER, CHOMPER, CHERRY_BOMB);
     public static final List<PlantType> STAGE_2 = List.of(REPEATER, SNOW_PEA, CHOMPER, DOOM_SHROOM);
-    public static final List<PlantType> STAGE_3 = List.of(GATLING_PEA, SNOW_PEA, TORCHWOOD, DOOM_SHROOM, CHOMPER, COB_CANNON);
+    // TORCHWOOD quitado del roster a pedido (se comía los proyectiles); el tipo
+    // sigue existiendo por si se re-agrega con el pass-through de arvejas ya arreglado
+    public static final List<PlantType> STAGE_3 = List.of(GATLING_PEA, SNOW_PEA, DOOM_SHROOM, CHOMPER, COB_CANNON);
 
     public final float maxHealth;
     public final String geoName;

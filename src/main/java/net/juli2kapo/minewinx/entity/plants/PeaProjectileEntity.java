@@ -129,6 +129,15 @@ public class PeaProjectileEntity extends ThrowableProjectile {
     }
 
     @Override
+    protected boolean canHitEntity(net.minecraft.world.entity.Entity entity) {
+        // Las arvejas atraviesan plantas y prismas (una planta delante de otra
+        // se comía los proyectiles)
+        if (entity instanceof PlantEntity) return false;
+        if (entity instanceof net.juli2kapo.minewinx.entity.PrismEntity) return false;
+        return super.canHitEntity(entity);
+    }
+
+    @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Variant", this.entityData.get(DATA_VARIANT));

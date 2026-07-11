@@ -90,8 +90,10 @@ public class SporeBombEntity extends ThrowableItemProjectile {
         AABB areaOfEffect = this.getBoundingBox().inflate(radius, 2.0D, radius);
         List<LivingEntity> entities = this.level().getEntitiesOfClass(LivingEntity.class, areaOfEffect);
 
+        java.util.UUID ownerUUID = this.getOwner() == null ? null : this.getOwner().getUUID();
         for (LivingEntity entity : entities) {
-            if (entity.isAlive()) {
+            // No dormir a la lanzadora ni a sus aliados/summons
+            if (entity.isAlive() && !net.juli2kapo.minewinx.util.Targeting.isAlly(entity, ownerUUID)) {
                 entity.addEffect(new MobEffectInstance(ModEffects.SLEEPY.get(), sleepyDuration, 0));
             }
         }

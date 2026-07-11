@@ -42,14 +42,17 @@ public class ClientEvents {
             if (KeyBindings.TRANSFORM_KEY.consumeClick()) {
                 PacketHandler.sendToServer(new TransformC2SPacket());
             }
+            // Flora usa otro orden: C (tecla 3) = bomba, Z (tecla 1) = elegir,
+            // X (tecla 2) = plantar. El resto de elementos: Z/X/C = 1/2/3.
+            boolean flora = "Nature".equalsIgnoreCase(net.juli2kapo.minewinx.client.ClientHudState.getElement());
             if (KeyBindings.USE_POWER_KEY1.consumeClick()) {
-                PacketHandler.sendToServer(new UsePowerC2SPacket(1));
+                PacketHandler.sendToServer(new UsePowerC2SPacket(flora ? 2 : 1)); // Z
             }
             if (KeyBindings.USE_POWER_KEY2.consumeClick()) {
-                PacketHandler.sendToServer(new UsePowerC2SPacket(2));
+                PacketHandler.sendToServer(new UsePowerC2SPacket(flora ? 3 : 2)); // X
             }
             if (KeyBindings.USE_POWER_KEY3.consumeClick()) {
-                PacketHandler.sendToServer(new UsePowerC2SPacket(3));
+                PacketHandler.sendToServer(new UsePowerC2SPacket(flora ? 1 : 3)); // C
             }
         }
     }

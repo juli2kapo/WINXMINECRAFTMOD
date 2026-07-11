@@ -267,16 +267,17 @@ public class PlantEntity extends Mob {
 
         boolean doom = type == PlantType.DOOM_SHROOM;
         float radius = doom ? 8.0F : 4.0F;
-        float damage = doom ? (ownerStage >= 3 ? 40.0F : 28.0F) : 20.0F;
+        float damage = doom ? (ownerStage >= 3 ? 70.0F : 50.0F) : 30.0F;
 
-        // Daño manual (así la dueña y sus otras plantas nunca se lastiman)
+        // Daño manual (así la dueña y sus otras plantas nunca se lastiman);
+        // el falloff es suave: a media distancia todavía pega ~75%
         List<LivingEntity> victims = level.getEntitiesOfClass(LivingEntity.class,
                 this.getBoundingBox().inflate(radius),
                 e -> e != this && e.isAlive() && !isFriendly(e));
         for (LivingEntity victim : victims) {
             double dist = victim.distanceTo(this);
             if (dist <= radius) {
-                victim.hurt(level.damageSources().explosion(this, this), damage * (1.0F - (float) (dist / (radius + 1))));
+                victim.hurt(level.damageSources().explosion(this, this), damage * (1.0F - (float) (dist / (radius * 2.0))));
             }
         }
 

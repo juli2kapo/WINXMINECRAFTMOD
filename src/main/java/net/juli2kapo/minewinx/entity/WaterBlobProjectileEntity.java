@@ -54,6 +54,9 @@ public class WaterBlobProjectileEntity extends ThrowableItemProjectile {
                     if (target != this.getOwner()) {
                         int duration = 200 + (this.stage * 40); // 10 segundos + 2s por nivel
                         target.addEffect(new MobEffectInstance(ModEffects.DROWNING_TARGET.get(), duration, 0));
+                        // Avisar a los clientes cercanos para que rendericen la burbuja
+                        net.juli2kapo.minewinx.network.PacketHandler.sendToTracking(
+                                new net.juli2kapo.minewinx.network.DrowningVisualS2CPacket(target.getId(), duration), target);
                         this.discard(); // Desaparece al impactar
                     }
                 }

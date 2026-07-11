@@ -41,14 +41,18 @@ public class UsePowerC2SPacket {
                 EnumPowers power = EnumPowers.getPower(element, this.powerSlot);
                 if (power != EnumPowers.UNKNOWN) {
                     // Cooldown: rechazar si el slot todavía está enfriándose
-                    long remaining = net.juli2kapo.minewinx.util.PowerCooldowns.remaining(player, this.powerSlot);
-                    if (remaining > 0) {
-                        player.displayClientMessage(Component.literal(
-                                "Enfriándose: " + (int) Math.ceil(remaining / 20.0) + "s"), true);
-                        return;
+                    // (en creativo no hay cooldowns, para poder testear tranquilo)
+                    boolean useCooldowns = !player.isCreative();
+                    if (useCooldowns) {
+                        long remaining = net.juli2kapo.minewinx.util.PowerCooldowns.remaining(player, this.powerSlot);
+                        if (remaining > 0) {
+                            player.displayClientMessage(Component.literal(
+                                    "Enfriándose: " + (int) Math.ceil(remaining / 20.0) + "s"), true);
+                            return;
+                        }
                     }
                     power.execute(player);
-                    if (power.getCooldownTicks() > 0) {
+                    if (useCooldowns && power.getCooldownTicks() > 0) {
                         net.juli2kapo.minewinx.util.PowerCooldowns.set(player, this.powerSlot, power.getCooldownTicks());
                         PacketHandler.sendToPlayer(new CooldownS2CPacket(this.powerSlot, power.getCooldownTicks()), player);
                     }

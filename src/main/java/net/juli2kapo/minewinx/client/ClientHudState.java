@@ -7,14 +7,21 @@ public final class ClientHudState {
 
     private static String element = "";
     private static int stage = 0;
+    private static String selectedPlant = "";
     private static final long[] cooldownExpiry = new long[4];
     private static final int[] cooldownTotal = new int[4];
 
     private ClientHudState() {}
 
-    public static void setState(String newElement, int newStage) {
+    public static void setState(String newElement, int newStage, String newSelectedPlant) {
         element = newElement == null ? "" : newElement;
         stage = newStage;
+        selectedPlant = newSelectedPlant == null ? "" : newSelectedPlant;
+        net.juli2kapo.minewinx.MineWinx.LOGGER.info("[HUD] estado recibido: element='{}' stage={} plant='{}'", element, stage, selectedPlant);
+    }
+
+    public static String getSelectedPlant() {
+        return selectedPlant;
     }
 
     public static void setCooldown(int slot, int ticks) {

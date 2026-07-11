@@ -54,8 +54,8 @@ public class FirePowers {
         Vec3 eyePos = player.getEyePosition();
         Vec3 endPos = eyePos.add(look.scale(range));
 
-        // Embestida de la lanzadora
-        player.setDeltaMovement(player.getDeltaMovement().add(look.scale(0.6 + 0.2 * stage)));
+        // Embestida de la lanzadora (bien larga: es un puñetazo con todo el cuerpo)
+        player.setDeltaMovement(player.getDeltaMovement().add(look.scale(1.4 + 0.5 * stage)));
         player.hurtMarked = true;
 
         // Golpe: primera entidad en la trayectoria
@@ -93,20 +93,21 @@ public class FirePowers {
         // Tamaño (dimensión mayor, en bloques) y nitidez por stage
         double size = 1.8 + 0.8 * stage;   // 2.6 / 3.4 / 4.2
         float density = switch (stage) {
-            case 1 -> 0.35F;
-            case 2 -> 0.7F;
+            case 1 -> 0.6F;
+            case 2 -> 0.85F;
             default -> 1.0F;
         };
-        // La cabeza se centra un poco por delante del puño
-        Vec3 anchor = player.getEyePosition().subtract(0, 0.3, 0).add(look.scale(1.0 + size * 0.45));
+        // Bien adelante del puño para que la embestida no la atraviese al instante
+        Vec3 anchor = player.getEyePosition().subtract(0, 0.3, 0).add(look.scale(2.5 + size * 0.55));
 
         DustParticleOptions glowDust = new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.85F, 0.2F), 1.3F);
         DustParticleOptions whiteDust = new DustParticleOptions(new org.joml.Vector3f(0.95F, 0.95F, 0.95F), 1.0F);
         java.util.Random rand = new java.util.Random();
 
-        // Escamas → llamas (la densidad marca qué tan "fantasmal" se ve)
+        // Escamas → llamas (la densidad marca qué tan "fantasmal" se ve);
+        // 2 partículas por punto para que la cabeza se vea sólida
         spawnCloud(level, DragonHeadPoints.FLAME, density, anchor, right, localUp, look, size,
-                (x, y, z) -> level.sendParticles(ParticleTypes.FLAME, x, y, z, 1, 0.02, 0.02, 0.02, 0.0), rand);
+                (x, y, z) -> level.sendParticles(ParticleTypes.FLAME, x, y, z, 2, 0.04, 0.04, 0.04, 0.0), rand);
         // Ojos y brillo de boca: siempre visibles — son lo que hace reconocible la cabeza
         spawnCloud(level, DragonHeadPoints.GLOW, Math.max(density, 0.8F), anchor, right, localUp, look, size,
                 (x, y, z) -> level.sendParticles(glowDust, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);

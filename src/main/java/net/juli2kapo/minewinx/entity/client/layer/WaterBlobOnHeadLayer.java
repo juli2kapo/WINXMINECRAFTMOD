@@ -25,7 +25,13 @@ public class WaterBlobOnHeadLayer<T extends LivingEntity, M extends EntityModel<
 
     @Override
     public void render(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, T pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTick, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch) {
-        if (pLivingEntity.hasEffect(ModEffects.DROWNING_TARGET.get())) {
+        // Jugadores: efectos propios sincronizados → hasEffect funciona.
+        // Mobs: vanilla no sincroniza sus efectos al cliente → usar el tracker
+        // alimentado por DrowningVisualS2CPacket.
+        boolean drowning = pLivingEntity instanceof net.minecraft.world.entity.player.Player
+                ? pLivingEntity.hasEffect(ModEffects.DROWNING_TARGET.get())
+                : net.juli2kapo.minewinx.client.ClientDrowningTracker.isDrowning(pLivingEntity.getId());
+        if (drowning) {
             pPoseStack.pushPose();
             // Espacio de modelo de entidad: Y+ es HACIA ABAJO y el origen queda
             // 1.501 bloques sobre los pies (mundo_y = 1.501 - modelo_y). La

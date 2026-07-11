@@ -43,9 +43,9 @@ public class StormPowers {
         int meanStrikeInterval; // en ticks
         int durationTicks;
         switch (stage) {
-            case 1 -> { radius = 8.0;  meanStrikeInterval = 30; durationTicks = 15 * 20; }
-            case 2 -> { radius = 12.0; meanStrikeInterval = 20; durationTicks = 20 * 20; }
-            default -> { radius = 16.0; meanStrikeInterval = 12; durationTicks = 25 * 20; }
+            case 1 -> { radius = 8.0;  meanStrikeInterval = 15; durationTicks = 15 * 20; }
+            case 2 -> { radius = 12.0; meanStrikeInterval = 10; durationTicks = 20 * 20; }
+            default -> { radius = 16.0; meanStrikeInterval = 6; durationTicks = 25 * 20; }
         }
 
         // Re-lanzar refresca la duración (no se apila)
@@ -72,9 +72,17 @@ public class StormPowers {
                 eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
         Vec3 targetPos = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
 
-        TornadoEntity tornado = new TornadoEntity(ModEntities.TORNADO.get(), level, player, stage);
-        tornado.setPos(targetPos.x, targetPos.y, targetPos.z);
-        serverLevel.addFreshEntity(tornado);
+        // Hasta 3 tornados (según stage), repartidos y errantes: al moverse
+        // sueltan a las víctimas en el aire → daño de caída
+        int count = Math.min(3, Math.max(1, stage));
+        for (int i = 0; i < count; i++) {
+            double angle = i * (Math.PI * 2.0 / count);
+            double spread = count == 1 ? 0.0 : 3.5;
+            TornadoEntity tornado = new TornadoEntity(ModEntities.TORNADO.get(), level, player, stage);
+            tornado.setPos(targetPos.x + Math.cos(angle) * spread, targetPos.y,
+                    targetPos.z + Math.sin(angle) * spread);
+            serverLevel.addFreshEntity(tornado);
+        }
         serverLevel.playSound(null, targetPos.x, targetPos.y, targetPos.z,
                 SoundEvents.PHANTOM_FLAP, SoundSource.PLAYERS, 2.0F, 0.5F);
     }
@@ -104,10 +112,20 @@ public class StormPowers {
                 LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(serverLevel);
                 if (bolt != null) {
                     bolt.moveTo(x, ground.getY(), z);
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        bolt.setCause(serverPlayer);
-                    }
+                    // Solo visual: el rayo vanilla prende fuego (incluso a la
+                    // dueña inmune); el daño lo aplicamos a mano, sin incendios
+                    bolt.setVisualOnly(true);
                     serverLevel.addFreshEntity(bolt);
+
+                    java.util.List<net.minecraft.world.entity.LivingEntity> victims =
+                            serverLevel.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                                    new net.minecraft.world.phys.AABB(x - 2.5, ground.getY() - 1, z - 2.5,
+                                            x + 2.5, ground.getY() + 4, z + 2.5),
+                                    e -> e.isAlive() && !net.juli2kapo.minewinx.util.Targeting.isAlly(e, player.getUUID())
+                                            && !e.getUUID().equals(player.getUUID()));
+                    for (net.minecraft.world.entity.LivingEntity victim : victims) {
+                        victim.hurt(serverLevel.damageSources().lightningBolt(), 6.0F);
+                    }
                 }
             }
             return false;
