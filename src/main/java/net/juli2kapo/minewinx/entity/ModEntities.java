@@ -80,6 +80,14 @@ public class ModEntities {
                             .sized(0.6F, 1.8F) // Dimensiones similares a las de un jugador/zombie
                             .build("player_illusion"));
 
+    public static final RegistryObject<EntityType<TornadoEntity>> TORNADO =
+            ENTITY_TYPES.register("tornado",
+                    () -> EntityType.Builder.<TornadoEntity>of(TornadoEntity::new, MobCategory.MISC)
+                            .sized(3f, 6f)
+                            .clientTrackingRange(16)
+                            .updateInterval(5)
+                            .build("tornado"));
+
     public static final RegistryObject<EntityType<LightRayEntity>> LIGHT_RAY =
             ENTITY_TYPES.register("light_ray", // The unique ID for the entity (e.g., /summon minewinx:light_ray)
                     () -> EntityType.Builder.<LightRayEntity>of(LightRayEntity::new, MobCategory.MISC) // The factory and category
@@ -89,6 +97,30 @@ public class ModEntities {
                             .build("light_ray")); // Finalizes the builder with the name.
 
 
+
+    public static final RegistryObject<EntityType<net.juli2kapo.minewinx.entity.plants.PlantEntity>> PLANT =
+            ENTITY_TYPES.register("plant",
+                    () -> EntityType.Builder.<net.juli2kapo.minewinx.entity.plants.PlantEntity>of(net.juli2kapo.minewinx.entity.plants.PlantEntity::new, MobCategory.MISC)
+                            .sized(0.9f, 1.3f)
+                            .clientTrackingRange(10)
+                            .updateInterval(5)
+                            .build("plant"));
+
+    public static final RegistryObject<EntityType<net.juli2kapo.minewinx.entity.plants.PeaProjectileEntity>> PEA_PROJECTILE =
+            ENTITY_TYPES.register("pea_projectile",
+                    () -> EntityType.Builder.<net.juli2kapo.minewinx.entity.plants.PeaProjectileEntity>of(net.juli2kapo.minewinx.entity.plants.PeaProjectileEntity::new, MobCategory.MISC)
+                            .sized(0.25f, 0.25f)
+                            .clientTrackingRange(4)
+                            .updateInterval(10)
+                            .build("pea_projectile"));
+
+    public static final RegistryObject<EntityType<net.juli2kapo.minewinx.entity.plants.CobProjectileEntity>> COB_PROJECTILE =
+            ENTITY_TYPES.register("cob_projectile",
+                    () -> EntityType.Builder.<net.juli2kapo.minewinx.entity.plants.CobProjectileEntity>of(net.juli2kapo.minewinx.entity.plants.CobProjectileEntity::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .clientTrackingRange(8)
+                            .updateInterval(10)
+                            .build("cob_projectile"));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

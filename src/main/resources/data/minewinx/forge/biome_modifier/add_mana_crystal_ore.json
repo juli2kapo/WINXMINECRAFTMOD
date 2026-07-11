@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "minewinx:mana_crystal_ore",
+  "step": "underground_ores"
+}

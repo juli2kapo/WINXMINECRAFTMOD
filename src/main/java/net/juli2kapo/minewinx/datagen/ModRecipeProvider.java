@@ -37,10 +37,27 @@ public class ModRecipeProvider extends RecipeProvider {
         buildCenteredCraftingRecipe(pWriter, ModItems.WATERSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.HEART_OF_THE_SEA);
         buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.WHEAT_SEEDS);
         buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.SCUTE);
-        buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.OAK_SAPLING); //TODO CHANGE WITH MIXTURE OF EVERY SAPLING
+        // Retoño del Origen: 9 saplings de cualquier tipo (vía tag, se pueden mezclar)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.ORIGIN_SAPLING.get())
+                .pattern("###")
+                .pattern("###")
+                .pattern("###")
+                .define('#', net.minecraft.tags.ItemTags.SAPLINGS)
+                .unlockedBy("has_sapling", has(net.minecraft.tags.ItemTags.SAPLINGS))
+                .save(pWriter);
+        buildCenteredCraftingRecipe(pWriter, ModItems.NATURESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), ModItems.ORIGIN_SAPLING.get());
         buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.SNOW_BLOCK);
         buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.BLUE_ICE);
-        buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.END_STONE); //TODO CHANGE WITH COMBINATION OF ICE + END BLOCKS
+        // Hielo del End: combinación de hielo + End; centro de la receta de ice stage 3
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModBlocks.END_ICE.get())
+                .requires(Items.ICE)
+                .requires(Items.END_STONE)
+                .unlockedBy(getHasName(Items.END_STONE), has(Items.END_STONE))
+                .save(pWriter);
+        buildCenteredCraftingRecipe(pWriter, ModItems.ICESTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), ModBlocks.END_ICE.get());
+        buildCenteredCraftingRecipe(pWriter, ModItems.STORMSTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.LIGHTNING_ROD);
+        buildCenteredCraftingRecipe(pWriter, ModItems.STORMSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.PHANTOM_MEMBRANE);
+        buildCenteredCraftingRecipe(pWriter, ModItems.STORMSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.TRIDENT);
 
         tecnoArmor(pWriter);
         buildCenteredCraftingRecipe(pWriter, ModItems.MANARADAR.get(), ModItems.LOWQMANACRYSTAL.get(), Items.COMPASS);
@@ -67,15 +84,22 @@ public class ModRecipeProvider extends RecipeProvider {
                 .save(writer);
     }
     private void tecnoArmor(Consumer<FinishedRecipe> writer){
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.DIAMOND_CHESTPLATE) //TODO, replace with tecno armor
+        tecnoArmorPiece(writer, ModItems.TECNO_HELMET.get(), Items.NETHERITE_HELMET, Items.DIAMOND_HELMET);
+        tecnoArmorPiece(writer, ModItems.TECNO_CHESTPLATE.get(), Items.NETHERITE_CHESTPLATE, Items.DIAMOND_CHESTPLATE);
+        tecnoArmorPiece(writer, ModItems.TECNO_LEGGINGS.get(), Items.NETHERITE_LEGGINGS, Items.DIAMOND_LEGGINGS);
+        tecnoArmorPiece(writer, ModItems.TECNO_BOOTS.get(), Items.NETHERITE_BOOTS, Items.DIAMOND_BOOTS);
+    }
+
+    private void tecnoArmorPiece(Consumer<FinishedRecipe> writer, ItemLike result, ItemLike netheritePiece, ItemLike diamondPiece){
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, result)
                 .pattern("   ")
                 .pattern("#SC")
                 .pattern("   ")
-                .define('#', Items.NETHERITE_CHESTPLATE)
+                .define('#', netheritePiece)
                 .define('S', Items.NETHER_STAR)
-                .define('C', Items.DIAMOND_CHESTPLATE)
-                .unlockedBy(getHasName(Items.NETHER_STAR), has(Items.DIAMOND_CHESTPLATE))
-                .save(writer, MineWinx.MOD_ID + ":tecno_chestplate");
+                .define('C', diamondPiece)
+                .unlockedBy(getHasName(Items.NETHER_STAR), has(Items.NETHER_STAR))
+                .save(writer);
     }
 
 

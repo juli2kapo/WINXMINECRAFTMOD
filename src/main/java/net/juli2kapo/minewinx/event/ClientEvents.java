@@ -68,6 +68,8 @@ public class ClientEvents {
         public static void registerParticleFactories(final RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(ModParticles.FIRE_PARTICLE.get(), FireParticles.Factory::new);
             event.registerSpriteSet(ModParticles.SPORE_PARTICLE.get(), FireParticles.Factory::new);
+            event.registerSpriteSet(ModParticles.POWIE_PARTICLE.get(), FireParticles.Factory::new);
+            event.registerSpriteSet(ModParticles.DOOM_PARTICLE.get(), FireParticles.Factory::new);
         }
 
         @SubscribeEvent
@@ -83,6 +85,7 @@ public class ClientEvents {
             event.registerLayerDefinition(PistonModel.LAYER_LOCATION, PistonModel::createBodyLayer);
             event.registerLayerDefinition(SpeakerModel.LAYER_LOCATION, SpeakerModel::createBodyLayer);
             event.registerLayerDefinition(LightRayModel.LAYER_LOCATION, LightRayModel::createBodyLayer);
+            event.registerLayerDefinition(TornadoModel.LAYER_LOCATION, TornadoModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -96,10 +99,15 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.SUN_RAY.get(), SunRayRenderer::new);
             event.registerEntityRenderer(ModEntities.PLAYER_ILLUSION.get(), PlayerIllusionEntityRenderer::new);
             event.registerEntityRenderer(ModEntities.LIGHT_RAY.get(), LightRayRenderer::new);
+            event.registerEntityRenderer(ModEntities.TORNADO.get(), TornadoRenderer::new);
+            event.registerEntityRenderer(ModEntities.PLANT.get(), PlantRenderer::new);
+            event.registerEntityRenderer(ModEntities.PEA_PROJECTILE.get(), PeaRenderer::new);
+            event.registerEntityRenderer(ModEntities.COB_PROJECTILE.get(), CobRenderer::new);
         }
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {
             event.put(ModEntities.PLAYER_ILLUSION.get(), Zombie.createAttributes().build());
+            event.put(ModEntities.PLANT.get(), net.juli2kapo.minewinx.entity.plants.PlantEntity.createAttributes().build());
         }
 
         @SubscribeEvent
@@ -112,7 +120,15 @@ public class ClientEvents {
                     addWaterBlobLayer(renderer);
                 }
             }
-            
+            // ...y a TODOS los mobs (el poder de ahogo se lanza contra mobs;
+            // antes la capa solo existía en jugadores y la burbuja nunca se veía)
+            for (EntityType<?> entityType : net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES) {
+                if (entityType == EntityType.PLAYER) continue;
+                EntityRenderer<?> renderer = event.getRenderer((EntityType) entityType);
+                if (renderer instanceof LivingEntityRenderer living) {
+                    addWaterBlobLayer(living);
+                }
+            }
         }
 
         private static <T extends LivingEntity, M extends EntityModel<T>> void addWaterBlobLayer(LivingEntityRenderer<T, M> renderer) {

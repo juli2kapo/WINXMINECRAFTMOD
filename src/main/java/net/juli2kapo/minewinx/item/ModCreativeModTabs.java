@@ -22,10 +22,12 @@ public class ModCreativeModTabs {
                     .displayItems((itemDisplayParameters, output) -> {
                         output.accept(ModBlocks.MANA_CRYSTAL_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE.get());
+                        output.accept(ModBlocks.END_ICE.get());
                         output.accept(ModItems.LOWQMANACRYSTAL.get());
                         output.accept(ModItems.MEDIUMQMANACRYSTAL.get());
                         output.accept(ModItems.HIGHQMANACRYSTAL.get());
                         output.accept(ModItems.MANARADAR.get());
+                        output.accept(ModItems.ORIGIN_SAPLING.get());
                         output.accept(ModItems.FIRESTAGE1.get());
                         output.accept(ModItems.FIRESTAGE2.get());
                         output.accept(ModItems.FIRESTAGE3.get());
@@ -50,6 +52,13 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.SUNANDMOONSTAGE1.get());
                         output.accept(ModItems.SUNANDMOONSTAGE2.get());
                         output.accept(ModItems.SUNANDMOONSTAGE3.get());
+                        output.accept(ModItems.STORMSTAGE1.get());
+                        output.accept(ModItems.STORMSTAGE2.get());
+                        output.accept(ModItems.STORMSTAGE3.get());
+                        output.accept(ModItems.TECNO_HELMET.get());
+                        output.accept(ModItems.TECNO_CHESTPLATE.get());
+                        output.accept(ModItems.TECNO_LEGGINGS.get());
+                        output.accept(ModItems.TECNO_BOOTS.get());
                         output.accept(ModItems.CLEANSER.get());
                     })
                     .build());

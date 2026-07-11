@@ -1,7 +1,4 @@
-package net.juli2kapo.minewinx.entity.client.model;// Made with Blockbench 4.12.5
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
-
+package net.juli2kapo.minewinx.entity.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -13,71 +10,84 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Racimo de cristales de hielo procedural. Reglas para que se vea limpio con
+ * transparencia: los picos NO se intersectan entre sí (bases separadas,
+ * inclinados hacia afuera) y las puntas van rotadas 45° respecto de su base
+ * para que ninguna cara quede coplanar (eso causaba el z-fighting del modelo
+ * anterior).
+ */
 public class IceCrystalModel<T extends net.minecraft.world.entity.Entity> extends EntityModel<T> {
-    // This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
+
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(MineWinx.MOD_ID, "ice_crystal"), "main");
-    private final ModelPart Coso1;
-    private final ModelPart Coso2;
-    private final ModelPart Coso3;
-    private final ModelPart Coso4;
+
+    private static final int SPIKE_COUNT = 7;
+
+    private final List<ModelPart> spikes = new ArrayList<>();
 
     public IceCrystalModel(ModelPart root) {
-        this.Coso1 = root.getChild("Coso1");
-        this.Coso2 = root.getChild("Coso2");
-        this.Coso3 = root.getChild("Coso3");
-        this.Coso4 = root.getChild("Coso4");
+        for (int i = 0; i < SPIKE_COUNT; i++) {
+            spikes.add(root.getChild("spike" + i));
+        }
     }
 
     public static LayerDefinition createBodyLayer() {
-        MeshDefinition meshdefinition = new MeshDefinition();
-        PartDefinition partdefinition = meshdefinition.getRoot();
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
 
-        PartDefinition Coso1 = partdefinition.addOrReplaceChild("Coso1", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
+        // {ángulo (rad) alrededor del centro, radio (px), ancho (px), alto (px), inclinación hacia afuera (rad)}
+        float[][] spikes = {
+                {0.0F,   0.0F, 5.0F, 22.0F, 0.05F},  // pico central, casi vertical
+                {0.0F,   6.5F, 4.0F, 15.0F, 0.30F},
+                {1.05F,  6.0F, 3.0F, 11.0F, 0.34F},
+                {2.09F,  6.5F, 4.0F, 14.0F, 0.28F},
+                {3.14F,  6.0F, 3.0F, 10.0F, 0.36F},
+                {4.19F,  6.5F, 4.0F, 16.0F, 0.30F},
+                {5.24F,  6.0F, 3.0F, 12.0F, 0.33F},
+        };
 
-        PartDefinition cube_r1 = Coso1.addOrReplaceChild("cube_r1", CubeListBuilder.create().texOffs(76, 37).addBox(-5.0F, -12.0F, 0.0F, 1.0F, 1.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -13.0F, 2.0F, -0.5624F, 0.0395F, -0.2436F));
+        for (int k = 0; k < spikes.length; k++) {
+            float angle = spikes[k][0];
+            float radius = spikes[k][1];
+            float w = spikes[k][2];
+            float h = spikes[k][3];
+            float tilt = spikes[k][4];
 
-        PartDefinition cube_r2 = Coso1.addOrReplaceChild("cube_r2", CubeListBuilder.create().texOffs(74, 17).addBox(-5.0F, -12.0F, -1.0F, 2.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -12.0F, 2.0F, -0.5624F, 0.0395F, -0.2436F));
+            float px = (float) (Math.sin(angle) * radius);
+            float pz = (float) (Math.cos(angle) * radius);
+            // Inclinación hacia afuera: rotar alejándose del centro del racimo
+            float xRot = tilt * (float) Math.cos(angle);
+            float zRot = -tilt * (float) Math.sin(angle);
 
-        PartDefinition cube_r3 = Coso1.addOrReplaceChild("cube_r3", CubeListBuilder.create().texOffs(74, 9).addBox(-5.0F, -12.0F, -2.0F, 3.0F, 1.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -11.0F, 2.0F, -0.5624F, 0.0395F, -0.2436F));
+            PartDefinition spike = root.addOrReplaceChild("spike" + k,
+                    CubeListBuilder.create().texOffs(0, 0)
+                            .addBox(-w / 2.0F, -h, -w / 2.0F, w, h, w, new CubeDeformation(0.0F)),
+                    PartPose.offsetAndRotation(px, 24.0F, pz, xRot, angle * 0.5F, zRot));
 
-        PartDefinition cube_r4 = Coso1.addOrReplaceChild("cube_r4", CubeListBuilder.create().texOffs(62, 73).addBox(-5.0F, -12.0F, -3.0F, 4.0F, 1.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -10.0F, 2.0F, -0.5624F, 0.0395F, -0.2436F));
+            // Punta: más angosta, rotada 45° (ninguna cara coplanar con la base) y
+            // apenas incrustada 1px para que no haya costura visible.
+            float wt = w * 0.55F;
+            float ht = h * 0.35F;
+            spike.addOrReplaceChild("tip" + k,
+                    CubeListBuilder.create().texOffs(32, 0)
+                            .addBox(-wt / 2.0F, -ht, -wt / 2.0F, wt, ht, wt, new CubeDeformation(0.0F)),
+                    PartPose.offsetAndRotation(0.0F, -h + 1.0F, 0.0F, 0.0F, 0.7854F, 0.0F));
+        }
 
-        PartDefinition cube_r5 = Coso1.addOrReplaceChild("cube_r5", CubeListBuilder.create().texOffs(34, 73).addBox(-5.0F, -12.0F, -4.0F, 5.0F, 1.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -9.0F, 2.0F, -0.5624F, 0.0395F, -0.2436F));
-
-        PartDefinition cube_r6 = Coso1.addOrReplaceChild("cube_r6", CubeListBuilder.create().texOffs(38, 62).addBox(-5.0F, -12.0F, -5.0F, 6.0F, 1.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -8.0F, 2.0F, -0.5624F, 0.0395F, -0.2436F));
-
-        PartDefinition cube_r7 = Coso1.addOrReplaceChild("cube_r7", CubeListBuilder.create().texOffs(0, 37).addBox(-6.0F, -12.0F, -5.0F, 8.0F, 18.0F, 11.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -8.0F, 1.0F, -0.5624F, 0.0395F, -0.2436F));
-
-        PartDefinition Coso2 = partdefinition.addOrReplaceChild("Coso2", CubeListBuilder.create().texOffs(38, 37).addBox(-5.0F, -16.0F, -8.0F, 8.0F, 14.0F, 11.0F, new CubeDeformation(0.0F))
-                .texOffs(70, 62).addBox(-4.0F, -17.0F, -7.0F, 6.0F, 2.0F, 9.0F, new CubeDeformation(0.0F))
-                .texOffs(68, 29).addBox(-3.0F, -18.0F, -6.0F, 4.0F, 1.0F, 7.0F, new CubeDeformation(0.0F))
-                .texOffs(16, 75).addBox(-2.0F, -19.0F, -5.0F, 2.0F, 1.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 22.0F, 2.0F, 0.903F, 0.2849F, 0.1756F));
-
-        PartDefinition Coso3 = partdefinition.addOrReplaceChild("Coso3", CubeListBuilder.create().texOffs(42, 0).addBox(0.0F, -19.0F, -3.0F, 6.0F, 19.0F, 10.0F, new CubeDeformation(0.0F))
-                .texOffs(74, 0).addBox(1.0F, -20.0F, -2.0F, 4.0F, 1.0F, 8.0F, new CubeDeformation(0.0F))
-                .texOffs(0, 75).addBox(2.0F, -21.0F, -1.0F, 2.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-3.0F, 18.0F, -5.0F, -0.48F, 0.0F, 0.5672F));
-
-        PartDefinition Coso4 = partdefinition.addOrReplaceChild("Coso4", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -27.0F, -6.0F, 11.0F, 27.0F, 10.0F, new CubeDeformation(0.0F))
-                .texOffs(0, 66).addBox(-5.0F, -28.0F, -5.0F, 9.0F, 1.0F, 8.0F, new CubeDeformation(0.0F))
-                .texOffs(42, 29).addBox(-4.0F, -29.0F, -4.0F, 7.0F, 1.0F, 6.0F, new CubeDeformation(0.0F))
-                .texOffs(74, 24).addBox(-3.0F, -30.0F, -3.0F, 5.0F, 1.0F, 4.0F, new CubeDeformation(0.0F))
-                .texOffs(76, 43).addBox(-2.0F, -31.0F, -2.0F, 3.0F, 1.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
-
-        return LayerDefinition.create(meshdefinition, 128, 128);
+        return LayerDefinition.create(mesh, 128, 128);
     }
-
 
     @Override
     public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        Coso1.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-        Coso2.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-        Coso3.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-        Coso4.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        for (ModelPart spike : spikes) {
+            spike.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        }
     }
 
     @Override
     public void setupAnim(T pEntity, float pLimbSwing, float pLimbSwingAmount, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch) {
-
     }
-
 }

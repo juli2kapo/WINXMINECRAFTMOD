@@ -28,6 +28,8 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                 .add(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE.get(), ModBlocks.MANA_CRYSTAL_ORE.get());
 
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE.get(), ModBlocks.MANA_CRYSTAL_ORE.get());
+                .add(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE.get(), ModBlocks.MANA_CRYSTAL_ORE.get(), ModBlocks.END_ICE.get());
+
+        this.tag(BlockTags.ICE).add(ModBlocks.END_ICE.get());
     }
 }

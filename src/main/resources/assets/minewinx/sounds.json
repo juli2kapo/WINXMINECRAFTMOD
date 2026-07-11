@@ -1,0 +1,41 @@
+{
+  "plants.pea_shoot": {
+    "sounds": ["minewinx:plants/throw", "minewinx:plants/throw2"]
+  },
+  "plants.pea_hit": {
+    "sounds": ["minewinx:plants/splat", "minewinx:plants/splat2", "minewinx:plants/splat3"]
+  },
+  "plants.firepea": {
+    "sounds": ["minewinx:plants/firepea"]
+  },
+  "plants.snowpea_shoot": {
+    "sounds": ["minewinx:plants/snow_pea_sparkles"]
+  },
+  "plants.frozen": {
+    "sounds": ["minewinx:plants/frozen"]
+  },
+  "plants.chomp": {
+    "sounds": ["minewinx:plants/chomp", "minewinx:plants/chomp2", "minewinx:plants/bigchomp"]
+  },
+  "plants.gulp": {
+    "sounds": ["minewinx:plants/gulp"]
+  },
+  "plants.cherrybomb": {
+    "sounds": ["minewinx:plants/cherrybomb"]
+  },
+  "plants.doomshroom": {
+    "sounds": ["minewinx:plants/doomshroom"]
+  },
+  "plants.explosion": {
+    "sounds": ["minewinx:plants/explosion"]
+  },
+  "plants.coblaunch": {
+    "sounds": ["minewinx:plants/coblaunch"]
+  },
+  "plants.plant": {
+    "sounds": ["minewinx:plants/plant", "minewinx:plants/plant2"]
+  },
+  "plants.tap": {
+    "sounds": ["minewinx:plants/tap"]
+  }
+}

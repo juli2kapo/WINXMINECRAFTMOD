@@ -45,26 +45,46 @@ public class IcePowers {
         }
     }
 
+    /**
+     * Slot 3: Prisión de hielo. Encierra al objetivo al que miras en un cascarón
+     * de hielo compacto que lo congela mientras dura. Duración escala con el stage.
+     */
     public static void encapsuleInIceCrystal(Player player){
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage <= 0) return;
+
         Level level = player.level();
-        if (level.isClientSide()) {
-            player.sendSystemMessage(Component.literal("[IceCrystal] Abortado: lado cliente."));
+        if (level.isClientSide()) return;
+
+        double maxRange = 20.0;
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 look = player.getLookAngle();
+        Vec3 endPos = eyePos.add(look.scale(maxRange));
+
+        // No apuntar a través de paredes
+        BlockHitResult blockHit = level.clip(new ClipContext(
+                eyePos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        double maxDistSq = blockHit.getType() == HitResult.Type.MISS
+                ? maxRange * maxRange
+                : eyePos.distanceToSqr(blockHit.getLocation());
+
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                level, player, eyePos, endPos,
+                player.getBoundingBox().expandTowards(look.scale(maxRange)).inflate(1.0D),
+                e -> e != player && !e.isSpectator() && e.isPickable()
+                        && e instanceof net.minecraft.world.entity.LivingEntity
+                        && eyePos.distanceToSqr(e.position()) <= maxDistSq);
+
+        if (entityHit == null || !(entityHit.getEntity() instanceof net.minecraft.world.entity.LivingEntity victim)) {
+            player.displayClientMessage(Component.literal("Sin objetivo a la vista."), true);
             return;
         }
 
-        BlockPos playerPos = player.blockPosition();
-        player.sendSystemMessage(Component.literal("[IceCrystal] Posición del jugador: " + playerPos));
+        int durationTicks = (4 + 2 * stage) * 20; // 6 / 8 / 10 segundos
 
-        try {
-            IceCrystalEntity iceCrystal = new IceCrystalEntity(ModEntities.ICE_CRYSTAL.get(), level);
-            level.addFreshEntity(iceCrystal);
-            player.sendSystemMessage(Component.literal("[IceCrystal] Entidad creada y añadida al mundo."));
-            iceCrystal.setPos(player.getX(), player.getY(), player.getZ());
-            player.sendSystemMessage(Component.literal("[IceCrystal] Entidad posicionada en: " + iceCrystal.position()));
-        } catch (Exception e) {
-            player.sendSystemMessage(Component.literal("[IceCrystal] Error: " + e.getMessage()));
-            e.printStackTrace();
-        }
+        IceCrystalEntity prison = new IceCrystalEntity(ModEntities.ICE_CRYSTAL.get(), level);
+        prison.init(victim, durationTicks);
+        level.addFreshEntity(prison);
     }
 
     public static void activateIceRing(Player player) {

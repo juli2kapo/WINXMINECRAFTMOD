@@ -1,0 +1,36 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 16,
+				"texture_height": 16,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "Cob",
+					"pivot": [0, 8, 0],
+					"rotation": [-90, 0, 0],
+					"cubes": [
+						{
+							"origin": [-4, 3, -9.5],
+							"size": [8, 10, 19],
+							"uv": {
+								"north": {"uv": [9.57143, 2.85714], "uv_size": [1.14286, 1.42857]},
+								"east": {"uv": [5.14286, 2.28571], "uv_size": [2.71429, 1.42857]},
+								"south": {"uv": [9.57143, 4.28571], "uv_size": [1.14286, 1.42857]},
+								"west": {"uv": [5.14286, 3.71429], "uv_size": [2.71429, 1.42857]},
+								"up": {"uv": [0, 7.14286], "uv_size": [1.14286, 2.71429]},
+								"down": {"uv": [1.14286, 9.85714], "uv_size": [1.14286, -2.71429]}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

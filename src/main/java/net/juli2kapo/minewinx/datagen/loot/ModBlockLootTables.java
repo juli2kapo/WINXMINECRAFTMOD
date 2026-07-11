@@ -27,6 +27,8 @@ public class ModBlockLootTables extends BlockLootSubProvider {
     protected void generate() {
         this.add(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE.get(), block -> createDiamondP1LikeOreDrops(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE.get(), ModItems.LOWQMANACRYSTAL.get()));
         this.add(ModBlocks.MANA_CRYSTAL_ORE.get(), block -> createDiamondP1LikeOreDrops(ModBlocks.MANA_CRYSTAL_ORE.get(), ModItems.LOWQMANACRYSTAL.get()));
+        // Como el hielo vanilla: solo se obtiene con toque de seda
+        this.add(ModBlocks.END_ICE.get(), block -> createSilkTouchOnlyTable(ModBlocks.END_ICE.get()));
     }
 
     protected LootTable.Builder createDiamondP1LikeOreDrops(Block pBlock, Item item) {

@@ -32,6 +32,120 @@ import java.util.List;
 
 public class FirePowers {
 
+    /**
+     * Slot 3: Puñetazo de Dragón. Embestida hacia adelante con un golpe devastador;
+     * proyecta el contorno de un dragón de fuego que se vuelve más nítido (más denso)
+     * a mayor stage. Rango, daño y knockback también escalan con el stage.
+     */
+    public static void dragonPunch(Player player) {
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage <= 0) return;
+
+        Level level = player.level();
+        if (level.isClientSide()) return;
+        ServerLevel serverLevel = (ServerLevel) level;
+
+        double range = 2.5 + stage;              // 3.5 / 4.5 / 5.5
+        float damage = 6.0F + 4.0F * stage;      // 10 / 14 / 18
+        double knockForward = 1.0 + 0.4 * stage; // 1.4 / 1.8 / 2.2
+        double knockUp = 0.5 + 0.15 * stage;
+
+        Vec3 look = player.getLookAngle();
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 endPos = eyePos.add(look.scale(range));
+
+        // Embestida de la lanzadora
+        player.setDeltaMovement(player.getDeltaMovement().add(look.scale(0.6 + 0.2 * stage)));
+        player.hurtMarked = true;
+
+        // Golpe: primera entidad en la trayectoria
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                level, player, eyePos, endPos,
+                player.getBoundingBox().expandTowards(look.scale(range)).inflate(1.0D),
+                e -> e != player && !e.isSpectator() && e.isPickable() && e instanceof LivingEntity);
+
+        if (entityHit != null && entityHit.getEntity() instanceof LivingEntity victim) {
+            victim.hurt(serverLevel.damageSources().playerAttack(player), damage);
+            victim.setSecondsOnFire(3 + stage);
+            victim.setDeltaMovement(look.scale(knockForward).add(0, knockUp, 0));
+            victim.hasImpulse = true;
+        }
+
+        drawDragonOutline(serverLevel, player, look, range, stage);
+
+        serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 1.2F, 1.3F);
+        serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 0.7F);
+    }
+
+    /**
+     * Dibuja la cabeza del dragón de fuego (nube de puntos extraída del modelo
+     * voxel, ver DragonHeadPoints) envolviendo el puño. A mayor stage el contorno
+     * es más grande y menos difuso (más puntos dibujados).
+     */
+    private static void drawDragonOutline(ServerLevel level, Player player, Vec3 look, double range, int stage) {
+        Vec3 up = new Vec3(0, 1, 0);
+        Vec3 right = look.cross(up).normalize();
+        if (right.lengthSqr() < 1.0E-4) right = new Vec3(1, 0, 0); // mirando en vertical
+        Vec3 localUp = right.cross(look).normalize();
+
+        // Tamaño (dimensión mayor, en bloques) y nitidez por stage
+        double size = 1.8 + 0.8 * stage;   // 2.6 / 3.4 / 4.2
+        float density = switch (stage) {
+            case 1 -> 0.35F;
+            case 2 -> 0.7F;
+            default -> 1.0F;
+        };
+        // La cabeza se centra un poco por delante del puño
+        Vec3 anchor = player.getEyePosition().subtract(0, 0.3, 0).add(look.scale(1.0 + size * 0.45));
+
+        DustParticleOptions glowDust = new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.85F, 0.2F), 1.3F);
+        DustParticleOptions whiteDust = new DustParticleOptions(new org.joml.Vector3f(0.95F, 0.95F, 0.95F), 1.0F);
+        java.util.Random rand = new java.util.Random();
+
+        // Escamas → llamas (la densidad marca qué tan "fantasmal" se ve)
+        spawnCloud(level, DragonHeadPoints.FLAME, density, anchor, right, localUp, look, size,
+                (x, y, z) -> level.sendParticles(ParticleTypes.FLAME, x, y, z, 1, 0.02, 0.02, 0.02, 0.0), rand);
+        // Ojos y brillo de boca: siempre visibles — son lo que hace reconocible la cabeza
+        spawnCloud(level, DragonHeadPoints.GLOW, Math.max(density, 0.8F), anchor, right, localUp, look, size,
+                (x, y, z) -> level.sendParticles(glowDust, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);
+        // Dientes y cuernos
+        spawnCloud(level, DragonHeadPoints.WHITE, Math.max(density, 0.6F), anchor, right, localUp, look, size,
+                (x, y, z) -> level.sendParticles(whiteDust, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);
+        // Fosas nasales / pupilas
+        spawnCloud(level, DragonHeadPoints.SMOKE, 1.0F, anchor, right, localUp, look, size,
+                (x, y, z) -> level.sendParticles(ParticleTypes.SMOKE, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);
+
+        // Estela de brasas detrás de la cabeza que sugiere el cuerpo (stage 2+)
+        if (stage >= 2) {
+            DustParticleOptions ember = new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.35F, 0.05F), 1.2F);
+            for (double t = 0.3; t < 1.0 + size * 0.2; t += 0.2) {
+                Vec3 p = anchor.subtract(look.scale(size * 0.5 + t)).add(
+                        right.scale((rand.nextDouble() - 0.5) * 0.6)).add(
+                        localUp.scale((rand.nextDouble() - 0.5) * 0.6));
+                level.sendParticles(ember, p.x, p.y, p.z, 2, 0.15, 0.15, 0.15, 0.01);
+            }
+        }
+    }
+
+    private interface ParticleEmitter {
+        void emit(double x, double y, double z);
+    }
+
+    private static void spawnCloud(ServerLevel level, float[] points, float density, Vec3 anchor,
+                                   Vec3 right, Vec3 localUp, Vec3 look, double size,
+                                   ParticleEmitter emitter, java.util.Random rand) {
+        for (int i = 0; i < points.length; i += 3) {
+            if (rand.nextFloat() > density) continue;
+            Vec3 world = anchor
+                    .add(right.scale(points[i] * size))
+                    .add(localUp.scale(points[i + 1] * size))
+                    .add(look.scale(points[i + 2] * size));
+            emitter.emit(world.x, world.y, world.z);
+        }
+    }
+
     public static void activateFireBarrier(Player player) {
         int stage = PlayerDataProvider.getStage(player);
         if (stage == 0) return;

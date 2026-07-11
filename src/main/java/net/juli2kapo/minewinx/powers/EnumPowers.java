@@ -10,6 +10,7 @@ public enum EnumPowers {
     // FIRE POWERS
     FIRE_BARRIER(Element.FIRE, 1, FirePowers::activateFireBarrier),
     FIRE_LASER(Element.FIRE, 2, FirePowers::fireLaser),
+    DRAGON_PUNCH(Element.FIRE, 3, FirePowers::dragonPunch),
 
     // WATER POWERS
     DROWN_TARGET(Element.WATER, 1, WaterPowers::startDrowningTarget),
@@ -26,7 +27,7 @@ public enum EnumPowers {
     CONFUSION_SONG(Element.MUSIC, 3, MusicPowers::confusionSong),
 
     // TECHNOLOGY POWERS
-    SHORT_RANGE_XRAY(Element.TECHNOLOGY, 1, TechnologyPowers::freezeTime),
+    FREEZE_TIME(Element.TECHNOLOGY, 1, TechnologyPowers::freezeTime),
     ITEM_DROP(Element.TECHNOLOGY, 2, TechnologyPowers::itemDrop),
     PISTON_SMASH(Element.TECHNOLOGY, 3, TechnologyPowers::pistonSmash),
 
@@ -38,11 +39,17 @@ public enum EnumPowers {
 
     // NATURE POWERS
     SPORE_BOMB(Element.NATURE, 1, NaturePowers::sporeBomb),
+    CYCLE_PLANT(Element.NATURE, 2, NaturePowers::cyclePlant),
+    PLANT_SEED(Element.NATURE, 3, NaturePowers::spawnPlant),
 
     // SUNANDMOON POWERS
     CAST_SUN_RAY(Element.SUNANDMOON, 1, SunAndMoonPowers::castSunRay),
     LIGHTRAYS(Element.SUNANDMOON, 2, SunAndMoonPowers::castLightBarrage),
     TEST_ARROWS(Element.SUNANDMOON, 3, SunAndMoonPowers::castAngleTest),
+
+    // STORM POWERS
+    STORM_FIELD(Element.STORM, 1, StormPowers::summonStormField),
+    TORNADO(Element.STORM, 2, StormPowers::summonTornado),
 
     UNKNOWN(Element.UNKNOWN, 0, player -> {});
 
@@ -93,7 +100,8 @@ public enum EnumPowers {
         MUSIC(5, "music"),
         TECHNOLOGY(6, "technology"),
         DARK(7, "dark"),
-        SUNANDMOON(8, "sunandmoon");
+        SUNANDMOON(8, "sunandmoon"),
+        STORM(9, "storm");
 
         private final int id;
         private final String name;

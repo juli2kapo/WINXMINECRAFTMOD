@@ -14,8 +14,13 @@ LayerDefinition conversion). Private, non-distributed gift mod — asset reuse O
 ## Roster (per stage; upgrade-replacement, not cumulative)
 
 - Stage 1: Peashooter, Chomper, Cherry Bomb
-- Stage 2: Repeater, Snow Pea, Chomper, Cherry Bomb
-- Stage 3: Gatling Pea, Snow Pea, Torchwood, Doom-shroom, Chomper
+- Stage 2: Repeater, Snow Pea, Chomper, Doom-shroom
+- Stage 3: Gatling Pea, Snow Pea, Torchwood, Doom-shroom (extra damage), Chomper, Cob Cannon
+
+Bomb line upgrades: Cherry Bomb (1) → Doom-shroom (2, stronger at 3).
+Cob Cannon (3 only): artillery — every ~8 s lobs a ballistic cob at the
+farthest hostile within 24 blocks; explodes with radius-4 damage, NO block
+destruction; shows the "no cob" texture while reloading.
 
 ## Behaviors
 

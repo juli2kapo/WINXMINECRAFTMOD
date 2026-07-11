@@ -2,18 +2,31 @@ package net.juli2kapo.minewinx.event;
 
 import net.juli2kapo.minewinx.MineWinx;
 import net.juli2kapo.minewinx.effect.ModEffects;
+import net.juli2kapo.minewinx.entity.PlayerIllusionEntity;
+import net.juli2kapo.minewinx.item.ModItems;
+import net.juli2kapo.minewinx.powers.DarkPowers;
 import net.juli2kapo.minewinx.powers.EnumPowers;
 import net.juli2kapo.minewinx.powers.NaturePowers;
+import net.juli2kapo.minewinx.powers.StormPowers;
 import net.juli2kapo.minewinx.powers.SunAndMoonPowers;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -40,6 +53,21 @@ public class ServerEvents {
                 case NATURE -> applyNatureEffects(player, stage);
 
             }
+
+            applyTecnoArmorSetBonus(player);
+        }
+    }
+
+    private static void applyTecnoArmorSetBonus(Player player) {
+        boolean fullSet = player.getItemBySlot(EquipmentSlot.HEAD).getItem() == ModItems.TECNO_HELMET.get()
+                && player.getItemBySlot(EquipmentSlot.CHEST).getItem() == ModItems.TECNO_CHESTPLATE.get()
+                && player.getItemBySlot(EquipmentSlot.LEGS).getItem() == ModItems.TECNO_LEGGINGS.get()
+                && player.getItemBySlot(EquipmentSlot.FEET).getItem() == ModItems.TECNO_BOOTS.get();
+        if (fullSet) {
+            player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 210, 0, false, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 210, 0, false, false, true));
+            // Duración larga para que la visión nocturna no parpadee en pantalla.
+            player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, false, false, true));
         }
     }
 
@@ -48,6 +76,15 @@ public class ServerEvents {
         LivingEntity entity = event.getEntity();
         if (!entity.level().isClientSide() && entity.hasEffect(ModEffects.SLEEP.get())) {
             entity.removeEffect(ModEffects.SLEEP.get());
+        }
+        // Pasiva de tormenta: inmunidad a los rayos (puede pararse dentro de su propio campo)
+        if (!entity.level().isClientSide() && entity instanceof Player player
+                && event.getSource().is(DamageTypes.LIGHTNING_BOLT)) {
+            String element = PlayerDataProvider.getElement(player);
+            if ("Storm".equalsIgnoreCase(element) && PlayerDataProvider.getStage(player) >= 1) {
+                event.setCanceled(true);
+                player.clearFire();
+            }
         }
     }
 
@@ -75,15 +112,64 @@ public class ServerEvents {
         }
     }
 
+    /**
+     * Ilusiones de mobs: se rompen (sin morir, sin loot) al ser golpeadas por un
+     * jugador y son inmunes a cualquier otro daño. Reemplaza el viejo override de
+     * hurt() del Mob anónimo — ahora las ilusiones son mobs reales con IA completa.
+     */
+    @SubscribeEvent
+    public static void onIllusionAttacked(LivingAttackEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity.level().isClientSide()) return;
+        if (entity instanceof PlayerIllusionEntity) return; // las de jugador tienen su propia lógica
+        if (!(entity instanceof Mob) || !entity.getTags().contains("Illusion")) return;
+
+        event.setCanceled(true);
+        if (event.getSource().getEntity() instanceof Player) {
+            ServerLevel serverLevel = (ServerLevel) entity.level();
+            serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                    SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 1.2F);
+            serverLevel.sendParticles(ParticleTypes.SMOKE,
+                    entity.getX(), entity.getY() + entity.getBbHeight() / 2.0, entity.getZ(),
+                    15, 0.3, 0.3, 0.3, 0.1);
+            entity.discard();
+        }
+    }
+
+    /**
+     * Las ilusiones nunca eligen como objetivo a su creadora (la IA vanilla de un
+     * monstruo real apuntaría a cualquier jugador cercano).
+     */
+    @SubscribeEvent
+    public static void onIllusionChangeTarget(LivingChangeTargetEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity.level().isClientSide()) return;
+        if (!entity.getTags().contains("Illusion")) return;
+
+        if (event.getNewTarget() instanceof Player target) {
+            CompoundTag data = entity.getPersistentData();
+            if (data.hasUUID(DarkPowers.CREATOR_UUID_TAG)
+                    && data.getUUID(DarkPowers.CREATOR_UUID_TAG).equals(target.getUUID())) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    private static boolean isTecnoArmor(ItemStack stack) {
+        return stack.getItem() == ModItems.TECNO_HELMET.get()
+                || stack.getItem() == ModItems.TECNO_CHESTPLATE.get()
+                || stack.getItem() == ModItems.TECNO_LEGGINGS.get()
+                || stack.getItem() == ModItems.TECNO_BOOTS.get();
+    }
+
     @SubscribeEvent
     public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();
         ItemStack crafted = event.getCrafting();
-        if (crafted.getItem() == Items.DIAMOND_CHESTPLATE) { //TODO CAMBIAR POR TECNOARMOR
+        if (isTecnoArmor(crafted)) {
             String element = PlayerDataProvider.getElement(player);
             if (!"Technology".equalsIgnoreCase(element)) {
                 crafted.setCount(0); // Elimina el ítem
-                // Opcional: mensaje al jugador
                 player.sendSystemMessage(Component.literal("A casa."));
             }
         }
@@ -92,12 +178,12 @@ public class ServerEvents {
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getEntity() instanceof Player player) {
             ItemStack newItem = event.getTo();
-            if (newItem.getItem() == Items.DIAMOND_CHESTPLATE) {//TODO CAMBIAR POR TECNOARMOR
+            if (isTecnoArmor(newItem)) {
                 String element = PlayerDataProvider.getElement(player);
-                if (!"Technology".equalsIgnoreCase(element)) {
+                int stage = PlayerDataProvider.getStage(player);
+                if (!"Technology".equalsIgnoreCase(element) || stage < 3) {
                     event.setCanceled(true); // Cancela el equipamiento
-                    // Opcional: mensaje al jugador
-                    player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor si tienes el elemento Tecnología."));
+                    player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor con el elemento Tecnología al máximo nivel."));
                 }
             }
         }
@@ -108,6 +194,7 @@ public class ServerEvents {
         if (event.phase == TickEvent.Phase.END) {
             // Pass the server level from the event
             SunAndMoonPowers.onServerTick(event.getServer().overworld());
+            StormPowers.onServerTick(event.getServer().overworld());
         }
     }
 

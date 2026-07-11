@@ -20,6 +20,10 @@ public class ModParticles {
             PARTICLE_TYPES.register("sound_wave_particle", () -> new SimpleParticleType(true));
     public static final RegistryObject<SimpleParticleType> MUSIC_NOTE_PARTICLE =
             PARTICLE_TYPES.register("music_note_particle", () -> new SimpleParticleType(true));
+    public static final RegistryObject<SimpleParticleType> POWIE_PARTICLE =
+            PARTICLE_TYPES.register("powie_particle", () -> new SimpleParticleType(true));
+    public static final RegistryObject<SimpleParticleType> DOOM_PARTICLE =
+            PARTICLE_TYPES.register("doom_particle", () -> new SimpleParticleType(true));
 
     public static void register(IEventBus eventBus) {
         PARTICLE_TYPES.register(eventBus);

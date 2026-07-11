@@ -3,6 +3,7 @@ package net.juli2kapo.minewinx.item;
 import net.juli2kapo.minewinx.MineWinx;
 import net.juli2kapo.minewinx.item.custom.*;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -22,6 +23,10 @@ public class ModItems {
 
     public static final RegistryObject<Item> HIGHQMANACRYSTAL =
             ITEMS.register("high_quality_mana_crystal", ()-> new Item( new Item.Properties()));
+
+    // Intermedios de crafteo
+    public static final RegistryObject<Item> ORIGIN_SAPLING =
+            ITEMS.register("origin_sapling", ()-> new Item( new Item.Properties()));
 
     // Tools
     public static final RegistryObject<Item> MANARADAR =
@@ -83,6 +88,23 @@ public class ModItems {
             ITEMS.register("sunandmoon_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "SunAndMoon", 2));
     public static final RegistryObject<Item> SUNANDMOONSTAGE3 =
             ITEMS.register("sunandmoon_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "SunAndMoon", 3));
+
+    public static final RegistryObject<Item> STORMSTAGE1 =
+            ITEMS.register("storm_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "Storm", 1));
+    public static final RegistryObject<Item> STORMSTAGE2 =
+            ITEMS.register("storm_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "Storm", 2));
+    public static final RegistryObject<Item> STORMSTAGE3 =
+            ITEMS.register("storm_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Storm", 3));
+
+    // Tecno Armor
+    public static final RegistryObject<Item> TECNO_HELMET =
+            ITEMS.register("tecno_helmet", ()-> new ArmorItem(ModArmorMaterials.TECNO, ArmorItem.Type.HELMET, new Item.Properties()));
+    public static final RegistryObject<Item> TECNO_CHESTPLATE =
+            ITEMS.register("tecno_chestplate", ()-> new ArmorItem(ModArmorMaterials.TECNO, ArmorItem.Type.CHESTPLATE, new Item.Properties()));
+    public static final RegistryObject<Item> TECNO_LEGGINGS =
+            ITEMS.register("tecno_leggings", ()-> new ArmorItem(ModArmorMaterials.TECNO, ArmorItem.Type.LEGGINGS, new Item.Properties()));
+    public static final RegistryObject<Item> TECNO_BOOTS =
+            ITEMS.register("tecno_boots", ()-> new ArmorItem(ModArmorMaterials.TECNO, ArmorItem.Type.BOOTS, new Item.Properties()));
 
     // Illusion Items
     public static final RegistryObject<Item> SKELETON_ILLUSION =

@@ -29,6 +29,11 @@ public class ModBlocks {
     public static final RegistryObject<Block> DEEPSLATE_MANA_CRYSTAL_ORE =
             registerBlock("deepslate_mana_crystal_ore", ()-> new DropExperienceBlock(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_IRON_ORE).sound(SoundType.AMETHYST).requiresCorrectToolForDrops(), UniformInt.of(3,6)));
 
+    // Hielo del End: se comporta exactamente como el hielo básico (resbaladizo,
+    // se derrite con luz, se vuelve agua al romperse sin toque de seda)
+    public static final RegistryObject<Block> END_ICE =
+            registerBlock("end_ice", ()-> new net.minecraft.world.level.block.IceBlock(BlockBehaviour.Properties.copy(Blocks.ICE)));
+
 
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block){

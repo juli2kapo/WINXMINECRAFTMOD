@@ -44,7 +44,15 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.SUNANDMOONSTAGE1);
         simpleItem(ModItems.SUNANDMOONSTAGE2);
         simpleItem(ModItems.SUNANDMOONSTAGE3);
+        simpleItem(ModItems.STORMSTAGE1);
+        simpleItem(ModItems.STORMSTAGE2);
+        simpleItem(ModItems.STORMSTAGE3);
         simpleItem(ModItems.MANARADAR);
+        simpleItem(ModItems.TECNO_HELMET);
+        simpleItem(ModItems.TECNO_CHESTPLATE);
+        simpleItem(ModItems.TECNO_LEGGINGS);
+        simpleItem(ModItems.TECNO_BOOTS);
+        simpleItem(ModItems.ORIGIN_SAPLING);
     }
 
     private ItemModelBuilder simpleItem(RegistryObject<Item> item){

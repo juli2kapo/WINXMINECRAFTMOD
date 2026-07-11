@@ -18,9 +18,16 @@ public class ModBlockStateProvider extends BlockStateProvider {
     protected void registerStatesAndModels() {
         blockWithItem(ModBlocks.MANA_CRYSTAL_ORE);
         blockWithItem(ModBlocks.DEEPSLATE_MANA_CRYSTAL_ORE);
+        translucentBlockWithItem(ModBlocks.END_ICE);
     }
 
     private void blockWithItem(RegistryObject<Block> blockRegistryObject){
         simpleBlockWithItem(blockRegistryObject.get(), cubeAll(blockRegistryObject.get()));
+    }
+
+    private void translucentBlockWithItem(RegistryObject<Block> blockRegistryObject){
+        simpleBlockWithItem(blockRegistryObject.get(),
+                models().cubeAll(blockRegistryObject.getId().getPath(), blockTexture(blockRegistryObject.get()))
+                        .renderType("translucent"));
     }
 }

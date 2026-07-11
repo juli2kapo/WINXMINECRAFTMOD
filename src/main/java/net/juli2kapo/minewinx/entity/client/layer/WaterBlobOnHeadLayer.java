@@ -27,8 +27,13 @@ public class WaterBlobOnHeadLayer<T extends LivingEntity, M extends EntityModel<
     public void render(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, T pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTick, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch) {
         if (pLivingEntity.hasEffect(ModEffects.DROWNING_TARGET.get())) {
             pPoseStack.pushPose();
-            pPoseStack.translate(0, pLivingEntity.getBbHeight() + 0.3F, 0);
-            pPoseStack.scale(0.5F, 0.5F, 0.5F);
+            // Espacio de modelo de entidad: Y+ es HACIA ABAJO y el origen queda
+            // 1.501 bloques sobre los pies (mundo_y = 1.501 - modelo_y). La
+            // geometría del blob ocupa modelo_y [0.625s, 1.5s]; este translate
+            // centra esa franja envolviendo la cabeza (altura de ojos aprox).
+            float s = Math.max(1.0F, pLivingEntity.getBbWidth() * 1.4F);
+            pPoseStack.translate(0.0F, 1.701F - pLivingEntity.getBbHeight() - 1.0625F * s, 0.0F);
+            pPoseStack.scale(s, s, s);
 
             VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityTranslucent(WATER_BLOB_TEXTURE));
             model.renderToBuffer(pPoseStack, vertexconsumer, pPackedLight, OverlayTexture.NO_OVERLAY, 0.6F, 0.8F, 1.0F, 0.7F);

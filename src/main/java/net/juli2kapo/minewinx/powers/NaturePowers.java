@@ -2,6 +2,8 @@ package net.juli2kapo.minewinx.powers;
 
 import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.entity.SporeBombEntity;
+import net.juli2kapo.minewinx.entity.plants.PlantEntity;
+import net.juli2kapo.minewinx.entity.plants.PlantType;
 import net.juli2kapo.minewinx.util.PlayerDataProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -27,6 +29,88 @@ public class NaturePowers {
             sporeBomb.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
             world.addFreshEntity(sporeBomb);
         }
+    }
+
+    private static final String SELECTED_PLANT_KEY = "MinewinxSelectedPlant";
+
+    /**
+     * Slot 2: rota qué planta está seleccionada para plantar (roster según stage).
+     */
+    public static void cyclePlant(Player player) {
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage <= 0) return;
+        if (player.level().isClientSide()) return;
+
+        java.util.List<PlantType> roster = PlantType.rosterForStage(stage);
+        PlantType current = PlantType.byName(player.getPersistentData().getString(SELECTED_PLANT_KEY));
+        int index = roster.indexOf(current);
+        PlantType next = roster.get((index + 1) % roster.size());
+        player.getPersistentData().putString(SELECTED_PLANT_KEY, next.name());
+
+        player.displayClientMessage(Component.translatable("power.minewinx.plant_selected",
+                Component.translatable(next.translationKey())), true);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.juli2kapo.minewinx.sound.ModSounds.TAP.get(),
+                net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.0F);
+    }
+
+    /**
+     * Slot 3: planta la planta seleccionada en el bloque al que mira Flora.
+     * Respeta el límite de plantas por stage marchitando la más vieja.
+     */
+    public static void spawnPlant(Player player) {
+        int stage = PlayerDataProvider.getStage(player);
+        if (stage <= 0) return;
+        Level level = player.level();
+        if (level.isClientSide()) return;
+        ServerLevel serverLevel = (ServerLevel) level;
+
+        java.util.List<PlantType> roster = PlantType.rosterForStage(stage);
+        PlantType selected = PlantType.byName(player.getPersistentData().getString(SELECTED_PLANT_KEY));
+        if (!roster.contains(selected)) {
+            selected = roster.get(0);
+            player.getPersistentData().putString(SELECTED_PLANT_KEY, selected.name());
+        }
+
+        double maxRange = 10.0;
+        net.minecraft.world.phys.Vec3 eyePos = player.getEyePosition();
+        net.minecraft.world.phys.Vec3 endPos = eyePos.add(player.getViewVector(1.0F).scale(maxRange));
+        net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(
+                eyePos, endPos, net.minecraft.world.level.ClipContext.Block.OUTLINE,
+                net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) {
+            player.displayClientMessage(Component.literal("Apuntá a un bloque cercano."), true);
+            return;
+        }
+        BlockPos plantPos = hit.getBlockPos().above();
+        if (!level.getBlockState(plantPos).getCollisionShape(level, plantPos).isEmpty()) {
+            player.displayClientMessage(Component.literal("No hay lugar para plantar ahí."), true);
+            return;
+        }
+
+        // Límite de plantas: marchitar la más vieja si se pasa
+        java.util.List<PlantEntity> owned = serverLevel.getEntitiesOfClass(PlantEntity.class,
+                player.getBoundingBox().inflate(96.0),
+                p -> player.getUUID().equals(p.getOwnerUUID()));
+        int cap = PlantType.plantCapForStage(stage);
+        if (owned.size() >= cap) {
+            owned.stream().min(java.util.Comparator.comparingLong(PlantEntity::getPlantedAt))
+                    .ifPresent(PlantEntity::wither);
+        }
+
+        PlantEntity plant = new PlantEntity(ModEntities.PLANT.get(), level);
+        plant.moveTo(plantPos.getX() + 0.5, plantPos.getY(), plantPos.getZ() + 0.5,
+                player.getYRot() + 180.0F, 0);
+        plant.yBodyRot = plant.getYRot();
+        plant.init(selected, player, stage);
+        serverLevel.addFreshEntity(plant);
+
+        serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
+                plantPos.getX() + 0.5, plantPos.getY() + 0.5, plantPos.getZ() + 0.5,
+                10, 0.3, 0.3, 0.3, 0.02);
+        serverLevel.playSound(null, plantPos.getX() + 0.5, plantPos.getY(), plantPos.getZ() + 0.5,
+                net.juli2kapo.minewinx.sound.ModSounds.PLANT.get(),
+                net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
     /**
