@@ -98,6 +98,15 @@ public class ModEntities {
 
 
 
+    public static final RegistryObject<EntityType<DragonHeadEntity>> DRAGON_HEAD =
+            ENTITY_TYPES.register("dragon_head",
+                    () -> EntityType.Builder.<DragonHeadEntity>of(DragonHeadEntity::new, MobCategory.MISC)
+                            .sized(1.0f, 1.0f)
+                            .clientTrackingRange(10)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build("dragon_head"));
+
     public static final RegistryObject<EntityType<PrismEntity>> PRISM =
             ENTITY_TYPES.register("prism",
                     () -> EntityType.Builder.<PrismEntity>of(PrismEntity::new, MobCategory.MISC)

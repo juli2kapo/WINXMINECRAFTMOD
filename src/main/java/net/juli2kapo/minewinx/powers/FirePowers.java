@@ -55,7 +55,12 @@ public class FirePowers {
         Vec3 endPos = eyePos.add(look.scale(range));
 
         // Embestida de la lanzadora (bien larga: es un puñetazo con todo el cuerpo)
-        player.setDeltaMovement(player.getDeltaMovement().add(look.scale(1.4 + 0.5 * stage)));
+        double impulse = switch (stage) {
+            case 1 -> 1.9;
+            case 2 -> 3.3;
+            default -> 5.2;
+        };
+        player.setDeltaMovement(player.getDeltaMovement().add(look.scale(impulse)));
         player.hurtMarked = true;
 
         // Golpe: primera entidad en la trayectoria
@@ -71,80 +76,42 @@ public class FirePowers {
             victim.hasImpulse = true;
         }
 
-        drawDragonOutline(serverLevel, player, look, range, stage);
+        // Cabeza de dragón como MODELO real (entidad efímera) por delante del puño,
+        // volando en la dirección de la embestida y desvaneciéndose sola.
+        net.juli2kapo.minewinx.entity.DragonHeadEntity head =
+                new net.juli2kapo.minewinx.entity.DragonHeadEntity(
+                        net.juli2kapo.minewinx.entity.ModEntities.DRAGON_HEAD.get(), serverLevel);
+        Vec3 headPos = eyePos.subtract(0, 0.3, 0).add(look.scale(2.0));
+        head.setPos(headPos.x, headPos.y, headPos.z);
+        // Velocidad emparejada con la nueva embestida (1.9/3.3/5.2): la cabeza
+        // recorre ~17/27/41 bloques en su vida y se mantiene siempre adelante
+        double headSpeed = switch (stage) {
+            case 1 -> 1.2;
+            case 2 -> 1.9;
+            default -> 2.9;
+        };
+        head.init(stage, look.scale(headSpeed), player);
+        serverLevel.addFreshEntity(head);
+
+        // Estela de brasas que sugiere el cuerpo detrás de la cabeza (stage 2+)
+        if (stage >= 2) {
+            DustParticleOptions ember = new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.35F, 0.05F), 1.2F);
+            java.util.Random rand = new java.util.Random();
+            Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
+            if (right.lengthSqr() < 1.0E-4) right = new Vec3(1, 0, 0);
+            Vec3 localUp = right.cross(look).normalize();
+            for (double t = 0.3; t < 2.0; t += 0.2) {
+                Vec3 p = headPos.subtract(look.scale(t)).add(
+                        right.scale((rand.nextDouble() - 0.5) * 0.6)).add(
+                        localUp.scale((rand.nextDouble() - 0.5) * 0.6));
+                serverLevel.sendParticles(ember, p.x, p.y, p.z, 2, 0.15, 0.15, 0.15, 0.01);
+            }
+        }
 
         serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 1.2F, 1.3F);
         serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 0.7F);
-    }
-
-    /**
-     * Dibuja la cabeza del dragón de fuego (nube de puntos extraída del modelo
-     * voxel, ver DragonHeadPoints) envolviendo el puño. A mayor stage el contorno
-     * es más grande y menos difuso (más puntos dibujados).
-     */
-    private static void drawDragonOutline(ServerLevel level, Player player, Vec3 look, double range, int stage) {
-        Vec3 up = new Vec3(0, 1, 0);
-        Vec3 right = look.cross(up).normalize();
-        if (right.lengthSqr() < 1.0E-4) right = new Vec3(1, 0, 0); // mirando en vertical
-        Vec3 localUp = right.cross(look).normalize();
-
-        // Tamaño (dimensión mayor, en bloques) y nitidez por stage
-        double size = 1.8 + 0.8 * stage;   // 2.6 / 3.4 / 4.2
-        float density = switch (stage) {
-            case 1 -> 0.6F;
-            case 2 -> 0.85F;
-            default -> 1.0F;
-        };
-        // Bien adelante del puño para que la embestida no la atraviese al instante
-        Vec3 anchor = player.getEyePosition().subtract(0, 0.3, 0).add(look.scale(2.5 + size * 0.55));
-
-        DustParticleOptions glowDust = new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.85F, 0.2F), 1.3F);
-        DustParticleOptions whiteDust = new DustParticleOptions(new org.joml.Vector3f(0.95F, 0.95F, 0.95F), 1.0F);
-        java.util.Random rand = new java.util.Random();
-
-        // Escamas → llamas (la densidad marca qué tan "fantasmal" se ve);
-        // 2 partículas por punto para que la cabeza se vea sólida
-        spawnCloud(level, DragonHeadPoints.FLAME, density, anchor, right, localUp, look, size,
-                (x, y, z) -> level.sendParticles(ParticleTypes.FLAME, x, y, z, 2, 0.04, 0.04, 0.04, 0.0), rand);
-        // Ojos y brillo de boca: siempre visibles — son lo que hace reconocible la cabeza
-        spawnCloud(level, DragonHeadPoints.GLOW, Math.max(density, 0.8F), anchor, right, localUp, look, size,
-                (x, y, z) -> level.sendParticles(glowDust, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);
-        // Dientes y cuernos
-        spawnCloud(level, DragonHeadPoints.WHITE, Math.max(density, 0.6F), anchor, right, localUp, look, size,
-                (x, y, z) -> level.sendParticles(whiteDust, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);
-        // Fosas nasales / pupilas
-        spawnCloud(level, DragonHeadPoints.SMOKE, 1.0F, anchor, right, localUp, look, size,
-                (x, y, z) -> level.sendParticles(ParticleTypes.SMOKE, x, y, z, 1, 0.01, 0.01, 0.01, 0.0), rand);
-
-        // Estela de brasas detrás de la cabeza que sugiere el cuerpo (stage 2+)
-        if (stage >= 2) {
-            DustParticleOptions ember = new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.35F, 0.05F), 1.2F);
-            for (double t = 0.3; t < 1.0 + size * 0.2; t += 0.2) {
-                Vec3 p = anchor.subtract(look.scale(size * 0.5 + t)).add(
-                        right.scale((rand.nextDouble() - 0.5) * 0.6)).add(
-                        localUp.scale((rand.nextDouble() - 0.5) * 0.6));
-                level.sendParticles(ember, p.x, p.y, p.z, 2, 0.15, 0.15, 0.15, 0.01);
-            }
-        }
-    }
-
-    private interface ParticleEmitter {
-        void emit(double x, double y, double z);
-    }
-
-    private static void spawnCloud(ServerLevel level, float[] points, float density, Vec3 anchor,
-                                   Vec3 right, Vec3 localUp, Vec3 look, double size,
-                                   ParticleEmitter emitter, java.util.Random rand) {
-        for (int i = 0; i < points.length; i += 3) {
-            if (rand.nextFloat() > density) continue;
-            Vec3 world = anchor
-                    .add(right.scale(points[i] * size))
-                    .add(localUp.scale(points[i + 1] * size))
-                    .add(look.scale(points[i + 2] * size));
-            emitter.emit(world.x, world.y, world.z);
-        }
     }
 
     public static void activateFireBarrier(Player player) {

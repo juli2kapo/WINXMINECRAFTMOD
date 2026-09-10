@@ -24,9 +24,10 @@ public class SpeakerEntity extends Entity {
     private static final int ANIMATION_DURATION = 40;
     private final AnimationState animationState = new AnimationState();
     private static final EntityDataAccessor<Integer> LIFETIME = SynchedEntityData.defineId(SpeakerEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> VOICE = SynchedEntityData.defineId(SpeakerEntity.class, EntityDataSerializers.INT);
     private static final int MAX_LIFETIME = 600; // 30 segundos (20 ticks por segundo)
     private static final double DAMAGE_RADIUS = 12.0;
-    private static final float DAMAGE_AMOUNT = 6.0F;
+    private static final float DAMAGE_AMOUNT = 4.0F; // 6 apilaba demasiado con varios parlantes
     private static final int DAMAGE_INTERVAL = 20; // 2 segundos
 
     private Player owner;
@@ -40,6 +41,13 @@ public class SpeakerEntity extends Entity {
     @Override
     protected void defineSynchedData() {
         this.entityData.define(LIFETIME, 0);
+        this.entityData.define(VOICE, 0);
+    }
+
+    /** Voz asignada al invocar (0 melodía, 1 bajo, 2 acordes) — antes salía del
+     *  id de entidad y podías quedar sin melodía por pura mala suerte. */
+    public void setVoice(int voice) {
+        this.entityData.set(VOICE, Math.floorMod(voice, 3));
     }
 
     @Override
@@ -67,9 +75,10 @@ public class SpeakerEntity extends Entity {
                 damageTimer = 0;
             }
 
-            // Efectos de partículas y sonido cada cierto tiempo
-            if (currentLifetime % 20 == 0) { // Cada segundo
-                this.playMusicEffects();
+            // Música real: cada parlante toca una voz distinta de la misma
+            // melodía, sincronizados por el reloj del mundo
+            if (this.level() instanceof ServerLevel serverLevel) {
+                this.playMusicTick(serverLevel);
             }
         }
     }
@@ -101,19 +110,91 @@ public class SpeakerEntity extends Entity {
         }
     }
 
-    private void playMusicEffects() {
-        if (!(this.level() instanceof ServerLevel serverLevel)) return;
+    // ---- Himno de la Alegría (Beethoven, 9ª) — las 4 frases completas -------
+    // Grilla de CORCHEAS (8 por compás, 4 compases por frase, 4 frases = 128
+    // pasos). Con el ritmo real: negras, las figuras punteadas de fin de frase
+    // y las corcheas E-F de la frase 3. Semitonos: C4=6 D4=8 E4=10 F4=11 G4=13.
+    private static final int STEP_TICKS = 4;   // corchea = 4 ticks → negra a 150 bpm
+    private static final int TOTAL_STEPS = 128;
+    private static final int[] MELODY_AT = new int[TOTAL_STEPS]; // nota que ARRANCA en cada paso, -1 = nada
+    private static final int[] BASS_AT = new int[TOTAL_STEPS];
+    private static final int[] CHORD_AT = new int[TOTAL_STEPS];
+
+    static {
+        java.util.Arrays.fill(MELODY_AT, -1);
+        java.util.Arrays.fill(BASS_AT, -1);
+        java.util.Arrays.fill(CHORD_AT, -1);
+
+        // Melodía como pares {nota, duración en corcheas}
+        int[][] fraseA = {{10,2},{10,2},{11,2},{13,2},{13,2},{11,2},{10,2},{8,2},
+                          {6,2},{6,2},{8,2},{10,2},{10,3},{8,1},{8,4}};
+        int[][] fraseB = {{10,2},{10,2},{11,2},{13,2},{13,2},{11,2},{10,2},{8,2},
+                          {6,2},{6,2},{8,2},{10,2},{8,3},{6,1},{6,4}};
+        int[][] fraseC = {{8,2},{8,2},{10,2},{6,2},
+                          {8,2},{10,1},{11,1},{10,2},{6,2},
+                          {8,2},{10,1},{11,1},{10,2},{8,2},
+                          {6,2},{8,2},{1,4}};
+        int step = 0;
+        for (int[][] frase : new int[][][]{fraseA, fraseB, fraseC, fraseB}) {
+            for (int[] nota : frase) {
+                MELODY_AT[step] = nota[0];
+                step += nota[1];
+            }
+        }
+
+        // Bajo: raíz por medio compás (C=6, G=1 — el timbre "bass" ya suena
+        // dos octavas abajo). 8 raíces por frase.
+        int[] rootsA = {6, 6, 1, 1, 6, 6, 1, 1};
+        int[] rootsB = {6, 6, 1, 1, 6, 6, 1, 6};
+        int[] rootsC = {1, 1, 6, 6, 1, 1, 6, 1};
+        int half = 0;
+        for (int[] roots : new int[][]{rootsA, rootsB, rootsC, rootsB}) {
+            for (int root : roots) {
+                int at = half * 4; // el medio compás dura 4 corcheas
+                BASS_AT[at] = root;
+                // Acordes a contratiempo (corchea 3 del medio compás): tercera
+                // o quinta del acorde, alternando — relleno armónico suave
+                CHORD_AT[at + 2] = root == 6
+                        ? (half % 2 == 0 ? 10 : 13)   // C: E4 / G4
+                        : (half % 2 == 0 ? 5 : 8);    // G: B3 / D4
+                half++;
+            }
+        }
+    }
+
+    /**
+     * Cada parlante toca SU voz (asignada al invocar): melodía, bajo+bombo o
+     * acordes. Todos comparten el reloj del mundo, así que suenan en sincronía
+     * y entre varios arman el arreglo completo.
+     */
+    private void playMusicTick(ServerLevel serverLevel) {
+        long time = serverLevel.getGameTime();
+        if (time % STEP_TICKS != 0) return;
+        int step = (int) ((time / STEP_TICKS) % TOTAL_STEPS);
 
         Vec3 pos = this.position();
+        switch (this.entityData.get(VOICE)) {
+            case 0 -> playNote(serverLevel, pos, SoundEvents.NOTE_BLOCK_HARP.value(), MELODY_AT[step], 1.6F);
+            case 1 -> {
+                int root = BASS_AT[step];
+                if (root >= 0) {
+                    playNote(serverLevel, pos, SoundEvents.NOTE_BLOCK_BASS.value(), root, 1.3F);
+                    // Bombo suave pegado al bajo: marca el pulso sin taparlo
+                    serverLevel.playSound(null, pos.x, pos.y, pos.z,
+                            SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.RECORDS, 0.7F, 0.8F);
+                }
+            }
+            default -> playNote(serverLevel, pos, SoundEvents.NOTE_BLOCK_PLING.value(), CHORD_AT[step], 0.9F);
+        }
+    }
 
-        // Reproducir sonido de altavoz
-        serverLevel.playSound(null, pos.x, pos.y, pos.z,
-                SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 0.8F, 0.9F);
-
-        // Efectos de partículas musicales
+    private void playNote(ServerLevel serverLevel, Vec3 pos, net.minecraft.sounds.SoundEvent sound, int note, float volume) {
+        if (note < 0) return;
+        float pitch = (float) Math.pow(2.0, (note - 12) / 12.0);
+        serverLevel.playSound(null, pos.x, pos.y, pos.z, sound, SoundSource.RECORDS, volume, pitch);
+        // Nota visual con el tono como color (mismo truco que los note blocks)
         serverLevel.sendParticles(ParticleTypes.NOTE,
-                pos.x, pos.y + 1.0, pos.z,
-                3, 0.5, 0.5, 0.5, 0.05);
+                pos.x, pos.y + 1.2, pos.z, 0, note / 24.0, 0.0, 0.0, 1.0);
     }
 
     public void setOwner(Player owner) {

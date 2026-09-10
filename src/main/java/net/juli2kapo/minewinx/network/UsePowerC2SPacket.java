@@ -52,9 +52,12 @@ public class UsePowerC2SPacket {
                         }
                     }
                     power.execute(player);
-                    if (useCooldowns && power.getCooldownTicks() > 0) {
-                        net.juli2kapo.minewinx.util.PowerCooldowns.set(player, this.powerSlot, power.getCooldownTicks());
-                        PacketHandler.sendToPlayer(new CooldownS2CPacket(this.powerSlot, power.getCooldownTicks()), player);
+                    // Cooldown final = base * multiplicador de config del mundo
+                    int cooldown = (int) Math.round(power.getCooldownTicks()
+                            * net.juli2kapo.minewinx.Config.cooldownMultiplier);
+                    if (useCooldowns && cooldown > 0) {
+                        net.juli2kapo.minewinx.util.PowerCooldowns.set(player, this.powerSlot, cooldown);
+                        PacketHandler.sendToPlayer(new CooldownS2CPacket(this.powerSlot, cooldown), player);
                     }
                 }
             }

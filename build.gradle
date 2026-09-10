@@ -85,6 +85,10 @@ minecraft {
         client {
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
+
+            // Máquina con 6 GB de RAM: acotar heap y caches nativas del JIT
+            // para no morir con "Native memory allocation (malloc) failed"
+            jvmArgs '-Xmx2G', '-Xms512M', '-XX:ReservedCodeCacheSize=128M', '-XX:MaxMetaspaceSize=512M'
         }
 
         server {

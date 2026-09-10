@@ -55,7 +55,8 @@ public class MineWinx
 
         modEventBus.addListener(this::addCreative);
 
-        //context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        // Config por mundo (multiplicador de cooldowns, etc.)
+        context.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)

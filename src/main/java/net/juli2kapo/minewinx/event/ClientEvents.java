@@ -7,7 +7,6 @@ import net.juli2kapo.minewinx.client.gui.SleepOverlay;
 import net.juli2kapo.minewinx.effect.ModEffects;
 import net.juli2kapo.minewinx.entity.ModEntities;
 import net.juli2kapo.minewinx.entity.client.*;
-import net.juli2kapo.minewinx.entity.client.layer.WaterBlobOnHeadLayer;
 import net.juli2kapo.minewinx.entity.client.model.*;
 import net.juli2kapo.minewinx.network.PacketHandler;
 import net.juli2kapo.minewinx.network.TransformC2SPacket;
@@ -91,6 +90,7 @@ public class ClientEvents {
             event.registerLayerDefinition(LightRayModel.LAYER_LOCATION, LightRayModel::createBodyLayer);
             event.registerLayerDefinition(TornadoModel.LAYER_LOCATION, TornadoModel::createBodyLayer);
             event.registerLayerDefinition(PrismModel.LAYER_LOCATION, PrismModel::createBodyLayer);
+            event.registerLayerDefinition(DragonHeadModel.LAYER_LOCATION, DragonHeadModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -109,6 +109,7 @@ public class ClientEvents {
             event.registerEntityRenderer(ModEntities.PEA_PROJECTILE.get(), PeaRenderer::new);
             event.registerEntityRenderer(ModEntities.COB_PROJECTILE.get(), CobRenderer::new);
             event.registerEntityRenderer(ModEntities.PRISM.get(), PrismRenderer::new);
+            event.registerEntityRenderer(ModEntities.DRAGON_HEAD.get(), DragonHeadRenderer::new);
         }
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -116,40 +117,8 @@ public class ClientEvents {
             event.put(ModEntities.PLANT.get(), net.juli2kapo.minewinx.entity.plants.PlantEntity.createAttributes().build());
         }
 
-        @SubscribeEvent
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        public static void addLayers(EntityRenderersEvent.AddLayers event) {
-            // Añadir la capa a los renderizadores de jugadores (default y slim)
-            for (String skin : event.getSkins()) {
-                LivingEntityRenderer renderer = event.getSkin(skin);
-                if (renderer instanceof PlayerRenderer) {
-                    addWaterBlobLayer(renderer);
-                }
-            }
-            // ...y a TODOS los mobs (el poder de ahogo se lanza contra mobs;
-            // antes la capa solo existía en jugadores y la burbuja nunca se veía).
-            // OJO: getRenderer castea internamente a LivingEntityRenderer y explota
-            // con renderers no-living (botes, tornado, plantas) — por eso el try/catch.
-            int layered = 0;
-            for (EntityType<?> entityType : net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES) {
-                if (entityType == EntityType.PLAYER) continue;
-                try {
-                    LivingEntityRenderer renderer = event.getRenderer((EntityType) entityType);
-                    if (renderer != null) {
-                        addWaterBlobLayer(renderer);
-                        layered++;
-                    }
-                } catch (ClassCastException ignored) {
-                    // renderer no-living: esta entidad no puede tener la burbuja
-                }
-            }
-            MineWinx.LOGGER.info("WaterBlob layer añadida a {} renderers de mobs", layered);
-        }
-
-        private static <T extends LivingEntity, M extends EntityModel<T>> void addWaterBlobLayer(LivingEntityRenderer<T, M> renderer) {
-            ModelLayerLocation location = WaterBlobModel.LAYER_LOCATION;
-            WaterBlobModel<T> model = new WaterBlobModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(location));
-            renderer.addLayer(new WaterBlobOnHeadLayer<>(renderer, model));
-        }
+        // La burbuja de ahogo ya NO es una capa por-renderer: los renderers de
+        // slimes/ravagers escalan su pose y la deformaban. Ahora la dibuja
+        // WaterBlobWorldRenderer en espacio de mundo (RenderLevelStageEvent).
     }
 }

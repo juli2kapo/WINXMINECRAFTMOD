@@ -188,13 +188,18 @@ public class ServerEvents {
         if (event.getEntity() instanceof Player player) {
             ItemStack newItem = event.getTo();
             if (isTecnoArmor(newItem)) {
+                // Creativo: sin restricción (y evita duplicaciones — el inventario
+                // creativo es autoritativo del cliente y "devolver" la pieza la clona)
+                if (player.isCreative()) return;
+
                 String element = PlayerDataProvider.getElement(player);
                 int stage = PlayerDataProvider.getStage(player);
                 if (!"Technology".equalsIgnoreCase(element) || stage < 3) {
-                    // El evento NO es cancelable: revertir el equipamiento a mano.
-                    // (Devolver la pieza al inventario y restaurar lo que había.)
+                    // El evento NO es cancelable: rechazar a mano. Vaciar el slot
+                    // (NO restaurar 'from': en un swap con cursor eso duplicaba)
+                    // y devolver la pieza rechazada una única vez.
                     ItemStack rejected = newItem.copy();
-                    player.setItemSlot(event.getSlot(), event.getFrom());
+                    player.setItemSlot(event.getSlot(), ItemStack.EMPTY);
                     player.getInventory().placeItemBackInInventory(rejected);
                     player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor con el elemento Tecnología al máximo nivel."));
                 }
@@ -211,6 +216,11 @@ public class ServerEvents {
             WaterPowers.onServerTick(event.getServer().overworld());
 
             net.juli2kapo.minewinx.util.TransientLights.tick(event.getServer().overworld());
+
+            // Órdenes de ilusiones: re-aplicarlas para que la IA vanilla no las pise
+            for (net.minecraft.server.level.ServerLevel lvl : event.getServer().getAllLevels()) {
+                net.juli2kapo.minewinx.powers.DarkPowers.tickOrders(lvl);
+            }
 
             // Pasivas + HUD por acá: este handler está VERIFICADO en juego
             // (los géiseres corren por él); PlayerTickEvent no nos llega.

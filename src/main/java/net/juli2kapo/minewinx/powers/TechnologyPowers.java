@@ -40,7 +40,6 @@ public class TechnologyPowers {
     public static void freezeTime(Player player) {
         try {
 
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("PARANDO TIEMPO"));
             int stage = PlayerDataProvider.getStage(player);
             if (stage == 0)
                 return;
@@ -65,12 +64,10 @@ public class TechnologyPowers {
             ServerLevel serverLevel = (ServerLevel) level;
             CommandSourceStack commandSource = serverLevel.getServer().createCommandSourceStack();
             String excludeCommand = "setTickrate exclude " + player.getName().getString() + " true";
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Executing: " + excludeCommand));
             serverLevel.getServer().getCommands().performPrefixedCommand(commandSource, excludeCommand);
 
             // Freeze time in the area
             String freezeCommand = "setTickrate dimension " + dimension + " 0";
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Executing: " + freezeCommand));
             serverLevel.getServer().getCommands().performPrefixedCommand(commandSource, freezeCommand);
 
             new Timer().schedule(new TimerTask() {
@@ -78,14 +75,10 @@ public class TechnologyPowers {
                 public void run() {
                     serverLevel.getServer().execute(() -> {
                         String unfreezeCommand = "setTickrate dimension " + dimension + " 20";
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Executing: " + unfreezeCommand));
                         serverLevel.getServer().getCommands().performPrefixedCommand(commandSource, unfreezeCommand);
 
                         String unexcludeCommand = "setTickrate exclude " + player.getName().getString() + " false";
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Executing: " + unexcludeCommand));
                         serverLevel.getServer().getCommands().performPrefixedCommand(commandSource, unexcludeCommand);
-
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("EL TIEMPO VUELVE A CORRER"));
                         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                                 SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.5F);
                     });

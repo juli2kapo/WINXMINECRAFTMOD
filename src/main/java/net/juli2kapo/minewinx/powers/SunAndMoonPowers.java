@@ -49,38 +49,15 @@ public class SunAndMoonPowers {
         DustParticleOptions particleEffect;
 
         if (level.isDay()) {
-            damage = 10.0F + (stage * 5.0F);
+            damage = 4.0F + (stage * 4.0F); // 8 / 12 / 16 (antes 15/20/25: rompía el balance con CD de 3s)
             particleEffect = new DustParticleOptions(new Vector3f(1.0f, 0.9f, 0.2f), 1.5f);
         } else {
             damage = 4.0F + (stage * 2.0F);
             particleEffect = new DustParticleOptions(new Vector3f(0.8f, 0.8f, 1.0f), 1.5f);
         }
 
-        // --- 2. Perform Combined Raycast ---
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 lookVec = player.getViewVector(1.0F);
-        Vec3 endPos = eyePos.add(lookVec.scale(maxRange));
-
-        BlockHitResult blockHit = level.clip(new ClipContext(
-                eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player
-        ));
-
-        AABB searchBox = player.getBoundingBox().expandTowards(lookVec.scale(maxRange)).inflate(1.0D);
-        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
-                level, player, eyePos, endPos, searchBox, (entity) -> !entity.isSpectator() && entity.isPickable(), (float) (maxRange * maxRange)
-        );
-
-        Vec3 targetPos;
-        if (entityHit != null) {
-            double entityDistSq = eyePos.distanceToSqr(entityHit.getLocation());
-            if (blockHit.getType() == HitResult.Type.MISS || entityDistSq < eyePos.distanceToSqr(blockHit.getLocation())) {
-                targetPos = entityHit.getLocation();
-            } else {
-                targetPos = blockHit.getLocation();
-            }
-        } else {
-            targetPos = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
-        }
+        // --- 2. Puntería asistida: mirar "más o menos" a un mob alcanza ---
+        Vec3 targetPos = findAimPoint(player, maxRange);
 
         // --- 3. Summon the SunRay Entity ---
         SunRay sunRay = new SunRay(ModEntities.SUN_RAY.get(), level);
@@ -180,14 +157,9 @@ public class SunAndMoonPowers {
             // --- CORE LOGIC FIX ---
             // The arrow is now ready to be redirected.
             // 1. Calculate the player's current target
-            Vec3 eyePos = caster.getEyePosition();
-            Vec3 lookVec = caster.getViewVector(1.0F);
-            double convergenceDistance = 8.0; // This is where you define the focal point distance
-            double verticalOffset = -1.0;
-//            Vec3 focalPoint = eyePos.add(lookVec.scale(convergenceDistance));
-            Vec3 focalPoint = eyePos
-                    .add(lookVec.scale(convergenceDistance))
-                    .add(0, verticalOffset, 0); // shift target downward
+            // Punto focal con puntería asistida: los rayos convergen sobre el
+            // enemigo apuntado (a CUALQUIER distancia), no a 8 bloques fijos
+            Vec3 focalPoint = findAimPoint(caster, 32.0);
 
             Vec3 targetDirection = focalPoint.subtract(arrow.position()).normalize();
 
@@ -213,6 +185,44 @@ public class SunAndMoonPowers {
      * The ray spawns behind the player with an initial outward trajectory,
      * then is later redirected to the player's target by the onServerTick method.
      */
+    /**
+     * Puntería asistida compartida por los poderes de luz:
+     * 1) el enemigo válido mejor alineado con la mirada (cono de ~12°),
+     * 2) si no hay, el bloque apuntado,
+     * 3) si no, el punto a maxRange.
+     */
+    public static Vec3 findAimPoint(Player player, double maxRange) {
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 look = player.getViewVector(1.0F);
+
+        net.minecraft.world.entity.LivingEntity best = null;
+        double bestAngle = Math.toRadians(12.0);
+        for (net.minecraft.world.entity.LivingEntity candidate :
+                player.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                        player.getBoundingBox().inflate(maxRange),
+                        c -> net.juli2kapo.minewinx.util.Targeting.isValidTarget(c, player.getUUID()))) {
+            Vec3 to = candidate.position().add(0, candidate.getBbHeight() * 0.5, 0).subtract(eyePos);
+            if (to.length() > maxRange) continue;
+            double dot = Math.max(-1.0, Math.min(1.0, look.dot(to.normalize())));
+            double angle = Math.acos(dot);
+            if (angle < bestAngle) {
+                bestAngle = angle;
+                best = candidate;
+            }
+        }
+        if (best != null) {
+            return best.position().add(0, best.getBbHeight() * 0.5, 0);
+        }
+
+        BlockHitResult blockHit = player.level().clip(new ClipContext(
+                eyePos, eyePos.add(look.scale(maxRange)),
+                ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        if (blockHit.getType() != HitResult.Type.MISS) {
+            return blockHit.getLocation();
+        }
+        return eyePos.add(look.scale(maxRange));
+    }
+
     private static void spawnSingleRay(Player player, CastingState state) {
         ServerLevel serverLevel = (ServerLevel) player.level();
 
@@ -389,12 +399,12 @@ public class SunAndMoonPowers {
     }
 
     /**
-     * Slot 3: Prisma de Luz. Invoca cristales flotantes en el punto apuntado;
-     * los impactos de Rayo de Sol y Lluvia de Luz cercanos se refractan en
-     * haces que buscan enemigos. Escala con stage: 1/2/3 prismas por lanzamiento
-     * y 3/4/5 haces por refracción.
+     * Slot 3: Destello Solar. Nova instantánea de luz alrededor de Stella:
+     * ciega y daña a los enemigos en el radio. De día además los incendia (la
+     * furia del sol); de noche los marca con brillo (la luna los revela) y los
+     * ralentiza. Radio y potencia escalan con stage.
      */
-    public static void castLightPrism(Player player) {
+    public static void castSolarFlare(Player player) {
         int stage = PlayerDataProvider.getStage(player);
         if (stage <= 0) return;
 
@@ -402,28 +412,42 @@ public class SunAndMoonPowers {
         if (level.isClientSide()) return;
         ServerLevel serverLevel = (ServerLevel) level;
 
-        double maxRange = 25.0;
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 endPos = eyePos.add(player.getViewVector(1.0F).scale(maxRange));
-        BlockHitResult blockHit = level.clip(new ClipContext(
-                eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        Vec3 center = blockHit.getType() == HitResult.Type.MISS ? endPos : blockHit.getLocation();
+        double radius = 8.0 + 2.0 * stage; // 10 / 12 / 14
+        boolean day = level.isDay();
+        float damage = day ? (4.0F + 2.0F * stage) : (2.0F + stage);
 
-        int count = Math.min(3, Math.max(1, stage));
-        double ringRadius = count == 1 ? 0.0 : 2.5;
-        for (int i = 0; i < count; i++) {
-            double angle = i * (Math.PI * 2.0 / count);
-            net.juli2kapo.minewinx.entity.PrismEntity prism =
-                    new net.juli2kapo.minewinx.entity.PrismEntity(ModEntities.PRISM.get(), level);
-            prism.init(player, stage);
-            prism.setPos(center.x + Math.cos(angle) * ringRadius,
-                    center.y + 1.8,
-                    center.z + Math.sin(angle) * ringRadius);
-            serverLevel.addFreshEntity(prism);
+        java.util.List<net.minecraft.world.entity.LivingEntity> victims =
+                serverLevel.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                        player.getBoundingBox().inflate(radius),
+                        e -> net.juli2kapo.minewinx.util.Targeting.isValidTarget(e, player.getUUID()));
+        for (net.minecraft.world.entity.LivingEntity victim : victims) {
+            victim.hurt(serverLevel.damageSources().indirectMagic(player, player), damage);
+            victim.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.BLINDNESS, 100 + 40 * stage, 0));
+            if (day) {
+                victim.setSecondsOnFire(3 + stage);
+            } else {
+                victim.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                        net.minecraft.world.effect.MobEffects.GLOWING, 200, 0));
+                victim.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                        net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+            }
         }
 
-        serverLevel.playSound(null, center.x, center.y, center.z,
-                net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE,
-                net.minecraft.sounds.SoundSource.PLAYERS, 1.5F, 1.2F);
+        // Fogonazo: anillo de destellos + estallido de luz real
+        serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.FLASH,
+                player.getX(), player.getY() + 1.0, player.getZ(), 2, 0.2, 0.2, 0.2, 0);
+        for (int i = 0; i < 24; i++) {
+            double angle = i * (Math.PI * 2.0 / 24.0);
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    player.getX() + Math.cos(angle) * radius * 0.5,
+                    player.getY() + 1.0,
+                    player.getZ() + Math.sin(angle) * radius * 0.5,
+                    2, 0.2, 0.4, 0.2, 0.06);
+        }
+        net.juli2kapo.minewinx.util.TransientLights.place(serverLevel, player.blockPosition().above(), 15, 20);
+        serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE,
+                net.minecraft.sounds.SoundSource.PLAYERS, 2.0F, 1.6F);
     }
 }

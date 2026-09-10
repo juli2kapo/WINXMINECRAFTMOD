@@ -133,6 +133,8 @@ public class MusicPowers {
                 SpeakerEntity speaker = new SpeakerEntity(ModEntities.SPEAKER.get(), level);
                 speaker.setPos(finalPos.x, finalPos.y, finalPos.z);
                 speaker.setOwner(player);
+                // Voces en orden: el 1º SIEMPRE es melodía, luego bajo, acordes...
+                speaker.setVoice(i);
 
                 // Make the speaker face the center point
                 double dX = centerPos.x - finalPos.x;
@@ -170,9 +172,9 @@ public class MusicPowers {
 
         ServerLevel serverLevel = (ServerLevel) level;
 
-        // Calculate cone properties based on stage
-        double range = 8.0 + (stage * 4.0); // Stage 1: 12, Stage 2: 16, Stage 3: 20
-        double coneAngle = Math.toRadians(30.0 + ((stage - 1) * 7.5)); // Stage 1: 45°, Stage 2: 60°, Stage 3: 75°
+        // Cono más concentrado y con más alcance: el daño se enfoca hacia el eje
+        double range = 12.0 + (stage * 5.0); // Stage 1: 17, Stage 2: 22, Stage 3: 27
+        double coneAngle = Math.toRadians(18.0 + ((stage - 1) * 4.0)); // semiángulo 18° / 22° / 26°
         float damage = 3.0F + (stage * 4.0F); // Stage 1: 7.0, Stage 2: 11.0, Stage 3: 15.0
 
         Vec3 playerPos = player.getEyePosition();

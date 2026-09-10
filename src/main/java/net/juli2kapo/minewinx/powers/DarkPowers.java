@@ -201,7 +201,6 @@ public class DarkPowers {
     public static boolean commandIllusions(Player player) {
         if (player.level().isClientSide()) return false;
         ServerLevel serverLevel = (ServerLevel) player.level();
-        boolean isShifting = player.isShiftKeyDown();
         boolean commandExecuted = false;
 
         // Raytrace para encontrar lo que el jugador está mirando
@@ -210,19 +209,11 @@ public class DarkPowers {
         Vec3 lookVec = player.getViewVector(1.0F);
         Vec3 endPos = startPos.add(lookVec.x * rayDistance, lookVec.y * rayDistance, lookVec.z * rayDistance);
 
-        // Buscar las ilusiones del jugador (mobIllusions si está agachado, playerIllusions si no)
+        // TODAS las ilusiones propias reciben la orden (antes las de mob solo
+        // se comandaban agachada y las de jugador solo parada — inentendible)
         List<Entity> illusions = serverLevel.getEntities(player,
                 player.getBoundingBox().inflate(32.0D),
-                entity -> {
-                    if (!isOwnedIllusion(entity, player.getUUID())) return false;
-
-                    // Filtrar por tipo según si está agachado o no
-                    if (isShifting) {
-                        return entity instanceof Mob && !(entity instanceof PlayerIllusionEntity);
-                    } else {
-                        return entity instanceof PlayerIllusionEntity;
-                    }
-                });
+                entity -> isOwnedIllusion(entity, player.getUUID()));
 
         if (illusions.isEmpty()) {
             return false;
@@ -281,39 +272,77 @@ public class DarkPowers {
         serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ILLUSIONER_CAST_SPELL, SoundSource.PLAYERS, 0.8F, 1.0F);
 
-        // Enviar órdenes a las ilusiones
+        // Enviar órdenes a las ilusiones — y REGISTRARLAS: la IA vanilla pisa
+        // setTarget/navegación al tick siguiente, así que tickOrders() las
+        // re-aplica cada rato hasta que se cumplan o expiren
+        long expiry = serverLevel.getGameTime() + ORDER_DURATION_TICKS;
         for (Entity illusion : illusions) {
-            if (illusion instanceof Mob mob) {
-                if (targetEntity != null) {
-                    // Si hay una entidad objetivo
-                    boolean isHostile = isHostileMob(mob);
+            if (!(illusion instanceof Mob mob)) continue;
 
-                    if (isHostile) {
-                        // Mobs agresivos atacan
-                        mob.setTarget(targetEntity instanceof LivingEntity ? (LivingEntity)targetEntity : null);
-                        mob.setAggressive(true);
-                    }
-                    // Todos los mobs se mueven hacia el objetivo
-                    mob.getNavigation().moveTo(targetPos.x, targetPos.y, targetPos.z, 1.0);
-                } else {
-                    // Solo moverse hacia la posición
-                    mob.getNavigation().moveTo(targetPos.x, targetPos.y, targetPos.z, 1.0);
-                }
-                commandExecuted = true;
-
-            } else if (illusion instanceof PlayerIllusionEntity playerIllusion) {
-                if (targetEntity != null) {
-                    // Hacer que se mueva hacia el objetivo
-                    playerIllusion.attackTarget(targetEntity);
-                } else {
-                    // Solo moverse hacia la posición
-                    playerIllusion.moveToLocation(targetPos);
-                }
-                commandExecuted = true;
-            }
+            UUID targetUUID = targetEntity instanceof LivingEntity ? targetEntity.getUUID() : null;
+            Order order = new Order(targetUUID, targetPos, expiry);
+            ORDERS.put(mob.getUUID(), order);
+            applyOrder(serverLevel, mob, order);
+            commandExecuted = true;
         }
 
         return commandExecuted;
+    }
+
+    // ---- Órdenes persistentes ----------------------------------------------
+
+    private static final int ORDER_DURATION_TICKS = 30 * 20; // 30 segundos
+    private record Order(UUID targetUUID, Vec3 pos, long expiry) {}
+    private static final java.util.Map<UUID, Order> ORDERS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Re-aplica las órdenes activas (llamado desde ServerEvents.onServerTick). */
+    public static void tickOrders(ServerLevel level) {
+        if (ORDERS.isEmpty() || level.getGameTime() % 10 != 0) return;
+
+        var it = ORDERS.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            Order order = entry.getValue();
+            if (level.getGameTime() > order.expiry()) {
+                it.remove();
+                continue;
+            }
+            Entity ent = level.getEntity(entry.getKey());
+            if (ent == null) continue; // otra dimensión: la limpia la expiración
+            if (!(ent instanceof Mob mob) || !mob.isAlive()) {
+                it.remove();
+                continue;
+            }
+            if (!applyOrder(level, mob, order)) {
+                it.remove(); // objetivo muerto o destino alcanzado
+            }
+        }
+    }
+
+    /** @return false si la orden ya no tiene sentido (cumplida / objetivo muerto) */
+    private static boolean applyOrder(ServerLevel level, Mob mob, Order order) {
+        if (order.targetUUID() != null) {
+            Entity t = level.getEntity(order.targetUUID());
+            if (!(t instanceof LivingEntity target) || !target.isAlive()) {
+                return false;
+            }
+            if (isHostileMob(mob)) {
+                if (mob.getTarget() != target) mob.setTarget(target);
+                mob.setAggressive(true);
+            }
+            if (mob.getNavigation().isDone()) {
+                mob.getNavigation().moveTo(target, 1.2);
+            }
+            return true;
+        }
+        // Orden de movimiento: llegar cerca del punto y listo
+        if (mob.position().distanceToSqr(order.pos()) < 4.0) {
+            return false;
+        }
+        if (mob.getNavigation().isDone()) {
+            mob.getNavigation().moveTo(order.pos().x, order.pos().y, order.pos().z, 1.2);
+        }
+        return true;
     }
 
     /**
