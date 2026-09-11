@@ -51,6 +51,7 @@ public enum EnumPowers {
     // STORM POWERS
     STORM_FIELD(Element.STORM, 1, 30 * 10, StormPowers::summonStormField),
     TORNADO(Element.STORM, 2, 25 * 10, StormPowers::summonTornado),
+    RIDE_THE_STORM(Element.STORM, 3, 40 * 10, StormPowers::rideTheStorm),
 
     UNKNOWN(Element.UNKNOWN, 0, 0, player -> {});
 
