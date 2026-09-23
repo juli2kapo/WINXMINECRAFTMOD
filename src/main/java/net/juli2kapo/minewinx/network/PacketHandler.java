@@ -52,6 +52,12 @@ public class PacketHandler {
                 .encoder(DrowningVisualS2CPacket::toBytes)
                 .consumerMainThread(DrowningVisualS2CPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(WingStateS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(WingStateS2CPacket::new)
+                .encoder(WingStateS2CPacket::toBytes)
+                .consumerMainThread(WingStateS2CPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {

@@ -229,6 +229,10 @@ public class ServerEvents {
                 tickPlayer(sp);
                 if (hudTick) {
                     syncHudNow(sp);
+                    // Estado de alas: paquete chico, se reenvía siempre para cubrir
+                    // a quien recién empieza a ver al jugador (StartTracking no nos llega).
+                    net.juli2kapo.minewinx.network.PacketHandler.sendToTracking(
+                            new net.juli2kapo.minewinx.network.WingStateS2CPacket(sp), sp);
                 }
             }
         }

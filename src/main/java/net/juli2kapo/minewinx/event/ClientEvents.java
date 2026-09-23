@@ -54,6 +54,12 @@ public class ClientEvents {
                 PacketHandler.sendToServer(new UsePowerC2SPacket(flora ? 1 : 3)); // C
             }
         }
+
+        @SubscribeEvent
+        public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+            net.juli2kapo.minewinx.client.ClientWingState.clear();
+            net.juli2kapo.minewinx.client.WingMesh.clearCache();
+        }
     }
 
     @Mod.EventBusSubscriber(modid = MineWinx.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -91,6 +97,16 @@ public class ClientEvents {
             event.registerLayerDefinition(TornadoModel.LAYER_LOCATION, TornadoModel::createBodyLayer);
             event.registerLayerDefinition(PrismModel.LAYER_LOCATION, PrismModel::createBodyLayer);
             event.registerLayerDefinition(DragonHeadModel.LAYER_LOCATION, DragonHeadModel::createBodyLayer);
+        }
+
+        @SubscribeEvent
+        public static void addPlayerLayers(EntityRenderersEvent.AddLayers event) {
+            for (String skin : event.getSkins()) {
+                PlayerRenderer renderer = event.getSkin(skin);
+                if (renderer != null) {
+                    renderer.addLayer(new net.juli2kapo.minewinx.client.WingsLayer(renderer));
+                }
+            }
         }
 
         @SubscribeEvent
