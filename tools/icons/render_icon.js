@@ -20,7 +20,7 @@
  *              put their "front" (emblem) facing azimuth CAMERA_YAW (the seed
  *              model's VIEW constant).
  *  Lighting    per-face, vanilla-item style:  top (+Y) 1.00, screen-left face
- *              (-Z) 0.80, screen-right face (+X) 0.60, bottom 0.50.
+ *              (-Z) 0.88, screen-right face (+X) 0.74, bottom 0.55.
  *              Plus soft ambient occlusion (AO_STRENGTH) from the 8 neighbours
  *              of each visible face, so curved voxel forms read as round.
  *  Emissive    glowstone blocks ignore face shading (0.95-1.0);
@@ -55,12 +55,12 @@ const zlib = require("zlib");
 // ============================== FIXED PARAMETERS ==============================
 const CAMERA_YAW = 30;          // degrees
 const CAMERA_PITCH = 22;        // degrees
-const SHADE = { top: 1.0, left: 0.80, right: 0.60, bottom: 0.50 };
+const SHADE = { top: 1.0, left: 0.88, right: 0.74, bottom: 0.55 };
 const GOLD_SHADE = { top: 1.0, left: 0.90, right: 0.74, bottom: 0.6 };
 const EMISSIVE_SHADE = { top: 1.0, left: 0.97, right: 0.93, bottom: 0.9 };
 const AO_STRENGTH = 0.22;       // 0 = off
-const GLASS_RGB = [215, 240, 255];
-const GLASS_ALPHA = 0.20;
+const GLASS_RGB = [245, 250, 255];
+const GLASS_ALPHA = 0.12;
 const GLASS_SHEEN = 0.18;       // extra white on top-facing glass
 const MARGIN = 0;               // transparent px around the outline
 const OUTLINE = 1;              // px
