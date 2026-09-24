@@ -26,27 +26,27 @@ public class ElementSeed extends Item {
 
             if(currentElement.equals(element)){
                 if (currentStage >= stage) {
-                    player.sendSystemMessage(Component.literal("Ya has asborbido esta semilla."));
+                    player.sendSystemMessage(Component.translatable("message.minewinx.seed.already_absorbed"));
                     return InteractionResultHolder.fail(player.getItemInHand(hand));
                 }
                 else if(currentStage == stage - 1 ){
-                    player.sendSystemMessage(Component.literal("Sentis tus poderes crecer mientras absorbes la semilla"));
+                    player.sendSystemMessage(Component.translatable("message.minewinx.seed.growing"));
                 }
                 else{
-                    player.sendSystemMessage(Component.literal("Te falta una semilla antes de poder usar esta."));
+                    player.sendSystemMessage(Component.translatable("message.minewinx.seed.missing_previous"));
                     return InteractionResultHolder.fail(player.getItemInHand(hand));
                 }
             }
             else{
                 if(stage==1){
                     if (!currentElement.isEmpty()) {
-                        player.sendSystemMessage(Component.literal("Has renunciado a tu elemento anterior: " + currentElement + ". Ahora has absorbido el poder del " + element + "."));
+                        player.sendSystemMessage(Component.translatable("message.minewinx.seed.switched", elementName(currentElement), elementName(element)));
                     } else {
-                        player.sendSystemMessage(Component.literal("Has absorbido el poder del " + element + "."));
+                        player.sendSystemMessage(Component.translatable("message.minewinx.seed.absorbed", elementName(element)));
                     }
                     PlayerDataProvider.setElement(player, element);
                 } else {
-                    player.sendSystemMessage(Component.literal("Tus poderes de " + currentElement + " te impiden absorber la semilla."));
+                    player.sendSystemMessage(Component.translatable("message.minewinx.seed.blocked", elementName(currentElement)));
                     return InteractionResultHolder.fail(player.getItemInHand(hand));
                 }
             }
@@ -60,5 +60,10 @@ public class ElementSeed extends Item {
             return InteractionResultHolder.success(itemStack);
         }
         return super.use(level, player, hand);
+    }
+
+    /** Nombre traducible del elemento ("Fire" -> element.minewinx.fire). */
+    private static Component elementName(String element) {
+        return Component.translatable("element.minewinx." + element.toLowerCase(java.util.Locale.ROOT));
     }
 }

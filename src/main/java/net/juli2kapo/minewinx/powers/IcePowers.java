@@ -76,7 +76,7 @@ public class IcePowers {
                         && eyePos.distanceToSqr(e.position()) <= maxDistSq);
 
         if (entityHit == null || !(entityHit.getEntity() instanceof net.minecraft.world.entity.LivingEntity victim)) {
-            player.displayClientMessage(Component.literal("Sin objetivo a la vista."), true);
+            player.displayClientMessage(Component.translatable("message.minewinx.no_target"), true);
             return;
         }
 
@@ -180,7 +180,7 @@ public class IcePowers {
         HitResult hitResult = getBowShotHitResult(player, level);
 
         if (hitResult.getType() == HitResult.Type.MISS) {
-            player.sendSystemMessage(Component.literal("Simulated arrow missed."));
+            player.displayClientMessage(Component.translatable("message.minewinx.no_target"), true);
             return;
         }
 
@@ -288,11 +288,6 @@ public class IcePowers {
 
             // If we had a definitive hit, return it immediately.
             if (finalHitResult.getType() != HitResult.Type.MISS) {
-                if (finalHitResult instanceof EntityHitResult ehr) {
-                    player.sendSystemMessage(Component.literal("Target Acquired (Entity): " + ehr.getEntity().getName().getString()));
-                } else {
-                    player.sendSystemMessage(Component.literal("Target Acquired (Block): " + ((BlockHitResult)finalHitResult).getBlockPos()));
-                }
                 return finalHitResult;
             }
 
@@ -309,7 +304,6 @@ public class IcePowers {
         // --- 5. Lifetime Expired ---
         // If the loop finishes without a collision, the arrow's lifetime is over.
         // We return its final position as a valid target.
-        player.sendSystemMessage(Component.literal("Target Acquired (Lifetime Expired): " + BlockPos.containing(currentPos)));
         return new BlockHitResult(
                 currentPos,
                 Direction.UP,
@@ -334,7 +328,6 @@ public class IcePowers {
 
         if (term < 0) {
             // Target is out of range for this velocity
-            player.sendSystemMessage(Component.literal("Target out of range, aiming directly."));
             return diff.normalize().scale(velocity);
         }
 

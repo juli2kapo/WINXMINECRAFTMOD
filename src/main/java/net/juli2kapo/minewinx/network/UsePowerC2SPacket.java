@@ -46,8 +46,8 @@ public class UsePowerC2SPacket {
                     if (useCooldowns) {
                         long remaining = net.juli2kapo.minewinx.util.PowerCooldowns.remaining(player, this.powerSlot);
                         if (remaining > 0) {
-                            player.displayClientMessage(Component.literal(
-                                    "Enfriándose: " + (int) Math.ceil(remaining / 20.0) + "s"), true);
+                            player.displayClientMessage(Component.translatable(
+                                    "message.minewinx.cooldown", (int) Math.ceil(remaining / 20.0)), true);
                             return;
                         }
                     }

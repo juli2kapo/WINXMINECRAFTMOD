@@ -2,7 +2,6 @@ package net.juli2kapo.minewinx.item.custom;
 
 import net.juli2kapo.minewinx.block.ModBlocks;
 import net.juli2kapo.minewinx.util.ModTags;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -90,7 +89,7 @@ public class ManaRadarItem extends Item {
         }
 
         if (!itemFound) {
-            player.sendSystemMessage(Component.literal("Busca mejor"));
+            player.sendSystemMessage(Component.translatable("message.minewinx.mana_radar.not_found"));
         }
     }
 
@@ -117,7 +116,8 @@ public class ManaRadarItem extends Item {
     }
 
     private void showValuableCoordinates(BlockPos orePos, Player player, Block block) {
-        player.sendSystemMessage(Component.literal("Se encontro: " + I18n.get(block.getDescriptionId()) + " en: " + orePos.getX() + ", " + orePos.getY() + ", " + orePos.getZ()));
+        player.sendSystemMessage(Component.translatable("message.minewinx.mana_radar.found",
+                block.getName(), orePos.getX(), orePos.getY(), orePos.getZ()));
     }
 
     private boolean isManaOre(BlockState state) {

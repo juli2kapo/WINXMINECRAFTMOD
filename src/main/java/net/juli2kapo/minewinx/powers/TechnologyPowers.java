@@ -99,7 +99,7 @@ public class TechnologyPowers {
             }
         } catch (Exception e) {
             player.sendSystemMessage(
-                    net.minecraft.network.chat.Component.literal("Error executing freezeTime: " + e.getMessage()));
+                    net.minecraft.network.chat.Component.translatable("message.minewinx.freeze_time.error", String.valueOf(e.getMessage())));
         }
     }
 

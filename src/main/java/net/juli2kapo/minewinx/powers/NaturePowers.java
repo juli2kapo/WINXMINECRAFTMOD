@@ -23,7 +23,6 @@ public class NaturePowers {
     public static void sporeBomb(Player player) {
         Level world = player.level();
         if (!world.isClientSide()) {
-            player.sendSystemMessage(Component.literal("Lanzando bomba de esporas..."));
             SporeBombEntity sporeBomb = new SporeBombEntity(ModEntities.SPOREBOMB.get(), player, world);
             // Dispara el proyectil desde la posición y dirección del jugador.
             sporeBomb.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
@@ -93,12 +92,12 @@ public class NaturePowers {
                 eyePos, endPos, net.minecraft.world.level.ClipContext.Block.OUTLINE,
                 net.minecraft.world.level.ClipContext.Fluid.NONE, player));
         if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) {
-            player.displayClientMessage(Component.literal("Apuntá a un bloque cercano."), true);
+            player.displayClientMessage(Component.translatable("message.minewinx.plant.aim_block"), true);
             return;
         }
         BlockPos plantPos = hit.getBlockPos().above();
         if (!level.getBlockState(plantPos).getCollisionShape(level, plantPos).isEmpty()) {
-            player.displayClientMessage(Component.literal("No hay lugar para plantar ahí."), true);
+            player.displayClientMessage(Component.translatable("message.minewinx.plant.no_space"), true);
             return;
         }
 

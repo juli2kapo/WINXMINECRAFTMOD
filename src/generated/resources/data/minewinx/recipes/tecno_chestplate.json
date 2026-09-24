@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "#": {
+      "item": "minecraft:netherite_chestplate"
+    },
+    "C": {
+      "item": "minecraft:diamond_chestplate"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "pattern": [
+    "   ",
+    "#SC",
+    "   "
+  ],
+  "result": {
+    "item": "minewinx:tecno_chestplate"
+  },
+  "show_notification": true
+}

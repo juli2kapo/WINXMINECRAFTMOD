@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minewinx:high_quality_mana_crystal"
+    },
+    "S": {
+      "item": "minewinx:end_ice"
+    }
+  },
+  "pattern": [
+    "###",
+    "#S#",
+    "###"
+  ],
+  "result": {
+    "item": "minewinx:ice_stage_3"
+  },
+  "show_notification": true
+}

@@ -27,7 +27,8 @@ public class TransformC2SPacket {
                 boolean isTransformed = !PlayerDataProvider.isTransformed(player);
                 PlayerDataProvider.setTransformed(player, isTransformed);
 
-                player.sendSystemMessage(Component.literal("Servidor: Estado de transformación cambiado a: " + isTransformed));
+                player.displayClientMessage(Component.translatable(isTransformed
+                        ? "message.minewinx.transform.on" : "message.minewinx.transform.off"), true);
                 PacketHandler.sendToTracking(new WingStateS2CPacket(player), player);
 
                 // Las winx ya no vuelan: la transformación no otorga mayfly.

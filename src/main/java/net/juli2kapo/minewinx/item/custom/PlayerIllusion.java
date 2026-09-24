@@ -58,7 +58,7 @@ public class PlayerIllusion extends Item {
                 server.getProfileCache().getAsync(illusionName, gameProfileOpt -> {
                     if (gameProfileOpt.isEmpty()) {
                         LOGGER.warn("Could not find game profile for {}", illusionName);
-                        player.sendSystemMessage(Component.literal("Player '" + illusionName + "' not found."));
+                        player.sendSystemMessage(Component.translatable("message.minewinx.illusion.player_not_found", illusionName));
                         return;
                     }
                     GameProfile gameProfile = gameProfileOpt.get();

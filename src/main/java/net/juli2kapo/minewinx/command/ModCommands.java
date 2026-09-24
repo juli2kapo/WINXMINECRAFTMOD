@@ -19,17 +19,17 @@ public class ModCommands {
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("cooldown")
                         .executes(context -> {
-                            context.getSource().sendSuccess(() -> Component.literal(
-                                    "Multiplicador de cooldowns actual: " + Config.cooldownMultiplier), false);
+                            context.getSource().sendSuccess(() -> Component.translatable(
+                                    "commands.minewinx.cooldown.current", String.valueOf(Config.cooldownMultiplier)), false);
                             return 1;
                         })
                         .then(Commands.argument("multiplicador", DoubleArgumentType.doubleArg(0.0, 10.0))
                                 .executes(context -> {
                                     double value = DoubleArgumentType.getDouble(context, "multiplicador");
                                     Config.setCooldownMultiplier(value);
-                                    context.getSource().sendSuccess(() -> Component.literal(
-                                            "Multiplicador de cooldowns: " + value
-                                                    + (value == 0 ? " (sin cooldowns)" : "")), true);
+                                    context.getSource().sendSuccess(() -> Component.translatable(value == 0
+                                                    ? "commands.minewinx.cooldown.set_none" : "commands.minewinx.cooldown.set",
+                                            String.valueOf(value)), true);
                                     return 1;
                                 }))));
     }

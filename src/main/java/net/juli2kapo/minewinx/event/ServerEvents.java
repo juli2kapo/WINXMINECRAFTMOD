@@ -179,7 +179,7 @@ public class ServerEvents {
             String element = PlayerDataProvider.getElement(player);
             if (!"Technology".equalsIgnoreCase(element)) {
                 crafted.setCount(0); // Elimina el ítem
-                player.sendSystemMessage(Component.literal("A casa."));
+                player.sendSystemMessage(Component.translatable("message.minewinx.tecno_armor.craft_denied"));
             }
         }
     }
@@ -201,7 +201,7 @@ public class ServerEvents {
                     ItemStack rejected = newItem.copy();
                     player.setItemSlot(event.getSlot(), ItemStack.EMPTY);
                     player.getInventory().placeItemBackInInventory(rejected);
-                    player.sendSystemMessage(Component.literal("Solo puedes equipar la TecnoArmor con el elemento Tecnología al máximo nivel."));
+                    player.sendSystemMessage(Component.translatable("message.minewinx.tecno_armor.equip_denied"));
                 }
             }
         }
