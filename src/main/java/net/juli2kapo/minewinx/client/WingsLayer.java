@@ -29,7 +29,7 @@ public class WingsLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
         if (player.isInvisible()) return;
         String element = ClientWingState.getWings(player.getId());
         if (element == null) return;
-        WingMesh mesh = WingMesh.get(element);
+        VoxelMesh mesh = VoxelMesh.wings(element);
         if (mesh == null) return;
 
         // Aleteo suave en el piso, más rápido y amplio en el aire.

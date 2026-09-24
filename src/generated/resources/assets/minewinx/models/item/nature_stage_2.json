@@ -1,6 +1,100 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "minewinx:item/nature_stage_2"
+  "base": {
+    "parent": "minecraft:builtin/entity",
+    "display": {
+      "firstperson_lefthand": {
+        "scale": [
+          0.3,
+          0.3,
+          0.3
+        ],
+        "translation": [
+          0,
+          4,
+          0
+        ]
+      },
+      "firstperson_righthand": {
+        "scale": [
+          0.3,
+          0.3,
+          0.3
+        ],
+        "translation": [
+          0,
+          4,
+          0
+        ]
+      },
+      "fixed": {
+        "rotation": [
+          0,
+          180,
+          0
+        ],
+        "scale": [
+          0.6,
+          0.6,
+          0.6
+        ]
+      },
+      "ground": {
+        "scale": [
+          0.4,
+          0.4,
+          0.4
+        ],
+        "translation": [
+          0,
+          2,
+          0
+        ]
+      },
+      "head": {
+        "scale": [
+          0.6,
+          0.6,
+          0.6
+        ],
+        "translation": [
+          0,
+          13,
+          0
+        ]
+      },
+      "thirdperson_lefthand": {
+        "scale": [
+          0.45,
+          0.45,
+          0.45
+        ],
+        "translation": [
+          0,
+          3,
+          1
+        ]
+      },
+      "thirdperson_righthand": {
+        "scale": [
+          0.45,
+          0.45,
+          0.45
+        ],
+        "translation": [
+          0,
+          3,
+          1
+        ]
+      }
+    }
+  },
+  "loader": "forge:separate_transforms",
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minewinx:item/nature_stage_2"
+      }
+    }
   }
 }

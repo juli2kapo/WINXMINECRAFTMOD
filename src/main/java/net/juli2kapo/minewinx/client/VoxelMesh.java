@@ -23,13 +23,22 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Malla de alas horneada desde los builds voxel (tools/wings/bake.js).
- * Cada ala (izquierda/derecha) es una lista de quads con color por vértice;
+ * Malla horneada desde un build voxel (tools/wings/bake.js): alas de la
+ * transformación y modelos 3D de las semillas en la mano.
+ * Cada mitad (izquierda/derecha) es una lista de quads con color por vértice;
  * se dibuja sin textura real (una blanca) para no depender del atlas.
  */
-public class WingMesh {
+public class VoxelMesh {
 
-    private static final Map<String, Optional<WingMesh>> CACHE = new HashMap<>();
+    /** Cómo se ubica y escala la malla. */
+    private enum Fit {
+        /** Espacio del modelo del jugador: origen en la raíz de las alas, y hacia abajo. */
+        WINGS,
+        /** Espacio de ítem: centrado en x/z, apoyado en y=0, entra en un cubo de 1 bloque. */
+        ITEM
+    }
+
+    private static final Map<String, Optional<VoxelMesh>> CACHE = new HashMap<>();
 
     /** Tamaño máximo de las alas en bloques (envergadura / alto / cuánto bajan del hombro). */
     private static final float MAX_SPAN = 2.4F;
@@ -48,44 +57,61 @@ public class WingMesh {
     }
 
     @Nullable
-    public static WingMesh get(String element) {
-        String key = element.toLowerCase(Locale.ROOT);
-        return CACHE.computeIfAbsent(key, WingMesh::load).orElse(null);
+    public static VoxelMesh wings(String element) {
+        return get("wings/" + element.toLowerCase(Locale.ROOT), Fit.WINGS);
+    }
+
+    /** Modelo 3D de una semilla (p. ej. "fire_stage_2"), para dibujarla en la mano. */
+    @Nullable
+    public static VoxelMesh seed(String itemName) {
+        return get("seeds/" + itemName, Fit.ITEM);
+    }
+
+    @Nullable
+    private static VoxelMesh get(String path, Fit fit) {
+        return CACHE.computeIfAbsent(path, p -> load(p, fit)).orElse(null);
     }
 
     public static void clearCache() {
         CACHE.clear();
     }
 
-    private static Optional<WingMesh> load(String element) {
-        ResourceLocation location = ResourceLocation.fromNamespaceAndPath(MineWinx.MOD_ID, "wings/" + element + ".bin");
+    private static Optional<VoxelMesh> load(String path, Fit fit) {
+        ResourceLocation location = ResourceLocation.fromNamespaceAndPath(MineWinx.MOD_ID, path + ".bin");
         Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(location);
         if (resource.isEmpty()) {
-            MineWinx.LOGGER.warn("[Wings] no hay malla para '{}' ({})", element, location);
+            MineWinx.LOGGER.warn("[VoxelMesh] no hay malla en {}", location);
             return Optional.empty();
         }
         try (InputStream in = resource.get().open(); DataInputStream data = new DataInputStream(in)) {
-            return Optional.of(new WingMesh(data));
+            return Optional.of(new VoxelMesh(data, fit));
         } catch (Exception e) {
-            MineWinx.LOGGER.error("[Wings] error cargando {}", location, e);
+            MineWinx.LOGGER.error("[VoxelMesh] error cargando {}", location, e);
             return Optional.empty();
         }
     }
 
-    private WingMesh(DataInputStream data) throws Exception {
+    private VoxelMesh(DataInputStream data, Fit fit) throws Exception {
         byte[] magic = new byte[4];
         data.readFully(magic);
         if (magic[0] != 'W' || magic[1] != 'I' || magic[2] != 'N' || magic[3] != 'G' || data.readUnsignedByte() != 1) {
-            throw new IllegalStateException("formato de alas desconocido");
+            throw new IllegalStateException("formato de malla desconocido");
         }
         float px = data.readFloat(), py = data.readFloat(), pz = data.readFloat();
-        float minX = data.readFloat(), minY = data.readFloat();
-        data.readFloat(); // minZ
-        float maxX = data.readFloat(), maxY = data.readFloat();
-        data.readFloat(); // maxZ
+        float minX = data.readFloat(), minY = data.readFloat(), minZ = data.readFloat();
+        float maxX = data.readFloat(), maxY = data.readFloat(), maxZ = data.readFloat();
 
-        this.scale = Math.min(MAX_SPAN / (maxX - minX),
-                Math.min(MAX_HEIGHT / (maxY - minY), MAX_BELOW_ROOT / Math.max(1.0F, py - minY)));
+        boolean yDown = fit == Fit.WINGS;
+        if (fit == Fit.WINGS) {
+            this.scale = Math.min(MAX_SPAN / (maxX - minX),
+                    Math.min(MAX_HEIGHT / (maxY - minY), MAX_BELOW_ROOT / Math.max(1.0F, py - minY)));
+        } else {
+            // Ítem: el lado más largo mide 1 bloque; centrado en x/z y apoyado en y=0.
+            this.scale = 1.0F / Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ));
+            px = (minX + maxX) / 2.0F;
+            py = minY;
+            pz = (minZ + maxZ) / 2.0F;
+        }
 
         int paletteSize = data.readUnsignedByte();
         int[] paletteColor = new int[paletteSize];
@@ -120,13 +146,13 @@ public class WingMesh {
                     corner[axis] = plane;
                     corner[ua] = uv[c][0];
                     corner[va] = uv[c][1];
-                    // Espacio del modelo del jugador: y hacia abajo, +z = espalda.
+                    // Alas: espacio del modelo del jugador (y hacia abajo, +z = espalda).
                     side.pos[q * 12 + c * 3] = (corner[0] - px) * scale;
-                    side.pos[q * 12 + c * 3 + 1] = -(corner[1] - py) * scale;
+                    side.pos[q * 12 + c * 3 + 1] = (yDown ? -1 : 1) * (corner[1] - py) * scale;
                     side.pos[q * 12 + c * 3 + 2] = (corner[2] - pz) * scale;
                 }
                 float sign = (dir & 1) == 0 ? -1.0F : 1.0F;
-                side.normal[q * 3 + axis] = axis == 1 ? -sign : sign;
+                side.normal[q * 3 + axis] = axis == 1 && yDown ? -sign : sign;
                 side.color[q] = paletteColor[pal];
                 side.emissive[q] = paletteEmissive[pal];
                 side.translucent[q] = (paletteColor[pal] >>> 24) < 255;

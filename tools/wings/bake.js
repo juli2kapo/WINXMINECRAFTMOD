@@ -160,7 +160,13 @@ for (const m of palette) {
   const [r, g, b, a = 255, fl = 0] = MATERIALS[m] || [255, 0, 255];
   u8(r, g, b, a, fl);
 }
-for (const q of sides) { i32(q.length); for (const quad of q) u8(...quad); }
+for (const q of sides) {
+  i32(q.length);
+  for (const quad of q) {
+    if (quad.some((v) => v > 255)) throw new Error("coordinate > 255 in quad; use a larger --factor");
+    u8(...quad);
+  }
+}
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, Buffer.concat(parts));
 console.log(`${element}: ${voxels.size} voxels -> ${cells.size} cells (factor ${factor}), quads L=${sides[0].length} R=${sides[1].length}, ` +

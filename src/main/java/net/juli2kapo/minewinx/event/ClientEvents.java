@@ -58,7 +58,7 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
             net.juli2kapo.minewinx.client.ClientWingState.clear();
-            net.juli2kapo.minewinx.client.WingMesh.clearCache();
+            net.juli2kapo.minewinx.client.VoxelMesh.clearCache();
         }
     }
 

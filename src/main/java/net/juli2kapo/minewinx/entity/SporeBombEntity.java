@@ -101,23 +101,22 @@ public class SporeBombEntity extends ThrowableItemProjectile {
         // Genera una explosión de partículas visible que se expande hacia afuera.
         if (this.level() instanceof ServerLevel serverLevel) {
             ParticleOptions particle = this.getParticle();
-            int particleCount = 300 + 150 * this.stage; // Más partículas en niveles altos.
-            // Genera una nube de partículas en un radio con una velocidad.
+            int particleCount = 120 + 60 * this.stage; // Más partículas en niveles altos.
+            // Nube de esporas: UN solo paquete (antes eran miles y trababan el juego).
             serverLevel.sendParticles(particle, this.getX(), this.getY(0.5), this.getZ(), particleCount, radius / 2.0, 1.0, radius / 2.0, 0.5);
 
-            // Dibuja un círculo de partículas de efecto para marcar el radio
-            float r = 0.1F; // Verde
-            float g = 0.8F;
-            float b = 0.2F;
+            // Relleno verde del área, también en un solo paquete.
+            serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, this.getX(), this.getY(0.1), this.getZ(),
+                    (int) (radius * 8), radius / 2.0, 0.1, radius / 2.0, 0.0);
 
-            // Rellena el círculo con partículas verdes y abundantes
-            for (double currentRadius = 0.5; currentRadius <= radius; currentRadius += 0.5) {
-                for (int i = 0; i < 360; i += 5) {
-                    double angle = Math.toRadians(i);
-                    double x = this.getX() + Math.cos(angle) * currentRadius;
-                    double z = this.getZ() + Math.sin(angle) * currentRadius;
-                    serverLevel.sendParticles(ParticleTypes.ENTITY_EFFECT, x, this.getY(0.1), z, 1, r, g, b, 1.0);
-                }
+            // Borde del radio: un único anillo. Con count = 0, los offsets de
+            // ENTITY_EFFECT son el color (verde), no una dispersión.
+            int ringPoints = (int) Math.max(24, radius * 6);
+            for (int i = 0; i < ringPoints; i++) {
+                double angle = Math.PI * 2 * i / ringPoints;
+                double x = this.getX() + Math.cos(angle) * radius;
+                double z = this.getZ() + Math.sin(angle) * radius;
+                serverLevel.sendParticles(ParticleTypes.ENTITY_EFFECT, x, this.getY(0.1), z, 0, 0.1, 0.8, 0.2, 1.0);
             }
         }
     }
