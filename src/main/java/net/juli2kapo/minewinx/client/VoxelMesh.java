@@ -61,12 +61,6 @@ public class VoxelMesh {
         return get("wings/" + element.toLowerCase(Locale.ROOT), Fit.WINGS);
     }
 
-    /** Modelo 3D de una semilla (p. ej. "fire_stage_2"), para dibujarla en la mano. */
-    @Nullable
-    public static VoxelMesh seed(String itemName) {
-        return get("seeds/" + itemName, Fit.ITEM);
-    }
-
     @Nullable
     private static VoxelMesh get(String path, Fit fit) {
         return CACHE.computeIfAbsent(path, p -> load(p, fit)).orElse(null);

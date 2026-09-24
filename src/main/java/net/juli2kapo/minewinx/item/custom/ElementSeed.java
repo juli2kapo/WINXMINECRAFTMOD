@@ -18,17 +18,6 @@ public class ElementSeed extends Item {
         this.stage = stage;
     }
 
-    /** Modelo 3D en la mano (el inventario sigue usando el ícono plano). */
-    @Override
-    public void initializeClient(java.util.function.Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
-        consumer.accept(new net.minecraftforge.client.extensions.common.IClientItemExtensions() {
-            @Override
-            public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return net.juli2kapo.minewinx.client.SeedItemRenderer.get();
-            }
-        });
-    }
-
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (!level.isClientSide()) {
