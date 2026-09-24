@@ -75,13 +75,6 @@ public class ModItems {
     public static final RegistryObject<Item> TECHNOLOGYSTAGE3 =
             ITEMS.register("technology_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Technology", 3));
 
-    public static final RegistryObject<Item> DARKSTAGE1 =
-            ITEMS.register("dark_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 1));
-    public static final RegistryObject<Item> DARKSTAGE2 =
-            ITEMS.register("dark_stage_2", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 2));
-    public static final RegistryObject<Item> DARKSTAGE3 =
-            ITEMS.register("dark_stage_3", ()-> new ElementSeed( new Item.Properties().durability(1), "Dark", 3));
-
     public static final RegistryObject<Item> SUNANDMOONSTAGE1 =
             ITEMS.register("sunandmoon_stage_1", ()-> new ElementSeed( new Item.Properties().durability(1), "SunAndMoon", 1));
     public static final RegistryObject<Item> SUNANDMOONSTAGE2 =

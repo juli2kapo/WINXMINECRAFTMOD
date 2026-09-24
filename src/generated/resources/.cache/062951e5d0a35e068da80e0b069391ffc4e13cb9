@@ -1,8 +1,5 @@
-// 1.20.1	2026-07-11T14:19:29.5840129	Item Models: minewinx
+// 1.20.1	2026-09-24T00:10:59.060045482	Item Models: minewinx
 e5f5c2e42e83431fee5c5b96b01187a5d1f65d20 assets/minewinx/models/item/cleanser.json
-540cdbe248f7bec1e4b866386450c7255f840ae7 assets/minewinx/models/item/dark_stage_1.json
-3e4d63b091cdcd05c59a959b42794c77faf9a903 assets/minewinx/models/item/dark_stage_2.json
-70014f0565f0ff48e93be7f291687387534897dd assets/minewinx/models/item/dark_stage_3.json
 e38dcfb01bf99e70ec0661cc2a92b396a8a7b686 assets/minewinx/models/item/fire_stage_1.json
 5c3b2550c5de15d7f551cae5e343e7567cf743f4 assets/minewinx/models/item/fire_stage_2.json
 a4595c7b946a10c97542555b8291b538039ae6a4 assets/minewinx/models/item/fire_stage_3.json

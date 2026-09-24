@@ -38,9 +38,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.TECHNOLOGYSTAGE1);
         simpleItem(ModItems.TECHNOLOGYSTAGE2);
         simpleItem(ModItems.TECHNOLOGYSTAGE3);
-        simpleItem(ModItems.DARKSTAGE1);
-        simpleItem(ModItems.DARKSTAGE2);
-        simpleItem(ModItems.DARKSTAGE3);
         simpleItem(ModItems.SUNANDMOONSTAGE1);
         simpleItem(ModItems.SUNANDMOONSTAGE2);
         simpleItem(ModItems.SUNANDMOONSTAGE3);
