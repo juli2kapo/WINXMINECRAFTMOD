@@ -121,7 +121,7 @@
   "message.minewinx.mana_radar.not_found": "Buscá mejor.",
   "message.minewinx.mana_radar.found": "Se encontró: %s en %s, %s, %s",
   "message.minewinx.illusion.player_not_found": "No se encontró al jugador '%s'.",
-  "message.minewinx.tecno_armor.craft_denied": "A casa.",
+  "message.minewinx.tecno_armor.craft_denied": "Solo alguien con Tecnología al nivel máximo puede fabricar la armadura Tecno.",
   "message.minewinx.tecno_armor.equip_denied": "Solo podés equipar la armadura Tecno con el elemento Tecnología al nivel máximo.",
   "message.minewinx.freeze_time.error": "Error al congelar el tiempo: %s",
   "commands.minewinx.cooldown.current": "Multiplicador de cooldowns actual: %s",

@@ -34,4 +34,10 @@ public class PlayerDataProvider {
         CompoundTag persistentData = player.getPersistentData();
         return persistentData.getBoolean("minewinx_transformed");
     }
+
+    /** La armadura Tecno es solo para Tecnología al nivel máximo (en creativo, libre). */
+    public static boolean canUseTecnoArmor(Player player) {
+        return player.isCreative()
+                || ("Technology".equalsIgnoreCase(getElement(player)) && getStage(player) >= 3);
+    }
 }

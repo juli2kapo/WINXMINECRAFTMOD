@@ -59,6 +59,16 @@ public class ModRecipeProvider extends RecipeProvider {
         buildCenteredCraftingRecipe(pWriter, ModItems.STORMSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.PHANTOM_MEMBRANE);
         buildCenteredCraftingRecipe(pWriter, ModItems.STORMSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.TRIDENT);
 
+        buildCenteredCraftingRecipe(pWriter, ModItems.MUSICSTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.NOTE_BLOCK);
+        buildCenteredCraftingRecipe(pWriter, ModItems.MUSICSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.JUKEBOX);
+        buildCenteredCraftingRecipe(pWriter, ModItems.MUSICSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), net.minecraft.tags.ItemTags.MUSIC_DISCS);
+        buildCenteredCraftingRecipe(pWriter, ModItems.TECHNOLOGYSTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.REDSTONE);
+        buildCenteredCraftingRecipe(pWriter, ModItems.TECHNOLOGYSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.COMPARATOR);
+        // Final difícil: la brújula de recuperación pide fragmentos de eco (Ciudad Antigua)
+        buildCenteredCraftingRecipe(pWriter, ModItems.TECHNOLOGYSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.RECOVERY_COMPASS);
+        buildCenteredCraftingRecipe(pWriter, ModItems.SUNANDMOONSTAGE1.get(), ModItems.LOWQMANACRYSTAL.get(), Items.GLOWSTONE);
+        buildCenteredCraftingRecipe(pWriter, ModItems.SUNANDMOONSTAGE2.get(), ModItems.MEDIUMQMANACRYSTAL.get(), Items.DAYLIGHT_DETECTOR);
+        buildCenteredCraftingRecipe(pWriter, ModItems.SUNANDMOONSTAGE3.get(), ModItems.HIGHQMANACRYSTAL.get(), Items.BEACON);
         tecnoArmor(pWriter);
         buildCenteredCraftingRecipe(pWriter, ModItems.MANARADAR.get(), ModItems.LOWQMANACRYSTAL.get(), Items.COMPASS);
     }
@@ -83,6 +93,18 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(outerMaterial), has(outerMaterial))
                 .save(writer);
     }
+    /** Variante con tag en el centro (p. ej. cualquier disco de música). */
+    private void buildCenteredCraftingRecipe(Consumer<FinishedRecipe> writer, ItemLike result, ItemLike outerMaterial, net.minecraft.tags.TagKey<net.minecraft.world.item.Item> centerTag) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
+                .pattern("###")
+                .pattern("#S#")
+                .pattern("###")
+                .define('#', outerMaterial)
+                .define('S', centerTag)
+                .unlockedBy(getHasName(outerMaterial), has(outerMaterial))
+                .save(writer);
+    }
+
     private void tecnoArmor(Consumer<FinishedRecipe> writer){
         tecnoArmorPiece(writer, ModItems.TECNO_HELMET.get(), Items.NETHERITE_HELMET, Items.DIAMOND_HELMET);
         tecnoArmorPiece(writer, ModItems.TECNO_CHESTPLATE.get(), Items.NETHERITE_CHESTPLATE, Items.DIAMOND_CHESTPLATE);
@@ -99,7 +121,8 @@ public class ModRecipeProvider extends RecipeProvider {
                 .define('S', Items.NETHER_STAR)
                 .define('C', diamondPiece)
                 .unlockedBy(getHasName(Items.NETHER_STAR), has(Items.NETHER_STAR))
-                .save(writer);
+                // Tipo propio: solo se puede fabricar con Tecnología al nivel máximo
+                .save(recipe -> writer.accept(new TecnoArmorFinishedRecipe(recipe)));
     }
 
 
@@ -119,4 +142,32 @@ public class ModRecipeProvider extends RecipeProvider {
         }
     }
 
+
+    /** Igual que la receta con forma generada, pero con el tipo minewinx:tecno_armor. */
+    private record TecnoArmorFinishedRecipe(FinishedRecipe base) implements FinishedRecipe {
+        @Override
+        public void serializeRecipeData(com.google.gson.JsonObject json) {
+            base.serializeRecipeData(json);
+        }
+
+        @Override
+        public net.minecraft.resources.ResourceLocation getId() {
+            return base.getId();
+        }
+
+        @Override
+        public RecipeSerializer<?> getType() {
+            return net.juli2kapo.minewinx.recipe.ModRecipes.TECNO_ARMOR.get();
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable com.google.gson.JsonObject serializeAdvancement() {
+            return base.serializeAdvancement();
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable net.minecraft.resources.ResourceLocation getAdvancementId() {
+            return base.getAdvancementId();
+        }
+    }
 }

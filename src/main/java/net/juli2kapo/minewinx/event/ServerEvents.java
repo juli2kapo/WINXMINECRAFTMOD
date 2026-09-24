@@ -55,6 +55,7 @@ public class ServerEvents {
             default -> {}
         }
 
+        unequipForbiddenTecnoArmor(player);
         applyTecnoArmorSetBonus(player);
 
         // Las winx no vuelan: limpiar vuelo residual (NUNCA tocar creativo/espectador)
@@ -64,6 +65,23 @@ public class ServerEvents {
                 player.getAbilities().flying = false;
                 player.onUpdateAbilities();
             }
+        }
+    }
+
+    /** Si perdió Tecnología nivel 3 con la armadura puesta: se la saca (al inventario o al piso). */
+    private static void unequipForbiddenTecnoArmor(Player player) {
+        if (PlayerDataProvider.canUseTecnoArmor(player)) return;
+        boolean removed = false;
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (isTecnoArmor(stack)) {
+                player.setItemSlot(slot, ItemStack.EMPTY);
+                player.getInventory().placeItemBackInInventory(stack);
+                removed = true;
+            }
+        }
+        if (removed) {
+            player.sendSystemMessage(Component.translatable("message.minewinx.tecno_armor.equip_denied"));
         }
     }
 
@@ -172,18 +190,6 @@ public class ServerEvents {
     }
 
     @SubscribeEvent
-    public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
-        Player player = event.getEntity();
-        ItemStack crafted = event.getCrafting();
-        if (isTecnoArmor(crafted)) {
-            String element = PlayerDataProvider.getElement(player);
-            if (!"Technology".equalsIgnoreCase(element)) {
-                crafted.setCount(0); // Elimina el ítem
-                player.sendSystemMessage(Component.translatable("message.minewinx.tecno_armor.craft_denied"));
-            }
-        }
-    }
-    @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getEntity() instanceof Player player) {
             ItemStack newItem = event.getTo();
@@ -192,9 +198,7 @@ public class ServerEvents {
                 // creativo es autoritativo del cliente y "devolver" la pieza la clona)
                 if (player.isCreative()) return;
 
-                String element = PlayerDataProvider.getElement(player);
-                int stage = PlayerDataProvider.getStage(player);
-                if (!"Technology".equalsIgnoreCase(element) || stage < 3) {
+                if (!PlayerDataProvider.canUseTecnoArmor(player)) {
                     // El evento NO es cancelable: rechazar a mano. Vaciar el slot
                     // (NO restaurar 'from': en un swap con cursor eso duplicaba)
                     // y devolver la pieza rechazada una única vez.

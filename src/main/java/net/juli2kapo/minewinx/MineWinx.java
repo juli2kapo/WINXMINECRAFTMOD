@@ -47,6 +47,7 @@ public class MineWinx
         ModEffects.register(modEventBus);
         ModParticles.register(modEventBus);
         ModEntities.register(modEventBus);
+        net.juli2kapo.minewinx.recipe.ModRecipes.register(modEventBus);
         net.juli2kapo.minewinx.sound.ModSounds.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
