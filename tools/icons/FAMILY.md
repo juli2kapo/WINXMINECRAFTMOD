@@ -35,14 +35,18 @@ Music stage 1 (`seed_music.src.js`, `out/music_stage_1_*`) is the approved refer
 
 ## Stage progression (same egg + emblem, the cradle grows)
 - Stage 1: the base cradle above.
-- Stage 2: visibly richer — e.g. curls on all four ribs, a fuller crown, more
-  glowstone jewels; the element motif starts to appear in the goldwork.
-- Stage 3: the most majestic — e.g. a large crown and/or small gold wings,
-  radiating element motifs, the brightest glow.
-The stages must be distinguishable at 32px in an inventory slot, while still
-clearly the same seed. Keep the silhouette inside the icon (the renderer fits
-the whole model, so a much wider model shrinks the egg — grow mostly upward
-and keep added width modest).
+- Stage 2: the SILHOUETTE must change noticeably at 32px — adding jewels or
+  fine scrollwork is NOT enough (it disappears at icon size). Add a pair of
+  small wings / fins / flourishes in the element's motif that stick out from the
+  sides of the egg (e.g. flame wings, wave fins, leaf wings, crystal shards,
+  gold circuit fins), plus a fuller crown.
+- Stage 3: dramatic and majestic — large wings in the element motif framing the
+  egg, a tall crown, and the brightest glow (more glowstone). Must look clearly
+  "final form" next to stages 1 and 2.
+Always check the three stages side by side at 32px on inventory grey: a player
+must tell them apart at a glance. The renderer fits the whole model, so extra
+width shrinks the egg — keep the egg reasonably large (wings can be swept up
+and back rather than straight out).
 
 ## Known limits
 - The palette has no stained glass: element colour comes from the wool back
