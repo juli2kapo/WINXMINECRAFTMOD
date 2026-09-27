@@ -25,15 +25,18 @@ ROOT = Path(__file__).resolve().parents[2]
 ASSETS = ROOT / "src/main/resources/assets" / MOD
 ATLAS_PX = 32  # electric_drill_parts.png is 32x32, so 1 uv unit = 2 px
 
-# Atlas regions (pixels), kept in sync with drill_textures.REGIONS.
-REGIONS = {
-    "casing_side": (0, 0, 8, 5), "casing_top": (8, 0, 13, 8), "casing_bottom": (13, 0, 18, 8),
-    "casing_front": (18, 0, 23, 5), "casing_back": (23, 0, 28, 5), "cap_back": (0, 8, 4, 12),
-    "cap_side": (28, 0, 29, 4), "nose_side": (4, 8, 7, 11), "nose_front": (7, 8, 10, 11),
-    "chuck_side": (10, 8, 12, 10), "chuck_front": (12, 8, 14, 10), "grip_side": (0, 12, 4, 18),
-    "grip_front": (4, 12, 7, 18), "trigger": (7, 12, 9, 14), "battery_side": (0, 18, 7, 21),
-    "battery_top": (8, 14, 14, 21), "battery_end": (14, 14, 20, 17), "bumper": (20, 14, 22, 16),
-}
+
+
+def _load_regions():
+    """Atlas regions live in drill_textures.py (the atlas drawer); load them from there."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("drill_textures_regions", Path(__file__).with_name("drill_textures.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.REGIONS
+
+
+REGIONS = _load_regions()
 
 
 def uv(region, flip=False):
@@ -64,38 +67,43 @@ def parts(side, top=None, bottom=None, front=None, back=None, tex="parts", east_
 
 def elements():
     els = []
-    # Motor housing, charge band and motor cap.
-    els.append(box([5.5, 8, 6], [10.5, 13, 14], parts("casing_side", "casing_top", "casing_bottom",
-                                                         "casing_front", "casing_back"), name="housing"))
+    # Motor body with a glowing charge band round it.
+    els.append(box([4.5, 6, 6], [11.5, 12, 14], parts("casing_side", "casing_top", "casing_top",
+                                                     "casing_end", "casing_end"), name="motor_body"))
     band = {d: ("glow", u) for d, u in (("north", [0, 0, 16, 16]), ("south", [0, 0, 16, 16]),
-                                         ("west", [0, 0, 3, 16]), ("east", [0, 0, 3, 16]),
-                                         ("up", [0, 0, 16, 3]), ("down", [0, 0, 16, 3]))}
-    els.append(box([5.25, 7.75, 10.5], [10.75, 13.25, 11.5], band, emissive=True, name="charge_band"))
-    els.append(box([6, 8.5, 14], [10, 12.5, 15], parts("cap_side", "cap_side", "cap_side", "cap_back", "cap_back"),
-                   name="motor_cap"))
-    els.append(box([7, 13, 7], [9, 13.5, 9], parts("bumper"), name="bumper"))
-    # Gearbox, chuck and the spiral bit (core + five flutes twisted 36 degrees apart).
-    els.append(box([6.5, 9, 3.5], [9.5, 12, 6], parts("nose_side", front="nose_front"), name="gearbox"))
-    els.append(box([7, 9.5, 1.5], [9, 11.5, 3.5], parts("chuck_side", front="chuck_front"), name="chuck"))
-    core = {d: ("bit", [0, 0, 2, 16] if d not in ("north", "south") else [0, 0, 2, 2])
-            for d in ("north", "south", "east", "west", "up", "down")}
-    els.append(box([7.6, 10.1, -6], [8.4, 10.9, 1.5], core, name="bit_core"))
-    for k in range(5):
-        z0 = -5.5 + 1.4 * k
-        flute = {"north": ("bit", [0, 0, 4, 1]), "south": ("bit", [0, 0, 4, 1]),
-                 "east": ("bit", [4, 0, 7, 1]), "west": ("bit", [4, 0, 7, 1]),
-                 "up": ("bit", [4 * k % 12, 4, 4 * k % 12 + 4, 7]), "down": ("bit", [0, 8, 4, 11])}
-        els.append(box([6.9, 10.2, round(z0, 2)], [9.1, 10.8, round(z0 + 1.4, 2)], flute,
-                       rotation={"angle": 36 * k if k < 3 else 36 * k - 180, "axis": "z",
-                                 "origin": [8, 10.5, round(z0, 2)]},
-                       name=f"bit_flute_{k}"))
-    els.append(box([7.75, 10.25, -7], [8.25, 10.75, -6], core, name="bit_tip"))
-    # Pistol grip (raked back 15 degrees), trigger and battery pack.
-    els.append(box([6.5, 1.5, 10], [9.5, 8, 13.5], parts("grip_side", front="grip_front"),
-                   rotation={"angle": -15, "axis": "x", "origin": [8, 8, 11.75]}, name="grip"))
-    els.append(box([7.25, 5.5, 8.75], [8.75, 7.5, 10], parts("trigger"), name="trigger"))
-    els.append(box([5, 0, 9.5], [11, 2.5, 16.5], parts("battery_side", "battery_top", "battery_top",
-                                                       "battery_end", "battery_end"), name="battery"))
+                                         ("west", [0, 0, 2, 16]), ("east", [0, 0, 2, 16]),
+                                         ("up", [0, 0, 16, 2]), ("down", [0, 0, 16, 2]))}
+    els.append(box([4.25, 5.75, 10], [11.75, 12.25, 11], band, emissive=True, name="charge_band"))
+    # Steel collar the cone turns in.
+    els.append(box([4, 5, 5], [12, 13, 6], parts("collar_edge", "collar_edge", "collar_edge",
+                                                "collar_front", "collar_front", east_flip=False), name="collar"))
+    # Conical drill head: 7 stacked square rings shrinking toward the tip, each twisted 12 degrees more,
+    # textured with the flute pattern (animated in the spinning model).
+    cx, cy = 8, 9
+    z = 5.0
+    for k, size in enumerate((7.5, 6.5, 5.5, 4.5, 3.5, 2.5, 1.5)):
+        length = 1.6
+        h = size / 2
+        frm = [cx - h, cy - h, round(z - length, 2)]
+        to = [cx + h, cy + h, z]
+        side_uv = [0, 2 * k, size, 2 * k + length]
+        faces = {d: ("bit", side_uv) for d in ("east", "west", "up", "down")}
+        faces["north"] = ("bit", [0, 0, size, size])
+        els.append(box(frm, to, faces, rotation={"angle": [0, 12, 24, 36, -42, -30, -18][k], "axis": "z",
+                                                 "origin": [cx, cy, z]}, name=f"cone_ring_{k}"))
+        z = round(z - length, 2)
+    tip = {d: ("bit", [0, 0, 1, 1]) for d in ("north", "east", "west", "up", "down")}
+    els.append(box([cx - 0.4, cy - 0.4, z - 1.2], [cx + 0.4, cy + 0.4, z], tip, name="cone_tip"))
+    # Carry handle over the body: two posts and a bar.
+    for z0 in (7, 12):
+        els.append(box([7.25, 12, z0], [8.75, 14, z0 + 1], parts("handle"), name="handle_post"))
+    els.append(box([7, 14, 6.5], [9, 15, 13.5], parts("handle"), name="carry_handle"))
+    # Power pack behind the body, then a D-shaped rear grip.
+    els.append(box([5, 6.5, 14], [11, 12.5, 17], parts("battery_side", "battery_top", "battery_top",
+                                                      "battery_back", "battery_back"), name="power_pack"))
+    els.append(box([7.25, 11, 17], [8.75, 12, 19.5], parts("handle"), name="grip_top"))
+    els.append(box([7.25, 6.5, 17], [8.75, 7.5, 19.5], parts("handle"), name="grip_bottom"))
+    els.append(box([7, 7.5, 18.5], [9, 11, 20], parts("grip"), name="rear_grip"))
     return els
 
 
@@ -105,8 +113,8 @@ DISPLAY = {
     "thirdperson_righthand": {"rotation": [80, 0, 0], "translation": [0, 1.5, 3.25], "scale": [0.7, 0.7, 0.7]},
     "thirdperson_lefthand": {"rotation": [80, 0, 0], "translation": [0, 1.5, 3.25], "scale": [0.7, 0.7, 0.7]},
     # First person: camera looks down -Z, so the bit already points into the screen; yaw it toward the crosshair.
-    "firstperson_righthand": {"rotation": [5, 16, 0], "translation": [-2.5, 2.5, -1], "scale": [0.66, 0.66, 0.66]},
-    "firstperson_lefthand": {"rotation": [5, 16, 0], "translation": [-2.5, 2.5, -1], "scale": [0.66, 0.66, 0.66]},
+    "firstperson_righthand": {"rotation": [8, 10, 0], "translation": [-2.5, 2.5, -2], "scale": [0.55, 0.55, 0.55]},
+    "firstperson_lefthand": {"rotation": [8, 10, 0], "translation": [-2.5, 2.5, -2], "scale": [0.55, 0.55, 0.55]},
     "ground": {"rotation": [0, 90, 0], "translation": [0, 2, 0], "scale": [0.45, 0.45, 0.45]},
     "fixed": {"rotation": [0, -90, 0], "translation": [-1, -1, 0], "scale": [0.72, 0.72, 0.72]},
     "head": {"rotation": [0, 90, 0], "translation": [0, 12, 0], "scale": [0.8, 0.8, 0.8]},

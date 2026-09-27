@@ -71,9 +71,31 @@ Storage: Import/Export Bus, Crafting Terminal, 16k cells. Reward: Jetpack.
 Refinery multiblock, Teleporter Pads, Power Armour (flight, night vision,
 speed, no fall damage). Storage: Wireless Terminal, 64k cells.
 
-**6 — Orbital.** Launch Pad + Satellite (launch objective), Orbital Uplink,
-Orbital Scanner (shows ores from orbit), Orbital Targeting Core. Storage:
-uplink-range wireless.
+**6 — Orbital.** Launch Pad + satellites (launch objective), Ground Station
+(maps from orbit, marks ore-rich chunks), Orbital Targeting Core. Storage:
+uplink-range Wireless Terminal.
+
+- **Teams** (`/factoryascent team create|invite|join|leave|info|list`): everyone starts on a solo
+  team keyed by their UUID; joining a named team needs an invite. Satellites belong to the
+  launcher's team at launch time and stay with the team when members leave.
+- **Satellites** cover the dimension they were launched from. An *Uplink Satellite* gives the team
+  signal in that whole dimension; a *Survey Satellite* lets Ground Stations there make maps.
+  `OrbitalSignal.hasCoverage(ServerPlayer)` is the API every signal device uses (the Wireless
+  Terminal now, the phone and its apps later).
+- **Launch Pad:** a Launch Controller surrounded by 8 Launch Pad plates. Right-click with a
+  satellite to mount it (the rocket appears), add fuel (Blaze Powder = 1, Rocket Fuel = 4; a launch
+  burns 4), then launch with redstone or sneak + flint and steel. A 5 s sequence: countdown, smoke
+  and flame, liftoff, the rocket climbs out of sight, and the team is told it reached orbit.
+  Rocket Fuel: 2 coal dust + 1 blaze powder in the Alloy Smelter.
+- **Ground Station:** right-click lists the team's satellites over this dimension and the signal
+  state. With a Survey Satellite up, an empty map becomes a scale-2 map centred on the station and
+  painted in from orbit over a few ticks: loaded chunks from the real blocks, the rest from the
+  world generator's terrain height and biome (nothing is loaded or generated). Loaded chunks
+  nearby with the most ore get a red X.
+- **Wireless Terminal:** sneak-use on a Storage Terminal to link; use it anywhere in the same
+  dimension with uplink coverage while the terminal's chunk is loaded (an Ender Anchor helps).
+- Satellites, the pad and the station need titanium plates and advanced circuits; satellites
+  also need an Orbital Targeting Core.
 
 When the Orbital Railgun mod is installed, Factory Ascent replaces its recipe with one needing:
 

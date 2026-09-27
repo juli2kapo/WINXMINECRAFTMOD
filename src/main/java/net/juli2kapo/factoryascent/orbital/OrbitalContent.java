@@ -91,6 +91,15 @@ public final class OrbitalContent {
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TeamCommands.register(e.getDispatcher()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> SurveyMapper.tick(e.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> SurveyMapper.clear());
+        // Sneaking with an item normally skips the block; sneak + flint and steel must reach the pad to launch.
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e) -> {
+            if (e.getEntity().isShiftKeyDown() && e.getItemStack().is(net.minecraft.world.item.Items.FLINT_AND_STEEL)) {
+                var block = e.getLevel().getBlockState(e.getPos()).getBlock();
+                if (block instanceof LaunchControllerBlock || block instanceof LaunchPadBlock) {
+                    e.setUseBlock(net.minecraft.util.TriState.TRUE);
+                }
+            }
+        });
     }
 
     /** Icon of the Orbital creative tab. */
