@@ -1,8 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "#c:raw_materials/tin",
-    "#c:raw_materials/aluminum",
-    "#c:raw_materials/titanium"
-  ]
-}

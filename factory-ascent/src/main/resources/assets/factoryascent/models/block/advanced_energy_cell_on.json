@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "factoryascent:block/advanced_energy_cell_front",
-    "side": "factoryascent:block/advanced_energy_cell_side",
-    "top": "factoryascent:block/advanced_energy_cell_side"
-  }
-}
