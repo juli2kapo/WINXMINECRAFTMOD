@@ -1,6 +1,7 @@
 package net.juli2kapo.factoryascent.mobs;
 
 import java.util.function.Consumer;
+import net.juli2kapo.factoryascent.Config;
 import net.juli2kapo.factoryascent.FactoryAscent;
 import net.juli2kapo.factoryascent.registry.ModComponents;
 import net.juli2kapo.factoryascent.util.EnergyUtil;
@@ -34,10 +35,15 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * Automation Age: the Minimizer and Maximizer rays. Hold right-click for a second to charge, release to
- * fire a beam that multiplies the first living thing it hits in size (×0.5 or ×2, between 0.25 and 4).
+ * fire a beam that multiplies the first living thing it hits in size (×0.5 or ×2, between the server's
+ * {@code sizeRayMinScale} and {@code sizeRayMaxScale}, 0.25 and 4 by default).
+ *
+ * <p>Crafting a ray with a spyglass adds a scope ({@link MobContent#SCOPED}): the view zooms while charging
+ * (see {@link SizeRayClient}) and the beam reaches {@link #SCOPED_RANGE} instead of {@link #RANGE}.
  *
  * <p>The size lives in one permanent modifier ({@link #MODIFIER}) on {@code minecraft:scale}, replaced
  * on every shot, so it is saved with the entity and survives a trip through a Mob Capsule.
@@ -48,6 +54,9 @@ public class SizeRayItem extends Item {
     public static final int CHARGE_TICKS = 20;
     public static final int COOLDOWN = 20;
     public static final double RANGE = 24.0;
+    /** A scope adds half again the range. */
+    public static final double SCOPED_RANGE = RANGE * 1.5;
+    /** Default size limits; the real ones come from {@link #minSize()} and {@link #maxSize()}. */
     public static final double MIN_SIZE = 0.25;
     public static final double MAX_SIZE = 4.0;
     public static final Identifier MODIFIER = Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "size_ray");
@@ -63,7 +72,27 @@ public class SizeRayItem extends Item {
         this.tooltipKey = tooltipKey;
     }
 
+    /** The beam colour (RGB), also used by the scope's charge bar. */
+    public int color() {
+        return color;
+    }
+
     // ---------------------------------------------------------------- size logic
+
+    private static double configValue(ModConfigSpec.DoubleValue value) {
+        // Server config: not loaded yet on a client sitting in the menus, so fall back to the default.
+        return Config.SPEC.isLoaded() ? value.get() : value.getDefault();
+    }
+
+    /** Smallest size a creature can be shrunk to (server config {@code sizeRayMinScale}). */
+    public static double minSize() {
+        return Math.min(1.0, configValue(Config.SIZE_RAY_MIN_SCALE));
+    }
+
+    /** Largest size a creature can be grown to (server config {@code sizeRayMaxScale}). */
+    public static double maxSize() {
+        return Math.max(1.0, configValue(Config.SIZE_RAY_MAX_SCALE));
+    }
 
     /** The multiplier the ray has applied to this entity so far (1 when untouched). */
     public static double sizeFactor(LivingEntity entity) {
@@ -74,19 +103,30 @@ public class SizeRayItem extends Item {
     }
 
     /**
-     * One shot: multiplies the entity's ray size by {@code factor}, clamped to [0.25, 4]. Returns the new
-     * factor. At 1.0 the modifier is removed altogether.
+     * One shot: multiplies the entity's ray size by {@code factor}, clamped to [{@link #minSize()},
+     * {@link #maxSize()}]. Returns the new factor. At 1.0 the modifier is removed altogether.
      */
     public static double applyShot(LivingEntity entity, double factor) {
         AttributeInstance scale = entity.getAttribute(Attributes.SCALE);
         if (scale == null) return 1.0;
-        double next = Mth.clamp(sizeFactor(entity) * factor, MIN_SIZE, MAX_SIZE);
+        double next = Mth.clamp(sizeFactor(entity) * factor, minSize(), maxSize());
         if (Math.abs(next - 1.0) < 1e-6) {
             scale.removeModifier(MODIFIER);
             return 1.0;
         }
         scale.addOrReplacePermanentModifier(new AttributeModifier(MODIFIER, next - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         return next;
+    }
+
+    // ---------------------------------------------------------------- scope
+
+    public static boolean isScoped(ItemStack stack) {
+        return stack.has(MobContent.SCOPED.get());
+    }
+
+    /** How far the beam reaches: {@link #RANGE}, or {@link #SCOPED_RANGE} with a scope. */
+    public static double range(ItemStack stack) {
+        return isScoped(stack) ? SCOPED_RANGE : RANGE;
     }
 
     // ---------------------------------------------------------------- energy
@@ -122,7 +162,9 @@ public class SizeRayItem extends Item {
 
     @Override
     public ItemUseAnimation getUseAnimation(ItemStack stack) {
-        return ItemUseAnimation.BOW;
+        // No vanilla first-person animation: the "charging" item model has its own held transform, and in
+        // third person SizeRayClient raises both arms to aim (the bow pose).
+        return ItemUseAnimation.NONE;
     }
 
     private static Vec3 muzzle(LivingEntity user) {
@@ -175,13 +217,13 @@ public class SizeRayItem extends Item {
         player.getCooldowns().addCooldown(stack, COOLDOWN);
         if (!(level instanceof ServerLevel server)) return true;
         if (!player.hasInfiniteMaterials()) stack.set(ModComponents.ENERGY.get(), energy(stack) - COST_PER_SHOT);
-        fire(server, player);
+        fire(server, player, range(stack));
         return true;
     }
 
-    private void fire(ServerLevel level, Player player) {
+    private void fire(ServerLevel level, Player player, double range) {
         Vec3 eye = player.getEyePosition();
-        Vec3 end = eye.add(player.getLookAngle().scale(RANGE));
+        Vec3 end = eye.add(player.getLookAngle().scale(range));
         HitResult block = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (block.getType() != HitResult.Type.MISS) end = block.getLocation();
         AABB area = player.getBoundingBox().expandTowards(end.subtract(eye)).inflate(1.0);
@@ -242,7 +284,16 @@ public class SizeRayItem extends Item {
         tooltip.accept(Component.translatable("tooltip.factoryascent.stored_energy",
                 EnergyUtil.format(energy(stack)), EnergyUtil.format(CAPACITY)).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable(tooltipKey).withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.accept(Component.translatable("tooltip.factoryascent.size_ray.usage", EnergyUtil.format(COST_PER_SHOT))
-                .withStyle(ChatFormatting.DARK_GRAY));
+        boolean scoped = isScoped(stack);
+        tooltip.accept(Component.translatable("tooltip.factoryascent.size_ray.usage", EnergyUtil.format(COST_PER_SHOT),
+                Math.round(range(stack))).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.size_ray.limits",
+                Math.round(minSize() * 100), Math.round(maxSize() * 100)).withStyle(ChatFormatting.DARK_GRAY));
+        if (scoped) {
+            tooltip.accept(Component.translatable("tooltip.factoryascent.size_ray.scoped", Math.round(SCOPED_RANGE))
+                    .withStyle(ChatFormatting.AQUA));
+        } else {
+            tooltip.accept(Component.translatable("tooltip.factoryascent.size_ray.scope_hint").withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 }

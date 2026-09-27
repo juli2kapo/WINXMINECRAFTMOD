@@ -7,5 +7,6 @@ public final class MobContentClient {
     private MobContentClient() {}
 
     public static void register(IEventBus modBus) {
+        SizeRayClient.register(modBus);
     }
 }
