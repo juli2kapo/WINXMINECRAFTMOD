@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "factoryascent:block/ender_anchor"
+    "model": "factoryascent:item/ender_anchor"
   }
 }

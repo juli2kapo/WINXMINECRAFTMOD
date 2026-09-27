@@ -26,37 +26,50 @@ def box(frm, to, texture, faces=("north", "east", "south", "west", "up", "down")
     return {"from": frm, "to": to, "faces": out}
 
 
-def anchor_model():
-    """Soul sand base, obsidian-purple corner posts and rim, glass tank, ender water inside.
-    The eye of ender is drawn by the block entity renderer so it can float and turn."""
-    frame = "#frame"
-    elements = [box([0, 0, 0], [16, 3, 16], "#base")]
-    for x, z in [(0, 0), (14, 0), (0, 14), (14, 14)]:
-        elements.append(box([x, 3, z], [x + 2, 16, z + 2], frame))
-    elements += [
-        box([2, 14, 0], [14, 16, 2], frame), box([2, 14, 14], [14, 16, 16], frame),
-        box([0, 14, 2], [2, 16, 14], frame), box([14, 14, 2], [16, 16, 14], frame),
-        # glass walls between the posts
-        box([2, 3, 0.5], [14, 14, 0.5], "#glass", faces=("north", "south")),
-        box([2, 3, 15.5], [14, 14, 15.5], "#glass", faces=("north", "south")),
-        box([0.5, 3, 2], [0.5, 14, 14], "#glass", faces=("east", "west")),
-        box([15.5, 3, 2], [15.5, 14, 14], "#glass", faces=("east", "west")),
-        box([2, 15.5, 2], [14, 15.5, 14], "#glass", faces=("up", "down")),
-        # the ender water: fills the lower part; the eye floats above it when the anchor is awake
-        box([1, 3, 1], [15, 9, 15], "#fluid", faces=("north", "east", "south", "west", "up")),
-    ]
-    return {
-        "parent": "minecraft:block/block",
-        "ambientocclusion": False,
-        "textures": {
-            "base": "minecraft:block/soul_sand",
-            "frame": tex("block/ender_anchor_frame", "minecraft:block/crying_obsidian"),
-            "glass": translucent("minecraft:block/glass"),
-            "fluid": translucent(tex("block/ender_anchor_fluid", "minecraft:block/purple_stained_glass")),
-            "particle": "minecraft:block/glass",
-        },
-        "elements": elements,
-    }
+SIDES = ("north", "east", "south", "west")
+INSET = 0.02  # water sits just inside the glass so the two never z-fight
+
+
+def anchor_elements(half, dy=0):
+    """One half of the stasis chamber: glass all round, soul sand floor (lower), water column,
+    open-water surface near the top (upper). dy shifts the half up (for the item model)."""
+    def up(v):
+        return [v[0], v[1] + dy, v[2]]
+    els = []
+    if half == "lower":
+        els.append(box(up([0, 0, 0]), up([16, 4, 16]), "#base", cull=True))
+        els.append(box(up([0, 4, 0]), up([16, 16, 16]), "#glass", faces=SIDES, cull=True))
+        els.append(box(up([INSET, 4, INSET]), up([16 - INSET, 16, 16 - INSET]), "#water", faces=SIDES))
+    else:
+        els.append(box(up([0, 0, 0]), up([16, 16, 16]), "#glass", faces=SIDES + ("up",), cull=True))
+        els.append(box(up([INSET, 0, INSET]), up([16 - INSET, 14, 16 - INSET]), "#water", faces=SIDES + ("up",)))
+    return els
+
+
+ANCHOR_TEXTURES = {
+    "base": "minecraft:block/soul_sand",
+    "glass": translucent("minecraft:block/glass"),
+    "water": translucent(tex("block/ender_anchor_water", "minecraft:block/blue_stained_glass")),
+    "particle": "minecraft:block/glass",
+}
+
+
+def anchor_model(half):
+    return {"parent": "minecraft:block/block", "ambientocclusion": False,
+            "textures": ANCHOR_TEXTURES, "elements": anchor_elements(half)}
+
+
+def anchor_item_model():
+    """Both halves stacked and shrunk, so the inventory icon shows the whole chamber."""
+    return {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": ANCHOR_TEXTURES,
+            "elements": anchor_elements("lower") + anchor_elements("upper", dy=16),
+            "display": {
+                "gui": {"rotation": [30, 225, 0], "translation": [0, -3.5, 0], "scale": [0.36, 0.36, 0.36]},
+                "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.2, 0.2, 0.2]},
+                "fixed": {"rotation": [0, 0, 0], "translation": [0, -4, 0], "scale": [0.3, 0.3, 0.3]},
+                "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 1.5, 1], "scale": [0.2, 0.2, 0.2]},
+                "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -2, 0], "scale": [0.25, 0.25, 0.25]},
+            }}
 
 
 def beacon_model(on):
@@ -68,11 +81,13 @@ def beacon_model(on):
 
 def generate(ctx):
     A = ctx.ASSETS
-    ctx.block_model("ender_anchor", anchor_model())
+    ctx.block_model("ender_anchor_lower", anchor_model("lower"))
+    ctx.block_model("ender_anchor_upper", anchor_model("upper"))
+    ctx.write(A / "models" / "item" / "ender_anchor.json", anchor_item_model())
     ctx.write(A / "blockstates" / "ender_anchor.json", {"variants": {
-        "enabled=false": {"model": f"{MOD}:block/ender_anchor"},
-        "enabled=true": {"model": f"{MOD}:block/ender_anchor"}}})
-    ctx.item_def("ender_anchor", "block/ender_anchor")
+        f"enabled={on},half={half}": {"model": f"{MOD}:block/ender_anchor_{half}"}
+        for on in ("false", "true") for half in ("lower", "upper")}})
+    ctx.item_def("ender_anchor", "item/ender_anchor")
 
     ctx.block_model("ender_beacon", beacon_model(False))
     ctx.block_model("ender_beacon_on", beacon_model(True))
@@ -83,13 +98,20 @@ def generate(ctx):
 
     ctx.flat_item("ender_dust")
     ctx.flat_item("recall_charm")
-    ctx.loot_self("ender_anchor")
+    # Only the lower half drops the item (like a door); breaking the top takes the bottom with it.
+    ctx.write(ctx.DATA / MOD / "loot_table" / "blocks" / "ender_anchor.json", {
+        "type": "minecraft:block",
+        "pools": [{"rolls": 1.0, "entries": [{"type": "minecraft:item", "name": f"{MOD}:ender_anchor"}],
+                   "conditions": [{"condition": "minecraft:survives_explosion"},
+                                  {"condition": "minecraft:block_state_property", "block": f"{MOD}:ender_anchor",
+                                   "properties": {"half": "lower"}}]}],
+        "random_sequence": f"{MOD}:blocks/ender_anchor"})
     ctx.loot_self("ender_beacon")
 
     # ---------------------------------------------------------------- recipes
-    ctx.shaped("ender_anchor", ["GGG", "GEG", "SWS"], {
-        "G": "minecraft:glass", "E": "minecraft:ender_eye", "S": "minecraft:soul_sand",
-        "W": "minecraft:water_bucket"}, "ender_anchor")
+    # A stasis chamber: glass all round, water in the middle, soul sand at the bottom. The bucket comes back.
+    ctx.shaped("ender_anchor", ["GGG", "GWG", "GSG"], {
+        "G": "minecraft:glass", "S": "minecraft:soul_sand", "W": "minecraft:water_bucket"}, "ender_anchor")
     ctx.machine("crushing", "ender_dust", [("minecraft:ender_pearl", 1)], "ender_dust", 2, time=60, min_grade=3)
     ctx.shaped("ender_beacon", ["OEO", "DFD", "OOO"], {
         "O": "minecraft:obsidian", "E": "minecraft:ender_eye", "D": "ender_dust",
@@ -100,9 +122,9 @@ def generate(ctx):
 
     # ---------------------------------------------------------------- advancements
     ctx.advancement("electric_anchor", "age_electric", "ender_anchor", ["ender_anchor"], "Always Loaded",
-                    "Build an Ender Anchor from glass, water, an eye of ender and soul sand, and feed it pearls",
+                    "Build an Ender Anchor (a stasis chamber of glass, water and soul sand) and drop a pearl in",
                     "Siempre cargado",
-                    "Construye un ancla de ender con vidrio, agua, un ojo de ender y arena de almas, y dale perlas")
+                    "Construye un ancla de ender (una cámara de estasis de vidrio, agua y arena de almas) y echa una perla")
     ctx.advancement("automation_recall", "age_automation", "recall_charm", ["recall_charm"],
                     "There's No Place Like Home",
                     "Craft a Recall Charm, link it to a charged Ender Beacon, and channel your way home",
@@ -117,10 +139,11 @@ def generate(ctx):
     L(f"item.{MOD}.recall_charm", "Recall Charm", "Amuleto de retorno")
     L(f"itemGroup.{MOD}.utility", "Factory Ascent: Utility", "Factory Ascent: Utilidades")
     T = f"tooltip.{MOD}"
-    L(f"{T}.ender_anchor", "Keeps a %s×%s area of chunks loaded while it has ender pearls",
-      "Mantiene cargada un área de %s×%s chunks mientras tenga perlas de ender")
-    L(f"{T}.ender_anchor_fuel", "Right-click with ender pearls (or pipe them in): %s min per pearl",
-      "Clic derecho con perlas de ender (o por tubería): %s min por perla")
+    L(f"{T}.ender_anchor", "A stasis chamber: keeps a %s×%s area of chunks loaded",
+      "Una cámara de estasis: mantiene cargada un área de %s×%s chunks")
+    L(f"{T}.ender_anchor_pearl", "Right-click with an ender pearl to start it. It runs until broken; breaking it loses the pearl",
+      "Clic derecho con una perla de ender para activarla. Funciona hasta que se rompe; al romperla se pierde la perla")
+    L(f"{T}.two_tall", "Two blocks tall", "Ocupa dos bloques de alto")
     L(f"{T}.ender_beacon", "Home point for Recall Charms. Sneak-use a charm on it to link",
       "Punto de retorno para amuletos. Agáchate y usa un amuleto sobre ella para vincularlo")
     L(f"{T}.ender_beacon_cost", "Charge it with FE: %s FE per recall",
@@ -132,11 +155,9 @@ def generate(ctx):
       "Mantén pulsado %s s para volver a casa. Recibir daño interrumpe el canal")
     M = f"message.{MOD}"
     L(f"{M}.anchor_limit", "You already have %s Ender Anchors", "Ya tienes %s anclas de ender")
-    L(f"{M}.anchor_free", "Keeping %s×%s chunks loaded", "Manteniendo %s×%s chunks cargados")
-    L(f"{M}.anchor_asleep", "Asleep: give it ender pearls to load chunks",
-      "Dormida: dale perlas de ender para cargar chunks")
-    L(f"{M}.anchor_status", "Keeping %s×%s chunks loaded · %sh %smin left (%s pearls stored)",
-      "Manteniendo %s×%s chunks cargados · quedan %sh %smin (%s perlas guardadas)")
+    L(f"{M}.anchor_active", "Keeping %s×%s chunks loaded", "Manteniendo %s×%s chunks cargados")
+    L(f"{M}.anchor_empty", "Empty: drop an ender pearl in to start it",
+      "Vacía: echa una perla de ender para activarla")
     L(f"{M}.beacon_status", "%s / %s FE · enough for %s recalls", "%s / %s FE · alcanza para %s retornos")
     L(f"{M}.beacon_not_yours", "This Ender Beacon belongs to someone else",
       "Esta baliza de ender pertenece a otra persona")

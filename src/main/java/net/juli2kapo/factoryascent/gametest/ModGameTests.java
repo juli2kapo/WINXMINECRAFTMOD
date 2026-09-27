@@ -63,7 +63,7 @@ public final class ModGameTests {
             new Test("speed_upgrade_speeds_up", 20, ModGameTests::speedUpgrade),
             new Test("storage_interface_round_trip", 60, ModGameTests::storageInterfaceRoundTrip),
             new Test("storage_cell_keeps_contents", 60, ModGameTests::storageCellKeepsContents),
-            new Test("ender_anchor_burns_pearls", 80, ModGameTests::enderAnchorBurnsPearls),
+            new Test("ender_anchor_holds_a_pearl", 40, ModGameTests::enderAnchorBurnsPearls),
             new Test("recall_charm_teleports_home", 40, ModGameTests::recallCharmTeleportsHome),
             new Test("mob_capsule_round_trip", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::capsuleRoundTrip),
             new Test("mob_capsule_refuses_blacklisted", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::capsuleRefusesBlacklisted),
@@ -414,18 +414,25 @@ public final class ModGameTests {
 
     // ---------------------------------------------------------------- ender tech
 
-    /** An anchor with pearls wakes up, burns one pearl and keeps going; without fuel it sleeps. */
+    /** One pearl switches the anchor on for good; a second is refused; breaking it frees the pearl slot. */
     private static void enderAnchorBurnsPearls(GameTestHelper h) {
         BlockPos pos = new BlockPos(4, 2, 4);
-        h.setBlock(pos, net.juli2kapo.factoryascent.ender.EnderContent.ENDER_ANCHOR.get());
+        var lower = net.juli2kapo.factoryascent.ender.EnderContent.ENDER_ANCHOR.get().defaultBlockState();
+        h.setBlock(pos, lower);
+        h.setBlock(pos.above(), lower.setValue(net.juli2kapo.factoryascent.ender.EnderAnchorBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
         var anchor = h.getBlockEntity(pos, net.juli2kapo.factoryascent.ender.EnderAnchorBlockEntity.class);
-        h.assertTrue(anchor.addPearls(3) == 3, "anchor should take 3 pearls");
-        h.runAfterDelay(45, () -> {
+        h.assertTrue(anchor.insertPearl(), "an empty anchor should take a pearl");
+        h.assertFalse(anchor.insertPearl(), "a second pearl should be refused");
+        h.runAfterDelay(5, () -> {
             h.assertBlockProperty(pos, net.juli2kapo.factoryascent.ender.EnderAnchorBlock.ACTIVE, true);
-            h.assertTrue(anchor.pearls().getAmountAsInt(0) == 2, "one pearl should be burning, 2 stored, got "
-                    + anchor.pearls().getAmountAsInt(0));
-            h.setBlock(pos, Blocks.AIR);
-            h.succeed();
+            h.assertBlockProperty(pos.above(), net.juli2kapo.factoryascent.ender.EnderAnchorBlock.ACTIVE, true);
+            // Breaking the top takes the bottom with it.
+            h.setBlock(pos.above(), Blocks.AIR);
+            h.runAfterDelay(1, () -> {
+                h.assertBlockNotPresent(net.juli2kapo.factoryascent.ender.EnderContent.ENDER_ANCHOR.get(), pos);
+                h.succeed();
+            });
         });
     }
 

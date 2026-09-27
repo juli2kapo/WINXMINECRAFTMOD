@@ -29,14 +29,17 @@ public final class EnderContentClient {
     }
 
     static final class AnchorState extends BlockEntityRenderState {
-        final ItemStackRenderState eye = new ItemStackRenderState();
+        final ItemStackRenderState pearl = new ItemStackRenderState();
         boolean active;
+        boolean hasPearl;
         float time;
+        float phase;
     }
 
     /**
-     * Awake, the eye hovers above the water, bobbing and turning, at full brightness; asleep it
-     * sinks and rests still near the bottom of the tank.
+     * A stasis chamber: the pearl rides the bubble column, drifting up to just under the surface
+     * in the top half and sinking back a little, with a small wobble, always facing the camera
+     * like a dropped item. An empty chamber shows nothing.
      */
     static final class AnchorRenderer implements BlockEntityRenderer<EnderAnchorBlockEntity, AnchorState> {
         private final ItemModelResolver items;
@@ -44,7 +47,7 @@ public final class EnderContentClient {
          * Made on first render: renderers are built during resource loading, before item
          * components are bound, and an ItemStack can't exist before that.
          */
-        private @Nullable ItemStack eye;
+        private @Nullable ItemStack pearl;
 
         AnchorRenderer(BlockEntityRendererProvider.Context context) {
             this.items = context.itemModelResolver();
@@ -60,28 +63,40 @@ public final class EnderContentClient {
                                        Vec3 camera, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
             BlockEntityRenderer.super.extractRenderState(anchor, state, partialTicks, camera, breakProgress);
             state.active = anchor.getBlockState().getValue(EnderAnchorBlock.ACTIVE);
-            state.time = anchor.getLevel() == null ? 0 : (anchor.getLevel().getGameTime() % 24000L) + partialTicks;
-            if (eye == null) eye = new ItemStack(Items.ENDER_EYE);
-            items.updateForTopItem(state.eye, eye, ItemDisplayContext.FIXED, anchor.getLevel(), null,
+            state.hasPearl = anchor.hasPearl();
+            state.time = anchor.getLevel() == null ? 0 : (anchor.getLevel().getGameTime() % 72000L) + partialTicks;
+            state.phase = (anchor.getBlockPos().hashCode() & 0xFF) / 40f;
+            if (pearl == null) pearl = new ItemStack(Items.ENDER_PEARL);
+            items.updateForTopItem(state.pearl, pearl, ItemDisplayContext.GROUND, anchor.getLevel(), null,
                     (int) anchor.getBlockPos().asLong());
         }
 
         @Override
+        public boolean shouldRenderOffScreen() {
+            return true; // the chamber is two blocks tall; keep the pearl when only the top is on screen
+        }
+
+        @Override
         public void submit(AnchorState state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
-            if (state.eye.isEmpty()) return;
+            if (!state.hasPearl || state.pearl.isEmpty()) return;
             pose.pushPose();
+            float y;
             if (state.active) {
-                float bob = (float) Math.sin(state.time / 12.0) * 0.06f;
-                pose.translate(0.5f, 0.72f + bob, 0.5f);
-                pose.mulPose(Axis.YP.rotationDegrees(state.time * 2.5f % 360f));
-                pose.scale(0.45f, 0.45f, 0.45f);
-                state.eye.submit(pose, collector, 0xF000F0, OverlayTexture.NO_OVERLAY, 0);
+                // Mostly near the top of the column, now and then dipping into the bubbles and rising again.
+                float t = state.time / 20f + state.phase;
+                float swell = (float) (0.5 - 0.5 * Math.cos(t * 0.9));      // 0..1, slow
+                float wobble = (float) Math.sin(t * 5.3) * 0.025f;          // bubbles jostling it
+                y = 1.72f - swell * 0.95f + wobble;
+                float sway = (float) Math.sin(t * 2.1) * 0.05f;
+                pose.translate(0.5f + sway, y, 0.5f + (float) Math.cos(t * 1.7) * 0.05f);
             } else {
-                pose.translate(0.5f, 0.3f, 0.5f);
-                pose.mulPose(Axis.XP.rotationDegrees(90f));
-                pose.scale(0.4f, 0.4f, 0.4f);
-                state.eye.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+                y = 0.3f;
+                pose.translate(0.5f, y, 0.5f);
             }
+            pose.mulPose(camera.orientation);
+            pose.mulPose(Axis.YP.rotationDegrees(180f));
+            pose.scale(0.9f, 0.9f, 0.9f);
+            state.pearl.submit(pose, collector, state.active ? 0xF000F0 : state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
             pose.popPose();
         }
     }

@@ -92,8 +92,7 @@ public final class EnderContent {
     }
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        // Hoppers and pipes can top up an anchor's pearls, and cables can charge a beacon.
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ENDER_ANCHOR_BE.get(), (be, side) -> be.pearls());
+        // Cables can charge a beacon.
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ENDER_BEACON_BE.get(), (be, side) -> be.energy());
     }
 

@@ -118,11 +118,13 @@ the "challenge" frame. Descriptions are written as the next instruction
 
 ## Ender tech (utility branch)
 
-- **Ender Anchor** (Electric age): a chunk loader. The recipe is glass, a water bucket, an eye of ender and soul sand. It's a glass tank of ender water on a soul-sand base, with an eye of ender that floats and turns while it's awake and sinks when it's asleep.
-  - One ender pearl buys 30 minutes of a 3×3 chunk area. You can feed pearls by hand, hopper or pipe.
-  - Loading goes through a NeoForge `TicketController`, whose tickets are checked against a ledger after every restart.
-  - Limit: 4 per player.
-  - All of these numbers are server config.
+- **Ender Anchor** (Electric age): a chunk loader built like a stasis chamber.
+  - It's 2 blocks tall: glass all round, soul sand at the bottom, water inside.
+  - Recipe: `GGG / GWG / GSG` (glass, water bucket, soul sand). The empty bucket comes back.
+  - Right-click it with one ender pearl: from then on it keeps a 3×3 chunk area loaded until it's broken, and breaking it loses the pearl. There's no fuel timer.
+  - The pearl bobs on the bubble column inside.
+  - Chunk loading goes through a NeoForge `TicketController`, whose tickets are checked against a ledger after every restart.
+  - Limit: 4 per player (server config).
 - **Ender Beacon + Recall Charm** (Automation age): a teleporter back home.
   - The beacon is placed at home and charged with FE, 20k FE per recall.
   - Sneak-use the charm on the beacon to link it (only the beacon's owner can).

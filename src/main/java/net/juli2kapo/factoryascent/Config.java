@@ -11,8 +11,6 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue GENERATOR_OUTPUT;
     public static final ModConfigSpec.BooleanValue MINERS_NEED_POWER;
     public static final ModConfigSpec.IntValue ANCHOR_RADIUS;
-    public static final ModConfigSpec.BooleanValue ANCHORS_NEED_FUEL;
-    public static final ModConfigSpec.IntValue ANCHOR_MINUTES_PER_PEARL;
     public static final ModConfigSpec.IntValue ANCHORS_PER_PLAYER;
     public static final ModConfigSpec.IntValue RECALL_SECONDS;
     public static final ModConfigSpec.IntValue RECALL_ENERGY;
@@ -36,10 +34,6 @@ public final class Config {
         b.push("ender");
         ANCHOR_RADIUS = b.comment("Ender Anchor: chunks loaded around it (0 = its own chunk, 1 = 3x3, 2 = 5x5).")
                 .defineInRange("anchorRadius", 1, 0, 4);
-        ANCHORS_NEED_FUEL = b.comment("If false, Ender Anchors load chunks without ender pearls.")
-                .define("anchorsNeedFuel", true);
-        ANCHOR_MINUTES_PER_PEARL = b.comment("Minutes of chunk loading one ender pearl buys.")
-                .defineInRange("anchorMinutesPerPearl", 30, 1, 10080);
         ANCHORS_PER_PLAYER = b.comment("How many Ender Anchors one player may place (0 = no limit).")
                 .defineInRange("anchorsPerPlayer", 4, 0, 1000);
         RECALL_SECONDS = b.comment("Recall Charm: seconds you must channel before teleporting home.")

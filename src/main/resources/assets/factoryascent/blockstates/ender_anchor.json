@@ -1,10 +1,16 @@
 {
   "variants": {
-    "enabled=false": {
-      "model": "factoryascent:block/ender_anchor"
+    "enabled=false,half=lower": {
+      "model": "factoryascent:block/ender_anchor_lower"
     },
-    "enabled=true": {
-      "model": "factoryascent:block/ender_anchor"
+    "enabled=false,half=upper": {
+      "model": "factoryascent:block/ender_anchor_upper"
+    },
+    "enabled=true,half=lower": {
+      "model": "factoryascent:block/ender_anchor_lower"
+    },
+    "enabled=true,half=upper": {
+      "model": "factoryascent:block/ender_anchor_upper"
     }
   }
 }

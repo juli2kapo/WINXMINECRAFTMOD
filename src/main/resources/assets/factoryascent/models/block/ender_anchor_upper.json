@@ -1,0 +1,81 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "base": "minecraft:block/soul_sand",
+    "glass": {
+      "sprite": "minecraft:block/glass",
+      "force_translucent": true
+    },
+    "water": {
+      "sprite": "factoryascent:block/ender_anchor_water",
+      "force_translucent": true
+    },
+    "particle": "minecraft:block/glass"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "cullface": "north"
+        },
+        "east": {
+          "texture": "#glass",
+          "cullface": "east"
+        },
+        "south": {
+          "texture": "#glass",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#glass",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#glass",
+          "cullface": "up"
+        }
+      }
+    },
+    {
+      "from": [
+        0.02,
+        0,
+        0.02
+      ],
+      "to": [
+        15.98,
+        14,
+        15.98
+      ],
+      "faces": {
+        "north": {
+          "texture": "#water"
+        },
+        "east": {
+          "texture": "#water"
+        },
+        "south": {
+          "texture": "#water"
+        },
+        "west": {
+          "texture": "#water"
+        },
+        "up": {
+          "texture": "#water"
+        }
+      }
+    }
+  ]
+}

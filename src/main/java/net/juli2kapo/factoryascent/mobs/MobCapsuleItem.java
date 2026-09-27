@@ -80,6 +80,26 @@ public class MobCapsuleItem extends Item {
     private static final String[] PLACE_KEYS = {"UUID", "Pos", "Motion", "fall_distance", "OnGround", "Passengers", "leash"};
 
     private static final Map<UUID, Capture> CAPTURES = new HashMap<>();
+    /**
+     * Players whose use button may still be held since a capture finished, with the game time of
+     * their last use press. Holding right-click repeats a press every 4 ticks, so a full capsule
+     * only releases once there has been a gap: the player let go and clicked again.
+     */
+    private static final Map<UUID, Long> HELD_SINCE_CAPTURE = new HashMap<>();
+    private static final int REPRESS_GAP = 6;
+
+    /** True (and remembers this press) while the button that finished a capture is still held. */
+    private static boolean stillHeldFromCapture(Player player) {
+        Long last = HELD_SINCE_CAPTURE.get(player.getUUID());
+        if (last == null) return false;
+        long now = player.level().getGameTime();
+        if (now - last <= REPRESS_GAP) {
+            HELD_SINCE_CAPTURE.put(player.getUUID(), now);
+            return true;
+        }
+        HELD_SINCE_CAPTURE.remove(player.getUUID());
+        return false;
+    }
 
     private static final class Capture {
         final UUID target;
@@ -162,7 +182,10 @@ public class MobCapsuleItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (isFull(stack)) return InteractionResult.PASS;
+        if (isFull(stack)) {
+            if (!level.isClientSide()) stillHeldFromCapture(player); // a press at the air still counts as holding
+            return InteractionResult.PASS;
+        }
         HitResult hit = ProjectileUtil.getHitResultOnViewVector(player, e -> e instanceof LivingEntity && e != player, RANGE);
         if (!(hit instanceof EntityHitResult eh)) {
             if (player instanceof ServerPlayer sp) sp.sendOverlayMessage(msg("no_target").withStyle(ChatFormatting.GRAY));
@@ -261,6 +284,7 @@ public class MobCapsuleItem extends Item {
 
     private static void succeed(ServerPlayer player, LivingEntity target) {
         CAPTURES.remove(player.getUUID());
+        HELD_SINCE_CAPTURE.put(player.getUUID(), player.level().getGameTime());
         InteractionHand hand = player.getUsedItemHand();
         player.stopUsingItem();
         ServerLevel level = player.level();
@@ -300,6 +324,7 @@ public class MobCapsuleItem extends Item {
     }
 
     static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        HELD_SINCE_CAPTURE.remove(event.getEntity().getUUID());
         Capture capture = CAPTURES.remove(event.getEntity().getUUID());
         if (capture != null && event.getEntity().level().getEntity(capture.target) instanceof LivingEntity target) {
             releaseHold(target);
@@ -352,6 +377,7 @@ public class MobCapsuleItem extends Item {
         CapturedMob mob = captured(stack);
         if (mob == null) return InteractionResult.PASS;
         if (!(context.getLevel() instanceof ServerLevel level)) return InteractionResult.SUCCESS;
+        if (context.getPlayer() != null && stillHeldFromCapture(context.getPlayer())) return InteractionResult.FAIL;
         BlockPos pos = context.getClickedPos();
         BlockPos at = level.getBlockState(pos).getCollisionShape(level, pos).isEmpty() ? pos : pos.relative(context.getClickedFace());
         Player player = context.getPlayer();

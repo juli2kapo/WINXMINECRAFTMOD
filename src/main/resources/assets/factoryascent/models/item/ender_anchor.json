@@ -1,0 +1,262 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "base": "minecraft:block/soul_sand",
+    "glass": {
+      "sprite": "minecraft:block/glass",
+      "force_translucent": true
+    },
+    "water": {
+      "sprite": "factoryascent:block/ender_anchor_water",
+      "force_translucent": true
+    },
+    "particle": "minecraft:block/glass"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "east": {
+          "texture": "#base",
+          "cullface": "east"
+        },
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#base",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        4,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "cullface": "north"
+        },
+        "east": {
+          "texture": "#glass",
+          "cullface": "east"
+        },
+        "south": {
+          "texture": "#glass",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#glass",
+          "cullface": "west"
+        }
+      }
+    },
+    {
+      "from": [
+        0.02,
+        4,
+        0.02
+      ],
+      "to": [
+        15.98,
+        16,
+        15.98
+      ],
+      "faces": {
+        "north": {
+          "texture": "#water"
+        },
+        "east": {
+          "texture": "#water"
+        },
+        "south": {
+          "texture": "#water"
+        },
+        "west": {
+          "texture": "#water"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        16,
+        0
+      ],
+      "to": [
+        16,
+        32,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "cullface": "north"
+        },
+        "east": {
+          "texture": "#glass",
+          "cullface": "east"
+        },
+        "south": {
+          "texture": "#glass",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#glass",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#glass",
+          "cullface": "up"
+        }
+      }
+    },
+    {
+      "from": [
+        0.02,
+        16,
+        0.02
+      ],
+      "to": [
+        15.98,
+        30,
+        15.98
+      ],
+      "faces": {
+        "north": {
+          "texture": "#water"
+        },
+        "east": {
+          "texture": "#water"
+        },
+        "south": {
+          "texture": "#water"
+        },
+        "west": {
+          "texture": "#water"
+        },
+        "up": {
+          "texture": "#water"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -3.5,
+        0
+      ],
+      "scale": [
+        0.36,
+        0.36,
+        0.36
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.2,
+        0.2,
+        0.2
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        -4,
+        0
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        1.5,
+        1
+      ],
+      "scale": [
+        0.2,
+        0.2,
+        0.2
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        -2,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    }
+  }
+}
