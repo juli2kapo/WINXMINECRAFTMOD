@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "GEG",
+    "SWS"
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "E": "minecraft:ender_eye",
+    "S": "minecraft:soul_sand",
+    "W": "minecraft:water_bucket"
+  },
+  "result": {
+    "id": "factoryascent:ender_anchor"
+  }
+}

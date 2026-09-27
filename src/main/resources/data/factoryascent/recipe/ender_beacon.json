@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OEO",
+    "DFD",
+    "OOO"
+  ],
+  "key": {
+    "O": "minecraft:obsidian",
+    "E": "minecraft:ender_eye",
+    "D": "factoryascent:ender_dust",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:ender_beacon"
+  }
+}

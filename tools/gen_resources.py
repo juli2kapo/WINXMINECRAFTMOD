@@ -131,7 +131,8 @@ MATERIALS = (["raw_tin", "raw_bauxite", "raw_titanium"] + [f"{d}_dust" for d in 
              + [f"{i}_ingot" for i in INGOTS] + ["coke", "fire_clay", "fire_brick", "silicon", "silicon_wafer"]
              + [f"{p}_plate" for p in PLATES] + [f"{g}_gear" for g in GEARS] + [f"{r}_rod" for r in RODS]
              + [f"{w}_wire" for w in WIRES]
-             + ["motor", "heating_coil", "basic_circuit", "advanced_circuit", "machine_frame", "advanced_machine_frame"])
+             + ["motor", "heating_coil", "basic_circuit", "advanced_circuit", "machine_frame", "advanced_machine_frame",
+                "orbital_targeting_core"])
 HANDHELD = ["forge_hammer", "wrench", "bronze_pickaxe", "bronze_axe", "bronze_shovel", "bronze_hoe", "bronze_sword",
             "electric_drill"]
 FLAT_ITEMS = MATERIALS + [f"{m}_mold" for m in MOLDS] + ["speed_upgrade", "energy_upgrade"]
@@ -162,8 +163,53 @@ def clean():
     for sub in ["recipe", "loot_table", "tags", "worldgen", "neoforge", "advancement", "data_maps",
                 "dimension", "dimension_type"]:
         shutil.rmtree(DATA / MOD / sub, ignore_errors=True)
-    for ns_dir in ["c", "minecraft", "neoforge"]:
+    for ns_dir in ["c", "minecraft", "neoforge", "orbital_railgun"]:
         shutil.rmtree(DATA / ns_dir, ignore_errors=True)
+
+
+class FeatureContext:
+    """
+    What a feature module (tools/features/<name>.py) gets: the generator's helpers. A module defines
+    generate(ctx), called after the core resources are written. It may also define
+    PICKAXE_BLOCKS / AXE_BLOCKS (lists of block ids) for the mineable tags.
+    """
+    MOD = MOD
+
+    def __init__(self):
+        self.write = write
+        self.ing = ing
+        self.shaped = shaped
+        self.shapeless = shapeless
+        self.machine = machine
+        self.advancement = advancement
+        self.item_def = item_def
+        self.block_model = block_model
+        self.loot_self = loot_self
+        self.ASSETS = ASSETS
+        self.DATA = DATA
+        self.en = {}
+        self.es = {}
+
+    def lang(self, key, en, es):
+        """Adds a translation (key without namespace prefix handling: pass the full key)."""
+        self.en[key] = en
+        self.es[key] = es
+
+    def flat_item(self, name, handheld=False):
+        write(ASSETS / "models" / "item" / f"{name}.json", {
+            "parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated",
+            "textures": {"layer0": f"{MOD}:item/{name}"}})
+        item_def(name, f"item/{name}")
+
+
+def load_feature_modules():
+    modules = []
+    for path in sorted((TOOLS / "features").glob("*.py")):
+        spec = importlib.util.spec_from_file_location(f"feature_{path.stem}", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        modules.append(module)
+    return modules
 
 
 def load_storage_module():
@@ -349,6 +395,7 @@ def lang(extra_en, extra_es, advancement_text):
                       ("heating_coil", "Heating Coil", "Resistencia calefactora"),
                       ("basic_circuit", "Basic Circuit", "Circuito básico"),
                       ("advanced_circuit", "Advanced Circuit", "Circuito avanzado"),
+                      ("orbital_targeting_core", "Orbital Targeting Core", "Núcleo de puntería orbital"),
                       ("machine_frame", "Machine Frame", "Chasis de máquina"),
                       ("advanced_machine_frame", "Advanced Machine Frame", "Chasis de máquina avanzado"),
                       ("speed_upgrade", "Speed Upgrade", "Mejora de velocidad"),
@@ -403,8 +450,6 @@ def lang(extra_en, extra_es, advancement_text):
         ("wrench", "Rotates machines; toggles item pipe faces between insert and extract", "Gira máquinas; alterna las caras de las tuberías entre insertar y extraer"),
         ("stored_energy", "Energy: %s / %s FE", "Energía: %s / %s FE"),
         ("electric_drill", "Mines faster than netherite while charged. Charge it in an Energy Cell.", "Pica más rápido que la netherita mientras tenga carga. Cárgalo en una celda de energía."),
-        ("hold_shift_uses", "Hold Shift to see which machines use this", "Mantén Shift para ver qué máquinas lo usan"),
-        ("used_in", "Used in: ", "Se usa en: "),
     ]:
         add(f"{T}.{key}", e, s)
     M = f"message.{MOD}"
@@ -433,9 +478,12 @@ def lang(extra_en, extra_es, advancement_text):
         ("miner_progress", "Claim dug out: %s%%", "Reclamo excavado: %s%%"), ("miner_rate", "Up to %s ores/min", "Hasta %s menas/min"),
         ("crank", "Crank", "Girar"), ("crank_hint", "Click (or sneak + right-click the Quern) to turn it",
                                      "Haz clic (o agáchate + clic derecho en el molino) para girarlo"),
-        ("recipes", "What can this machine make?", "¿Qué puede fabricar esta máquina?"),
-        ("recipes_for", "%s: recipes", "%s: recetas"), ("no_recipes", "No recipes", "Sin recetas"),
-        ("needs_better", "better machine", "máquina mejor"),
+        ("show_accepts", "Show what this machine accepts", "Mostrar qué acepta esta máquina"),
+        ("hide_accepts", "Hide the list of accepted items", "Ocultar la lista de objetos aceptados"),
+        ("accepts", "Accepts (%s)", "Acepta (%s)"), ("no_recipes", "Nothing", "Nada"),
+        ("needs_better_machine", "Better machine", "Máquina mejor"),
+        ("with", "  with %s", "  con %s"), ("with_mold", "  using a %s", "  usando un %s"),
+        ("see_panel", "See the list on the left for what it accepts", "Mira la lista de la izquierda para ver qué acepta"),
         ("jei_time", "%s s", "%s s"), ("jei_needs", "Needs: %s+", "Requiere: %s+"),
         ("jei_needs_long", "Needs a %s or a better machine of the same kind",
          "Requiere %s o una máquina mejor del mismo tipo"),
@@ -638,6 +686,21 @@ def the_deep(wg):
 
 
 # ============================================================ recipes
+
+def railgun_recipe():
+    """
+    Overrides the Orbital Railgun's own recipe (same path, and this mod loads after it: see the
+    optional dependency in neoforge.mods.toml) so the railgun belongs to the Orbital age.
+    """
+    path = DATA / "orbital_railgun" / "recipe" / "orbital_railgun.json"
+    write(path, {
+        "neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": "orbital_railgun"}],
+        "type": "minecraft:crafting_shaped", "category": "equipment",
+        "pattern": ["TST", "CBC", "TOT"],
+        "key": {"T": ing("#c:plates/titanium"), "S": ing("minecraft:spyglass"), "C": ing("advanced_circuit"),
+                "B": ing("minecraft:beacon"), "O": ing("orbital_targeting_core")},
+        "result": {"id": "orbital_railgun:orbital_railgun"}})
+
 
 RECIPES = DATA / MOD / "recipe"
 
@@ -844,6 +907,11 @@ def recipes():
     machine("assembling", "advanced_machine_frame", [("machine_frame", 1), ("#c:plates/aluminum", 4),
                                                       ("#c:gears/steel", 2), ("motor", 1)], "advanced_machine_frame",
             time=160, min_grade=3)
+    # Orbital age: the targeting core, and through it the Orbital Railgun (optional mod).
+    machine("assembling", "orbital_targeting_core", [("#c:plates/titanium", 4), ("advanced_circuit", 2),
+                                                      ("minecraft:end_crystal", 1), ("minecraft:echo_shard", 2)],
+            "orbital_targeting_core", time=400, min_grade=6)
+    railgun_recipe()
 
 
 # ============================================================ advancements
@@ -870,8 +938,8 @@ def advancement(key, parent, icon, items, title_en, desc_en, title_es, desc_es, 
 def advancements(storage_terminal_id):
     A = advancement
     A("root", None, "quern", ["minecraft:crafting_table"], "Factory Ascent",
-      "Seven ages from a hand mill to the stars. Follow this tab: every step says what to build next.",
-      "Factory Ascent", "Siete eras, del molino de mano a las estrellas. Sigue esta pestaña: cada paso dice qué construir.", root=True)
+      "Seven ages from a hand mill to the stars.",
+      "Factory Ascent", "Siete eras, del molino de mano a las estrellas.", root=True)
     A("stone_hammer", "root", "forge_hammer", ["forge_hammer"], "Hammer Time",
       "Craft a Forge Hammer and hammer 2 ingots into a plate", "¡A martillar!",
       "Fabrica un martillo de forja y convierte 2 lingotes en una placa")
@@ -958,13 +1026,21 @@ def main():
         extra_en, extra_es = storage.lang()
         extra_pickaxe = list(getattr(storage, "PICKAXE_BLOCKS", []))
     advancements("storage_terminal" if storage else None)
+    recipes()
+    features = load_feature_modules()
+    ctx = FeatureContext()
+    for feature in features:
+        feature.generate(ctx)
+        extra_pickaxe += list(getattr(feature, "PICKAXE_BLOCKS", []))
+    extra_en.update(ctx.en)
+    extra_es.update(ctx.es)
     lang(extra_en, extra_es, ADV)
     loot()
     tags(extra_pickaxe)
     worldgen()
-    recipes()
     count = sum(1 for _ in ROOT.rglob("*.json"))
-    print(f"wrote resources, {count} json files under {ROOT} (storage module: {'yes' if storage else 'no'})")
+    print(f"wrote resources, {count} json files under {ROOT} (storage module: {'yes' if storage else 'no'}, "
+          f"features: {', '.join(f.__name__.removeprefix('feature_') for f in features) or 'none'})")
 
 
 if __name__ == "__main__":

@@ -160,10 +160,11 @@ def element_json(box, boxes):
 
 
 class Model:
-    def __init__(self, mid, textures, boxes, on=None, particle=None, desc=""):
+    def __init__(self, mid, textures, boxes, on=None, particle=None, desc="", boxes_on=None):
         self.id = mid
         self.textures = textures          # var -> texture file name (no ns)
         self.boxes = boxes
+        self.boxes_on = boxes_on or boxes  # elements of the working (_on) model
         self.on = on or {}                # var -> texture file name for _on
         self.particle = particle or next(iter(textures.values()))
         self.desc = desc
@@ -177,14 +178,14 @@ class Model:
     def to_json(self, on):
         tm = self.tex_map(on)
         used = set()
-        elements = [element_json(b, self.boxes) for b in self.boxes]
+        boxes = self.boxes_on if on else self.boxes
+        elements = [element_json(b, boxes) for b in boxes]
         for e in elements:
             for f in e["faces"].values():
                 used.add(f["texture"][1:])
         missing = used - set(tm)
         assert not missing, (self.id, missing)
-        tex = {"particle": "%s:block/%s" % (MOD, tm.get("particle_on" if on else "particle", self.particle)
-                                             if False else self.particle)}
+        tex = {"particle": "%s:block/%s" % (MOD, self.particle)}
         for k in sorted(tm):
             if k in used:
                 tex[k] = "%s:block/%s" % (MOD, tm[k])
@@ -232,344 +233,341 @@ def T(mid, *parts):
 # =============================================================================
 # 2. The machines
 # =============================================================================
+# Full-block machines are solid cubes with windows carved into their faces
+# (gen_textures.LAYOUT). A carved window only ever opens onto one face, so the
+# block can keep hiding its neighbours' faces without see-through gaps. Parts
+# inside the windows (rollers, rams, crucibles, arms) are separate elements.
+# The quern and the solar panel match their smaller collision shapes instead.
+
+sys.path.insert(0, os.path.dirname(HERE))
+import gen_textures as gt  # noqa: E402  (LAYOUT is shared with the textures)
+
+CUBE = ((0, 0, 0), (16, 16, 16))
+AXIS = {"north": (2, -1), "south": (2, 1), "west": (0, -1), "east": (0, 1), "down": (1, -1), "up": (1, 1)}
+
+
+def carve_box(face, u0, v0, u1, v1, depth, bounds=CUBE):
+    """Texture window on a face -> world box (projected-UV convention)."""
+    (bx0, by0, bz0), (bx1, by1, bz1) = bounds
+    ya, yb = 16 - (v1 + 1), 16 - v0
+    if face == "north":
+        return (16 - (u1 + 1), ya, bz0), (16 - u0, yb, bz0 + depth)
+    if face == "south":
+        return (u0, ya, bz1 - depth), (u1 + 1, yb, bz1)
+    if face == "west":
+        return (bx0, ya, u0), (bx0 + depth, yb, u1 + 1)
+    if face == "east":
+        return (bx1 - depth, ya, 16 - (u1 + 1)), (bx1, yb, 16 - u0)
+    if face == "up":
+        return (u0, by1 - depth, v0), (u1 + 1, by1, v1 + 1)
+    raise ValueError(face)
+
+
+def greedy(solid):
+    """Split a voxel set into few boxes: try every axis order, keep the best."""
+    best = None
+    for order in ((0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)):
+        s = solid.copy()
+        boxes = []
+        for idx in np.argwhere(s):
+            p = tuple(int(v) for v in idx)
+            if not s[p]:
+                continue
+            lo, hi = list(p), [v + 1 for v in p]
+            for ax in order:
+                while hi[ax] < 16:
+                    sl = [slice(lo[k], hi[k]) for k in range(3)]
+                    sl[ax] = slice(hi[ax], hi[ax] + 1)
+                    if s[tuple(sl)].all():
+                        hi[ax] += 1
+                    else:
+                        break
+            s[tuple(slice(lo[k], hi[k]) for k in range(3))] = False
+            boxes.append((tuple(lo), tuple(hi)))
+        if best is None or len(boxes) < len(best):
+            best = boxes
+    return best
+
+
+def carved(mid, faces, bounds=CUBE, inner="inner"):
+    """Boxes of a solid block with the LAYOUT windows of `mid` carved out.
+
+    faces: {face: texture var} for the six outer faces. A wall facing out of a
+    window through its opening (the recess floor) gets that face's texture;
+    the recess's side walls get `inner`.
+    """
+    (bx0, by0, bz0), (bx1, by1, bz1) = bounds
+    solid = np.zeros((16, 16, 16), bool)
+    solid[bx0:bx1, by0:by1, bz0:bz1] = True
+    holes = []
+    for face, wins in gt.LAYOUT.get(mid, {}).items():
+        for (u0, v0, u1, v1, d) in wins:
+            fr, to = carve_box(face, u0, v0, u1, v1, d, bounds)
+            assert solid[fr[0]:to[0], fr[1]:to[1], fr[2]:to[2]].all(), (mid, face, "windows overlap")
+            solid[fr[0]:to[0], fr[1]:to[1], fr[2]:to[2]] = False
+            holes.append((face, fr, to))
+    bmin, bmax = bounds
+
+    def hole_at(p):
+        for face, fr, to in holes:
+            if all(fr[k] <= p[k] <= to[k] for k in range(3)):
+                return face
+        return None
+
+    out = []
+    for fr, to in greedy(solid):
+        tex = {}
+        for f in DIRS:
+            ax, sgn = AXIS[f]
+            coord = to[ax] if sgn > 0 else fr[ax]
+            if coord == (bmax[ax] if sgn > 0 else bmin[ax]):
+                tex[f] = faces[f]
+                continue
+            # look just outside the face for a window
+            o = [a for a in range(3) if a != ax]
+            seen = None
+            for i in range(fr[o[0]], to[o[0]]):
+                for j in range(fr[o[1]], to[o[1]]):
+                    p = [0.0, 0.0, 0.0]
+                    p[ax] = coord + 0.5 * sgn
+                    p[o[0]], p[o[1]] = i + 0.5, j + 0.5
+                    h = hole_at(p)
+                    if h:
+                        seen = h
+                        break
+                if seen:
+                    break
+            if seen:
+                tex[f] = faces[f] if seen == f else inner
+        out.append(Box(fr, to, tex))
+    return out
+
+
+def faces_of(front, side, top, bottom, back=None):
+    return {"north": front, "south": back or side, "west": side, "east": side, "up": top, "down": bottom}
+
+
+STD = faces_of("front", "side", "top", "bottom")
+
+
+def fam(kind, **extra):
+    """Texture map with an age family's casing."""
+    m = {"side": "%s_machine_side" % kind, "top": "%s_machine_top" % kind,
+         "bottom": "%s_machine_bottom" % kind, "inner": "%s_machine_inner" % kind}
+    m.update(extra)
+    return m
+
+
+def octo_z(cx, cy, r, z0, z1, tex, c=None, **kw):
+    """Octagonal prism along Z (a roller seen end-on from the front)."""
+    c = c if c is not None else max(1, round(r * 0.4))
+    return [
+        Box((cx - r + c, cy - r, z0), (cx + r - c, cy + r, z1), tex, **kw),
+        Box((cx - r, cy - r + c, z0), (cx - r + c, cy + r - c, z1), tex, **kw),
+        Box((cx + r - c, cy - r + c, z0), (cx + r, cy + r - c, z1), tex, **kw),
+    ]
+
+
+# ---- stone age ----------------------------------------------------------------------------
 
 
 def m_quern():
     i = "quern"
-    tx = T(i, "base", "base_top", "stone", "stone_top", "handle", "spout")
-    b = []
-    b += octo_y(8, 8, 7, 0, 2, {"side": "base", "end": "base_top"}, c=2)     # plinth
-    b += octo_y(8, 8, 6, 2, 6, {"side": "base", "end": "base_top"}, c=2)     # lower (bed) stone
-    b += octo_y(8, 8, 5, 6, 10, {"side": "stone", "end": "stone_top"}, c=2)  # runner stone
-    b.append(Box((7, 3, 0), (9, 5, 2), "spout"))                            # flour spout
-    b.append(Box((10, 10, 9), (12, 16, 11), "handle"))                      # crank handle
-    return Model(i, tx, b, particle="quern_base",
-                 desc="stepped stone base, runner stone, oak crank")
+    tx = {"side": "quern_side", "bed_top": "quern_bed_top", "runner_top": "quern_runner_top",
+          "bottom": "quern_bottom", "handle": "quern_handle"}
+    base = []
+    base += octo_y(8, 8, 7, 0, 6, {"side": "side", "up": "bed_top", "down": "bottom"}, c=2)      # bed stone
+    base += octo_y(8, 8, 5, 6, 11, {"side": "side", "up": "runner_top", "down": "bottom"}, c=2)  # runner stone
+    base.append(Box((7, 2, 0), (9, 4, 1), {"all": "side"}))                                     # flour spout
+
+    # arm from the eye to the rim and an upright peg; a quarter turn further when working
+    idle = base + [Box((7.25, 11, 7.25), (12, 12, 8.75), "handle"), Box((10.5, 12, 7.25), (12, 16, 8.75), "handle")]
+    on = base + [Box((7.25, 11, 7.25), (8.75, 12, 12), "handle"), Box((7.25, 12, 10.5), (8.75, 16, 12), "handle")]
+    return Model(i, tx, idle, on={"bed_top": "quern_bed_top_on"}, boxes_on=on, particle="quern_side",
+                 desc="granite bed + runner stones, oak crank (turned when working)")
 
 
 def m_brick_kiln():
     i = "brick_kiln"
-    tx = T(i, "base", "base_top", "front", "side", "top", "inner", "fuel", "chimney", "chimney_top")
-    on = T(i, "front_on", "inner_on", "fuel_on")
-    on = {"front": on["front_on"], "inner": on["inner_on"], "fuel": on["fuel_on"]}
-    body = {"north": "front", "side": "side", "end": "top"}
-    inner = "inner"
-    b = [
-        Box((0, 0, 0), (16, 2, 16), {"side": "base", "end": "base_top"}),
-        Box((1, 2, 4), (15, 11, 15), body),                                      # main body / back wall
-        Box((1, 2, 1), (5, 11, 4), dict(body, west="side", east=inner)),         # pillar (east side = mouth)
-        Box((11, 2, 1), (15, 11, 4), dict(body, east="side", west=inner)),
-        Box((5, 8, 1), (11, 11, 4), dict(body, down=inner)),                     # lintel
-        Box((5, 7, 1), (6, 8, 4), dict(body, down=inner, east=inner)),           # arch shoulders
-        Box((10, 7, 1), (11, 8, 4), dict(body, down=inner, west=inner)),
-        Box((5, 2, 2), (11, 3, 4), "fuel"),                                      # coal bed
-        Box((2, 11, 2), (14, 13, 14), {"side": "side", "north": "front", "end": "top"}),  # shoulder
-        Box((3, 13, 3), (13, 14, 13), {"side": "side", "north": "front", "end": "top"}),  # crown
-        Box((6, 11, 11), (10, 16, 15), {"side": "chimney", "end": "chimney_top"}),       # chimney
-    ]
-    return Model(i, tx, b, on=on, particle="brick_kiln_side",
-                 desc="terracotta kiln, arched mouth, stepped crown, back chimney")
+    tx = {"front": "brick_kiln_front", "side": "brick_kiln_side", "top": "brick_kiln_top",
+          "bottom": "brick_kiln_bottom", "inner": "brick_kiln_inner", "fuel": "brick_kiln_fuel"}
+    on = {"front": "brick_kiln_front_on", "top": "brick_kiln_top_on", "inner": "brick_kiln_inner_on",
+          "fuel": "brick_kiln_fuel_on"}
+    b = carved(i, STD)
+    b += [Box((4, 9, 0), (5, 10, 4), {"north": "front", "all": "inner"}),       # arch shoulders
+          Box((11, 9, 0), (12, 10, 4), {"north": "front", "all": "inner"}),
+          Box((5, 2, 1.5), (11, 3, 4), "fuel"),                                   # logs on the hearth
+          Box((6, 3, 2), (10, 4, 4), "fuel")]
+    return Model(i, tx, b, on=on, particle="brick_kiln_side", desc="clay-brick kiln, arched fire mouth, flue")
 
 
-def burner_firebox(i, y1=4):
-    return Box((1, 0, 1), (15, y1, 15), {"north": "firebox", "side": "firebox_side", "up": "firebox_top",
-                                         "down": "firebox_top"})
+# ---- bronze age ---------------------------------------------------------------------------
 
 
 def m_burner_crusher():
     i = "burner_crusher"
-    tx = T(i, "firebox", "firebox_side", "firebox_top", "front", "side", "top", "roller_end", "roller",
-           "hopper", "hopper_inner", "hopper_inner_floor", "stack", "stack_top")
-    on = {"firebox": i + "_firebox_on"}
-    body = {"north": "front", "side": "side", "end": "top"}
-    b = [burner_firebox(i)]
-    b.append(Box((2, 4, 5), (14, 12, 13), body))                    # body (north face = cavity back)
-    b.append(Box((2, 4, 2), (3, 12, 5), body))                      # frame posts
-    b.append(Box((13, 4, 2), (14, 12, 5), body))
-    b.append(Box((3, 11, 2), (13, 12, 5), body))                    # top beam
-    b.append(Box((3, 4, 2), (13, 5, 5), body))                      # bottom lip
-    for (a0, a1, b0, b1) in ((4, 7, 3, 8), (9, 12, 8, 13)):         # two toothed rollers (axis z)
-        b.append(Box((a0, 6, 3), (a1, 10, 5), {"north": "roller_end", "all": "roller"}))
-        b.append(Box((b0, 7, 3), (b1, 9, 5), {"north": "roller_end", "all": "roller"}))
-    b.append(Box((5, 12, 5), (11, 13, 11), {"all": "hopper"}))       # hopper throat
-    b += hopper(3, 3, 13, 13, 13, 16, "hopper", "hopper_inner")
-    b.append(Box((11, 4, 13), (13, 16, 15), {"side": "stack", "end": "stack_top"}))  # flue
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="brick firebox, bronze housing, twin rollers, hopper, flue")
+    tx = fam("bronze", front=i + "_front", top=i + "_top", roller=i + "_roller", roller_end=i + "_roller_end")
+    on = {"front": i + "_front_on", "roller_end": i + "_roller_end_on"}
+    b = carved(i, STD)
+    for cx in (5.5, 10.5):
+        b += octo_z(cx, 10.5, 2.2, 0.5, 3, {"north": "roller_end", "all": "roller"}, c=0.8)
+    return Model(i, tx, b, on=on, particle="bronze_machine_side",
+                 desc="bronze housing: twin rollers over a firebox, ore hopper on top")
 
 
 def m_burner_press():
     i = "burner_press"
-    tx = T(i, "firebox", "firebox_side", "firebox_top", "pedestal", "die", "die_top", "pillar",
-           "head", "head_front", "ram", "ram_head", "gauge", "stack", "stack_top")
-    on = {"firebox": i + "_firebox_on"}
-    b = [burner_firebox(i)]
-    b.append(Box((4, 4, 4), (12, 6, 12), "pedestal"))
-    b.append(Box((2, 6, 3), (14, 7, 13), {"side": "die", "end": "die_top"}))
-    b.append(Box((1, 4, 6), (3, 13, 10), "pillar"))
-    b.append(Box((13, 4, 6), (15, 13, 10), "pillar"))
-    b.append(Box((1, 13, 5), (15, 16, 11), {"north": "head_front", "south": "head_front", "all": "head"}))
-    b.append(Box((6, 10, 6), (10, 13, 10), "ram"))
-    b.append(Box((5, 8, 5), (11, 10, 11), "ram_head"))
-    b.append(Box((6, 13, 4), (10, 16, 5), {"north": "gauge", "all": "head"}))
-    b.append(Box((11, 4, 12), (13, 12, 14), {"side": "stack", "end": "stack_top"}))
-    return Model(i, tx, b, on=on, particle=i + "_head",
-                 desc="brick firebox, bronze two-post frame, hanging ram over a die")
-
-
-def m_full(i, front, other, on_front):
-    b = [Box((0, 0, 0), (16, 16, 16), {"north": "front", "all": "bricks"})]
-    return Model(i, {"front": front, "bricks": other}, b, on={"front": on_front}, particle=other)
+    tx = fam("bronze", front=i + "_front", top=i + "_top", ram=i + "_ram", head=i + "_head", die=i + "_die")
+    on = {"front": i + "_front_on"}
+    b = carved(i, STD)
+    die = [Box((4, 7, 1), (12, 8, 4), "die")]
+    up = [Box((7, 12, 1.5), (9, 14, 3.5), "ram"), Box((4, 10, 1), (12, 12, 4), "head")]
+    down = [Box((7, 10, 1.5), (9, 14, 3.5), "ram"), Box((4, 8, 1), (12, 10, 4), "head")]
+    return Model(i, tx, b + die + up, on=on, boxes_on=b + die + down, particle="bronze_machine_side",
+                 desc="bronze press: ram over a die (down when working), firebox")
 
 
 def m_coke_oven():
-    return m_full("coke_oven", "coke_oven_front", "coke_oven_bricks", "coke_oven_front_on")
+    i = "coke_oven"
+    tx = {"front": i + "_front", "bricks": "coke_oven_bricks", "inner": i + "_inner"}
+    b = carved(i, faces_of("front", "bricks", "bricks", "bricks"))
+    return Model(i, tx, b, on={"front": i + "_front_on"}, particle="coke_oven_bricks",
+                 desc="coke oven bricks, recessed iron hatch, glowing peephole")
 
 
 def m_blast_furnace():
-    return m_full("blast_furnace", "blast_furnace_front", "fire_bricks", "blast_furnace_front_on")
+    i = "blast_furnace"
+    tx = {"front": i + "_front", "bricks": "fire_bricks", "inner": i + "_inner"}
+    b = carved(i, faces_of("front", "bricks", "bricks", "bricks"))
+    return Model(i, tx, b, on={"front": i + "_front_on"}, particle="fire_bricks",
+                 desc="fire bricks, iron hatch, molten tap hole")
+
+
+# ---- electric age -------------------------------------------------------------------------
 
 
 def m_electric_furnace():
     i = "electric_furnace"
-    tx = T(i, "front", "side", "top", "bottom", "door", "door_side", "handle", "hood", "hood_top", "foot")
-    on = {"door": i + "_door_on", "front": i + "_front_on"}
-    b = [
-        Box((1, 1, 2), (15, 13, 15), {"north": "front", "side": "side", "up": "top", "down": "bottom"}),
-        Box((3, 3, 1), (13, 11, 2), {"north": "door", "all": "door_side"}),
-        Box((5, 9, 0), (11, 10, 1), "handle"),
-        Box((3, 13, 9), (13, 15, 14), {"side": "hood", "end": "hood_top"}),
-    ]
-    for (x, z) in ((1, 2), (13, 2), (1, 13), (13, 13)):
-        b.append(Box((x, 0, z), (x + 2, 1, z + 2), "foot"))
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="steel oven on feet, glass door with heating coils, vent hood")
+    tx = fam("steel", front=i + "_front", top=i + "_top", coil=i + "_coil")
+    b = carved(i, STD)
+    for y in (5, 8, 11):
+        b.append(Box((3, y, 1.5), (13, y + 1, 2.5), "coil"))
+    return Model(i, tx, b, on={"front": i + "_front_on", "coil": i + "_coil_on", "top": i + "_top_on"}, particle="steel_machine_side",
+                 desc="steel oven, three heating coils (orange-hot when working)")
 
 
 def m_crusher():
     i = "crusher"
-    tx = T(i, "front", "side", "top", "bottom", "jaw", "hopper", "hopper_inner", "hopper_inner_floor",
-           "flywheel", "flywheel_rim", "hub")
-    on = {"jaw": i + "_jaw_on"}
-    body = {"north": "front", "side": "side", "up": "top", "down": "bottom"}
-    b = [
-        Box((2, 0, 4), (14, 10, 14), body),                         # body, north face = crushing chamber
-        Box((2, 0, 2), (4, 10, 4), body),                           # front frame
-        Box((12, 0, 2), (14, 10, 4), body),
-        Box((4, 8, 2), (12, 10, 4), body),
-        Box((4, 0, 2), (12, 3, 4), body),                           # discharge lip
-        Box((4, 3, 3), (7, 5, 4), "jaw"),                           # jaws: thick at the bottom = V
-        Box((4, 5, 3), (6, 8, 4), "jaw"),
-        Box((9, 3, 3), (12, 5, 4), "jaw"),
-        Box((10, 5, 3), (12, 8, 4), "jaw"),
-        Box((5, 10, 6), (11, 12, 12), "hopper"),                    # throat
-    ]
-    b += hopper(2, 3, 14, 15, 12, 16, "hopper", "hopper_inner")
-    for (x0, x1, hx0, hx1) in ((0, 1, 1, 2), (15, 16, 14, 15)):   # flywheels + hubs
-        b += octo_x(5, 8, 4, x0, x1, {"west": "flywheel", "east": "flywheel", "all": "flywheel_rim"}, c=2)
-        b.append(Box((hx0, 4, 7), (hx1, 6, 9), "hub"))
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="steel jaw crusher: hopper, V jaws, twin flywheels")
+    tx = fam("steel", front=i + "_front", top=i + "_top", jaw=i + "_jaw")
+    b = carved(i, STD)
+    b += [Box((5, 7, 1), (6.5, 13, 3), "jaw", rot=("z", 22.5, (5.75, 10, 2))),
+          Box((9.5, 7, 1), (11, 13, 3), "jaw", rot=("z", -22.5, (10.25, 10, 2)))]
+    return Model(i, tx, b, on={"front": i + "_front_on"}, particle="steel_machine_side",
+                 desc="steel jaw crusher: V jaws, hopper on top, hazard chute")
 
 
 def m_metal_press():
     i = "metal_press"
-    tx = T(i, "base", "base_front", "base_top", "column", "head", "head_front", "head_bottom",
-           "ram", "plate", "die", "hose", "guide")
-    on = {"head_front": i + "_head_front_on"}
-    b = [
-        Box((1, 0, 1), (15, 5, 15), {"north": "base_front", "side": "base", "end": "base_top"}),
-        Box((3, 5, 2), (13, 6, 10), "die"),
-        Box((2, 5, 10), (14, 12, 15), "column"),
-        Box((2, 12, 2), (14, 16, 15), {"north": "head_front", "side": "head", "up": "head", "down": "head_bottom"}),
-        Box((6, 8, 4), (10, 12, 8), "ram"),
-        Box((4, 7, 3), (12, 8, 9), "plate"),
-        Box((3, 6, 8), (4, 12, 9), "guide"),
-        Box((12, 6, 8), (13, 12, 9), "guide"),
-        Box((1, 5, 12), (2, 13, 13), "hose"),
-        Box((14, 5, 12), (15, 13, 13), "hose"),
-    ]
-    return Model(i, tx, b, on=on, particle=i + "_head",
-                 desc="tall C-frame stamping press: head, exposed ram, die, hoses")
+    tx = fam("steel", front=i + "_front", top=i + "_top", rod=i + "_rod", head=i + "_head", die=i + "_die", plate=i + "_plate")
+    b = carved(i, STD)
+    die = [Box((4, 5, 1), (12, 6, 4), "die")]
+    up = [Box((7, 12, 1.5), (9, 15, 3.5), "rod"), Box((4, 10, 1), (12, 12, 4), "head"),
+          Box((5, 6, 1.5), (11, 6.5, 3.5), "plate")]
+    down = [Box((7, 8.5, 1.5), (9, 15, 3.5), "rod"), Box((4, 6.5, 1), (12, 8.5, 4), "head"),
+            Box((5, 6, 1.5), (11, 6.5, 3.5), "plate")]
+    return Model(i, tx, b + die + up, on={"front": i + "_front_on"}, boxes_on=b + die + down,
+                 particle="steel_machine_side", desc="hydraulic press: chrome ram, hazard head, die")
 
 
 def m_alloy_smelter():
     i = "alloy_smelter"
-    tx = T(i, "front", "side", "top", "bottom", "tray", "crucible", "crucible_top", "flue", "flue_top")
-    on = {"front": i + "_front_on", "crucible_top": i + "_crucible_top_on"}
-    b = [
-        Box((1, 0, 1), (15, 10, 15), {"north": "front", "side": "side", "up": "top", "down": "bottom"}),
-        Box((4, 3, 0), (12, 4, 1), "tray"),
-    ]
-    b += octo_y(4.5, 6.5, 2.5, 10, 15, {"side": "crucible", "end": "crucible_top"}, c=1)
-    b += octo_y(11.5, 6.5, 2.5, 10, 15, {"side": "crucible", "end": "crucible_top"}, c=1)
-    b.append(Box((7, 10, 11), (9, 16, 13), {"side": "flue", "end": "flue_top"}))
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="steel body, two crucibles and a flue on top, hot slot")
+    tx = fam("steel", front=i + "_front", top=i + "_top", crucible=i + "_crucible", crucible_top=i + "_crucible_top")
+    b = carved(i, STD)
+    for cx in (5, 11):
+        b += octo_y(cx, 2.25, 1.75, 4, 9, {"side": "crucible", "up": "crucible_top", "down": "crucible"}, c=0.75)
+    return Model(i, tx, b, on={"front": i + "_front_on", "crucible_top": i + "_crucible_top_on"},
+                 particle="steel_machine_side", desc="two crucibles in a heated bay")
 
 
 def m_assembler():
     i = "assembler"
-    tx = T(i, "front", "side", "top", "bottom", "screen", "bezel", "arm", "joint", "turret", "gripper", "work")
-    on = {"screen": i + "_screen_on"}
-    b = [
-        Box((1, 0, 1), (15, 9, 15), {"north": "front", "side": "side", "up": "top", "down": "bottom"}),
-        Box((3, 3, 0), (13, 8, 1), {"north": "screen", "all": "bezel"}),
-        Box((9, 9, 9), (14, 10, 14), "turret"),
-        Box((10, 10, 10), (13, 12, 13), "joint"),
-        Box((10.5, 12, 10.5), (12.5, 15, 12.5), "arm"),
-        Box((10, 14, 4), (13, 16, 11), {"all": "arm", "south": "joint", "north": "joint"}),
-        Box((10.5, 12, 5), (12.5, 14, 7), "arm"),
-        Box((10, 10.5, 4.5), (11, 12, 7.5), "gripper"),
-        Box((12, 10.5, 4.5), (13, 12, 7.5), "gripper"),
-        Box((8, 9, 3), (14, 9.5, 8), {"all": "work"}),
-    ]
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="workbench body, front screen, robot arm over a circuit board")
+    tx = fam("steel", front=i + "_front", top=i + "_top", arm=i + "_arm", joint=i + "_joint", work=i + "_work")
+    b = carved(i, STD)
+    b += [Box((3, 5, 0.5), (8, 5.5, 3.5), "work"),                  # circuit board on the bench
+          Box((10, 5, 1), (13, 7, 3.5), "joint"),                   # arm base
+          Box((11, 7, 1.75), (12, 12, 2.75), "arm"),                # upper arm
+          Box((10.5, 11.5, 1.25), (12.5, 13.5, 3.25), "joint"),     # elbow
+          Box((6, 12, 1.75), (10.5, 13, 2.75), "arm"),              # forearm
+          Box((6, 9.5, 1.75), (7, 12, 2.75), "arm"),                # wrist
+          Box((5, 8.5, 1.25), (8, 9.5, 3.25), "joint")]             # gripper
+    return Model(i, tx, b, on={"front": i + "_front_on", "top": i + "_top_on"}, particle="steel_machine_side",
+                 desc="orange robot arm over a circuit board, status screen")
 
 
 def m_combustion_generator():
     i = "combustion_generator"
-    tx = T(i, "front", "side", "top", "bottom", "door", "door_side", "pipe", "pipe_top", "cap",
-           "coil", "coil_end", "fin")
-    on = {"door": i + "_door_on"}
-    b = [
-        Box((1, 0, 2), (15, 12, 15), {"north": "front", "side": "side", "up": "top", "down": "bottom"}),
-        Box((3, 1, 1), (13, 8, 2), {"north": "door", "all": "door_side"}),
-        Box((10, 12, 10), (13, 15, 13), {"side": "pipe", "end": "pipe_top"}),
-        Box((9, 15, 9), (14, 16, 14), {"side": "cap", "end": "pipe_top"}),
-        Box((3, 12, 3), (8, 15, 8), {"side": "coil", "end": "coil", "west": "coil_end", "east": "coil_end"}),
-        Box((2, 12, 3.5), (3, 15.5, 7.5), "coil_end"),
-        Box((8, 12, 3.5), (9, 15.5, 7.5), "coil_end"),
-    ]
-    for z in (5, 8, 11):
-        b.append(Box((0, 2, z), (1, 10, z + 1), "fin"))
-        b.append(Box((15, 2, z), (16, 10, z + 1), "fin"))
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="steel generator: fire door, exhaust stack, dynamo drum, side fins")
+    tx = fam("steel", front=i + "_front", top=i + "_top", slat=i + "_slat", grate="geothermal_generator_bar")
+    b = carved(i, STD)
+    for y in (10.5, 12.5):
+        b.append(Box((3, y, 0.5), (13, y + 1, 1.5), "slat"))
+    for x in (5.5, 7.5, 9.5):
+        b.append(Box((x, 3, 0.5), (x + 1, 8, 1.5), "grate"))
+    return Model(i, tx, b, on={"front": i + "_front_on"}, particle="steel_machine_side",
+                 desc="grilled fan over a barred firebox, exhaust on top")
 
 
 def m_solar_panel():
     i = "solar_panel"
-    tx = T(i, "pv", "panel_edge", "base", "base_top", "stand")
-    b = [
-        Box((1, 0, 1), (15, 1, 15), {"side": "base", "end": "base_top"}),
-        Box((3, 1, 10), (13, 4, 12), "stand"),
-        Box((3, 1, 3), (13, 2, 5), "stand"),
-        Box((1, 3.15, 2), (15, 3.65, 14), {"up": "pv", "all": "panel_edge"},
-            uv={"up": [1, 2, 15, 14], "down": [1, 2, 15, 14]},
-            rot=("x", -22.5, (8, 3.4, 8))),
-    ]
-    return Model(i, tx, b, particle=i + "_pv", desc="tilted PV panel on a low stand")
+    tx = {"top": "solar_panel_top", "side": "solar_panel_side", "bottom": "steel_machine_bottom",
+          "inner": "aluminum_machine_inner"}
+    b = carved(i, faces_of("side", "side", "top", "bottom"), bounds=((0, 0, 0), (16, 6, 16)))
+    return Model(i, tx, b, particle="solar_panel_top", desc="6-px slab: blue cell tray in an aluminium rim")
 
 
 def m_auto_farmer():
     i = "auto_farmer"
-    tx = T(i, "front", "side", "top", "bottom", "hopper", "hopper_top", "tank", "tank_top", "arm",
-           "head", "head_bottom")
-    on = {"front": i + "_front_on", "head_bottom": i + "_head_bottom_on"}
-    b = [
-        Box((1, 0, 3), (15, 10, 15), {"north": "front", "side": "side", "up": "top", "down": "bottom"}),
-        Box((3, 10, 7), (9, 11, 13), "hopper"),
-        Box((2, 11, 6), (10, 14, 14), {"side": "hopper", "up": "hopper_top", "down": "hopper"}),
-        Box((11, 10, 8), (14, 15, 13), {"side": "tank", "end": "tank_top"}),
-        Box((5, 12, 1), (7, 13, 6), "arm"),
-        Box((10, 13, 9), (11, 14, 10), "arm"),
-        Box((3, 10, 0), (9, 12, 3), {"down": "head_bottom", "all": "head"}),
-    ]
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="aluminium planter: seed hopper, water tank, sprinkler arm over the front")
+    tx = fam("steel", front=i + "_front", side=i + "_side", top=i + "_top", tine=i + "_tine")
+    b = carved(i, STD)
+    b.append(Box((3, 12, 1), (13, 13, 3), "tine"))
+    for x in (4.5, 7, 9.5, 12):
+        b.append(Box((x - 0.5, 10.5, 1.5), (x + 0.5, 12, 2.5), "tine"))
+    return Model(i, tx, b, on={"front": i + "_front_on", "top": i + "_top_on"}, particle=i + "_side",
+                 desc="green-trimmed planter: rake over seedlings, crop tray on top")
+
+
+def m_energy_cell(i):
+    tx = {"front": i + "_front", "side": i + "_side", "top": i + "_top", "bottom": i + "_bottom", "inner": i + "_inner"}
+    b = carved(i, STD)
+    return Model(i, tx, b, on={"front": i + "_front_on"}, particle=i + "_side",
+                 desc="tier-coloured cell, bolt window + side charge gauges")
+
+
+# ---- automation age -----------------------------------------------------------------------
 
 
 def m_miner():
     i = "miner"
-    tx = T(i, "side", "top", "bottom", "leg", "foot", "drill", "drill_tip", "mast", "crown", "shaft")
-    on = {"side": i + "_side_on"}
-    b = [Box((2, 3, 2), (14, 10, 14), {"side": "side", "up": "top", "down": "bottom"})]
-    for (x, z) in ((2, 2), (12, 2), (2, 12), (12, 12)):
-        b.append(Box((x, 0, z), (x + 2, 3, z + 2), "foot"))
-    b.append(Box((6, 1, 6), (10, 3, 10), "drill"))
-    b.append(Box((7, 0, 7), (9, 1, 9), "drill_tip"))
-    for (x, z) in ((4, 4), (11, 4), (4, 11), (11, 11)):
-        b.append(Box((x, 10, z), (x + 1, 15, z + 1), "mast"))
-    b.append(Box((7, 10, 7), (9, 15, 9), "shaft"))
-    b.append(Box((3, 15, 3), (13, 16, 13), "crown"))
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="aluminium rig on feet, derrick mast with crown, drill below")
+    tx = {"side": "miner_side", "top": "miner_top", "bottom": "miner_bottom", "inner": "aluminum_machine_inner"}
+    b = carved(i, faces_of("side", "side", "top", "bottom"))
+    return Model(i, tx, b, on={"side": "miner_side_on"}, particle="miner_side",
+                 desc="aluminium rig, rift windows into The Deep on all sides, drill below")
 
 
 def m_geothermal():
     i = "geothermal_generator"
-    tx = T(i, "front", "side", "top", "bottom", "base", "base_top", "post", "post_top", "vent", "vent_top")
-    on = {"front": i + "_front_on", "side": i + "_side_on", "base": i + "_base_on", "vent_top": i + "_vent_top_on"}
-    b = [
-        Box((0, 0, 0), (16, 3, 16), {"side": "base", "end": "base_top"}),
-        Box((2, 3, 2), (14, 13, 14), {"north": "front", "side": "side", "up": "top", "down": "bottom"}),
-    ]
-    for (x, z) in ((1, 1), (12, 1), (1, 12), (12, 12)):
-        b.append(Box((x, 3, z), (x + 3, 14, z + 3), {"side": "post", "end": "post_top"}))
-    b.append(Box((4, 13, 5), (7, 16, 11), {"side": "vent", "end": "vent_top"}))
-    b.append(Box((9, 13, 5), (12, 16, 11), {"side": "vent", "end": "vent_top"}))
-    return Model(i, tx, b, on=on, particle=i + "_side",
-                 desc="basalt plinth, heavy iron core with lava seams, corner posts, vents")
-
-
-def m_energy_cell():
-    i = "energy_cell"
-    tx = T(i, "side", "top", "cap", "cap_top", "terminal", "stud")
-    b = [
-        Box((2, 2, 2), (14, 14, 14), {"side": "side", "end": "top"}),
-        Box((1, 0, 1), (15, 2, 15), {"side": "cap", "end": "cap_top"}),
-        Box((1, 14, 1), (15, 16, 15), {"side": "cap", "end": "cap_top"}),
-        Box((5, 5, 1), (11, 11, 2), "terminal"),
-        Box((7, 7, 0), (9, 9, 1), "stud"),
-    ]
-    return Model(i, tx, b, particle=i + "_side", desc="steel cell, hazard end caps, copper terminal")
-
-
-def m_advanced_energy_cell():
-    i = "advanced_energy_cell"
-    tx = T(i, "side", "top", "post", "post_top", "terminal", "stud")
-    b = [Box((2, 0, 2), (14, 16, 14), {"side": "side", "end": "top"})]
-    for (x, z) in ((1, 1), (13, 1), (1, 13), (13, 13)):
-        b.append(Box((x, 0, z), (x + 2, 16, z + 2), {"side": "post", "end": "post_top"}))
-    b += [Box((5, 4, 1), (11, 12, 2), "terminal"), Box((4, 5, 1), (5, 11, 2), "terminal"),
-          Box((11, 5, 1), (12, 11, 2), "terminal"), Box((7, 7, 0), (9, 9, 1), "stud")]
-    return Model(i, tx, b, particle=i + "_side", desc="aluminium cell, green corner posts, round terminal")
-
-
-def m_industrial_energy_cell():
-    i = "industrial_energy_cell"
-    tx = T(i, "side", "top", "rib", "terminal", "stud")
-    b = [Box((1, 0, 1), (15, 16, 15), {"side": "side", "end": "top"})]
-    for y in (3, 6, 9, 12):
-        b.append(Box((0, y, 3), (1, y + 1, 13), "rib"))
-        b.append(Box((15, y, 3), (16, y + 1, 13), "rib"))
-        b.append(Box((3, y, 15), (13, y + 1, 16), "rib"))
-    b += [Box((4, 4, 0), (12, 12, 1), "terminal"), Box((6, 6, 0), (10, 10, 0.5), "stud")]
-    return Model(i, tx, b, particle=i + "_side", desc="titanium cell with cooling ribs, heavy terminal")
-
-
-def m_quantum_energy_cell():
-    i = "quantum_energy_cell"
-    tx = T(i, "frame", "core", "core_front", "stud")
-    b = []
-    for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14)):          # vertical posts
-        b.append(Box((x, 0, z), (x + 2, 16, z + 2), "frame"))
-    for y in (0, 14):                                            # top/bottom rings
-        b.append(Box((2, y, 0), (14, y + 2, 2), "frame"))
-        b.append(Box((2, y, 14), (14, y + 2, 16), "frame"))
-        b.append(Box((0, y, 2), (2, y + 2, 14), "frame"))
-        b.append(Box((14, y, 2), (16, y + 2, 14), "frame"))
-    b.append(Box((3, 3, 3), (13, 13, 13), {"north": "core_front", "all": "core"}))
-    b.append(Box((6, 6, 1), (10, 10, 3), "stud"))
-    return Model(i, tx, b, particle=i + "_frame", desc="black cage around a glowing cyan core")
+    tx = {"front": i + "_front", "side": i + "_side", "top": i + "_top", "bottom": i + "_bottom",
+          "inner": "aluminum_machine_inner", "bar": i + "_bar"}
+    b = carved(i, STD)
+    for x in (5, 7.5, 10):
+        b.append(Box((x, 3, 0.5), (x + 1, 13, 1.5), "bar"))
+    return Model(i, tx, b, on={"front": i + "_front_on", "side": i + "_side_on"}, particle=i + "_side",
+                 desc="aluminium casing, barred lava window, lava channels down the sides")
 
 
 MODELS = [m_quern, m_brick_kiln, m_burner_crusher, m_burner_press, m_coke_oven, m_blast_furnace,
           m_electric_furnace, m_crusher, m_metal_press, m_alloy_smelter, m_assembler,
-          m_combustion_generator, m_solar_panel, m_auto_farmer, m_miner, m_geothermal,
-          m_energy_cell, m_advanced_energy_cell, m_industrial_energy_cell, m_quantum_energy_cell]
+          m_combustion_generator, m_solar_panel, m_auto_farmer, m_miner, m_geothermal] + \
+    [lambda c=c: m_energy_cell(c) for c in gt.ENERGY_CELLS]
 
 
 # =============================================================================
@@ -621,7 +619,7 @@ def render(model, on, cam, size=150, scale=6.0):
     centre = np.array([8, 8, 8])
     tm = model.tex_map(on)
     js = model.to_json(on)
-    for box, e in zip(model.boxes, js["elements"]):
+    for box, e in zip(model.boxes_on if on else model.boxes, js["elements"]):
         for f, fd in e["faces"].items():
             o, u, v, nrm = face_geom(f, box.fr, box.to)
             p0 = rot_point(o, box.rot)
@@ -690,7 +688,7 @@ def preview(models, path):
         for j, (cam, on, label) in enumerate(VIEWS):
             r = render(mdl, on, cam, cell)
             img.alpha_composite(r, (ox + j * cell, oy))
-        d.text((ox + 2, oy + cell + 2), "%s  (%d el.)" % (mdl.id, len(mdl.boxes)), fill=(240, 240, 240), font=font)
+        d.text((ox + 2, oy + cell + 2), "%s  (%d el.)" % (mdl.id, len(mdl.to_json(False)["elements"])), fill=(240, 240, 240), font=font)
         d.text((ox + 2, oy + cell + 13), mdl.desc[:64], fill=(170, 176, 186), font=font)
     img.save(path)
 
@@ -700,9 +698,10 @@ def preview(models, path):
 # =============================================================================
 
 
-def main():
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
     only = None
-    for a in sys.argv[1:]:
+    for a in argv:
         if a.startswith("--only="):
             only = set(a[len("--only="):].split(","))
     models = [f() for f in MODELS]
@@ -711,7 +710,7 @@ def main():
     for mdl in models:
         for on in (False, True):
             js = mdl.to_json(on)
-            assert len(js["elements"]) <= 25, mdl.id
+            assert len(js["elements"]) <= 40, (mdl.id, len(js["elements"]))
             name = mdl.id + ("_on" if on else "")
             with open(os.path.join(OUT_DIR, name + ".json"), "w") as fh:
                 json.dump(js, fh, indent=2)
@@ -723,6 +722,8 @@ def main():
     print("wrote %d models to %s" % (2 * len(models), OUT_DIR))
     if missing:
         print("MISSING TEXTURES:", ", ".join(sorted(missing)))
+    if "--no-preview" in argv:
+        return
     sel = [m for m in models if only is None or m.id in only]
     preview(sel, PREVIEW)
     print("preview:", PREVIEW)

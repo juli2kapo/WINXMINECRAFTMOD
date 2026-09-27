@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:ender_pearl",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:ender_dust",
+    "count": 2
+  },
+  "time": 60,
+  "min_grade": 3
+}

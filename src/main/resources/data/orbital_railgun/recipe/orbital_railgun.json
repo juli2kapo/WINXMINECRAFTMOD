@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "orbital_railgun"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "TST",
+    "CBC",
+    "TOT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "S": "minecraft:spyglass",
+    "C": "factoryascent:advanced_circuit",
+    "B": "minecraft:beacon",
+    "O": "factoryascent:orbital_targeting_core"
+  },
+  "result": {
+    "id": "orbital_railgun:orbital_railgun"
+  }
+}

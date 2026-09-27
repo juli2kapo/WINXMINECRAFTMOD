@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "factoryascent:block/ender_beacon_side",
+    "top": "factoryascent:block/ender_beacon_top",
+    "bottom": "minecraft:block/obsidian"
+  }
+}

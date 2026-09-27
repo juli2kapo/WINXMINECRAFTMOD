@@ -62,7 +62,9 @@ public final class ModGameTests {
             new Test("energy_cell_charges_drill", 100, ModGameTests::energyCellChargesDrill),
             new Test("speed_upgrade_speeds_up", 20, ModGameTests::speedUpgrade),
             new Test("storage_interface_round_trip", 60, ModGameTests::storageInterfaceRoundTrip),
-            new Test("storage_cell_keeps_contents", 60, ModGameTests::storageCellKeepsContents)
+            new Test("storage_cell_keeps_contents", 60, ModGameTests::storageCellKeepsContents),
+            new Test("ender_anchor_burns_pearls", 80, ModGameTests::enderAnchorBurnsPearls),
+            new Test("recall_charm_teleports_home", 40, ModGameTests::recallCharmTeleportsHome)
     );
 
     private ModGameTests() {}
@@ -405,5 +407,44 @@ public final class ModGameTests {
             h.assertTrue(entities.stream().noneMatch(e -> e.getItem().is(Items.EMERALD)), "emeralds must not spill");
             h.succeed();
         });
+    }
+
+    // ---------------------------------------------------------------- ender tech
+
+    /** An anchor with pearls wakes up, burns one pearl and keeps going; without fuel it sleeps. */
+    private static void enderAnchorBurnsPearls(GameTestHelper h) {
+        BlockPos pos = new BlockPos(4, 2, 4);
+        h.setBlock(pos, net.juli2kapo.factoryascent.ender.EnderContent.ENDER_ANCHOR.get());
+        var anchor = h.getBlockEntity(pos, net.juli2kapo.factoryascent.ender.EnderAnchorBlockEntity.class);
+        h.assertTrue(anchor.addPearls(3) == 3, "anchor should take 3 pearls");
+        h.runAfterDelay(45, () -> {
+            h.assertBlockProperty(pos, net.juli2kapo.factoryascent.ender.EnderAnchorBlock.ACTIVE, true);
+            h.assertTrue(anchor.pearls().getAmountAsInt(0) == 2, "one pearl should be burning, 2 stored, got "
+                    + anchor.pearls().getAmountAsInt(0));
+            h.setBlock(pos, Blocks.AIR);
+            h.succeed();
+        });
+    }
+
+    /** A linked, charged beacon pulls the player on top of itself and pays the energy. */
+    private static void recallCharmTeleportsHome(GameTestHelper h) {
+        BlockPos beaconPos = new BlockPos(6, 1, 6);
+        h.setBlock(beaconPos, net.juli2kapo.factoryascent.ender.EnderContent.ENDER_BEACON.get());
+        var beacon = h.getBlockEntity(beaconPos, net.juli2kapo.factoryascent.ender.EnderBeaconBlockEntity.class);
+        beacon.energy().produce(50_000);
+        var player = h.makeMockServerPlayerInLevel();
+        player.getAbilities().instabuild = false;
+        BlockPos start = h.absolutePos(new BlockPos(1, 2, 1));
+        player.snapTo(start.getX() + 0.5, start.getY(), start.getZ() + 0.5);
+        ItemStack charm = new ItemStack(net.juli2kapo.factoryascent.ender.EnderContent.RECALL_CHARM.get());
+        charm.set(net.juli2kapo.factoryascent.ender.EnderContent.LINKED_BEACON.get(),
+                net.minecraft.core.GlobalPos.of(h.getLevel().dimension(), h.absolutePos(beaconPos)));
+        net.juli2kapo.factoryascent.ender.EnderContent.RECALL_CHARM.get().recall(player, charm);
+        BlockPos landed = player.blockPosition();
+        h.assertTrue(landed.equals(h.absolutePos(beaconPos.above())), "player should stand on the beacon, is at " + landed);
+        int cost = net.juli2kapo.factoryascent.Config.RECALL_ENERGY.get();
+        h.assertTrue(beacon.energy().energy() == 50_000 - cost, "beacon should pay " + cost + " FE");
+        player.discard();
+        h.succeed();
     }
 }

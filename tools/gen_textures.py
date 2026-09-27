@@ -3,23 +3,33 @@
 
 Deterministically draws every block and item texture of the mod as 16x16
 vanilla-style pixel art and writes them to
-src/main/resources/assets/factoryascent/textures/{block,item}/.
+src/main/resources/assets/factoryascent/textures/{block,item}/, then runs
+tools/models/gen_models.py, which writes the hand-built machine block models
+(tools/models/block/*.json, copied in by gen_resources.py) and renders
+tools/model_preview.png.
 
-Run:  python3 tools/gen_textures.py            (writes textures + preview)
-      python3 tools/gen_textures.py --no-preview
+Run:  python3 tools/gen_textures.py            (textures + models + previews)
+      python3 tools/gen_textures.py --prune    (also delete textures this script
+                                                no longer draws; storage_* is kept)
+      python3 tools/gen_textures.py --no-preview --no-models
       python3 tools/gen_textures.py "--sheet=<regex>:<out.png>"   (debug sheet)
 
 Layout of this file
   1. colour helpers + palettes (tiers, materials, rocks)
   2. Tex canvas + drawing primitives (rects, masks, blobs, bars, sprites)
-  3. block families (casing, machine fronts, miner, solar, energy cell,
-     cable/pipe, ores, storage blocks)
-  4. item families (raw, dusts, ingots, plates, gears, rods, wires, molds,
+  3. blocks: casing primitives; 3b. the v2 machines by age (LAYOUT = the
+     windows carved into each machine model, shared with gen_models.py),
+     bricks, crates, energy cells; cable/pipe; ores; storage blocks
+  4. items (raw, dusts, ingots, plates, gears, rods, wires, molds,
      circuits, frames, components, upgrades, tools)
-
-Tiers: basic (iron grey), reinforced (steel blue-grey), advanced (copper),
-elite (violet), ultimate (cyan on near-black).
   5. main + contact sheet
+
+Ages set the machine palette: stone age = granite, clay brick and wood;
+bronze age = riveted bronze (coke oven / blast furnace = their own bricks);
+electric age = cool grey-blue steel; automation age = light aluminium.
+Energy cells and conduits keep the v1 tier colours per stage: basic (iron
+grey), reinforced (steel blue-grey), advanced (copper), elite (violet),
+ultimate (cyan on near-black).
 
 Every texture gets its own RNG seeded from its file name, so reruns are
 identical and editing one texture never changes another.
@@ -401,12 +411,6 @@ def rivet(t, x, y, T, pal=None):
     t.set(x + 1, y + 1, F[3])
 
 
-def led(t, on):
-    """Status light in the top-right rivet slot (x 12-13, y 2-3), same spot on
-    every machine: dark red when idle, green when working."""
-    L = LED_ON if on else LED_OFF
-    t.set(12, 2, L[2]); t.set(13, 2, L[1])
-    t.set(12, 3, L[1]); t.set(13, 3, L[0])
 
 
 def recess(t, x0, y0, x1, y1, T, fill=None):
@@ -431,18 +435,6 @@ def panel_base(T, rng, rivets=True):
     if rivets:
         for (x, y) in [(2, 2), (12, 2), (2, 12), (12, 12)]:
             rivet(t, x, y, T)
-    return t
-
-
-def casing_side(T, rng):
-    t = panel_base(T, rng)
-    P = T.panel
-    recess(t, 5, 5, 10, 10, T)
-    t.rect(6, 6, 9, 9, mix(P[2], P[3], 0.2))
-    t.set(6, 6, mix(P[2], P[3], 0.55))
-    if T.glow:
-        t.rect(7, 7, 8, 8, CYAN_GLOW[1])
-        t.set(7, 7, CYAN_GLOW[2])
     return t
 
 
@@ -472,263 +464,1041 @@ def casing_bottom(T, rng):
     return t
 
 
-# ---- machine fronts --------------------------------------------------------------
-# Art area: x 2-13, y 4-13 (12x10). The header strip (y 2-3) holds a rivet at the
-# top-left, a nameplate, and the status LED at the top-right on every machine.
-AX, AY = 2, 4
+
+# =============================================================================
+# 3b. v2 machines: one look per age, one front per machine
+# =============================================================================
+# Every full-block machine model (tools/models/gen_models.py) is a solid cube
+# with rectangular windows carved into its faces; LAYOUT is the single source of
+# those windows, shared by the textures and the models. Faces use projected
+# UVs, so `<id>_front.png` is the literal front view: pixels inside a window are
+# what you see on the recess's back wall, pixels outside it are the flush face.
+#
+#   LAYOUT[id][face] = [(u0, v0, u1, v1, depth), ...]   texture pixels, inclusive
+#
+# Windows on different faces never share volume and never touch a block edge,
+# so the block still hides its neighbours' faces without see-through gaps.
+
+LAYOUT = {
+    "brick_kiln": {"north": [(4, 6, 11, 13, 4)], "up": [(6, 6, 9, 9, 3)]},
+    "burner_crusher": {"north": [(3, 3, 12, 8, 3), (4, 11, 11, 13, 2)], "up": [(4, 5, 11, 11, 3)]},
+    "burner_press": {"north": [(3, 2, 12, 9, 4), (4, 12, 11, 14, 2)], "up": [(10, 10, 12, 12, 3)]},
+    "coke_oven": {"north": [(4, 5, 11, 13, 1)]},
+    "blast_furnace": {"north": [(4, 2, 11, 7, 1), (6, 10, 9, 13, 2)]},
+    "electric_furnace": {"north": [(3, 3, 12, 11, 3)]},
+    "crusher": {"north": [(3, 2, 12, 9, 3)], "up": [(4, 4, 11, 11, 3)]},
+    "metal_press": {"north": [(3, 1, 12, 10, 4)]},
+    "alloy_smelter": {"north": [(2, 4, 13, 11, 4)], "up": [(3, 7, 6, 10, 2), (9, 7, 12, 10, 2)]},
+    "assembler": {"north": [(2, 2, 13, 10, 4)]},
+    "combustion_generator": {"north": [(3, 2, 12, 5, 2), (4, 8, 11, 12, 2)], "up": [(10, 10, 12, 12, 3)]},
+    "auto_farmer": {"north": [(3, 3, 12, 8, 3)], "up": [(2, 4, 13, 13, 2)]},
+    "miner": {f: [(4, 4, 11, 10, 2)] for f in ("north", "south", "west", "east")},
+    "geothermal_generator": {"north": [(3, 3, 12, 12, 2)],
+                             "west": [(3, 1, 4, 14, 1), (11, 1, 12, 14, 1)],
+                             "east": [(3, 1, 4, 14, 1), (11, 1, 12, 14, 1)]},
+    "solar_panel": {"up": [(1, 1, 14, 14, 1)]},
+}
+ENERGY_CELLS = {"energy_cell": 1, "advanced_energy_cell": 3, "industrial_energy_cell": 4, "quantum_energy_cell": 5}
+for _cell in ENERGY_CELLS:
+    LAYOUT[_cell] = {"north": [(4, 3, 11, 12, 1)], "west": [(6, 2, 9, 13, 1)], "east": [(6, 2, 9, 13, 1)]}
+
+# ---- age palettes (Tier ramps are hi .. deep) -------------------------------------------
+
+BRONZE_T = Tier(0, "bronze",
+                ["#F6D38E", "#DAA656", "#AA742E", "#6E4617", "#44280B"],
+                ["#CB9147", "#BC843E", "#AC7636", "#8C5C27", "#6C441A"],
+                "#FFB84A")
+STEEL_T = Tier(0, "steel",
+               ["#CAD5E2", "#98A7BB", "#6C7C94", "#46536B", "#2C3446"],
+               ["#9EACBF", "#8C9AAE", "#7E8CA1", "#667488", "#4E586A"],
+               "#7FC4FF")
+ALU_T = Tier(0, "aluminum",
+             ["#FFFFFF", "#E8EEF4", "#BEC8D2", "#8C96A2", "#646C78"],
+             ["#F2F6FA", "#E2E8EE", "#D6DEE6", "#BAC4CE", "#9AA4B0"],
+             "#62D0FF")
+IRON = ramp("#A2A6AE", "#767A82", "#55585F", "#393B40", "#232428")      # hi .. deep
+FAMILY = {"bronze": BRONZE_T, "steel": STEEL_T, "aluminum": ALU_T}
+SOOT = ramp("#0E0A09", "#17110E", "#211813", "#2C2019")                 # deep .. light
 
 
-def machine_base(T, rng, sunk=False):
-    t = panel_base(T, rng, rivets=False)
-    F = T.frame
-    rivet(t, 2, 2, T)
-    t.hline(5, 10, 2, F[3])     # nameplate
-    t.hline(5, 10, 3, F[1])
-    t.set(5, 3, F[2])
-    if sunk:
-        recess(t, 2, 4, 13, 13, T, fill=VOID)
+def win_list(name, face="north"):
+    return LAYOUT[name].get(face, [])
+
+
+def in_window(name, face, x, y):
+    return any(u0 <= x <= u1 and v0 <= y <= v1 for (u0, v0, u1, v1, _) in win_list(name, face))
+
+
+def win_shadow(t, u0, v0, u1, v1, amt=0.4):
+    """Back wall of a recess: its rim shades the top row and left column."""
+    for u in range(u0, u1 + 1):
+        t.set(u, v0, darken(t.get(u, v0), amt))
+    for v in range(v0 + 1, v1 + 1):
+        t.set(u0, v, darken(t.get(u0, v), amt * 0.6))
+
+
+def win_lip(t, u0, v0, u1, v1, dark, light):
+    """Rim drawn on the flush face around a window: dark above/left, lit below/right."""
+    t.hline(u0 - 1, u1 + 1, v0 - 1, dark)
+    t.vline(u0 - 1, v0 - 1, v1 + 1, dark)
+    t.hline(u0, u1 + 1, v1 + 1, light)
+    t.vline(u1 + 1, v0, v1 + 1, light)
+
+
+def inner_tex(base, rng, stripe=None):
+    """Side walls of every recess: plain dark metal / soot."""
+    base = C(base)
+    t = Tex(fill=base)
+    dither(t, rng, 0, 0, 15, 15, base, darken(base, 0.25), lighten(base, 0.1), 0.25)
+    if stripe:
+        for i in range(16):
+            t.set(i, 0, stripe); t.set(0, i, stripe); t.set(i, 15, stripe); t.set(15, i, stripe)
     return t
 
 
-def machine_pal(T, extra=None):
-    """Shared sprite palette. Upper-case/lower-case pairs:
-    h l m d D = frame hi..deep, H L M q Q = panel hi..deep,
-    s t u v w = neutral steel, K k = interior blacks."""
-    F, P = T.frame, T.panel
-    pal = {
-        "K": VOID2, "k": VOID,
-        "h": F[0], "l": F[1], "m": F[2], "d": F[3], "D": F[4],
-        "H": P[0], "L": P[1], "M": P[2], "q": P[3], "Q": P[4],
-        "s": STEEL[0], "t": STEEL[1], "u": STEEL[2], "v": STEEL[3], "w": STEEL[4],
-    }
-    if extra:
-        pal.update(extra)
-    return pal
+def casing_face(T, rng, name=None, face="north", rivets=((2, 2), (12, 2), (2, 12), (12, 12))):
+    """Age-coloured frame + panel with window rims and rivets clear of the windows."""
+    t = panel_base(T, rng, rivets=False)
+    for (x, y) in rivets:
+        if name is None or not any(in_window(name, face, x + dx, y + dy) or
+                                   in_window(name, face, x + dx + 1, y + dy + 1)
+                                   for dx in (-1, 0, 1, 2) for dy in (-1, 0, 1, 2)):
+            rivet(t, x, y, T)
+    if name:
+        for (u0, v0, u1, v1, _) in win_list(name, face):
+            win_lip(t, u0, v0, u1, v1, T.frame[4], T.frame[1])
+    return t
 
 
-def art(t, rows, pal):
-    assert len(rows) == 10, rows
-    for r in rows:
-        assert len(r) == 12, (r, len(r))
-    t.sprite(rows, pal, AX, AY)
+def void_fill(t, u0, v0, u1, v1, top=VOID2, bottom=VOID):
+    for v in range(v0, v1 + 1):
+        t.hline(u0, u1, v, mix(top, bottom, (v - v0) / max(1, v1 - v0)))
 
+
+# ---- shared painters: fire, lava, rift, grit ----------------------------------------------
 
 FIRE_IDLE = {"A": "#0C0A0A", "B": "#100C0B", "C": "#150E0C", "D": "#1C100C", "E": "#28120C", "F": "#3A160C"}
 FIRE_ON = {"A": "#5A1C08", "B": "#96360C", "C": "#D25E14", "D": "#F29426", "E": "#FFCC56", "F": "#FFF2BA"}
 
 
-def m_electric_furnace(T, on, rng):
-    """Arched furnace mouth with a grate; glows orange/yellow when on."""
-    t = machine_base(T, rng)
-    pal = machine_pal(T, FIRE_ON if on else FIRE_IDLE)
-    art(t, [
-        "..hlllllll..",
-        ".lmdKKKKdmd.",
-        ".lmKAAAAKmD.",
-        ".lKAABBAAKD.",
-        ".lKBBCCBBKD.",
-        ".lKCCDDCCKD.",
-        ".lKDEFFEDKD.",
-        ".lKuvuvuvKD.",
-        ".mdDDDDDDDD.",
-        "..DDDDDDDD..",
-    ], pal)
-    if on:
-        t.set(AX + 4, AY + 1, "#7A2A0C"); t.set(AX + 7, AY + 1, "#7A2A0C")
-    return t
-
-
-def cog(t, x0, y0, pal, teeth, hub):
-    """5x5 cog body at (x0,y0) with 1-px teeth.
-    teeth = {side: offsets along that side}, sides 'n','s','w','e'."""
-    px = {}
-    for y in range(5):
-        for x in range(5):
-            if (x, y) not in ((0, 0), (4, 0), (0, 4), (4, 4)):
-                px[(x0 + x, y0 + y)] = x + y
-    for side, offs in teeth.items():
-        for o in offs:
-            if side == "n":
-                px[(x0 + o, y0 - 1)] = o - 1
-            elif side == "s":
-                px[(x0 + o, y0 + 5)] = o + 5
-            elif side == "w":
-                px[(x0 - 1, y0 + o)] = o - 1
-            elif side == "e":
-                px[(x0 + 5, y0 + o)] = o + 5
-    for (x, y), k in px.items():
-        t.set(x, y, pal[0] if k <= 1 else pal[1] if k <= 3 else pal[2] if k <= 5 else pal[3])
-    cx, cy = x0 + 2, y0 + 2
-    t.set(cx, cy, hub[0])
-    t.set(cx - 1, cy, hub[1]); t.set(cx, cy - 1, hub[1])
-    t.set(cx + 1, cy, hub[2]); t.set(cx, cy + 1, hub[2])
-
-
-def m_crusher(T, on, rng):
-    """Two meshing toothed rollers; when on they turn and spit grit."""
-    t = machine_base(T, rng, sunk=True)
-    t.set(3, 5, STEEL[2]); t.set(12, 5, STEEL[3])   # chute walls
-    pal = [STEEL[0], STEEL[1], STEEL[2], STEEL[3]]
-    hub = [VOID2, CYAN_GLOW[2], CYAN_GLOW[1]] if T.glow else [T.frame[4], T.frame[1], T.frame[3]]
-    a, b = ([1, 3], [0, 2, 4]) if not on else ([0, 2, 4], [1, 3])
-    cog(t, 3, 6, pal, {"n": a, "s": a, "w": [1, 3], "e": [1, 3] if not on else [0, 2, 4]}, hub)
-    cog(t, 9, 6, pal, {"n": b, "s": b, "e": [1, 3]}, hub)
-    if on:
-        rs = rng_for("crusher_dust")
-        for (x, y) in [(3, 12), (6, 12), (8, 13), (10, 12), (13, 12), (5, 5), (8, 5), (11, 5)]:
-            t.set(x, y, "#B8AE9C" if rs.random() < 0.5 else "#8E8676")
-        t.set(8, 12, "#D8D0C0"); t.set(7, 4, "#9A9080")
-    else:
-        t.set(6, 5, "#5E5850"); t.set(9, 5, "#4A4640")
-    return t
-
-
-def m_metal_press(T, on, rng):
-    """Hydraulic ram over a die with a plate; when on the ram is down."""
-    t = machine_base(T, rng)
-    pal = machine_pal(T, {"p": "#D6DAE0", "o": "#9CA2AC", "y": "#FFE070", "Y": "#FFB030"})
+def paint_fire(t, rng, u0, v0, u1, v1, on, grate=True):
+    """Flames rising from a bed; embers only when idle."""
+    H = v1 - v0 + 1
+    for u in range(u0, u1 + 1):
+        h = rng.uniform(0.5, 1.1)
+        for v in range(v0, v1 + 1):
+            f = (v1 - v + 0.5) / H
+            k = h - f
+            if on:
+                key = "F" if k > 0.6 else "E" if k > 0.42 else "D" if k > 0.24 else "C" if k > 0.08 else \
+                    "B" if k > -0.12 else "A"
+                t.set(u, v, FIRE_ON[key])
+            else:
+                t.set(u, v, FIRE_IDLE["C" if f < 0.3 else "B" if f < 0.65 else "A"])
     if not on:
-        rows = [
-            "kkkkkkkkkkkk",
-            "kukkkstkkkuk",
-            "kukkkstkkkuk",
-            "kussssssssuk",
-            "kuttttttttuk",
-            "kuvvvvvvvvuk",
-            "kukkkkkkkkuk",
-            "kuppppppppuk",
-            "kuooooooooqk",
-            "kmmmmmmmmmmk",
-        ]
+        for _ in range(max(2, (u1 - u0) // 2)):
+            t.set(rng.randint(u0, u1), v1 - (1 if grate else 0), rng.choice(["#6A2208", "#3E1408", "#8A3010"]))
+    if grate:
+        for u in range(u0, u1 + 1):
+            t.set(u, v1, STEEL[3] if (u - u0) % 2 == 0 else "#1A1A1E")
+
+
+def paint_coals(t, rng, u0, v0, u1, v1, on):
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            r = rng.random()
+            if on:
+                c = "#FFD060" if r < 0.2 else "#FF8A1C" if r < 0.55 else "#C8420C" if r < 0.85 else "#5A1A08"
+            else:
+                c = "#3A3438" if r < 0.25 else "#26222A" if r < 0.7 else "#161418"
+                if r > 0.96:
+                    c = "#6A2208"
+            t.set(u, v, c)
+
+
+LAVA_NOISE = None
+
+
+def lava_value(u, v):
+    global LAVA_NOISE
+    if LAVA_NOISE is None:
+        r = rng_for("lava_noise")
+        a, b = smooth_noise(r, 4, 4), smooth_noise(r, 2, 2)
+        LAVA_NOISE = [[a[y][x] * 0.7 + b[y][x] * 0.3 for x in range(16)] for y in range(16)]
+    return LAVA_NOISE[v % 16][u % 16]
+
+
+def paint_lava(t, u0, v0, u1, v1, on, phase=0, oy=0):
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            n = lava_value(u + phase // 3, v + phase + oy)
+            if on:
+                c = "#FFF0A0" if n < 0.3 else "#FFC040" if n < 0.42 else "#FF8A20" if n < 0.56 else \
+                    "#E2521A" if n < 0.7 else "#A8300E"
+            else:
+                c = "#8A260C" if n < 0.3 else "#4A140A" if n < 0.42 else "#2E0E0A" if n < 0.6 else "#1E0B0A"
+            t.set(u, v, c)
+
+
+def paint_rift(t, u0, v0, u1, v1, on, phase=0.0):
+    """Window into The Deep: a dark violet vortex with specks of stone."""
+    cx, cy = (u0 + u1 + 1) / 2.0, (v0 + v1 + 1) / 2.0
+    rx, ry = (u1 - u0 + 1) / 2.0, (v1 - v0 + 1) / 2.0
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            dx, dy = (u + 0.5 - cx) / rx, (v + 0.5 - cy) / ry
+            d = math.hypot(dx, dy)
+            a = math.atan2(dy, dx)
+            s = (a / (2 * math.pi) * 2 + d * 1.3 - phase) % 1.0
+            arm = s < 0.4
+            if on:
+                c = "#F4E4FF" if d < 0.22 else ("#C08CFF" if arm else "#8A56D0") if d < 0.55 else \
+                    ("#7A40C0" if arm else "#3E1E6A") if d < 0.95 else ("#4A2480" if arm else "#1E0E36")
+            else:
+                c = "#8A60C8" if d < 0.2 else ("#5A3490" if arm else "#361C5C") if d < 0.55 else \
+                    ("#2E1650" if arm else "#1A0C30") if d < 0.95 else ("#20103A" if arm else "#120822")
+            t.set(u, v, c)
+    for (du, dv) in ((1, 1), (u1 - u0 - 1, 2), (2, v1 - v0 - 1)):
+        t.set(u0 + du, v0 + dv, "#E0D0FF" if on else "#6A5A8A")
+
+
+def grit(t, rng, u0, v0, u1, v1, n, cols=("#B8AE9C", "#8E8676", "#D8D0C0")):
+    for _ in range(n):
+        t.set(rng.randint(u0, u1), rng.randint(v0, v1), rng.choice(cols))
+
+
+def hazard_strip(t, u0, v0, u1, v1):
+    for y in range(v0, v1 + 1):
+        for x in range(u0, u1 + 1):
+            t.set(x, y, HAZARD_Y[1] if (x + y) % 4 < 2 else HAZARD_K[0])
+
+
+def gauge(t, x, y, T, needle="#D02010"):
+    """3x3 round pressure gauge."""
+    t.set(x + 1, y, IRON[1]); t.set(x, y + 1, IRON[1]); t.set(x + 2, y + 1, IRON[3]); t.set(x + 1, y + 2, IRON[3])
+    t.set(x, y, T.frame[3]); t.set(x + 2, y, T.frame[3]); t.set(x, y + 2, T.frame[3]); t.set(x + 2, y + 2, T.frame[4])
+    t.set(x + 1, y + 1, "#ECEAE0")
+    t.set(x + 2, y + 1, needle)
+
+
+def status_led(t, x, y, on):
+    L = LED_ON if on else LED_OFF
+    t.set(x, y, L[2]); t.set(x + 1, y, L[1])
+
+
+# ---- bricks -------------------------------------------------------------------------------
+
+
+def brick_wall(rng, pal, mortar, rows, row_h=4, speck=None, speck_p=0.0, rows_used=16):
+    """Running-bond bricks. pal = [deep, dark, mid, light, hi]; rows = widths per course."""
+    t = Tex(fill=mortar)
+    for i, widths in enumerate(rows):
+        y0 = i * row_h
+        if y0 >= rows_used:
+            break
+        x = 0
+        for w in widths:
+            base = pal[2] if rng.random() < 0.6 else rng.choice([pal[1], pal[3]])
+            for yy in range(y0, min(y0 + row_h - 1, rows_used)):
+                for xx in range(x + 1, x + w):
+                    c = base
+                    if yy == y0:
+                        c = mix(base, pal[4], 0.45)
+                    elif yy == y0 + row_h - 2:
+                        c = mix(base, pal[0], 0.45)
+                    if xx == x + 1 and yy != y0:
+                        c = mix(c, pal[3], 0.25)
+                    if speck and rng.random() < speck_p:
+                        c = rng.choice(speck)
+                    t.set(xx % 16, yy, c)
+            x += w
+    return t
+
+
+KILN = ramp("#5E2C16", "#8C4628", "#B26034", "#CB7C46", "#DE9C62")
+KILN_MORTAR = "#C4B290"
+COKE_BRICK = ramp("#1A100B", "#2A1A12", "#3B261A", "#4F3424", "#654632")
+COKE_MORTAR = "#120D0B"
+FIRE_BRICK = ramp("#8A6A38", "#B08E52", "#CDAC6C", "#E0C686", "#F0DCA4")
+FIRE_MORTAR = "#F2EAD4"
+COBBLE = ramp("#4A4A4E", "#626266", "#7A7A7E", "#929296", "#AAAAAE")
+
+
+def kiln_bricks(rng, course=True):
+    t = brick_wall(rng, KILN, KILN_MORTAR, [[5, 6, 5], [3, 5, 5, 3], [6, 5, 5], [2, 6, 5, 3]], 4,
+                   speck=[KILN[1], KILN[3]], speck_p=0.06, rows_used=13 if course else 16)
+    if course:   # rough stone footing course
+        for y in range(13, 16):
+            for x in range(16):
+                c = COBBLE[2] if rng.random() < 0.5 else rng.choice([COBBLE[1], COBBLE[3]])
+                if y == 13:
+                    c = COBBLE[4] if x % 5 else COBBLE[1]
+                if y == 15:
+                    c = COBBLE[0]
+                if x % 5 == 4 and y > 13:
+                    c = COBBLE[0]
+                t.set(x, y, c)
+    return t
+
+
+def coke_oven_bricks(rng):
+    """Dark soot-brown bricks, near-black mortar, occasional tar glaze."""
+    t = brick_wall(rng, COKE_BRICK, COKE_MORTAR, [[8, 8], [4, 8, 4], [8, 8], [4, 8, 4]], 4,
+                   speck=["#2A1A12", "#6E5038"], speck_p=0.05)
+    for (x, y) in [(3, 1), (11, 5), (6, 9), (13, 13), (2, 13)]:
+        t.set(x, y, "#806048")
+    return t
+
+
+def fire_bricks(rng):
+    """Big sandy-yellow refractory blocks, cream mortar, iron specks."""
+    t = brick_wall(rng, FIRE_BRICK, FIRE_MORTAR, [[8, 8], [4, 8, 4]], 8,
+                   speck=["#8A5A2A", "#A0703A"], speck_p=0.05)
+    return t
+
+
+# ---- stone age: quern & brick kiln -------------------------------------------------------
+
+GRANITE = ramp("#4E4C4A", "#686664", "#83807C", "#9C9994", "#B8B4AE")
+
+
+def granite(rng, pal=GRANITE, w=16, h=16):
+    t = Tex(w, h)
+    n = smooth_noise(rng, 4, 4)
+    for y in range(h):
+        for x in range(w):
+            v = n[y % 16][x % 16] * 0.7 + rng.random() * 0.3
+            t.set(x, y, pal[1 + min(3, int(v * 3.6))])
+            if rng.random() < 0.06:
+                t.set(x, y, pal[0])
+    return t
+
+
+def quern_side(rng):
+    """Both stones seen from the side: runner (rows 5-9) above the bed stone (rows 10-15)."""
+    t = granite(rng)
+    G = GRANITE
+    t.hline(0, 15, 5, G[4])                  # runner top edge
+    t.hline(0, 15, 7, G[1])                  # chisel groove round the runner
+    t.hline(0, 15, 9, G[0])                  # joint between the stones (shadow)
+    t.hline(0, 15, 10, G[4])                 # bed stone top edge
+    for x in range(0, 16, 3):
+        t.set(x, 12, G[1]); t.set(x + 1, 13, G[1])
+    t.hline(0, 15, 15, G[0])
+    return t
+
+
+def quern_top(rng, runner, on):
+    """Top of a millstone: radial furrows; the runner has the grain eye, the bed a flour ring."""
+    t = granite(rng)
+    G = GRANITE
+    cx = cy = 8.0
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            d = math.hypot(dx, dy)
+            a = (math.atan2(dy, dx) + math.pi) / (2 * math.pi) * 8
+            if 1.8 < d < 7 and (a % 1.0) < 0.18:
+                t.set(x, y, G[1])
+            if runner and d < 1.6:
+                t.set(x, y, "#1A1614")
+            if runner and 1.6 <= d < 2.3:
+                t.set(x, y, G[4])
+            if not runner and d > 4.6 and on and zlib.crc32(bytes([x, y])) % 5 < 3:
+                t.set(x, y, "#EDE6D6" if zlib.crc32(bytes([y, x])) % 2 else "#D8CFBC")
+    if runner:
+        t.set(7, 7, "#C8A860"); t.set(8, 8, "#A88A48")   # grain in the eye
+    return t
+
+
+def quern_handle(rng):
+    t = Tex(fill=WOOD[2])
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, WOOD[3] if x % 4 == 0 else WOOD[2] if x % 4 in (1, 2) else WOOD[1])
+    return t
+
+
+def kiln_front(rng, on):
+    t = kiln_bricks(rng_for("brick_kiln/bricks"))
+    u0, v0, u1, v1, _ = win_list("brick_kiln")[0]
+    # arch of wedge bricks over the mouth
+    for u in range(u0 - 1, u1 + 2):
+        t.set(u, v0 - 1, KILN[1] if u % 2 else KILN[0])
+        t.set(u, v0 - 2, KILN[3] if u % 2 else KILN[2])
+    t.set(u0 - 1, v0 - 2, KILN_MORTAR); t.set(u1 + 1, v0 - 2, KILN_MORTAR)
+    rr = rng_for("brick_kiln/fire")
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            t.set(u, v, mix(SOOT[0], SOOT[2], (v - v0) / (v1 - v0)))
+    paint_fire(t, rr, u0, v0 + 2, u1, v1 - 1, on, grate=False)
+    paint_coals(t, rr, u0, v1, u1, v1, on)
+    win_shadow(t, u0, v0, u1, v1, 0.5)
+    # arch shoulders (model: small bricks in the top corners of the mouth)
+    t.set(u0, v0, KILN[2]); t.set(u1, v0, KILN[2])
+    t.hline(u0 - 1, u1 + 1, v1 + 1, COBBLE[4])   # hearth sill
+    return t
+
+
+def kiln_top(rng, on):
+    t = kiln_bricks(rng_for("brick_kiln/top"), course=False)
+    u0, v0, u1, v1, _ = win_list("brick_kiln", "up")[0]
+    for (x, y) in ring_mask(8, 8, 2.2, 3.4):
+        t.set(x, y, mix(t.get(x, y), SOOT[1], 0.55))
+    rr = rng_for("brick_kiln/flue")
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            t.set(u, v, rr.choice(["#FFB43C", "#F07A1E", "#C8420C"]) if on else rr.choice([SOOT[0], SOOT[1], "#3A1408"]))
+    win_shadow(t, u0, v0, u1, v1, 0.5)
+    return t
+
+
+def logs(rng, on):
+    t = Tex(fill="#3A2412")
+    for y in range(16):
+        for x in range(16):
+            c = "#4A2E16" if (y % 4) in (0, 1) else "#2A1A0C"
+            if on and rng.random() < 0.3:
+                c = rng.choice(["#FF8A1C", "#C8420C", "#FFD060"])
+            elif not on and rng.random() < 0.15:
+                c = "#1A1210"
+            t.set(x, y, c)
+    return t
+
+
+# ---- bronze age ---------------------------------------------------------------------------
+
+
+def family_side(T, rng, kind):
+    P, F = T.panel, T.frame
+    t = casing_face(T, rng)
+    if kind == "bronze":        # two riveted plates with a lap seam and a copper pipe
+        t.hline(2, 13, 7, F[3]); t.hline(2, 13, 8, F[1])
+        for x in (3, 6, 9, 12):
+            t.set(x, 6, F[0]); t.set(x, 9, F[1]); t.set(x + 1, 9, F[3])
+        gauge(t, 10, 2, T)
+    elif kind == "steel":       # louvred vent block
+        recess(t, 4, 4, 11, 11, T, fill=VOID)
+        for y in range(5, 11):
+            if y % 2 == 1:
+                t.hline(5, 10, y, F[1]); t.set(10, y, F[3])
+        t.hline(4, 11, 13, T.accent)
+    else:                       # aluminium: brushed sheet with a blue accent stripe
+        t.rect(2, 2, 13, 13, P[2])
+        for y in range(2, 14):
+            for x in range(2, 14):
+                if rng.random() < 0.35:
+                    t.set(x, y, P[1] if (y % 3) else P[0])
+        for (x, y) in [(2, 2), (12, 2), (2, 12), (12, 12)]:
+            rivet(t, x, y, T)
+        t.hline(2, 13, 10, T.accent); t.hline(2, 13, 11, darken(T.accent, 0.35))
+    return t
+
+
+def family_bottom(T, rng):
+    return casing_bottom(T, rng)
+
+
+def bronze_front_base(name, rng):
+    return casing_face(BRONZE_T, rng, name)
+
+
+def burner_crusher_front(rng, on):
+    t = bronze_front_base("burner_crusher", rng)
+    (a0, b0, a1, b1, _), (f0, g0, f1, g1, _) = win_list("burner_crusher")
+    void_fill(t, a0, b0, a1, b1)
+    if on:
+        grit(t, rng_for("bc/grit"), a0, b0 + 2, a1, b1, 10)
+    win_shadow(t, a0, b0, a1, b1)
+    paint_fire(t, rng_for("bc/fire"), f0, g0, f1, g1, on)
+    win_shadow(t, f0, g0, f1, g1)
+    # firebox door hinges & a band of rivets between the two openings
+    F = BRONZE_T.frame
+    for u in range(3, 13, 3):
+        t.set(u, 10, F[0]); t.set(u + 1, 10, F[3])
+    gauge(t, 12, 12, BRONZE_T, "#D02010" if on else "#606060")
+    return t
+
+
+def roller_end(rng, on):
+    """Front view of the two toothed rollers (model: x 3.3-7.7 and 8.3-12.7, y 8.3-12.7)."""
+    t = Tex(fill=STEEL[2])
+    for (cx, cy) in ((10.5, 5.5), (5.5, 5.5)):          # texture coords (u = 16 - x)
+        for y in range(16):
+            for x in range(16):
+                dx, dy = x + 0.5 - cx, y + 0.5 - cy
+                d = math.hypot(dx, dy)
+                if d > 2.6:
+                    continue
+                a = (math.atan2(dy, dx) / (2 * math.pi) * 8 + (0.5 if on else 0)) % 1.0
+                c = STEEL[1] if a < 0.5 else STEEL[3]
+                if d < 1.1:
+                    c = BRONZE_T.frame[1]
+                elif d < 1.6:
+                    c = STEEL[4]
+                t.set(x, y, c)
+    return t
+
+
+def knurl(rng, pal=STEEL):
+    t = Tex(fill=pal[2])
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, pal[1] if (x + y) % 3 == 0 else pal[3] if (x - y) % 3 == 0 else pal[2])
+    return t
+
+
+def hopper_top(T, rng, name, contents):
+    t = casing_face(T, rng, name, "up")
+    u0, v0, u1, v1, _ = win_list(name, "up")[0]
+    rr = rng_for(name + "/hopper")
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            t.set(u, v, rr.choice(contents))
+    win_shadow(t, u0, v0, u1, v1, 0.5)
+    return t
+
+
+ORE_BITS = ["#2A2624", "#3A3430", "#C87438", "#E8985A", "#B8B8BE", "#8C8C92", "#4A4440", "#86909C"]
+
+
+def burner_press_front(rng, on):
+    t = bronze_front_base("burner_press", rng)
+    (a0, b0, a1, b1, _), (f0, g0, f1, g1, _) = win_list("burner_press")
+    void_fill(t, a0, b0, a1, b1)
+    # guide rails either side of the ram
+    for v in range(b0, b1 + 1):
+        t.set(a0 + 1, v, IRON[2]); t.set(a1 - 1, v, IRON[3])
+    t.hline(a0, a1, b1, IRON[3])
+    win_shadow(t, a0, b0, a1, b1)
+    paint_fire(t, rng_for("bp/fire"), f0, g0, f1, g1, on)
+    win_shadow(t, f0, g0, f1, g1)
+    F = BRONZE_T.frame
+    for u in range(3, 13, 3):
+        t.set(u, 11, F[0]); t.set(u + 1, 11, F[3])
+    gauge(t, 13, 0, BRONZE_T, "#D02010" if on else "#606060")
+    return t
+
+
+def press_head(pal, stripes=False):
+    """Rows alternate lit / shadow so a 2-px-tall head reads at any height."""
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            c = pal[1] if y % 2 == 0 else pal[3]
+            if stripes and y % 2 == 1:
+                c = HAZARD_Y[1] if (x // 2) % 2 == 0 else HAZARD_K[0]
+            t.set(x, y, c)
+    return t
+
+
+def rod_tex(pal):
+    """Vertical polished rod: lit column stripes (pal hi .. deep)."""
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, [pal[1], pal[0], pal[2], pal[3]][x % 4])
+    return t
+
+
+def hatch(t, rng, u0, v0, u1, v1, glow_on=None):
+    """Riveted iron door filling a window."""
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            t.set(u, v, IRON[2] if rng.random() > 0.12 else IRON[3])
+    t.hline(u0, u1, v0, IRON[1]); t.vline(u0, v0, v1, IRON[1])
+    t.hline(u0, u1, v1, IRON[4]); t.vline(u1, v0, v1, IRON[4])
+    for (u, v) in [(u0 + 1, v0 + 1), (u1 - 1, v0 + 1), (u0 + 1, v1 - 1), (u1 - 1, v1 - 1)]:
+        t.set(u, v, IRON[0])
+    my = (v0 + v1) // 2
+    t.hline(u0 + 1, u1 - 1, my, IRON[3])       # cross strap
+    t.hline(u0 + 1, u1 - 1, my + 1, IRON[1])
+    return t
+
+
+def coke_oven_front(rng, on):
+    t = coke_oven_bricks(rng_for("block/coke_oven_bricks"))
+    u0, v0, u1, v1, _ = win_list("coke_oven")[0]
+    win_lip(t, u0, v0, u1, v1, "#0A0706", IRON[2])
+    hatch(t, rng_for("coke_oven/hatch"), u0, v0, u1, v1)
+    # peephole with the coal glowing inside, and a latch handle
+    ph = ["#FFD060", "#FF8A1C"] if on else ["#2A1208", "#1A0C08"]
+    t.set(7, 7, ph[0]); t.set(8, 7, ph[1]); t.set(7, 8, ph[1]); t.set(8, 8, ph[1])
+    t.rect(6, 6, 9, 6, IRON[1]); t.rect(6, 9, 9, 9, IRON[3])
+    t.hline(6, 9, 11, IRON[0]); t.set(9, 12, IRON[4])
+    return t
+
+
+def blast_furnace_front(rng, on):
+    t = fire_bricks(rng_for("block/fire_bricks"))
+    (u0, v0, u1, v1, _), (a0, b0, a1, b1, _) = win_list("blast_furnace")
+    win_lip(t, u0, v0, u1, v1, "#6A4A20", "#FFF6E0")
+    win_lip(t, a0, b0, a1, b1, "#6A4A20", "#FFF6E0")
+    hatch(t, rng_for("blast_furnace/hatch"), u0, v0, u1, v1)
+    # sight slit
+    for u in range(6, 10):
+        t.set(u, 4, ("#FFE27A" if u % 2 else "#FF9A2A") if on else "#1A0C08")
+    # tap hole with molten iron (on) or a dark clay plug (idle)
+    for v in range(b0, b1 + 1):
+        for u in range(a0, a1 + 1):
+            if on:
+                t.set(u, v, "#FFF2B0" if (u + v) % 3 == 0 else "#FFB43C" if v < b1 else "#F07A1E")
+            else:
+                t.set(u, v, "#3A2A20" if (u + v) % 2 else "#2A1E18")
+    win_shadow(t, a0, b0, a1, b1, 0.3)
+    # iron trough under the tap
+    t.hline(a0 - 1, a1 + 1, 15, IRON[2])
+    t.hline(a0, a1, 14, ("#FF9A2A" if on else IRON[3]))
+    return t
+
+
+# ---- electric age -------------------------------------------------------------------------
+
+
+def steel_front(name, rng):
+    return casing_face(STEEL_T, rng, name)
+
+
+def control_strip(t, v, on, T=STEEL_T, dial=True):
+    """Row of controls under a window: dial, LED, switch."""
+    if dial:
+        t.set(3, v, IRON[1]); t.set(4, v, "#ECEAE0"); t.set(5, v, IRON[3])
+    status_led(t, 11, v, on)
+    t.set(8, v, T.frame[4]); t.set(9, v, T.accent)
+
+
+def electric_furnace_front(rng, on):
+    t = steel_front("electric_furnace", rng)
+    u0, v0, u1, v1, _ = win_list("electric_furnace")[0]
+    # ceramic chamber lining, glowing when on
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            if on:
+                c = mix("#FF8A2A", "#FFD27A", ((u + v) % 4) / 4.0) if (v - v0) % 3 == 1 else "#7A2A0C"
+            else:
+                c = "#3A3632" if (v - v0) % 3 == 1 else "#26221F"
+            t.set(u, v, c)
+    win_shadow(t, u0, v0, u1, v1)
+    # vent slits above, controls below
+    for u in range(4, 12, 2):
+        t.set(u, 1, VOID)
+    control_strip(t, 13, on)
+    return t
+
+
+def furnace_top(rng, on):
+    t = casing_face(STEEL_T, rng)
+    for y in (4, 7, 10):
+        recess(t, 4, y, 11, y + 1, STEEL_T, fill=VOID)
+        t.hline(5, 10, y + 1, ("#FF9A2A" if on else "#3A2A22"))
+    return t
+
+
+def press_top(rng):
+    """Cap of the hydraulic cylinder with two yellow hose ports."""
+    t = casing_face(STEEL_T, rng)
+    for (x, y) in sorted(disc_mask(8, 8, 3.8)):
+        dx, dy = x + 0.5 - 8, y + 0.5 - 8
+        t.set(x, y, "#F2F6FA" if dx + dy < -2 else "#C8D0DA" if dx + dy < 1.5 else "#8A94A2")
+    for (x, y) in [(8, 5), (5, 8), (10, 8), (8, 10)]:
+        t.set(x, y, "#5A6270")
+    t.rect(12, 3, 13, 4, "#F4C430"); t.rect(2, 11, 3, 12, "#F4C430")
+    t.set(13, 4, "#B88A10"); t.set(3, 12, "#B88A10")
+    return t
+
+
+def funnel_top(rng):
+    t = casing_face(STEEL_T, rng, "alloy_smelter", "up", rivets=((2, 2), (12, 2), (2, 12), (12, 12)))
+    rr = rng_for("alloy_smelter/funnels")
+    cols = ([MAT["copper"][2], MAT["copper"][3], "#3A3430"], [MAT["tin"][2], MAT["tin"][3], "#3A3430"])
+    for k, (u0, v0, u1, v1, _) in enumerate(win_list("alloy_smelter", "up")):
+        for v in range(v0, v1 + 1):
+            for u in range(u0, u1 + 1):
+                t.set(u, v, rr.choice(cols[k]))
+        win_shadow(t, u0, v0, u1, v1, 0.5)
+    t.hline(4, 11, 3, STEEL_T.accent)
+    return t
+
+
+def glass_top(rng, on):
+    """Inspection window over the assembler's work cell."""
+    t = casing_face(STEEL_T, rng)
+    recess(t, 3, 3, 12, 12, STEEL_T, fill="#1A2E50" if on else "#142238")
+    for i in range(4):
+        t.set(5 + i, 8 - i, "#6A8AC0"); t.set(6 + i, 8 - i, "#4A6AA0")
+    t.rect(9, 9, 10, 10, "#E8861C")   # the arm, seen from above
+    t.set(9, 9, "#FFB040")
+    return t
+
+
+def coil_tex(on):
+    """Heating element rod: copper helix, orange-hot when on."""
+    t = Tex()
+    Cu = MAT["copper"]
+    pal = ["#FFF2BA", "#FFCC56", "#F29426", "#D25E14"] if on else [Cu[4], Cu[3], Cu[1], Cu[0]]
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, pal[(x + y) % 4])
+    return t
+
+
+def crusher_front(rng, on):
+    t = steel_front("crusher", rng)
+    u0, v0, u1, v1, _ = win_list("crusher")[0]
+    void_fill(t, u0, v0, u1, v1)
+    rr = rng_for("crusher/grit")
+    # rubble at the bottom of the chamber, more of it falling when on
+    for u in range(u0, u1 + 1):
+        t.set(u, v1, rr.choice(["#6E6860", "#8E8676", "#4A4640"]))
+    if on:
+        grit(t, rr, u0 + 3, v0 + 1, u1 - 3, v1 - 1, 9)
+    win_shadow(t, u0, v0, u1, v1)
+    hazard_strip(t, 3, 12, 12, 13)
+    t.hline(3, 12, 11, STEEL_T.frame[4])
+    status_led(t, 11, 14, on)
+    return t
+
+
+def jaw_tex(rng):
+    """Serrated manganese-steel jaw plate."""
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, STEEL[0] if y % 2 == 0 else STEEL[3])
+            if x % 4 == 0:
+                t.set(x, y, STEEL[2])
+    return t
+
+
+def metal_press_front(rng, on):
+    t = steel_front("metal_press", rng)
+    u0, v0, u1, v1, _ = win_list("metal_press")[0]
+    void_fill(t, u0, v0, u1, v1)
+    # yellow hydraulic hoses running down the back wall
+    Y = ["#F4C430", "#B88A10"]
+    for v in range(v0, v1 + 1):
+        t.set(u0 + 1, v, Y[0]); t.set(u1 - 1, v, Y[1])
+    t.hline(u0 + 1, u1 - 1, v0, Y[1])
+    win_shadow(t, u0, v0, u1, v1)
+    hazard_strip(t, 3, 12, 12, 13)
+    t.hline(3, 12, 14, STEEL_T.frame[3])
+    status_led(t, 13, 14, on)
+    return t
+
+
+def alloy_smelter_front(rng, on):
+    t = steel_front("alloy_smelter", rng)
+    u0, v0, u1, v1, _ = win_list("alloy_smelter")[0]
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            f = (v - v0) / (v1 - v0)
+            t.set(u, v, mix("#2A1208", "#C8420C", f * 0.9) if on else mix(VOID2, "#2A2420", f))
+    # heating coil zig-zag on the back wall
+    for u in range(u0, u1 + 1):
+        t.set(u, v1 - 1 - (u % 2), "#FFB43C" if on else "#4A3A30")
+    win_shadow(t, u0, v0, u1, v1)
+    # two funnel mouths above the window (inputs) and the output tray slot
+    for u0_ in (3, 10):
+        t.hline(u0_, u0_ + 2, 1, VOID); t.hline(u0_ + 1, u0_ + 1, 2, VOID)
+    t.hline(5, 10, 13, VOID); t.hline(5, 10, 14, STEEL_T.frame[1])
+    status_led(t, 12, 13, on)
+    return t
+
+
+def crucible_side(rng):
+    t = Tex()
+    G = ramp("#2A2A2E", "#3C3C42", "#505058", "#6A6A72")
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, G[3] if y % 5 == 0 else G[1 + (x % 3 == 0)])
+    return t
+
+
+def crucible_top(on, metal):
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            if on:
+                t.set(x, y, "#FFF2B0" if (x * 5 + y * 3) % 7 == 0 else metal[3] if (x + y) % 3 else metal[4])
+            else:
+                t.set(x, y, metal[1] if (x + y) % 3 else metal[0])
+    return t
+
+
+def assembler_front(rng, on):
+    t = steel_front("assembler", rng)
+    u0, v0, u1, v1, _ = win_list("assembler")[0]
+    # blue cutting-mat grid on the back wall
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            grid = (u - u0) % 3 == 0 or (v - v0) % 3 == 0
+            t.set(u, v, ("#3A6AA8" if on else "#2A4A78") if grid else ("#1A2E50" if on else "#142238"))
+    win_shadow(t, u0, v0, u1, v1)
+    if on:
+        t.set(9, 8, "#FFFFFF"); t.set(10, 8, "#FFE070"); t.set(9, 7, "#FFE070")   # weld spark
+    # status screen below
+    t.rect(3, 12, 10, 13, "#0E1A12")
+    for u in range(4, 10):
+        if on:
+            t.set(u, 12 + (u % 2), LED_ON[1])
+    status_led(t, 12, 12, on)
+    return t
+
+
+def flat(c, rng=None, var=None):
+    t = Tex(fill=c)
+    if rng and var:
+        dither(t, rng, 0, 0, 15, 15, c, var[0], var[1], 0.2)
+    return t
+
+
+def combustion_front(rng, on):
+    t = steel_front("combustion_generator", rng)
+    (g0, h0, g1, h1, _), (f0, k0, f1, k1, _) = win_list("combustion_generator")
+    # fan behind the grille
+    void_fill(t, g0, h0, g1, h1)
+    for u in range(g0 + 2, g1 - 1, 3):
+        t.set(u, h0 + 1, STEEL[3]); t.set(u + 1, h0 + 2, STEEL[3])
+    win_shadow(t, g0, h0, g1, h1)
+    paint_fire(t, rng_for("cg/fire"), f0, k0, f1, k1, on)
+    win_shadow(t, f0, k0, f1, k1)
+    gauge(t, 1, 7, STEEL_T, "#D02010" if on else "#606060")
+    status_led(t, 13, 13, on)
+    return t
+
+
+def auto_farmer_front(rng, on):
+    t = steel_front("auto_farmer", rng)
+    u0, v0, u1, v1, _ = win_list("auto_farmer")[0]
+    # grow light over a strip of soil with seedlings
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            t.set(u, v, mix("#3A1E4A", "#140C1C", (v - v0) / (v1 - v0)) if on else mix(VOID2, VOID, 0.5))
+    for u in range(u0, u1 + 1):
+        t.set(u, v1, "#5A3A20" if u % 2 else "#4A2E18")
+        t.set(u, v1 - 1, "#6A4426")
+    for u in (u0 + 1, u0 + 4, u0 + 7):
+        t.set(u, v1 - 2, "#4CB040" if on else "#2E6A2A")
+        t.set(u + 1, v1 - 3, "#7AD860" if on else "#3A8030")
+    win_shadow(t, u0, v0, u1, v1)
+    # green accent band and a seed slot
+    G = ["#2E8C3C", "#4CB05A", "#1F6A2C"]
+    t.hline(2, 13, 11, G[1]); t.hline(2, 13, 12, G[2])
+    t.set(7, 13, VOID); t.set(8, 13, VOID); t.set(7, 14, "#C8A860")
+    status_led(t, 12, 13, on)
+    return t
+
+
+def auto_farmer_top(rng, on):
+    t = casing_face(STEEL_T, rng, "auto_farmer", "up")
+    u0, v0, u1, v1, _ = win_list("auto_farmer", "up")[0]
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            row = (u - u0) % 3
+            t.set(u, v, "#4A2E18" if row == 0 else "#6A4426" if row == 1 else "#5A3A20")
+            if row == 1 and (v - v0) % 3 == 1:
+                t.set(u, v, ("#8ADC5A" if (v % 2) else "#C8B040") if on else "#3E8A30")
+    win_shadow(t, u0, v0, u1, v1, 0.3)
+    return t
+
+
+def auto_farmer_side(rng):
+    t = family_side(STEEL_T, rng, "steel")
+    G = ["#2E8C3C", "#4CB05A", "#1F6A2C"]
+    t.hline(2, 13, 12, G[1]); t.hline(2, 13, 13, G[2])
+    # leaf badge
+    t.set(3, 3, G[1]); t.set(4, 3, G[1]); t.set(4, 4, G[0]); t.set(3, 4, G[2])
+    return t
+
+
+def solar_top(rng):
+    """14x14 cell field (3x3 cells) inside a 1-px aluminium rim."""
+    cells = ramp("#14285A", "#1E3A78", "#2A4C92")
+    t = Tex(fill=ALU_T.frame[2])
+    t.hline(0, 15, 0, ALU_T.frame[1]); t.vline(0, 0, 15, ALU_T.frame[1])
+    for gy in range(3):
+        for gx in range(3):
+            x0, y0 = 1 + gx * 5, 1 + gy * 5
+            t.rect(x0, y0, x0 + 3, y0 + 3, cells[1])
+            t.set(x0, y0, cells[2]); t.set(x0 + 3, y0 + 3, cells[0])
+            t.hline(x0, x0 + 3, y0 + 1, mix(cells[1], "#8CA8DC", 0.3))
+    for i in range(14):   # silver bus lines between the cells
+        for k in (5, 10):
+            t.set(k, 1 + i, "#C8D4E8"); t.set(1 + i, k, "#C8D4E8")
+    for i in range(7):    # sky reflection
+        x, y = 3 + i, 10 - i
+        t.set(x, y, mix(t.get(x, y), "#FFFFFF", 0.22))
+    return t
+
+
+def solar_side(rng):
+    t = Tex(fill=ALU_T.panel[2])
+    for x in range(16):
+        t.set(x, 10, ALU_T.frame[1])
+        t.set(x, 11, "#2A4C92" if x % 3 else ALU_T.frame[3])   # cell edge peeking over the rim
+        t.set(x, 12, ALU_T.panel[2]); t.set(x, 13, ALU_T.panel[3])
+        t.set(x, 14, ALU_T.panel[3] if x % 4 else ALU_T.frame[3]); t.set(x, 15, ALU_T.frame[4])
+    for y in range(10):
+        t.hline(0, 15, y, ALU_T.panel[2 + (y % 2)])
+    return t
+
+
+# ---- energy cells -------------------------------------------------------------------------
+
+
+def cell_colours(T):
+    if T.glow:
+        return [CYAN_GLOW[0], CYAN_GLOW[1], CYAN_GLOW[2], CYAN_GLOW[3]]
+    return ["#2A8A3A", "#4AD85E", "#8CF09A", "#D8FFE0"]
+
+
+def cell_front(T, rng, on, name):
+    t = casing_face(T, rng, name)
+    u0, v0, u1, v1, _ = win_list(name)[0]
+    t.rect(u0, v0, u1, v1, VOID)
+    Y = ("#FFF6B0", "#FFD83A", "#C88A10") if on else ("#E0B830", "#B08A18", "#6A5010")
+    t.sprite(BOLT, {"Y": Y[1], "o": Y[2]}, 5, 3)
+    t.set(9, 3, Y[0])
+    G = cell_colours(T)
+    for u in range(u0, u1 + 1):   # charge bar along the bottom of the window
+        lit = u <= u0 + (6 if on else 3)
+        t.set(u, v1, G[2] if lit else "#1A1E1C")
+    t.set(u0, v1, G[1])
+    win_shadow(t, u0, v0, u1, v1, 0.2)
+    return t
+
+
+def cell_side(T, rng, on, name):
+    t = casing_face(T, rng, name, "west", rivets=((2, 2), (12, 2), (2, 12), (12, 12)))
+    u0, v0, u1, v1, _ = win_list(name, "west")[0]
+    t.rect(u0, v0, u1, v1, VOID)
+    G = cell_colours(T)
+    fill = v0 + (3 if on else 6)
+    for v in range(v0 + 1, v1):
+        for u in range(u0 + 1, u1):
+            if v >= fill:
+                t.set(u, v, G[2] if (v % 2 == 0) else G[1])
+            else:
+                t.set(u, v, "#141816")
+    for v in range(v0 + 1, v1, 2):   # scale ticks
+        t.set(u0 - 2, v, T.frame[3]); t.set(u1 + 2, v, T.frame[3])
+    return t
+
+
+def cell_top(T, rng):
+    t = casing_face(T, rng)
+    # + and - terminals, tier stripe between them
+    for (x, c) in ((4, "#C82828"), (10, "#202020")):
+        t.rect(x, 6, x + 1, 9, IRON[1]); t.set(x, 6, IRON[0]); t.set(x + 1, 9, IRON[3])
+        t.rect(x, 7, x + 1, 8, c)
+    t.hline(6, 9, 7, T.accent); t.hline(6, 9, 8, darken(T.accent, 0.35))
+    return t
+
+
+# ---- automation age: miner & geothermal ---------------------------------------------------
+
+
+def miner_side_tex(rng, on, phase=0.0):
+    t = casing_face(ALU_T, rng, "miner", "west")
+    u0, v0, u1, v1, _ = win_list("miner", "west")[0]
+    paint_rift(t, u0, v0, u1, v1, on, phase)
+    win_shadow(t, u0, v0, u1, v1, 0.3)
+    hazard_band(t, 2, 12, 13, 13)
+    return t
+
+
+def geo_front(rng, on, phase=0):
+    t = casing_face(ALU_T, rng, "geothermal_generator")
+    u0, v0, u1, v1, _ = win_list("geothermal_generator")[0]
+    paint_lava(t, u0, v0, u1, v1, on, phase)
+    win_shadow(t, u0, v0, u1, v1, 0.3)
+    status_led(t, 12, 14, on)
+    return t
+
+
+def geo_side(rng, on, phase=0):
+    t = casing_face(ALU_T, rng, "geothermal_generator", "west", rivets=((6, 2), (6, 12)))
+    for (u0, v0, u1, v1, _) in win_list("geothermal_generator", "west"):
+        paint_lava(t, u0, v0, u1, v1, on, phase, oy=5)
+    # heat-exchanger fins between the channels
+    for y in range(4, 12, 2):
+        t.hline(6, 9, y, ALU_T.frame[3]); t.hline(6, 9, y + 1, ALU_T.frame[1])
+    return t
+
+
+def basalt(rng):
+    t = Tex()
+    B = ramp("#1E1E22", "#2A2A30", "#36363C", "#44444A", "#56565C")
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, B[1 + (rng.random() < 0.5) + (x % 4 == 0)] if y % 5 else B[0])
+    return t
+
+
+def anim(frames):
+    """Stack frames into a vertical animation strip."""
+    t = Tex(16, 16 * len(frames))
+    for i, f in enumerate(frames):
+        t.blit(f, 0, 16 * i)
+    return t
+
+
+# ---- crates ----------------------------------------------------------------------------------
+
+SPRUCE = ramp("#241609", "#382412", "#50361E", "#6A4A2A", "#84603A")
+
+
+def planks(t, rng, pal, x0, y0, x1, y1, vertical=False, board=4):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            k = (x - x0) if vertical else (y - y0)
+            c = pal[2] if rng.random() > 0.2 else pal[3 if rng.random() < 0.5 else 1]
+            if k % board == board - 1:
+                c = pal[0]
+            elif k % board == 0:
+                c = mix(c, pal[4], 0.3)
+            t.set(x, y, c)
+
+
+def crate_face(rng, top, bronze):
+    wood = SPRUCE if bronze else WOOD
+    t = Tex()
+    planks(t, rng, wood, 0, 0, 15, 15, vertical=top, board=4 if not bronze else 5)
+    # outer boards (the crate's frame)
+    for i in range(16):
+        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i), (i, 1), (i, 14), (1, i), (14, i)):
+            edge = x in (0, 15) or y in (0, 15)
+            t.set(x, y, wood[1] if edge else wood[3])
+    t.hline(2, 13, 2, wood[0]); t.vline(2, 2, 13, wood[0])
+    if not bronze:
+        if not top:   # diagonal brace
+            for i in range(2, 14):
+                t.set(i, 15 - i, wood[3]); t.set(i, 16 - i, wood[1] if i < 14 else wood[3])
+        # dark iron corner brackets with nails
+        K = ["#1A1A1E", "#2E2E34", "#4A4A52", "#6A6A74"]
+        for (cx, cy, sx, sy) in ((0, 0, 1, 1), (15, 0, -1, 1), (0, 15, 1, -1), (15, 15, -1, -1)):
+            for i in range(4):
+                t.set(cx + sx * i, cy, K[2]); t.set(cx, cy + sy * i, K[2])
+                t.set(cx + sx * i, cy + sy, K[1]); t.set(cx + sx, cy + sy * i, K[1])
+            t.set(cx + sx, cy + sy, K[3])
     else:
-        rows = [
-            "kkkkkkkkkkkk",
-            "kukkkstkkkuk",
-            "kukkkstkkkuk",
-            "kukkkstkkkuk",
-            "kussssssssuk",
-            "kuttttttttuk",
-            "yuvvvvvvvvuy",
-            "kYppppppppYk",
-            "kuooooooooqk",
-            "kmmmmmmmmmmk",
-        ]
-    art(t, rows, pal)
-    t.hline(2, 13, 13, T.frame[3])
+        B = [BRONZE_T.frame[i] for i in range(5)]
+        # bronze border bands
+        for i in range(16):
+            for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
+                t.set(x, y, B[2])
+            t.set(i, 0, B[1]); t.set(0, i, B[1]); t.set(i, 15, B[3]); t.set(15, i, B[3])
+        # cross band(s) with bolts
+        mids = [(7, 8)]
+        for (a, b) in mids:
+            t.hline(1, 14, a, B[1]); t.hline(1, 14, b, B[3])
+            if top:
+                t.vline(a, 1, 14, B[1]); t.vline(b, 1, 14, B[3])
+        for (x, y) in ((3, 7), (12, 7), (7, 3) if top else (1, 1), (7, 12) if top else (14, 14)):
+            t.set(x, y, B[0]); t.set(x + 1, y + 1, B[4])
+        for (x, y) in ((1, 1), (13, 1), (1, 13), (13, 13)):
+            t.set(x, y, B[0]); t.set(x + 1, y + 1, B[4])
     return t
-
-
-MOLTEN_IDLE = {"A": "#16110F", "B": "#1C1512", "C": "#35302C", "E": "#433C36", "X": "#3A3A3C",
-               "Y": "#48484A", "c": VOID, "x": VOID, "g": "#2A2624"}
-MOLTEN_ON = {"A": "#4E1E0A", "B": "#7A300C", "C": "#F07A1E", "E": "#FFD27A", "X": "#D8DCE6",
-             "Y": "#FFFFFF", "c": "#F07A1E", "x": "#D8DCE6", "g": "#FFB43C"}
-
-
-def m_alloy_smelter(T, on, rng):
-    """Twin crucibles pouring two molten metals into one trough."""
-    t = machine_base(T, rng, sunk=True)
-    pal = machine_pal(T, MOLTEN_ON if on else MOLTEN_IDLE)
-    art(t, [
-        "KKsuKKKKsuKK",
-        "KBsuBBBBsuBK",
-        "sttttusttttu",
-        "tCEECvtXYYXv",
-        "tCCCCvtXXXXv",
-        ".tuuvKKtuuv.",
-        "...cKKKKx...",
-        "....cKKx....",
-        "...tggggv...",
-        "mmmmmmmmmmmd",
-    ], pal)
-    return t
-
-
-def m_assembler(T, on, rng):
-    """Safety-orange gantry arm with a gripper over a workpiece."""
-    t = machine_base(T, rng)
-    G = (LED_ON[1], LED_ON[2]) if on else ("#1E3A22", "#27482C")
-    pal = machine_pal(T, {"g": G[0], "G": G[1],
-                          "c": T.accent, "C": lighten(T.accent, 0.5), "b": darken(T.accent, 0.35),
-                          "h": "#FFE7A0", "l": "#F4B83A", "m": "#C8861C", "d": "#86560E"})
-    art(t, [
-        "KKKKKKKKKKKK",
-        "KhllmKKKKKKK",
-        "hlGmllllllmK",
-        "lmmddddddmdK",
-        "KlmKKKKKKtuK",
-        "KlmKKKKKsttu",
-        "KlmKKKKKsKKu",
-        "KlmKKKKKCcbK",
-        "hlmgdKKKcbbK",
-        "ddddddtttttu",
-    ], pal)
-    if on:
-        t.set(AX + 10, AY + 6, "#FFE070")  # weld spark
-    return t
-
-
-def m_combustion(T, on, rng):
-    """Fire box behind a grate, exhaust louvres and a pressure gauge."""
-    t = machine_base(T, rng)
-    pal = machine_pal(T, FIRE_ON if on else FIRE_IDLE)
-    pal.update({"W": "#ECEAE0", "n": "#D02010", "x": "#9A9890"})
-    art(t, [
-        "qqqqqqq.vvv.",
-        "LLLLLLL.vWWv",
-        "qqqqqqq.vWnv",
-        "LLLLLLL.vnxv",
-        "wwwwwwwwwvvw",
-        "wKsKsKsKsKsv",
-        "wAsBsCsBsAsv",
-        "wCsDsEsDsCsv",
-        "wEsFsFsFsEsv",
-        "vvvvvvvvvvvv",
-    ], pal)
-    if on:
-        t.set(AX + 3, AY + 5, FIRE_ON["B"]); t.set(AX + 7, AY + 5, FIRE_ON["B"])
-    return t
-
-
-LAVA_IDLE = {"A": "#240806", "B": "#3E0C08", "C": "#5A140C"}
-LAVA_ON = {"A": "#C83A0C", "B": "#FF7A1C", "C": "#FFD050"}
-
-
-def m_geothermal(T, on, rng):
-    """Louvred vent between two pipes with lava glowing behind."""
-    t = machine_base(T, rng)
-    pal = machine_pal(T, LAVA_ON if on else LAVA_IDLE)
-    art(t, [
-        "stvkkkkkkstv",
-        "stvAABAABstv",
-        "stvlllllllst",
-        "hlmddddddhlm",
-        "stvBCBBCBstv",
-        "stvlllllllst",
-        "hlmddddddhlm",
-        "stvCBCCBCstv",
-        "stvlllllllst",
-        "stvddddddstv",
-    ], pal)
-    return t
-
-
-MACHINES = {
-    "electric_furnace": m_electric_furnace,
-    "crusher": m_crusher,
-    "metal_press": m_metal_press,
-    "alloy_smelter": m_alloy_smelter,
-    "assembler": m_assembler,
-    "combustion_generator": m_combustion,
-    "geothermal_generator": m_geothermal,
-}
-
-
-def machine_front(name, T, on, rng):
-    t = MACHINES[name](T, on, rng)
-    led(t, on)
-    return t
-
-
 # ---- miner (area quarry) ------------------------------------------------------------
 
 
@@ -741,20 +1511,6 @@ def hazard_band(t, x0, y0, x1, y1, phase=0):
             else:
                 t.set(x, y, HAZARD_K[1] if y == y0 else HAZARD_K[0])
     t.hline(x0, x1, y1, darken(HAZARD_Y[0], 0.4))
-
-
-def miner_side(T, rng):
-    """Drill shaft running down the face, hazard band at the base."""
-    t = panel_base(T, rng)
-    recess(t, 5, 2, 10, 11, T, fill=VOID)
-    for y in range(3, 11):
-        t.set(6, y, STEEL[1]); t.set(7, y, STEEL[0]); t.set(8, y, STEEL[2]); t.set(9, y, STEEL[3])
-    for y in (4, 8):   # shaft collars
-        t.hline(6, 9, y, T.frame[1]); t.set(9, y, T.frame[3])
-        t.hline(6, 9, y + 1, T.frame[3])
-    hazard_band(t, 2, 11, 13, 13)
-    return t
-
 
 def miner_top(T, rng):
     """Hatch with the drive motor seen from above."""
@@ -803,45 +1559,6 @@ def miner_bottom(T, rng):
     t.rect(7, 7, 8, 8, "#FFE070"); t.set(8, 8, "#C09020"); t.set(7, 7, "#FFF6C0")
     return t
 
-
-# ---- solar panel --------------------------------------------------------------------
-
-SOLAR = {
-    1: dict(cell=ramp("#14285A", "#1E3A78", "#2A4C92"), line="#8CA8DC", bus="#C8D4E8", div=2),
-    2: dict(cell=ramp("#101E48", "#18306A", "#223E84"), line="#7890C8", bus="#A8B4C8", div=2),
-    3: dict(cell=ramp("#0E1A40", "#15285E", "#1E3678"), line="#6C88C8", bus="#E0955A", div=3),
-    4: dict(cell=ramp("#160E38", "#221650", "#2E1E6A"), line="#9C84E0", bus="#C49CF0", div=3),
-    5: dict(cell=ramp("#0A0612", "#140C22", "#1C1230"), line="#3AC8C0", bus="#6FF0E8", div=4),
-}
-
-
-def solar_top(T, rng):
-    S = SOLAR[T.n]
-    cells = S["cell"]
-    t = Tex(fill=cells[1])
-    frame(t, T)
-    div = S["div"]
-    size = 12 // div
-    for gy in range(div):
-        for gx in range(div):
-            x0, y0 = 2 + gx * size, 2 + gy * size
-            x1, y1 = x0 + size - 1, y0 + size - 1
-            t.rect(x0, y0, x1, y1, cells[1])
-            t.hline(x0, x1, y1, S["line"])
-            t.vline(x1, y0, y1, S["line"])
-            t.set(x0, y0, cells[2])
-            if size >= 4:
-                t.set(x1 - 1, y1 - 1, cells[0])
-                t.hline(x0, x1 - 1, y0 + size // 2 - 1, mix(cells[1], S["line"], 0.35))
-    t.vline(13, 2, 13, S["bus"])
-    t.hline(2, 13, 13, S["bus"])
-    for i in range(7):   # diagonal sky reflection
-        x, y = 4 + i, 9 - i
-        if t.get(x, y)[:3] != C(S["line"])[:3]:
-            t.set(x, y, mix(t.get(x, y), "#FFFFFF", 0.18))
-    return t
-
-
 # ---- energy cell ---------------------------------------------------------------------
 
 BOLT = [
@@ -855,32 +1572,6 @@ BOLT = [
     "YYo...",
     "Yo....",
 ]
-
-
-def energy_cell_front(T, rng):
-    """Output face: a big lightning bolt behind a dark window."""
-    t = panel_base(T, rng)
-    recess(t, 4, 3, 11, 12, T, fill=VOID)
-    t.sprite(BOLT, {"Y": "#FFD83A", "o": "#C88A10"}, 5, 3)
-    t.set(9, 3, "#FFF6B0")
-    return t
-
-
-def energy_cell_side(T, rng):
-    """Vertical charge gauge, half full."""
-    t = panel_base(T, rng)
-    recess(t, 6, 2, 9, 13, T, fill=VOID)
-    full = ["#2A8A3A", "#4AD85E", "#8CF09A"]
-    for y in range(3, 13):
-        if y >= 8:
-            t.set(7, y, full[2] if y % 2 == 0 else full[1])
-            t.set(8, y, full[1] if y % 2 == 0 else full[0])
-        else:
-            t.set(7, y, "#1A1E1C"); t.set(8, y, "#121614")
-    for y in range(3, 13, 2):   # scale ticks
-        t.set(5, y, T.frame[3]); t.set(10, y, T.frame[3])
-    return t
-
 
 # ---- cable & item pipe (6x6 cross-section models sample UV 5-11) ----------------------
 
@@ -950,7 +1641,6 @@ def item_pipe_extract(rng):
             if y0 + dy <= 11:
                 t.set(x, y0 + dy, O[0])
     return t
-
 
 # ---- ores (vanilla stone / deepslate look) ----------------------------------------------
 
@@ -1401,14 +2091,6 @@ def lattice_frame(pal, thick=2, joint=None, bolts=False):
     return t
 
 
-def machine_frame(T):
-    if T.n == 5:
-        return lattice_frame(ramp("#0C1014", "#182026", "#26303A", "#36444E", "#4C5C68"), thick=3,
-                             joint=CYAN_GLOW)
-    pal = list(reversed(T.frame))
-    return lattice_frame(pal, thick=2 if T.n <= 2 else 3, bolts=T.n >= 2)
-
-
 MOTOR = [
     "................",
     "................",
@@ -1540,40 +2222,6 @@ def wrench():
     return t
 
 
-KIT = [
-    "....hhhhhh....",
-    "....h....h....",
-    ".dddddddddddd.",
-    ".hlllllllllld.",
-    ".hmmmmwmmmmmd.",
-    ".hmmmwwwmmmmd.",
-    ".hmmwwwwwmmmd.",
-    ".ddddwwwddddd.",
-    ".hmmmwwwmmmmd.",
-    ".hmmmwwwmmmmd.",
-    ".hmmmmmmmmmmd.",
-    ".dddddddddddd.",
-]
-
-
-def upgrade_kit(T):
-    """Tier installer: tier-coloured case, white up-arrow, one pip per tier."""
-    F = T.frame
-    pal = {"h": F[0], "l": F[1], "m": F[2], "d": F[3], "w": "#FFFFFF"}
-    if T.glow:
-        pal["m"] = mix(F[3], "#101418", 0.4)
-        pal["l"] = F[2]
-    t = item()
-    t.sprite(KIT, pal, 1, 1)
-    t.set(7, 5, "#FFFFFF")
-    for (x, y) in [(8, 7), (9, 7), (8, 9), (8, 10), (8, 8)]:
-        t.set(x, y, "#D6DCE6")
-    for i in range(T.n):
-        t.set(8 - T.n + i * 2, 12, "#FFD84A")
-    t.outline(0.5)
-    return t
-
-
 def silicon_chunk():
     S = MAT["silicon"]
     pal = {str(i): S[i] for i in range(5)}
@@ -1615,12 +2263,287 @@ def silicon_wafer():
     return t
 
 
+# ---- v2 items: bronze tools, drill, coke & fire clay, orbital / ender parts ---------------
+
+BRONZE_M = MAT["bronze"]          # deep .. hi
+
+
+STICK = ["#3A2410", "#5A3A18", "#7A5426"]
+
+
+def stick(t, a=(2.2, 13.8), b=(10.0, 6.0)):
+    render_rod(t, a, b, 0.95, STICK)
+
+
+def shade_mask(t, mask, pal, lx=-1.0, ly=-1.0):
+    """Fill a pixel set with a metal ramp lit from the top-left edge. pal = deep .. hi."""
+    for (x, y) in mask:
+        edge_lit = (x + int(lx), y) not in mask or (x, y + int(ly)) not in mask
+        edge_dark = (x - int(lx), y) not in mask or (x, y - int(ly)) not in mask
+        c = pal[2]
+        if edge_lit:
+            c = pal[4] if not edge_dark else pal[3]
+        elif edge_dark:
+            c = pal[1]
+        t.set(x, y, c)
+
+
+def mask_of(fn):
+    return {(x, y) for y in range(16) for x in range(16) if fn(x + 0.5, y + 0.5)}
+
+
+def bronze_tool(kind):
+    t = item()
+    P = BRONZE_M
+    if kind == "sword":
+        blade = mask_of(lambda x, y: seg_dist(x, y, 5.0, 11.0, 13.2, 2.8)[0] <= 1.2 - 0.4 * max(0.0, seg_dist(x, y, 5.0, 11.0, 13.2, 2.8)[2] - 0.8) * 5
+                        and 0 <= seg_dist(x, y, 5.0, 11.0, 13.2, 2.8)[2] <= 1.06)
+        shade_mask(t, blade, P)
+        for i in range(7):     # fuller down the blade's middle
+            t.set(6 + i, 9 - i, P[3])
+        render_rod(t, (1.6, 14.4), (4.4, 11.6), 0.9, STICK)
+        guard = mask_of(lambda x, y: seg_dist(x, y, 3.2, 9.8, 6.2, 12.8)[0] <= 0.75)
+        shade_mask(t, guard, [BRONZE_M[0], BRONZE_M[1], BRONZE_M[1], BRONZE_M[2], BRONZE_M[3]])
+        t.set(1, 14, P[3])
+    elif kind == "pickaxe":
+        stick(t, (2.2, 13.8), (10.2, 5.8))
+
+        def arc(x, y):
+            best = 9
+            for i in range(41):
+                s = i / 40
+                bx = (1 - s) ** 2 * 2.5 + 2 * (1 - s) * s * 13.5 + s * s * 13.5
+                by = (1 - s) ** 2 * 2.5 + 2 * (1 - s) * s * 2.5 + s * s * 13.5
+                w = 1.25 - 0.55 * abs(s - 0.5) * 2
+                best = min(best, math.hypot(x - bx, y - by) - w)
+            return best <= 0
+        shade_mask(t, mask_of(arc), P)
+    elif kind == "axe":
+        stick(t, (2.2, 13.8), (11.2, 4.8))
+        head = mask_of(lambda x, y: (seg_dist(x, y, 9.0, 3.2, 12.6, 6.8)[0] <= 1.3) or
+                       (math.hypot((x - 6.6) * 0.9, (y - 5.6) * 1.0) <= 3.0 and x + y < 13.8 and x - y > -3.5))
+        shade_mask(t, head, P)
+        for (x, y) in sorted(head):
+            if x + y <= 9:   # honed cutting edge
+                t.set(x, y, P[4])
+    elif kind == "shovel":
+        stick(t, (2.2, 13.8), (9.6, 6.4))
+        head = mask_of(lambda x, y: ((x + y - 16) * 0.7071 / 2.6) ** 2 + ((x - y - 8.4) * 0.7071 / 3.6) ** 2 <= 1.0
+                       or (seg_dist(x, y, 8.4, 7.6, 10.2, 5.8)[0] <= 0.8))
+        shade_mask(t, head, P)
+    elif kind == "hoe":
+        stick(t, (2.2, 13.8), (11.4, 4.6))
+        head = mask_of(lambda x, y: seg_dist(x, y, 6.0, 3.0, 12.6, 3.0)[0] <= 1.0 or
+                       seg_dist(x, y, 6.0, 3.0, 6.0, 6.0)[0] <= 1.0)
+        shade_mask(t, head, P)
+    t.outline(0.5)
+    return t
+
+
+def electric_drill():
+    """Cordless drill: steel bit pointing up-right, yellow body, black grip, green charge LED."""
+    t = item()
+    Y = ramp("#7A5A08", "#B88A10", "#E8B818", "#FFD84A", "#FFF0A0")
+    K = MAT["rubber"]
+    S = STEEL
+    # bit
+    render_rod(t, (9.8, 6.2), (14.4, 1.6), 0.8, [S[3], S[1], S[0]])
+    # chuck
+    chuck = mask_of(lambda x, y: seg_dist(x, y, 8.2, 7.8, 10.2, 5.8)[0] <= 1.5)
+    shade_mask(t, chuck, [S[4], S[3], S[2], S[1], S[0]])
+    # body
+    body = mask_of(lambda x, y: seg_dist(x, y, 3.0, 13.0, 8.0, 8.0)[0] <= 2.6 and
+                   seg_dist(x, y, 3.0, 13.0, 8.0, 8.0)[2] >= 0.35)
+    shade_mask(t, body, Y)
+    # grip + battery at the bottom-left
+    grip = mask_of(lambda x, y: seg_dist(x, y, 1.8, 14.2, 4.6, 11.4)[0] <= 1.6)
+    shade_mask(t, grip, K)
+    t.set(3, 12, LED_ON[1])
+    t.set(6, 9, "#FFFFFF"); t.set(5, 11, Y[1])
+    t.outline(0.5)
+    return t
+
+
+COKE = ramp("#141418", "#24242A", "#3A3A42", "#585862", "#8C8C98")
+FIRE_CLAY = ramp("#7A5E3A", "#A8844E", "#C8A468", "#DCBE84", "#EED6A4")
+
+
+def coke_item(rng):
+    t = raw_lump(COKE, rng)
+    for (x, y) in [(6, 8), (9, 6), (5, 11), (11, 10), (8, 10), (4, 7)]:
+        if t.opaque(x, y):
+            t.set(x, y, COKE[0])      # pores
+    return t
+
+
+def fire_clay(rng):
+    t = item()
+    render_blobs(t, [(8.0, 9.0, 5.2, 4.2), (6.4, 7.0, 3.0, 2.6, 0.5), (10.4, 10.6, 2.8, 2.4)],
+                 FIRE_CLAY[1:], bias=0.1, rng=rng, speckle=[FIRE_CLAY[1], "#A07840"], speck_p=0.06)
+    t.outline(0.5)
+    return t
+
+
+BRICK = [
+    "..............",
+    "....hhhhhhhhh.",
+    "...hTTTTTTTTe.",
+    "..hTTTTTTTTee.",
+    ".LLLLLLLLLeee.",
+    ".FFFFFFFFFeee.",
+    ".FFFFFFFFFee..",
+    ".FFFFFFFFFe...",
+    ".DDDDDDDDD....",
+]
+
+
+def fire_brick_item(rng):
+    P = FIRE_BRICK
+    t = item()
+    t.sprite(BRICK, {"h": P[4], "T": P[3], "L": mix(P[3], P[4], 0.4), "F": P[2], "D": P[1],
+                     "e": mix(P[1], P[2], 0.4)}, 1, 3)
+    for (x, y) in [(4, 9), (8, 8), (6, 10), (10, 9), (7, 6)]:
+        t.set(x, y, "#8A5A2A")
+    t.outline(0.45)
+    return t
+
+
+def orbital_targeting_core():
+    """Titanium ring with four clamps around a violet-to-cyan targeting lens."""
+    t = item()
+    Ti = MAT["titanium"]
+    cx = cy = 8.0
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            d = math.hypot(dx, dy)
+            lit = -(dx + dy) / (d + 0.01)
+            if 4.6 <= d <= 6.6:
+                t.set(x, y, Ti[4] if lit > 0.6 else Ti[3] if lit > 0 else Ti[2] if lit > -0.6 else Ti[1])
+            elif d < 4.6:
+                k = d / 4.6
+                c = mix(CYAN_GLOW[3], CYAN_GLOW[2], min(1, k * 1.6)) if k < 0.6 else mix(CYAN_GLOW[1], VIOLET_GLOW[1], (k - 0.6) / 0.4)
+                t.set(x, y, c)
+    for (x0, y0, x1, y1) in ((7, 0, 8, 1), (7, 14, 8, 15), (0, 7, 1, 8), (14, 7, 15, 8)):   # clamps
+        t.rect(x0, y0, x1, y1, Ti[2]); t.set(x0, y0, Ti[4])
+    for i in (4, 5, 10, 11):     # crosshair ticks
+        t.set(i, 8, VIOLET_GLOW[3] if i in (5, 10) else VIOLET_GLOW[2])
+        t.set(8, i, VIOLET_GLOW[3] if i in (5, 10) else VIOLET_GLOW[2])
+    t.rect(7, 7, 8, 8, "#FFFFFF")
+    t.set(5, 5, "#FFFFFF"); t.set(6, 5, CYAN_GLOW[3])        # glint
+    t.outline(0.5)
+    return t
+
+
+ENDER = ramp("#0A1E22", "#10424A", "#1A6E6E", "#34A898", "#8CE8D0")      # deep .. hi (pearl teal)
+OBSIDIAN = ramp("#0C0814", "#170F24", "#221636", "#30204A", "#46306A")   # deep .. hi
+
+
+def ender_dust(rng):
+    return dust(ENDER, rng)
+
+
+def recall_charm():
+    """Gold-framed amulet on a short chain with an ender eye in the middle."""
+    t = item()
+    G = MAT["gold"]
+    for (x, y) in [(5, 1), (6, 0), (7, 0), (8, 0), (9, 0), (10, 1), (4, 2), (11, 2)]:   # chain loop
+        t.set(x, y, G[3] if x < 8 else G[2])
+    cx, cy = 8.0, 9.0
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            d = math.hypot(dx * 1.0, dy * 0.95)
+            lit = -(dx + dy) / (d + 0.01)
+            if 3.6 <= d <= 5.4:
+                t.set(x, y, G[4] if lit > 0.5 else G[3] if lit > -0.2 else G[1])
+            elif d < 3.6:
+                t.set(x, y, mix("#2E8C6A", "#0E3A2E", d / 3.6))
+    t.rect(7, 8, 8, 10, "#0A0A10")                       # pupil
+    t.set(7, 8, "#6ADCB0")
+    t.set(6, 7, "#C8FFE8")                               # glint
+    t.set(8, 3, G[3]); t.set(7, 3, G[4])                 # bail
+    t.outline(0.5)
+    return t
+
+
+def ender_fluid_frame(phase):
+    t = Tex()
+    n = smooth_noise(rng_for("ender_fluid"), 4, 4)
+    for y in range(16):
+        for x in range(16):
+            s = math.sin((x + phase) * 0.8 + n[(y + phase) % 16][x] * 5.0) + n[y][(x + 2 * phase) % 16]
+            if s > 1.25:
+                c = C("#9C7CE8", 200)
+            elif s > 0.6:
+                c = C("#4A8C9C", 185)
+            elif s > -0.2:
+                c = C("#1E5A66", 175)
+            else:
+                c = C("#2A1E5A", 180)
+            t.set(x, y, c)
+    return t
+
+
+def ender_anchor_frame(rng):
+    P = ramp("#6A4A9A", "#46306A", "#30204A", "#1E1430", "#120C1E")      # hi .. deep
+    t = Tex(fill=P[2])
+    dither(t, rng, 0, 0, 15, 15, P[2], P[3], P[1], 0.15)
+    frame(t, None, pal=P)
+    t.hline(2, 13, 7, P[3]); t.hline(2, 13, 8, P[1])
+    for (x, y) in [(2, 2), (12, 2), (2, 12), (12, 12)]:
+        t.set(x, y, VIOLET_GLOW[2]); t.set(x + 1, y + 1, P[4])
+    return t
+
+
+RUNE = [["x.x", ".x.", "x.x"], ["xxx", "x..", "xxx"], [".x.", "xxx", ".x."], ["x..", "xxx", "..x"]]
+
+
+def ender_beacon_side(rng):
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, OBSIDIAN[1 + (rng.random() < 0.35) + (rng.random() < 0.1)])
+    t.hline(0, 15, 0, OBSIDIAN[4]); t.hline(0, 15, 15, OBSIDIAN[0])
+    for i, (x0, y0) in enumerate([(2, 3), (6, 7), (10, 3), (6, 11) if False else (11, 10)]):
+        for dy, row in enumerate(RUNE[i]):
+            for dx, ch in enumerate(row):
+                if ch == "x":
+                    t.set(x0 + dx, y0 + dy, VIOLET_GLOW[2] if (dx + dy) % 2 else VIOLET_GLOW[1])
+    return t
+
+
+def ender_beacon_top(rng, on):
+    t = ender_beacon_side(rng_for("ender_beacon/top"))
+    for y in range(16):
+        for x in range(16):
+            if 0 < x < 15 and 0 < y < 15:
+                t.set(x, y, OBSIDIAN[1 + ((x * 7 + y * 3) % 5 == 0)])
+    # crystal inset: a diamond of violet
+    for y in range(16):
+        for x in range(16):
+            d = abs(x + 0.5 - 8) + abs(y + 0.5 - 8)
+            if d <= 5:
+                k = d / 5
+                c = mix(VIOLET_GLOW[3] if on else VIOLET_GLOW[2], VIOLET_GLOW[0], k) if on else \
+                    mix(VIOLET_GLOW[1], OBSIDIAN[2], k)
+                t.set(x, y, c)
+            elif d <= 6:
+                t.set(x, y, OBSIDIAN[4])
+    if on:
+        t.set(7, 6, "#FFFFFF"); t.set(6, 7, "#FFFFFF")
+    return t
+
+
 # =============================================================================
 # 5. Main
 # =============================================================================
 
-TIER_ORDER = [TIERS[n] for n in range(1, 6)]
 METALS = ["tin", "bronze", "steel", "aluminum", "titanium", "quantum_alloy"]
+# conduit stages keep the v1 tier colours: basic, reinforced, advanced, ultimate
+CABLE_TIERS = {"copper_cable": 1, "aluminum_cable": 2, "titanium_cable": 3, "superconductor_cable": 5}
+PIPE_TIERS = {"bronze_item_pipe": 1, "steel_item_pipe": 2, "aluminum_item_pipe": 3, "titanium_item_pipe": 5}
+ANIMATED = {}      # rel path -> frametime
 
 
 def build():
@@ -1633,33 +2556,149 @@ def build():
     def itm(name, fn):
         out["item/%s.png" % name] = fn(rng_for("item/" + name))
 
-    # ---- tiered blocks
-    for T in TIER_ORDER:
-        blk("casing_%s_side" % T.name, lambda r, T=T: casing_side(T, r))
-        blk("casing_%s_top" % T.name, lambda r, T=T: casing_top(T, r))
-        blk("casing_%s_bottom" % T.name, lambda r, T=T: casing_bottom(T, r))
-    for m in MACHINES:
-        for T in TIER_ORDER:
-            blk("%s_%s_front" % (T.name, m), lambda r, T=T, m=m: machine_front(m, T, False, r))
-            blk("%s_%s_front_on" % (T.name, m), lambda r, T=T, m=m: machine_front(m, T, True, r))
-    for T in TIER_ORDER:
-        blk("%s_miner_side" % T.name, lambda r, T=T: miner_side(T, r))
-        blk("%s_miner_top" % T.name, lambda r, T=T: miner_top(T, r))
-        blk("%s_miner_bottom" % T.name, lambda r, T=T: miner_bottom(T, r))
-    for T in TIER_ORDER:
-        blk("%s_solar_panel_top" % T.name, lambda r, T=T: solar_top(T, r))
-        blk("%s_energy_cell_front" % T.name, lambda r, T=T: energy_cell_front(T, r))
-        blk("%s_energy_cell_side" % T.name, lambda r, T=T: energy_cell_side(T, r))
-    for T in TIER_ORDER:
-        blk("%s_power_cable" % T.name, lambda r, T=T: power_cable(T, r))
-        blk("%s_item_pipe" % T.name, lambda r, T=T: item_pipe(T, r))
+    def ani(name, frames, frametime):
+        out["block/%s.png" % name] = anim(frames)
+        ANIMATED["block/%s.png" % name] = frametime
+
+    # ---- family casings (side / top / bottom / recess walls)
+    # (every machine has its own top; aluminium machines draw their own sides too)
+    for kind, T in FAMILY.items():
+        if kind != "aluminum":
+            blk("%s_machine_side" % kind, lambda r, T=T, kind=kind: family_side(T, r, kind))
+            blk("%s_machine_bottom" % kind, lambda r, T=T: family_bottom(T, r))
+        blk("%s_machine_inner" % kind, lambda r, T=T: inner_tex(mix(T.panel[4], VOID, 0.45), r))
+
+    # ---- stone age
+    blk("quern_side", quern_side)
+    blk("quern_bed_top", lambda r: quern_top(r, False, False))
+    blk("quern_bed_top_on", lambda r: quern_top(rng_for("block/quern_bed_top"), False, True))
+    blk("quern_runner_top", lambda r: quern_top(r, True, False))
+    blk("quern_bottom", lambda r: granite(r, ramp("#3E3C3A", "#4E4C4A", "#686664", "#83807C", "#9C9994")))
+    blk("quern_handle", quern_handle)
+    blk("brick_kiln_front", lambda r: kiln_front(r, False))
+    blk("brick_kiln_front_on", lambda r: kiln_front(r, True))
+    blk("brick_kiln_side", lambda r: kiln_bricks(r))
+    blk("brick_kiln_top", lambda r: kiln_top(r, False))
+    blk("brick_kiln_top_on", lambda r: kiln_top(r, True))
+    blk("brick_kiln_bottom", lambda r: granite(r, COBBLE))
+    blk("brick_kiln_inner", lambda r: inner_tex(SOOT[2], r))
+    blk("brick_kiln_inner_on", lambda r: inner_tex("#4A1E0C", r))
+    blk("brick_kiln_fuel", lambda r: logs(r, False))
+    blk("brick_kiln_fuel_on", lambda r: logs(rng_for("block/brick_kiln_fuel"), True))
+
+    # ---- bronze age
+    blk("coke_oven_bricks", coke_oven_bricks)
+    blk("fire_bricks", fire_bricks)
+    blk("burner_crusher_front", lambda r: burner_crusher_front(r, False))
+    blk("burner_crusher_front_on", lambda r: burner_crusher_front(rng_for("block/burner_crusher_front"), True))
+    blk("burner_crusher_top", lambda r: hopper_top(BRONZE_T, r, "burner_crusher", ORE_BITS))
+    blk("burner_crusher_roller", knurl)
+    blk("burner_crusher_roller_end", lambda r: roller_end(r, False))
+    blk("burner_crusher_roller_end_on", lambda r: roller_end(r, True))
+    blk("burner_press_front", lambda r: burner_press_front(r, False))
+    blk("burner_press_front_on", lambda r: burner_press_front(rng_for("block/burner_press_front"), True))
+    blk("burner_press_ram", lambda r: rod_tex(BRONZE_T.frame))
+    blk("burner_press_head", lambda r: press_head(IRON))
+    blk("burner_press_die", lambda r: flat(IRON[3], r, (IRON[4], IRON[2])))
+    blk("coke_oven_front", lambda r: coke_oven_front(r, False))
+    blk("coke_oven_front_on", lambda r: coke_oven_front(r, True))
+    blk("coke_oven_inner", lambda r: inner_tex(IRON[3], r))
+    blk("blast_furnace_front", lambda r: blast_furnace_front(r, False))
+    blk("blast_furnace_front_on", lambda r: blast_furnace_front(r, True))
+    blk("blast_furnace_inner", lambda r: inner_tex("#5A4428", r))
+
+    # ---- electric age
+    blk("electric_furnace_front", lambda r: electric_furnace_front(r, False))
+    blk("electric_furnace_front_on", lambda r: electric_furnace_front(rng_for("block/electric_furnace_front"), True))
+    blk("electric_furnace_coil", lambda r: coil_tex(False))
+    blk("electric_furnace_coil_on", lambda r: coil_tex(True))
+    blk("crusher_front", lambda r: crusher_front(r, False))
+    blk("crusher_front_on", lambda r: crusher_front(rng_for("block/crusher_front"), True))
+    blk("crusher_top", lambda r: hopper_top(STEEL_T, r, "crusher", ORE_BITS))
+    blk("crusher_jaw", jaw_tex)
+    blk("metal_press_front", lambda r: metal_press_front(r, False))
+    blk("metal_press_front_on", lambda r: metal_press_front(rng_for("block/metal_press_front"), True))
+    blk("metal_press_rod", lambda r: rod_tex(ramp("#FFFFFF", "#DCE2EA", "#9AA4B2", "#5A6270", "#343A44")))
+    blk("metal_press_head", lambda r: press_head(STEEL_T.frame, stripes=True))
+    blk("metal_press_die", lambda r: flat(STEEL_T.frame[3], r, (STEEL_T.frame[4], STEEL_T.frame[2])))
+    blk("metal_press_plate", lambda r: flat(MAT["iron"][3], r, (MAT["iron"][2], MAT["iron"][4])))
+    blk("electric_furnace_top", lambda r: furnace_top(r, False))
+    blk("electric_furnace_top_on", lambda r: furnace_top(rng_for("block/electric_furnace_top"), True))
+    blk("metal_press_top", press_top)
+    blk("alloy_smelter_top", funnel_top)
+    blk("assembler_top", lambda r: glass_top(r, False))
+    blk("assembler_top_on", lambda r: glass_top(rng_for("block/assembler_top"), True))
+    blk("burner_press_top", lambda r: hopper_top(BRONZE_T, r, "burner_press", [SOOT[0], SOOT[1], "#2A2A2E"]))
+    blk("alloy_smelter_front", lambda r: alloy_smelter_front(r, False))
+    blk("alloy_smelter_front_on", lambda r: alloy_smelter_front(rng_for("block/alloy_smelter_front"), True))
+    blk("alloy_smelter_crucible", crucible_side)
+    blk("alloy_smelter_crucible_top", lambda r: crucible_top(False, MAT["copper"]))
+    blk("alloy_smelter_crucible_top_on", lambda r: crucible_top(True, MAT["copper"]))
+    blk("assembler_front", lambda r: assembler_front(r, False))
+    blk("assembler_front_on", lambda r: assembler_front(rng_for("block/assembler_front"), True))
+    blk("assembler_arm", lambda r: flat("#E8861C", r, ("#B8600E", "#FFB040")))
+    blk("assembler_joint", lambda r: flat(IRON[2], r, (IRON[3], IRON[1])))
+    blk("assembler_work", lambda r: flat(PCB[1][2], r, (PCB[1][1], "#E8C040")))
+    blk("combustion_generator_front", lambda r: combustion_front(r, False))
+    blk("combustion_generator_front_on", lambda r: combustion_front(rng_for("block/combustion_generator_front"), True))
+    blk("combustion_generator_top", lambda r: hopper_top(STEEL_T, r, "combustion_generator", [SOOT[0], SOOT[1], "#2A2A2E"]))
+    blk("combustion_generator_slat", lambda r: press_head(STEEL_T.frame))
+    blk("auto_farmer_front", lambda r: auto_farmer_front(r, False))
+    blk("auto_farmer_front_on", lambda r: auto_farmer_front(rng_for("block/auto_farmer_front"), True))
+    blk("auto_farmer_top", lambda r: auto_farmer_top(r, False))
+    blk("auto_farmer_top_on", lambda r: auto_farmer_top(rng_for("block/auto_farmer_top"), True))
+    blk("auto_farmer_side", auto_farmer_side)
+    blk("auto_farmer_tine", lambda r: rod_tex(STEEL_T.frame))
+    blk("solar_panel_top", solar_top)
+    blk("solar_panel_side", solar_side)
+    for cell, n in ENERGY_CELLS.items():
+        T = TIERS[n]
+        blk(cell + "_front", lambda r, T=T, cell=cell: cell_front(T, r, False, cell))
+        blk(cell + "_front_on", lambda r, T=T, cell=cell: cell_front(T, rng_for("block/%s_front" % cell), True, cell))
+        blk(cell + "_side", lambda r, T=T, cell=cell: cell_side(T, r, False, cell))
+        blk(cell + "_top", lambda r, T=T: cell_top(T, r))
+        blk(cell + "_bottom", lambda r, T=T: casing_bottom(T, r))
+        blk(cell + "_inner", lambda r, T=T: inner_tex(mix(T.frame[4], VOID, 0.3), r))
+
+    # ---- automation age
+    blk("miner_side", lambda r: miner_side_tex(r, False))
+    ani("miner_side_on", [miner_side_tex(rng_for("block/miner_side"), True, p / 4.0) for p in range(4)], 4)
+    blk("miner_top", lambda r: miner_top(ALU_T, r))
+    blk("miner_bottom", lambda r: miner_bottom(ALU_T, r))
+    blk("geothermal_generator_front", lambda r: geo_front(r, False))
+    ani("geothermal_generator_front_on",
+        [geo_front(rng_for("block/geothermal_generator_front"), True, p) for p in range(8)], 6)
+    blk("geothermal_generator_side", lambda r: geo_side(r, False))
+    ani("geothermal_generator_side_on",
+        [geo_side(rng_for("block/geothermal_generator_side"), True, p) for p in range(8)], 6)
+    blk("geothermal_generator_top", lambda r: casing_top(ALU_T, r))
+    blk("geothermal_generator_bottom", basalt)
+    blk("geothermal_generator_bar", lambda r: rod_tex(IRON))
+
+    # ---- crates
+    blk("wooden_crate_side", lambda r: crate_face(r, False, False))
+    blk("wooden_crate_top", lambda r: crate_face(r, True, False))
+    blk("bronze_crate_side", lambda r: crate_face(r, False, True))
+    blk("bronze_crate_top", lambda r: crate_face(r, True, True))
+
+    # ---- conduits: one colour per stage, like v1
+    for name, n in CABLE_TIERS.items():
+        blk(name, lambda r, n=n: power_cable(TIERS[n], r))
+    for name, n in PIPE_TIERS.items():
+        blk(name, lambda r, n=n: item_pipe(TIERS[n], r))
     blk("item_pipe_extract", item_pipe_extract)
+
+    # ---- ender anchor / beacon
+    ani("ender_anchor_fluid", [ender_fluid_frame(p) for p in range(8)], 4)
+    blk("ender_anchor_frame", ender_anchor_frame)
+    blk("ender_beacon_side", ender_beacon_side)
+    blk("ender_beacon_top", lambda r: ender_beacon_top(r, False))
+    blk("ender_beacon_top_on", lambda r: ender_beacon_top(r, True))
 
     # ---- world & storage blocks
     blk("tin_ore", lambda r: ore_block("tin", False))
     blk("deepslate_tin_ore", lambda r: ore_block("tin", True))
     blk("bauxite_ore", lambda r: ore_block("bauxite", False))
-    blk("deepslate_bauxite_ore", lambda r: ore_block("bauxite", True))
     blk("deepslate_titanium_ore", lambda r: ore_block("titanium", True))
     for metal in METALS:
         blk("%s_block" % metal, lambda r, metal=metal: storage_block(MAT[metal], r, glow=metal == "quantum_alloy"))
@@ -1673,8 +2712,12 @@ def build():
     for metal in METALS:
         veins = QUANTUM_VEINS if metal == "quantum_alloy" else None
         itm("%s_ingot" % metal, lambda r, metal=metal, veins=veins: ingot(MAT[metal], veins))
+    itm("coke", coke_item)
+    itm("fire_clay", fire_clay)
+    itm("fire_brick", fire_brick_item)
     itm("silicon", lambda r: silicon_chunk())
     itm("silicon_wafer", lambda r: silicon_wafer())
+    itm("ender_dust", ender_dust)
 
     # ---- items: parts
     for metal in ["iron", "copper", "tin", "bronze", "steel", "aluminum", "titanium"]:
@@ -1687,28 +2730,51 @@ def build():
     itm("gold_wire", lambda r: wire_spool(MAT["gold"]))
     for kind in ["plate", "gear", "rod", "wire"]:
         itm("%s_mold" % kind, lambda r, kind=kind: mold(kind))
-    for T in TIER_ORDER:
-        itm("%s_circuit" % T.name, lambda r, T=T: circuit(T.n))
-    for T in TIER_ORDER:
-        itm("%s_machine_frame" % T.name, lambda r, T=T: machine_frame(T))
+    itm("basic_circuit", lambda r: circuit(1))
+    itm("advanced_circuit", lambda r: circuit(3))
+    itm("machine_frame", lambda r: lattice_frame(list(reversed(STEEL_T.frame)), thick=2, bolts=True))
+    itm("advanced_machine_frame", lambda r: lattice_frame(list(reversed(TIERS[3].frame)), thick=3, bolts=True))
     itm("motor", lambda r: motor())
     itm("heating_coil", lambda r: heating_coil())
+    itm("orbital_targeting_core", lambda r: orbital_targeting_core())
+    itm("recall_charm", lambda r: recall_charm())
 
     # ---- items: upgrades & tools
     itm("speed_upgrade", lambda r: upgrade_card("speed"))
     itm("energy_upgrade", lambda r: upgrade_card("energy"))
     itm("forge_hammer", lambda r: forge_hammer())
     itm("wrench", lambda r: wrench())
-    for T in TIER_ORDER[1:]:
-        itm("%s_upgrade_kit" % T.name, lambda r, T=T: upgrade_kit(T))
+    for kind in ["sword", "pickaxe", "axe", "shovel", "hoe"]:
+        itm("bronze_%s" % kind, lambda r, kind=kind: bronze_tool(kind))
+    itm("electric_drill", lambda r: electric_drill())
     return out
 
 
-def write_all(out):
+# textures drawn by tools/storage_resources.py (never touched here)
+FOREIGN = re.compile(r"^(block|item)/storage_")
+
+
+def write_all(out, prune=False):
     for sub in ("block", "item"):
         os.makedirs(os.path.join(TEX_DIR, sub), exist_ok=True)
     for rel, t in out.items():
         t.image().save(os.path.join(TEX_DIR, rel))
+        meta = os.path.join(TEX_DIR, rel + ".mcmeta")
+        if rel in ANIMATED:
+            with open(meta, "w") as fh:
+                fh.write('{\n  "animation": {\n    "frametime": %d,\n    "interpolate": true\n  }\n}\n'
+                         % ANIMATED[rel])
+        elif os.path.exists(meta):
+            os.remove(meta)
+    removed = []
+    if prune:   # textures a previous version drew that no longer exist (v1 tier set)
+        for sub in ("block", "item"):
+            for f in sorted(os.listdir(os.path.join(TEX_DIR, sub))):
+                rel = "%s/%s" % (sub, f[:-7] if f.endswith(".mcmeta") else f)
+                if (f.endswith(".png") or f.endswith(".mcmeta")) and rel not in out and not FOREIGN.match(rel):
+                    os.remove(os.path.join(TEX_DIR, sub, f))
+                    removed.append("%s/%s" % (sub, f))
+    return removed
 
 
 def contact_sheet(out, path, scale=8, cols=14, filt=None):
@@ -1731,7 +2797,7 @@ def contact_sheet(out, path, scale=8, cols=14, filt=None):
             tile = tile.crop((0, 0, 16, 16))
         tile = tile.resize((16 * scale, 16 * scale), Image.NEAREST)
         img.paste(checker, (cx, cy))
-        img.paste(tile, (cx, cy), tile)
+        img.alpha_composite(tile, (cx, cy))
         label = os.path.basename(name)[:-4]
         if len(label) > 21:
             label = label[:20] + "~"
@@ -1741,10 +2807,12 @@ def contact_sheet(out, path, scale=8, cols=14, filt=None):
 
 def main():
     out = build()
-    write_all(out)
+    removed = write_all(out, prune="--prune" in sys.argv)
     nb = sum(1 for k in out if k.startswith("block/"))
     ni = sum(1 for k in out if k.startswith("item/"))
     print("wrote %d block + %d item textures to %s" % (nb, ni, TEX_DIR))
+    if removed:
+        print("removed %d obsolete files: %s" % (len(removed), ", ".join(removed)))
     if "--no-preview" not in sys.argv:
         contact_sheet(out, PREVIEW)
         print("preview:", PREVIEW)
@@ -1752,6 +2820,11 @@ def main():
         if a.startswith("--sheet="):   # --sheet=<regex>:<path>  debug sheet of a subset
             pat, path = a[len("--sheet="):].split(":", 1)
             contact_sheet(out, path, scale=10, cols=10, filt=lambda k, pat=pat: re.search(pat, k))
+    if "--no-models" not in sys.argv:
+        # machine block models (tools/models/block/*.json) + tools/model_preview.png
+        sys.path.insert(0, os.path.join(ROOT, "tools", "models"))
+        import gen_models
+        gen_models.main([] if "--no-preview" not in sys.argv else ["--no-preview"])
 
 
 if __name__ == "__main__":

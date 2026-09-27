@@ -46,6 +46,8 @@
     "factoryascent:storage_controller",
     "factoryascent:storage_drive",
     "factoryascent:storage_terminal",
-    "factoryascent:storage_interface"
+    "factoryascent:storage_interface",
+    "factoryascent:ender_anchor",
+    "factoryascent:ender_beacon"
   ]
 }

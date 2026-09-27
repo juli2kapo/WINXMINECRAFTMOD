@@ -61,9 +61,16 @@ public final class ModCreativeTabs {
             () -> ModItems.ELECTRIC_DRILL.get(),
             out -> ModItems.TOOLS.values().forEach(t -> out.accept(t.get())));
 
-    public static final Supplier<CreativeModeTab> MATERIALS = tab("materials", "tools",
+    public static final Supplier<CreativeModeTab> MATERIALS = tab("materials", "utility",
             () -> ModItems.MATERIALS.get("bronze_ingot").get(),
             out -> ModItems.MATERIALS.values().forEach(m -> out.accept(m.get())));
+
+    public static final Supplier<CreativeModeTab> UTILITY = tab("utility", "tools",
+            () -> net.juli2kapo.factoryascent.ender.EnderContent.ENDER_ANCHOR.get(),
+            out -> {
+                net.juli2kapo.factoryascent.ender.EnderContent.creativeItems().forEach(i -> out.accept(i.get()));
+                net.juli2kapo.factoryascent.mobs.MobContent.creativeItems().forEach(i -> out.accept(i.get()));
+            });
 
     public static final Supplier<CreativeModeTab> WORLD = tab("world", "materials",
             () -> ModBlocks.SIMPLE.get("tin_ore").get(),

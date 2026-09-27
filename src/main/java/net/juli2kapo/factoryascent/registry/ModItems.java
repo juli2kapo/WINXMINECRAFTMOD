@@ -65,6 +65,7 @@ public final class ModItems {
         material("advanced_circuit");
         material("machine_frame");
         material("advanced_machine_frame");
+        material("orbital_targeting_core");
         for (String mold : new String[]{"plate", "gear", "rod", "wire"}) {
             MOLDS.put(mold + "_mold", ITEMS.registerItem(mold + "_mold", MoldItem::new, p -> p.stacksTo(1)));
         }

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:recall_charm"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:recall_charm"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_recall.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_recall.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

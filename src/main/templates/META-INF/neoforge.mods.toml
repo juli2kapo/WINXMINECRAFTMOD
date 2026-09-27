@@ -22,3 +22,11 @@ type="required"
 versionRange="${minecraft_version_range}"
 ordering="NONE"
 side="BOTH"
+
+# Optional: load after the Orbital Railgun so this mod's recipe for it (Orbital age) replaces its own.
+[[dependencies.${mod_id}]]
+modId="orbital_railgun"
+type="optional"
+versionRange="*"
+ordering="AFTER"
+side="BOTH"

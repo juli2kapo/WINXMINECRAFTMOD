@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " G ",
+    "DED",
+    " C "
+  ],
+  "key": {
+    "G": "#c:ingots/gold",
+    "D": "factoryascent:ender_dust",
+    "E": "minecraft:ender_eye",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:recall_charm"
+  }
+}

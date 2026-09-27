@@ -72,8 +72,19 @@ Refinery multiblock, Teleporter Pads, Power Armour (flight, night vision,
 speed, no fall damage). Storage: Wireless Terminal, 64k cells.
 
 **6 — Orbital.** Launch Pad + Satellite (launch objective), Orbital Uplink,
-Orbital Scanner (shows ores from orbit). Unlocks the Orbital Railgun recipe
-when that mod is installed. Storage: uplink-range wireless.
+Orbital Scanner (shows ores from orbit), Orbital Targeting Core. Storage:
+uplink-range wireless.
+
+When the Orbital Railgun mod is installed, Factory Ascent replaces its recipe with one needing:
+
+- an Orbital Targeting Core (Assembler recipe, grade 6: titanium plates, advanced circuits, an end crystal and echo shards)
+- titanium plates
+- advanced circuits
+- a beacon
+- a spyglass
+
+Factory Ascent declares an optional dependency with `ordering="AFTER"`, so its data pack loads
+after the railgun's and its recipe wins.
 
 **7 — Quantum (EV).** Fusion Reactor multiblock, Matter Replicator (energy →
 ores), Quantum Armour, cross-dimension teleport, Quantum Storage Cell,
@@ -89,9 +100,11 @@ fine-tune machines.
 
 ## Knowing what goes where
 
-- **Tooltip:** hold Shift on any item to see "Used in: Crusher, Ore Washer…".
-- **Machine GUI:** an input with no recipe in that machine gets a red outline
-  and "Not used by this machine". A `?` button lists every accepted input.
+- **Machine GUI:** a panel docked to the left of every processing machine lists everything it
+  accepts as a slot grid. Inputs that need a better machine of the same kind are shown greyed
+  in their own section. Hovering an input shows what it turns into, the byproduct chance, other
+  inputs or the mould, and the time. The `?` button toggles the panel.
+- An input with no recipe in that machine gets a red outline and "Not used by this machine".
 - **JEI:** optional integration with a recipe category per machine.
 
 Recipes are synced to clients (`OnDatapackSyncEvent.sendRecipes`) so this all
@@ -102,6 +115,26 @@ works on dedicated servers.
 One tab, *Factory Ascent*, with a root and seven branches. Breakthroughs use
 the "challenge" frame. Descriptions are written as the next instruction
 ("Grind raw ore in a Quern to get dust"). About 45 advancements in total.
+
+## Ender tech (utility branch)
+
+- **Ender Anchor** (Electric age): a chunk loader. The recipe is glass, a water bucket, an eye of ender and soul sand. It's a glass tank of ender water on a soul-sand base, with an eye of ender that floats and turns while it's awake and sinks when it's asleep.
+  - One ender pearl buys 30 minutes of a 3×3 chunk area. You can feed pearls by hand, hopper or pipe.
+  - Loading goes through a NeoForge `TicketController`, whose tickets are checked against a ledger after every restart.
+  - Limit: 4 per player.
+  - All of these numbers are server config.
+- **Ender Beacon + Recall Charm** (Automation age): a teleporter back home.
+  - The beacon is placed at home and charged with FE, 20k FE per recall.
+  - Sneak-use the charm on the beacon to link it (only the beacon's owner can).
+  - Hold use for 5 s to channel. Taking damage interrupts it.
+  - You land on top of the beacon, then a 60 s cooldown starts.
+  - It works within the same dimension only, until the Quantum age (or the config says otherwise).
+- **Ender Dust:** a Crusher turns 1 ender pearl into 2 dust. It's the shared ingredient.
+
+## Mob tools (Automation age)
+
+- **Mob Capsule:** hold it on a mob for 3 s to trap it (the mob is pinned while the trap forms), then use it on a block to release the mob. Bosses and players can't be captured.
+- **Minimizer / Maximizer rays:** FE guns that halve or double any living thing's size (vanilla `scale` attribute, 0.25×–4×). Shrunk mobs fit through 1-block gaps.
 
 ## The Deep (where the Ore Miner's ore comes from)
 

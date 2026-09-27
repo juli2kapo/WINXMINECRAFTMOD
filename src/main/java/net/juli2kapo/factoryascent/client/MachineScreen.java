@@ -36,9 +36,47 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private static final int ENERGY_X = 8, ENERGY_Y = 17, ENERGY_W = 12, ENERGY_H = 54;
     private static final int BTN_W = 14, BTN_H = 11, BTN_Y = 6;
 
+    /** Remembered while the game runs, like the recipe book. */
+    private static boolean acceptsOpen = true;
+    private @org.jspecify.annotations.Nullable AcceptsPanel accepts;
+    private @org.jspecify.annotations.Nullable Object hoveredCell;
+
     public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, MachineLayout.WIDTH, MachineLayout.HEIGHT);
         this.inventoryLabelY = MachineLayout.PLAYER_INV_Y - 11;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        placeForPanel();
+    }
+
+    private boolean panelShown() {
+        return acceptsOpen && hasRecipeButton();
+    }
+
+    private AcceptsPanel accepts() {
+        if (accepts == null) accepts = new AcceptsPanel(type());
+        return accepts;
+    }
+
+    /** Centres machine GUI + panel together, like the recipe book does. */
+    private void placeForPanel() {
+        int panel = panelShown() ? AcceptsPanel.WIDTH + 2 : 0;
+        leftPos = (width - imageWidth + panel) / 2;
+    }
+
+    private int panelX() {
+        return leftPos - AcceptsPanel.WIDTH - 2;
+    }
+
+    private boolean overPanel(double mx, double my) {
+        return panelShown() && mx >= panelX() && mx < panelX() + AcceptsPanel.WIDTH && my >= topPos && my < topPos + imageHeight;
+    }
+
+    private long gameTick() {
+        return minecraft != null && minecraft.level != null ? minecraft.level.getGameTime() : 0;
     }
 
     private MachineType type() {
@@ -120,7 +158,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         if (hasRecipeButton()) {
             int bx = x + recipeX(), by = y + BTN_Y;
             button(g, bx, by, BTN_W, BTN_H, mouseX, mouseY);
+            if (panelShown()) g.fill(bx + 1, by + BTN_H - 2, bx + BTN_W - 1, by + BTN_H - 1, accent());
         }
+        hoveredCell = panelShown()
+                ? accepts().render(g, font, panelX(), y, imageHeight, accent(), mouseX, mouseY, gameTick())
+                : null;
     }
 
     private void button(GuiGraphicsExtractor g, int bx, int by, int w, int h, int mouseX, int mouseY) {
@@ -129,7 +171,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         g.fill(bx + 1, by + 1, bx + w - 1, by + h - 1, hover ? 0xFFA0A0A0 : 0xFF8B8B8B);
     }
 
-    private static void panel(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+    static void panel(GuiGraphicsExtractor g, int x, int y, int w, int h) {
         g.fill(x + 1, y, x + w - 1, y + h, OUTLINE);
         g.fill(x, y + 1, x + w, y + h - 1, OUTLINE);
         g.fill(x + 1, y + 1, x + w - 1, y + h - 1, BG);
@@ -267,7 +309,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     protected void extractTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         super.extractTooltip(g, mouseX, mouseY);
         MachineType type = type();
-        if (type.usesEnergy() && isHovering(ENERGY_X, ENERGY_Y, ENERGY_W, ENERGY_H, mouseX, mouseY)) {
+        if (hoveredCell != null) {
+            g.setComponentTooltipForNextFrame(font, accepts().tooltip(hoveredCell, gameTick()), mouseX, mouseY);
+        } else if (type.usesEnergy() && isHovering(ENERGY_X, ENERGY_Y, ENERGY_W, ENERGY_H, mouseX, mouseY)) {
             g.setComponentTooltipForNextFrame(font, energyTooltip(), mouseX, mouseY);
         } else if (type.category() == MachineType.Category.PROCESSOR
                 && isHovering(MachineLayout.arrowX(type), MachineLayout.ARROW_Y, 24, 16, mouseX, mouseY)) {
@@ -279,7 +323,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             g.setComponentTooltipForNextFrame(font, List.of(Component.translatable(
                     data().autoEject() ? "gui.factoryascent.eject_on" : "gui.factoryascent.eject_off")), mouseX, mouseY);
         } else if (hasRecipeButton() && isHovering(recipeX(), BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
-            g.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.factoryascent.recipes")), mouseX, mouseY);
+            g.setComponentTooltipForNextFrame(font, List.of(Component.translatable(
+                    panelShown() ? "gui.factoryascent.hide_accepts" : "gui.factoryascent.show_accepts")), mouseX, mouseY);
         } else if (type.power() == MachineType.Power.MANUAL && isHovering(CRANK_X, CRANK_Y, CRANK_W, CRANK_H, mouseX, mouseY)) {
             g.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.factoryascent.crank_hint")), mouseX, mouseY);
         } else if (type.isMultiblock() && data().status() == AbstractMachineBlockEntity.STATUS_INCOMPLETE
@@ -294,7 +339,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                 if (!stack.isEmpty() && !ClientRecipes.accepts(type, stack) && isHovering(p.x(), p.y(), 16, 16, mouseX, mouseY)) {
                     g.setComponentTooltipForNextFrame(font, List.of(
                             Component.translatable("gui.factoryascent.not_accepted").withStyle(ChatFormatting.RED),
-                            Component.translatable("gui.factoryascent.see_recipes").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+                            Component.translatable(panelShown() ? "gui.factoryascent.see_panel" : "gui.factoryascent.see_recipes")
+                                    .withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
                 }
             }
         }
@@ -331,10 +377,25 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                 return true;
             }
             if (hasRecipeButton() && isHovering(recipeX(), BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
-                minecraft.gui.pushScreenLayer(new RecipeListScreen(type()));
+                acceptsOpen = !acceptsOpen;
+                placeForPanel();
                 return true;
             }
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (overPanel(x, y)) {
+            accepts().scroll(scrollY, imageHeight);
+            return true;
+        }
+        return super.mouseScrolled(x, y, scrollX, scrollY);
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
+        return super.hasClickedOutside(mx, my, xo, yo) && !overPanel(mx, my);
     }
 }

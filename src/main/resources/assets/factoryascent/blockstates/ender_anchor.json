@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "enabled=false": {
+      "model": "factoryascent:block/ender_anchor"
+    },
+    "enabled=true": {
+      "model": "factoryascent:block/ender_anchor"
+    }
+  }
+}

@@ -68,6 +68,8 @@ public class FactoryBlockItem extends BlockItem {
             tooltip.accept(line("pipe_hint").withStyle(ChatFormatting.DARK_GRAY));
         } else if (block instanceof net.juli2kapo.factoryascent.storage.CrateBlock crate) {
             tooltip.accept(line("crate", crate.rows() * 9));
+        } else if (block instanceof DescribedBlock described) {
+            described.describe(tooltip);
         }
     }
 }
