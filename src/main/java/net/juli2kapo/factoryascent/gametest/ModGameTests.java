@@ -64,7 +64,10 @@ public final class ModGameTests {
             new Test("storage_interface_round_trip", 60, ModGameTests::storageInterfaceRoundTrip),
             new Test("storage_cell_keeps_contents", 60, ModGameTests::storageCellKeepsContents),
             new Test("ender_anchor_burns_pearls", 80, ModGameTests::enderAnchorBurnsPearls),
-            new Test("recall_charm_teleports_home", 40, ModGameTests::recallCharmTeleportsHome)
+            new Test("recall_charm_teleports_home", 40, ModGameTests::recallCharmTeleportsHome),
+            new Test("mob_capsule_round_trip", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::capsuleRoundTrip),
+            new Test("mob_capsule_refuses_blacklisted", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::capsuleRefusesBlacklisted),
+            new Test("size_rays_scale_mobs", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::sizeRays)
     );
 
     private ModGameTests() {}
