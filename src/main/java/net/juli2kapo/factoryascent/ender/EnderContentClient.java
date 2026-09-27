@@ -40,8 +40,11 @@ public final class EnderContentClient {
      */
     static final class AnchorRenderer implements BlockEntityRenderer<EnderAnchorBlockEntity, AnchorState> {
         private final ItemModelResolver items;
-        /** Created with the renderer: an ItemStack can't exist before item components are bound. */
-        private final ItemStack eye = new ItemStack(Items.ENDER_EYE);
+        /**
+         * Made on first render: renderers are built during resource loading, before item
+         * components are bound, and an ItemStack can't exist before that.
+         */
+        private @Nullable ItemStack eye;
 
         AnchorRenderer(BlockEntityRendererProvider.Context context) {
             this.items = context.itemModelResolver();
@@ -58,6 +61,7 @@ public final class EnderContentClient {
             BlockEntityRenderer.super.extractRenderState(anchor, state, partialTicks, camera, breakProgress);
             state.active = anchor.getBlockState().getValue(EnderAnchorBlock.ACTIVE);
             state.time = anchor.getLevel() == null ? 0 : (anchor.getLevel().getGameTime() % 24000L) + partialTicks;
+            if (eye == null) eye = new ItemStack(Items.ENDER_EYE);
             items.updateForTopItem(state.eye, eye, ItemDisplayContext.FIXED, anchor.getLevel(), null,
                     (int) anchor.getBlockPos().asLong());
         }
