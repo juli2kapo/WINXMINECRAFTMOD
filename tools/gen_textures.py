@@ -1745,7 +1745,9 @@ def hpress_top(rng):
     t = ti_face(rng)
     F = TITAN_T.frame
     for (cx, cy) in ((5.5, 8.0), (10.5, 8.0)):
-        for (x, y) in sorted(disc_mask(cx, cy, 2.8)):
+        for (x, y) in sorted(disc_mask(cx, cy, 3.3)):
+            t.set(x, y, F[4])
+        for (x, y) in sorted(disc_mask(cx, cy, 2.6)):
             dx, dy = x + 0.5 - cx, y + 0.5 - cy
             t.set(x, y, F[0] if dx + dy < -1.8 else F[1] if dx + dy < 0.8 else F[3])
         t.set(int(cx), int(cy), F[4])
@@ -1875,9 +1877,9 @@ def plasma_front(rng, on, phase=0):
                 if dx == 0:
                     c = "#F4FFFF"
                 elif dx == 1:
-                    c = CYAN_GLOW[2]
+                    c = mix(c, CYAN_GLOW[2], 0.7)
                 elif dx == 2:
-                    c = mix(c, VIOLET_GLOW[2], 0.6)
+                    c = mix(c, VIOLET_GLOW[2], 0.4)
         else:
             c = mix("#2A1840", "#0C0814", min(1.0, d))
         t.set(u, v, c)
