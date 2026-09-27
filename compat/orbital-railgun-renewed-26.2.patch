@@ -1,0 +1,260 @@
+diff --git a/README.md b/README.md
+index 6159042..b9552db 100644
+--- a/README.md
++++ b/README.md
+@@ -4,7 +4,7 @@
+ 
+ An **unofficial NeoForge port** of the [Orbital Railgun](https://modrinth.com/mod/orbital-railgun) mod by [Mishkis](https://github.com/Mishkis/orbital-railgun) (MIT).
+ 
+-Craft the Orbital Railgun, aim anywhere within 300 blocks, and call down a devastating orbital strike: a full-screen targeting shader, a beam from the sky, and a 24-block-radius crater carved down to bedrock.
++Craft the Orbital Railgun, aim anywhere within 300 blocks, and call down a devastating orbital strike: a full-screen targeting shader, a beam from the sky, and a 24-block-radius crater carved down to (but not through) bedrock. It will still wreck End portals.
+ 
+ ## Versions
+ 
+diff --git a/build.gradle b/build.gradle
+index d6b19bc..59654c6 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,6 +1,6 @@
+ plugins {
+     id 'java'
+-    id 'net.neoforged.moddev' version '2.0.141'
++    id 'net.neoforged.moddev' version '2.0.147'
+ }
+ 
+ version = "${mod_version}+mc${minecraft_version}"
+diff --git a/gradle.properties b/gradle.properties
+index e7869b8..fd71ab4 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -7,7 +7,7 @@ maven_group=io.github.mishkis
+ archives_base_name=orbital_railgun
+ 
+ # Dependencies
+-minecraft_version=26.1
+-neo_version=26.1.2.75
+-# Modrinth version id of geckolib-neoforge-26.1-5.5.jar (cloudsmith maven has no 26.1 builds)
+-geckolib_version=ScUAwGRA
++minecraft_version=26.2
++neo_version=26.2.0.88
++# Modrinth version id of GeckoLib 5.5.6 for NeoForge 26.2 (cloudsmith maven has no 26.x builds)
++geckolib_version=IEGPh4CJ
+diff --git a/gradlew b/gradlew
+old mode 100644
+new mode 100755
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java b/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java
+index 6ca2ff2..7de84ca 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java
+@@ -1,5 +1,6 @@
+ package io.github.mishkis.orbital_railgun.client;
+ 
++import net.minecraft.world.phys.Vec3;
+ import io.github.mishkis.orbital_railgun.client.rendering.OrbitalRailgunShader;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.core.BlockPos;
+@@ -11,7 +12,7 @@ public class OrbitalRailgunClientHooks {
+             return;
+         }
+ 
+-        OrbitalRailgunShader.INSTANCE.BlockPosition = blockPos.getCenter().toVector3f();
++        OrbitalRailgunShader.INSTANCE.BlockPosition = Vec3.atCenterOf(blockPos).toVector3f();
+         OrbitalRailgunShader.INSTANCE.Dimension = minecraft.level.dimension();
+     }
+ }
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/client/mixin/MinecraftMixin.java b/src/main/java/io/github/mishkis/orbital_railgun/client/mixin/MinecraftMixin.java
+index 87d26ca..f9e6662 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/client/mixin/MinecraftMixin.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/client/mixin/MinecraftMixin.java
+@@ -1,5 +1,6 @@
+ package io.github.mishkis.orbital_railgun.client.mixin;
+ 
++import net.minecraft.world.phys.Vec3;
+ import io.github.mishkis.orbital_railgun.client.rendering.OrbitalRailgunGuiShader;
+ import io.github.mishkis.orbital_railgun.client.rendering.OrbitalRailgunShader;
+ import io.github.mishkis.orbital_railgun.item.OrbitalRailgunItem;
+@@ -34,7 +35,7 @@ public class MinecraftMixin {
+             if (hitResult != null && hitResult.getType() != HitResult.Type.MISS && hitResult instanceof BlockHitResult blockHitResult) {
+                 this.gameMode.releaseUsingItem(this.player);
+                 orbitalRailgun.shoot(this.player);
+-                OrbitalRailgunShader.INSTANCE.BlockPosition = blockHitResult.getBlockPos().getCenter().toVector3f();
++                OrbitalRailgunShader.INSTANCE.BlockPosition = Vec3.atCenterOf(blockHitResult.getBlockPos()).toVector3f();
+                 OrbitalRailgunShader.INSTANCE.Dimension = player.level().dimension();
+ 
+                 ClientPacketDistributor.sendToServer(new ShootPayload(blockHitResult.getBlockPos()));
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java b/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java
+index 97fcad2..3e9c7d8 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java
+@@ -126,6 +126,6 @@ public abstract class AbstractOrbitalRailgunShader {
+             previous.close();
+         }
+ 
+-        chain.process(client.getMainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
++        chain.process(client.gameRenderer.mainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
+     }
+ }
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/OrbitalRailgunGuiShader.java b/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/OrbitalRailgunGuiShader.java
+index 0ad6228..2351fb1 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/OrbitalRailgunGuiShader.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/OrbitalRailgunGuiShader.java
+@@ -1,5 +1,6 @@
+ package io.github.mishkis.orbital_railgun.client.rendering;
+ 
++import net.minecraft.world.phys.Vec3;
+ import io.github.mishkis.orbital_railgun.OrbitalRailgun;
+ import io.github.mishkis.orbital_railgun.item.OrbitalRailgunItem;
+ import io.github.mishkis.orbital_railgun.sound.OrbitalRailgunSounds;
+@@ -36,9 +37,9 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
+             if (ticks == 0) {
+                 client.getSoundManager().play(SimpleSoundInstance.forUI(OrbitalRailgunSounds.SCOPE_ON.get(), 1.0f));
+             }
+-            this.client.options.hideGui = true;
++            if (!this.client.gui.hud.isHidden()) this.client.gui.hud.toggle();
+         } else if (ticks != 0) {
+-            this.client.options.hideGui = false;
++            if (this.client.gui.hud.isHidden()) this.client.gui.hud.toggle();
+         }
+     }
+ 
+@@ -48,11 +49,11 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
+         switch (hitResult.getType()) {
+             case BLOCK:
+                 isBlockHit = 1f;
+-                hitPosition = ((BlockHitResult) hitResult).getBlockPos().getCenter().toVector3f();
++                hitPosition = Vec3.atCenterOf(((BlockHitResult) hitResult).getBlockPos()).toVector3f();
+                 break;
+             case ENTITY:
+                 isBlockHit = 1f;
+-                hitPosition = ((EntityHitResult) hitResult).getEntity().blockPosition().getCenter().toVector3f();
++                hitPosition = Vec3.atCenterOf(((EntityHitResult) hitResult).getEntity().blockPosition()).toVector3f();
+                 break;
+             case MISS:
+                 isBlockHit = 0f;
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/network/OrbitalRailgunNetwork.java b/src/main/java/io/github/mishkis/orbital_railgun/network/OrbitalRailgunNetwork.java
+index e1ae6f2..f7a5f03 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/network/OrbitalRailgunNetwork.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/network/OrbitalRailgunNetwork.java
+@@ -1,5 +1,6 @@
+ package io.github.mishkis.orbital_railgun.network;
+ 
++import net.minecraft.world.phys.Vec3;
+ import io.github.mishkis.orbital_railgun.client.OrbitalRailgunClientHooks;
+ import io.github.mishkis.orbital_railgun.item.OrbitalRailgunItems;
+ import io.github.mishkis.orbital_railgun.sound.OrbitalRailgunSounds;
+@@ -36,7 +37,7 @@ public class OrbitalRailgunNetwork {
+ 
+             serverPlayer.level().playSound(null, blockPos, OrbitalRailgunSounds.RAILGUN_SHOOT.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
+ 
+-            List<Entity> nearby = serverPlayer.level().getEntities(serverPlayer, AABB.ofSize(blockPos.getCenter(), 500., 500., 500.));
++            List<Entity> nearby = serverPlayer.level().getEntities(serverPlayer, AABB.ofSize(Vec3.atCenterOf(blockPos), 500., 500., 500.));
+             nearby.add(serverPlayer);
+             OrbitalRailgunStrikeManager.activeStrikes.add(new OrbitalRailgunStrikeManager.Strike(blockPos, nearby, serverPlayer.level().getServer().getTickCount(), serverPlayer.level().dimension()));
+ 
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java b/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java
+index 1c8bd0f..7028d02 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java
+@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.state.BlockState;
+ import net.minecraft.world.phys.Vec3;
+ import org.joml.Vector2i;
+ 
+@@ -48,7 +49,7 @@ public class OrbitalRailgunStrikeManager {
+ 
+                 DamageSource damageSource = level.damageSources().source(STRIKE_DAMAGE);
+                 strike.entities().forEach(entity -> {
+-                    if (entity.level().dimension() == dimension && entity.position().subtract(blockPos.getCenter()).lengthSqr() <= RADIUS_SQUARED) {
++                    if (entity.level().dimension() == dimension && entity.position().subtract(Vec3.atCenterOf(blockPos)).lengthSqr() <= RADIUS_SQUARED) {
+                         entity.hurtServer(level, damageSource, 100000f);
+                     }
+                 });
+@@ -60,7 +61,7 @@ public class OrbitalRailgunStrikeManager {
+                         return;
+                     }
+                     if (entity.level().dimension() == dimension) {
+-                        Vec3 dir = blockPos.getCenter().subtract(entity.position());
++                        Vec3 dir = Vec3.atCenterOf(blockPos).subtract(entity.position());
+                         double mag = Math.min(1. / Math.abs(dir.length() - 20.) * 4. * (age - 400.) / 300., 5.);
+                         dir = dir.normalize();
+ 
+@@ -77,7 +78,14 @@ public class OrbitalRailgunStrikeManager {
+             for (int x = -RADIUS; x <= RADIUS; x++) {
+                 for (int z = -RADIUS; z <= RADIUS; z++) {
+                     if (mask[x + RADIUS][z + RADIUS]) {
+-                        level.setBlockAndUpdate(new BlockPos(origin.getX() + x, y, origin.getZ() + z), Blocks.AIR.defaultBlockState());
++                        BlockPos pos = new BlockPos(origin.getX() + x, y, origin.getZ() + z);
++                        BlockState state = level.getBlockState(pos);
++                        // Leave air alone and never break unbreakable blocks (bedrock, barriers, command blocks...),
++                        // except the End portal: its frames and the portal itself do get blasted away.
++                        if (state.isAir()) continue;
++                        boolean endPortal = state.is(Blocks.END_PORTAL_FRAME) || state.is(Blocks.END_PORTAL);
++                        if (!endPortal && state.getDestroySpeed(level, pos) < 0) continue;
++                        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                     }
+                 }
+             }
+diff --git a/src/main/resources/META-INF/neoforge.mods.toml b/src/main/resources/META-INF/neoforge.mods.toml
+index 26bb72e..cd2a608 100644
+--- a/src/main/resources/META-INF/neoforge.mods.toml
++++ b/src/main/resources/META-INF/neoforge.mods.toml
+@@ -8,7 +8,8 @@ modId = "orbital_railgun"
+ version = "${file.jarVersion}"
+ displayName = "Orbital Railgun: Renewed"
+ description = '''Adds an Orbital Railgun to the game! Unofficial NeoForge port of the mod by Mishkis.'''
+-logoFile = "assets/orbital_railgun/icon.png"
++bannerFile = "assets/orbital_railgun/icon.png"
++iconFile = "assets/orbital_railgun/icon.png"
+ authors = "Mishkis"
+ credits = "Original mod by Mishkis; unofficial NeoForge port by Rayness"
+ displayURL = "https://github.com/Mishkis/orbital-railgun"
+@@ -16,14 +17,14 @@ displayURL = "https://github.com/Mishkis/orbital-railgun"
+ [[dependencies.orbital_railgun]]
+ modId = "neoforge"
+ type = "required"
+-versionRange = "[26.1,)"
++versionRange = "[26.2,)"
+ ordering = "NONE"
+ side = "BOTH"
+ 
+ [[dependencies.orbital_railgun]]
+ modId = "minecraft"
+ type = "required"
+-versionRange = "[26.1,26.2)"
++versionRange = "[26.2,26.3)"
+ ordering = "NONE"
+ side = "BOTH"
+ 
+diff --git a/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json b/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json
+index 0b38fae..b9c756d 100644
+--- a/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json
++++ b/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json
+@@ -2,18 +2,16 @@
+   "type": "minecraft:crafting_shaped",
+   "category": "equipment",
+   "key": {
+-    "B": "minecraft:netherite_block",
+     "N": "minecraft:netherite_ingot",
+-    "S": "minecraft:nether_star",
+-    "R": "minecraft:redstone",
+-    "E": "minecraft:emerald",
+-    "L": "minecraft:lapis_lazuli",
+-    "G": "minecraft:glass_pane"
++    "E": "minecraft:end_crystal",
++    "C": "minecraft:echo_shard",
++    "B": "minecraft:beacon",
++    "S": "minecraft:spyglass"
+   },
+   "pattern": [
+-    "GNE",
+-    "SBN",
+-    "LR "
++    "NEN",
++    "CBC",
++    "NSN"
+   ],
+   "result": {
+     "count": 1,
