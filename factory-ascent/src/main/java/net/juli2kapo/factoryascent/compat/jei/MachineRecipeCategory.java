@@ -92,13 +92,20 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<RecipeHolder<Ma
         builder.addText(Component.translatable("gui.factoryascent.jei_time", seconds), WIDTH, 9)
                 .setPosition(0, 27).setColor(0xFF606060);
 
+        recipe.byproduct().ifPresent(chance -> builder.addText(
+                        Component.literal(Math.round(chance.chance() * 100) + "%"), 18, 9)
+                .setPosition(Math.max(x, 36) + 51, 25).setColor(0xFFB07000));
+
         MachineType weakest = weakestFor(kind, recipe.minGrade());
         MachineType first = machines(kind).getFirst();
         if (weakest != first) {
             Component needs = weakest == null
                     ? Component.translatable("gui.factoryascent.jei_needs_later")
                     : Component.translatable("gui.factoryascent.jei_needs", ModBlocks.machine(weakest).get().getName());
-            builder.addText(needs, WIDTH, 9).setPosition(0, 37).setColor(0xFFA02020);
+            Component full = weakest == null
+                    ? Component.translatable("gui.factoryascent.jei_needs_later_long", recipe.minGrade())
+                    : Component.translatable("gui.factoryascent.jei_needs_long", ModBlocks.machine(weakest).get().getName());
+            builder.addText(needs, WIDTH, 9).setPosition(0, 37).setColor(0xFFA02020).setTooltip(full);
         }
     }
 }
