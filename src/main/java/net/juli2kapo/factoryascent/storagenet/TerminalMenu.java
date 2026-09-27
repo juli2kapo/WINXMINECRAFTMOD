@@ -32,8 +32,21 @@ public class TerminalMenu extends AbstractContainerMenu {
     public static final int PLAYER_INV_Y = 150;
     public static final int SYNC_INTERVAL = 10;
 
-    private final StorageTerminalBlockEntity terminal;
+    /**
+     * Null only on the client when the menu was opened remotely and the terminal's chunk isn't
+     * loaded there (see {@link #fromNetwork}); the client-side menu never touches it.
+     */
+    private final @org.jspecify.annotations.Nullable StorageTerminalBlockEntity terminal;
     private final Player player;
+    /** Opened from afar (orbital Wireless Terminal): {@link #stillValid} may skip the distance check. */
+    private final boolean remote;
+
+    /**
+     * Orbital hook: may this player keep using this terminal from any distance? The orbital
+     * package sets it (linked Wireless Terminal in hand + uplink coverage); storagenet itself
+     * never grants remote access.
+     */
+    public static java.util.function.BiPredicate<Player, StorageTerminalBlockEntity> remoteAccess = (p, t) -> false;
 
     // ---- server-side sync state
     private final Map<ItemResource, Long> sent = new HashMap<>();
@@ -51,8 +64,15 @@ public class TerminalMenu extends AbstractContainerMenu {
     private record Stats(int status, long used, long capacity, int types, int maxTypes) {}
 
     public TerminalMenu(int id, Inventory playerInventory, StorageTerminalBlockEntity terminal) {
+        this(id, playerInventory, terminal, false);
+    }
+
+    /** {@code remote}: opened by the orbital Wireless Terminal, see {@link #remoteAccess}. */
+    public TerminalMenu(int id, Inventory playerInventory, @org.jspecify.annotations.Nullable StorageTerminalBlockEntity terminal,
+                        boolean remote) {
         super(StorageContent.TERMINAL_MENU.get(), id);
         this.terminal = terminal;
+        this.remote = remote;
         this.player = playerInventory.player;
         addStandardInventorySlots(playerInventory, 8, PLAYER_INV_Y);
     }
@@ -62,12 +82,17 @@ public class TerminalMenu extends AbstractContainerMenu {
         if (playerInventory.player.level().getBlockEntity(pos) instanceof StorageTerminalBlockEntity terminal) {
             return new TerminalMenu(id, playerInventory, terminal);
         }
-        throw new IllegalStateException("No storage terminal at " + pos);
+        // Orbital Wireless Terminal: the terminal may be far outside the client's loaded area. The
+        // client-side menu only shows what the server syncs, so it doesn't need the block entity.
+        return new TerminalMenu(id, playerInventory, null, true);
     }
 
     @Override
     public boolean stillValid(Player player) {
-        return Container.stillValidBlockEntity(terminal, player);
+        if (terminal == null) return true; // client-side remote view; the server decides
+        if (Container.stillValidBlockEntity(terminal, player)) return true;
+        // Orbital hook: a remote session stays open while the orbital package allows it.
+        return remote && !terminal.isRemoved() && remoteAccess.test(player, terminal);
     }
 
     // ================================================================ server: sync
