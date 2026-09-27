@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/bronze",
+    "C": "factoryascent:wooden_crate"
+  },
+  "result": {
+    "id": "factoryascent:bronze_crate"
+  }
+}

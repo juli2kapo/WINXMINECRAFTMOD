@@ -2,14 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ARA",
-    "RCR",
-    "ARA"
+    "RWR",
+    "WCW",
+    "RWR"
   ],
   "key": {
-    "A": "#c:plates/aluminum",
     "R": "minecraft:redstone",
-    "C": "factoryascent:reinforced_circuit"
+    "W": "#c:wires/gold",
+    "C": "factoryascent:basic_circuit"
   },
   "result": {
     "id": "factoryascent:speed_upgrade",

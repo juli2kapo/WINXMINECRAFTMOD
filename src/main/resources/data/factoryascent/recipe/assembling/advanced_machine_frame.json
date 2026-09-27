@@ -2,7 +2,7 @@
   "type": "factoryascent:assembling",
   "ingredients": [
     {
-      "ingredient": "factoryascent:reinforced_machine_frame",
+      "ingredient": "factoryascent:machine_frame",
       "count": 1
     },
     {
@@ -22,5 +22,5 @@
     "id": "factoryascent:advanced_machine_frame"
   },
   "time": 160,
-  "min_tier": 2
+  "min_grade": 3
 }

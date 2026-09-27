@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/orientable_with_bottom",
-  "textures": {
-    "front": "factoryascent:block/advanced_alloy_smelter_front",
-    "side": "factoryascent:block/casing_advanced_side",
-    "top": "factoryascent:block/casing_advanced_top",
-    "bottom": "factoryascent:block/casing_advanced_bottom"
-  }
-}

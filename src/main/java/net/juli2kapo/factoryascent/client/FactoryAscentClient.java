@@ -20,7 +20,8 @@ public final class FactoryAscentClient {
     public FactoryAscentClient(IEventBus modBus) {
         modBus.addListener(FactoryAscentClient::registerScreens);
         net.juli2kapo.factoryascent.storagenet.StorageNetworkClient.register(modBus);
-        NeoForge.EVENT_BUS.addListener(ClientRecipes::onRecipesReceived);
+        // Before JEI reads the recipes on the same event.
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ClientRecipes::onRecipesReceived);
         NeoForge.EVENT_BUS.addListener(FactoryAscentClient::onTooltip);
     }
 

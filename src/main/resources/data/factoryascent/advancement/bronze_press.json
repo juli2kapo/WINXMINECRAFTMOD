@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:burner_press"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:burner_press"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_press.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_press.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_bronze"
+}

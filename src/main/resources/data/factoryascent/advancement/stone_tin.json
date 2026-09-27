@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:raw_tin"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:raw_tin"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.stone_tin.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.stone_tin.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:stone_hammer"
+}

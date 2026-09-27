@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CXC",
+    "CCC"
+  ],
+  "key": {
+    "C": "factoryascent:copper_cable",
+    "X": "#c:ingots/aluminum"
+  },
+  "result": {
+    "id": "factoryascent:aluminum_cable",
+    "count": 8
+  }
+}

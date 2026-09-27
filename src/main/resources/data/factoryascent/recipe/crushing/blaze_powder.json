@@ -10,5 +10,6 @@
     "id": "minecraft:blaze_powder",
     "count": 4
   },
-  "time": 20
+  "time": 20,
+  "min_grade": 2
 }

@@ -10,12 +10,13 @@
       "count": 2
     },
     {
-      "ingredient": "#c:plates/iron",
+      "ingredient": "#c:plates/steel",
       "count": 1
     }
   ],
   "result": {
     "id": "factoryascent:basic_circuit"
   },
-  "time": 80
+  "time": 80,
+  "min_grade": 3
 }

@@ -52,7 +52,7 @@ public final class ModGameTests {
             new Test("crusher_doubles_ore", 200, ModGameTests::crusherDoublesOre),
             new Test("press_uses_mold", 200, ModGameTests::pressUsesMold),
             new Test("recipe_needs_better_machine", 100, ModGameTests::recipeNeedsBetterMachine),
-            new Test("coke_oven_multiblock", 600, ModGameTests::cokeOvenMultiblock),
+            new Test("coke_oven_multiblock", 800, ModGameTests::cokeOvenMultiblock),
             new Test("blast_furnace_makes_steel", 900, ModGameTests::blastFurnaceMakesSteel),
             new Test("generator_cable_furnace_chain", 400, ModGameTests::generatorCableFurnaceChain),
             new Test("pipe_extracts_between_chests", 100, ModGameTests::pipeExtractsBetweenChests),

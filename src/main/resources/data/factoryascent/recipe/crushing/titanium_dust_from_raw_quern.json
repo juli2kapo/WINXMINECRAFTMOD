@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:raw_materials/titanium",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:titanium_dust"
+  },
+  "time": 40,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:titanium_dust"
+    },
+    "chance": 0.5
+  }
+}

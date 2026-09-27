@@ -10,5 +10,6 @@
     "id": "factoryascent:aluminum_plate"
   },
   "time": 40,
+  "min_grade": 3,
   "mold": "factoryascent:plate_mold"
 }

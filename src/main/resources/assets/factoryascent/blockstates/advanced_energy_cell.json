@@ -4,14 +4,14 @@
       "model": "factoryascent:block/advanced_energy_cell"
     },
     "active=true,facing=north": {
-      "model": "factoryascent:block/advanced_energy_cell"
+      "model": "factoryascent:block/advanced_energy_cell_on"
     },
     "active=false,facing=east": {
       "model": "factoryascent:block/advanced_energy_cell",
       "y": 90
     },
     "active=true,facing=east": {
-      "model": "factoryascent:block/advanced_energy_cell",
+      "model": "factoryascent:block/advanced_energy_cell_on",
       "y": 90
     },
     "active=false,facing=south": {
@@ -19,7 +19,7 @@
       "y": 180
     },
     "active=true,facing=south": {
-      "model": "factoryascent:block/advanced_energy_cell",
+      "model": "factoryascent:block/advanced_energy_cell_on",
       "y": 180
     },
     "active=false,facing=west": {
@@ -27,7 +27,7 @@
       "y": 270
     },
     "active=true,facing=west": {
-      "model": "factoryascent:block/advanced_energy_cell",
+      "model": "factoryascent:block/advanced_energy_cell_on",
       "y": 270
     }
   }

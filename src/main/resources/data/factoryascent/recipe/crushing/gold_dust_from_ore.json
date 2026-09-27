@@ -10,5 +10,12 @@
     "id": "factoryascent:gold_dust",
     "count": 3
   },
-  "time": 80
+  "time": 80,
+  "min_grade": 3,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:copper_dust"
+    },
+    "chance": 0.1
+  }
 }

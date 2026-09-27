@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:burner_crusher"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:burner_crusher"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_crusher.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_crusher.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_bronze"
+}

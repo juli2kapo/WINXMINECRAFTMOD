@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:raw_materials/gold",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:gold_dust"
+  },
+  "time": 40,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:gold_dust"
+    },
+    "chance": 0.5
+  }
+}

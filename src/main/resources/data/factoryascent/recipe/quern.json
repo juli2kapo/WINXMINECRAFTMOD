@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " W ",
+    "SFS",
+    "SSS"
+  ],
+  "key": {
+    "W": "#c:rods/wooden",
+    "S": "minecraft:smooth_stone",
+    "F": "minecraft:flint"
+  },
+  "result": {
+    "id": "factoryascent:quern"
+  }
+}

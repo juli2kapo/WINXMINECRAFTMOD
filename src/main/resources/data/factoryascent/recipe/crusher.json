@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PHP",
+    "GMG",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "H": "minecraft:hopper",
+    "G": "#c:gears/steel",
+    "C": "factoryascent:basic_circuit",
+    "M": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:crusher"
+  }
+}

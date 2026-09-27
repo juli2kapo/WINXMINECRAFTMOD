@@ -14,5 +14,6 @@
     "id": "factoryascent:bronze_ingot",
     "count": 4
   },
-  "time": 80
+  "time": 80,
+  "min_grade": 3
 }

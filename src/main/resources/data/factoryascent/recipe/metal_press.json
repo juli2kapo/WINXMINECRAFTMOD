@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PNP",
+    "CMC",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "N": "minecraft:piston",
+    "C": "factoryascent:basic_circuit",
+    "W": "#c:wires/copper",
+    "M": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:metal_press"
+  }
+}

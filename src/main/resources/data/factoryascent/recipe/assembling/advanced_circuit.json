@@ -2,7 +2,7 @@
   "type": "factoryascent:assembling",
   "ingredients": [
     {
-      "ingredient": "factoryascent:reinforced_circuit",
+      "ingredient": "factoryascent:basic_circuit",
       "count": 1
     },
     {
@@ -22,5 +22,5 @@
     "id": "factoryascent:advanced_circuit"
   },
   "time": 160,
-  "min_tier": 2
+  "min_grade": 3
 }

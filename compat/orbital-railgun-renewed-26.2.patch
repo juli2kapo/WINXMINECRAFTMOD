@@ -42,6 +42,25 @@ index e7869b8..fd71ab4 100644
 diff --git a/gradlew b/gradlew
 old mode 100644
 new mode 100755
+diff --git a/src/main/java/io/github/mishkis/orbital_railgun/OrbitalRailgun.java b/src/main/java/io/github/mishkis/orbital_railgun/OrbitalRailgun.java
+index 4a07fbe..1ec99a0 100644
+--- a/src/main/java/io/github/mishkis/orbital_railgun/OrbitalRailgun.java
++++ b/src/main/java/io/github/mishkis/orbital_railgun/OrbitalRailgun.java
+@@ -7,6 +7,7 @@ import io.github.mishkis.orbital_railgun.util.OrbitalRailgunStrikeManager;
+ import net.neoforged.bus.api.IEventBus;
+ import net.neoforged.fml.common.Mod;
+ import net.neoforged.neoforge.common.NeoForge;
++import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+ import net.neoforged.neoforge.event.tick.ServerTickEvent;
+ 
+ @Mod(OrbitalRailgun.MOD_ID)
+@@ -22,5 +23,6 @@ public class OrbitalRailgun {
+         modEventBus.addListener(OrbitalRailgunItems::addToCreativeTab);
+ 
+         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> OrbitalRailgunStrikeManager.tick(event.getServer()));
++        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> OrbitalRailgunStrikeManager.clear());
+     }
+ }
 diff --git a/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java b/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java
 index 6ca2ff2..7de84ca 100644
 --- a/src/main/java/io/github/mishkis/orbital_railgun/client/OrbitalRailgunClientHooks.java
@@ -83,11 +102,113 @@ index 87d26ca..f9e6662 100644
  
                  ClientPacketDistributor.sendToServer(new ShootPayload(blockHitResult.getBlockPos()));
 diff --git a/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java b/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java
-index 97fcad2..3e9c7d8 100644
+index 97fcad2..b09fd6f 100644
 --- a/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java
 +++ b/src/main/java/io/github/mishkis/orbital_railgun/client/rendering/AbstractOrbitalRailgunShader.java
-@@ -126,6 +126,6 @@ public abstract class AbstractOrbitalRailgunShader {
-             previous.close();
+@@ -4,6 +4,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
+ import com.mojang.blaze3d.buffers.Std140Builder;
+ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
+ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
++import com.mojang.blaze3d.systems.CommandEncoder;
+ import com.mojang.blaze3d.systems.RenderSystem;
+ import io.github.mishkis.orbital_railgun.client.mixin.PostChainAccessor;
+ import io.github.mishkis.orbital_railgun.client.mixin.PostPassAccessor;
+@@ -14,9 +15,12 @@ import net.minecraft.resources.Identifier;
+ import net.neoforged.neoforge.client.event.ClientTickEvent;
+ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+ import org.joml.Matrix4f;
++import org.joml.Matrix4fc;
++import org.joml.Vector4f;
+ import org.joml.Vector3f;
+ import org.lwjgl.system.MemoryStack;
+ 
++import java.nio.ByteBuffer;
+ import java.util.Map;
+ import java.util.Set;
+ 
+@@ -36,6 +40,7 @@ public abstract class AbstractOrbitalRailgunShader {
+             .putMat4f()
+             .putFloat()
+             .putFloat()
++            .putFloat()
+             .putVec3()
+             .putVec3()
+             .get();
+@@ -66,6 +71,29 @@ public abstract class AbstractOrbitalRailgunShader {
+         return 0f;
+     }
+ 
++    /**
++     * Builds the matrix that takes (screen uv, raw depth sample) to camera-relative world space.
++     * Since 26.2 the level uses a reversed-Z projection (near maps to depth 1, far to 0) and, when
++     * GL_ARB_clip_control is present, clip-space depth in [0, 1] instead of [-1, 1]. The original
++     * shaders assumed ndc = depth * 2 - 1 with near = 0, which put every reconstructed position
++     * behind the camera: no rings, no beams, and a ray-march that never hit anything.
++     */
++    private static Matrix4f computeInverseTransformMatrix(Matrix4fc modelViewMatrix) {
++        boolean zZeroToOne = RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
++        Matrix4f uvDepthToNdc = new Matrix4f()
++                .translation(-1f, -1f, zZeroToOne ? 0f : -1f)
++                .scale(2f, 2f, zZeroToOne ? 1f : 2f);
++        return new Matrix4f(OrbitalRailgunMatrices.PROJECTION).mul(modelViewMatrix).invert().mul(uvDepthToNdc);
++    }
++
++    /** Raw depth-buffer value of the near plane: 1 with the reversed-Z projection, 0 with a classic one. */
++    private static float computeNearDepth() {
++        Matrix4f projection = OrbitalRailgunMatrices.PROJECTION;
++        Vector4f close = projection.transform(new Vector4f(0f, 0f, -1f, 1f));
++        Vector4f far = projection.transform(new Vector4f(0f, 0f, -100f, 1f));
++        return close.z / close.w > far.z / far.w ? 1f : 0f;
++    }
++
+     public final void onClientTick(ClientTickEvent.Post event) {
+         if (client == null) {
+             client = Minecraft.getInstance();
+@@ -98,16 +126,18 @@ public abstract class AbstractOrbitalRailgunShader {
+ 
+         prepareExtraUniforms(partialTick);
+ 
+-        Matrix4f inverseTransformMatrix = new Matrix4f(OrbitalRailgunMatrices.PROJECTION).mul(event.getModelViewMatrix()).invert();
++        Matrix4f inverseTransformMatrix = computeInverseTransformMatrix(event.getModelViewMatrix());
++        float nearDepth = computeNearDepth();
+         Vector3f cameraPosition = event.getLevelRenderState().cameraRenderState.pos.toVector3f();
+         Vector3f blockPosition = getBlockPositionUniform();
+         float time = (ticks + partialTick) / 20f;
+         float isBlockHit = getIsBlockHitUniform();
+ 
++        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+         for (PostPass pass : ((PostChainAccessor) chain).orbital_railgun$getPasses()) {
+             Map<String, GpuBuffer> customUniforms = ((PostPassAccessor) pass).orbital_railgun$getCustomUniforms();
+-            GpuBuffer previous = customUniforms.get(UNIFORM_BLOCK);
+-            if (previous == null) {
++            GpuBuffer current = customUniforms.get(UNIFORM_BLOCK);
++            if (current == null) {
+                 // e.g. the final blit pass, which has no RailgunConfig block
+                 continue;
+             }
+@@ -117,15 +147,23 @@ public abstract class AbstractOrbitalRailgunShader {
+                 builder.putMat4f(inverseTransformMatrix);
+                 builder.putFloat(time);
+                 builder.putFloat(isBlockHit);
++                builder.putFloat(nearDepth);
+                 builder.putVec3(cameraPosition);
+                 builder.putVec3(blockPosition);
+-
+-                customUniforms.put(UNIFORM_BLOCK, RenderSystem.getDevice().createBuffer(() -> "orbital_railgun " + UNIFORM_BLOCK, GpuBuffer.USAGE_UNIFORM, builder.get()));
++                ByteBuffer data = builder.get();
++
++                if ((current.usage() & GpuBuffer.USAGE_COPY_DST) != 0 && current.size() >= data.remaining()) {
++                    // Our own buffer from a previous frame: update it in place.
++                    encoder.writeToBuffer(current.slice(0, data.remaining()), data);
++                } else {
++                    // The immutable buffer PostPass built from the JSON defaults: swap in a writable one once.
++                    customUniforms.put(UNIFORM_BLOCK, RenderSystem.getDevice().createBuffer(() -> "orbital_railgun " + UNIFORM_BLOCK,
++                            GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, data));
++                    current.close();
++                }
+             }
+-
+-            previous.close();
          }
  
 -        chain.process(client.getMainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
@@ -152,18 +273,86 @@ index e1ae6f2..f7a5f03 100644
              OrbitalRailgunStrikeManager.activeStrikes.add(new OrbitalRailgunStrikeManager.Strike(blockPos, nearby, serverPlayer.level().getServer().getTickCount(), serverPlayer.level().dimension()));
  
 diff --git a/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java b/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java
-index 1c8bd0f..7028d02 100644
+index 1c8bd0f..13b653d 100644
 --- a/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java
 +++ b/src/main/java/io/github/mishkis/orbital_railgun/util/OrbitalRailgunStrikeManager.java
-@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
+@@ -1,35 +1,74 @@
+ package io.github.mishkis.orbital_railgun.util;
+ 
++import com.mojang.logging.LogUtils;
+ import io.github.mishkis.orbital_railgun.OrbitalRailgun;
++import it.unimi.dsi.fastutil.longs.LongArrayList;
+ import net.minecraft.core.BlockPos;
++import net.minecraft.core.Direction;
++import net.minecraft.core.SectionPos;
+ import net.minecraft.core.registries.Registries;
+-import net.minecraft.resources.ResourceKey;
++import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+ import net.minecraft.resources.Identifier;
++import net.minecraft.resources.ResourceKey;
+ import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.level.ServerChunkCache;
+ import net.minecraft.server.level.ServerLevel;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.server.level.ThreadedLevelLightEngine;
+ import net.minecraft.world.damagesource.DamageSource;
+ import net.minecraft.world.damagesource.DamageType;
+ import net.minecraft.world.entity.Entity;
++import net.minecraft.world.entity.ai.village.poi.PoiTypes;
  import net.minecraft.world.entity.player.Player;
++import net.minecraft.world.level.ChunkPos;
  import net.minecraft.world.level.Level;
++import net.minecraft.world.level.LightLayer;
++import net.minecraft.world.level.block.Block;
  import net.minecraft.world.level.block.Blocks;
 +import net.minecraft.world.level.block.state.BlockState;
++import net.minecraft.world.level.chunk.DataLayer;
++import net.minecraft.world.level.chunk.LevelChunk;
++import net.minecraft.world.level.chunk.LevelChunkSection;
++import net.minecraft.world.level.levelgen.Heightmap;
++import net.minecraft.world.level.lighting.LayerLightEventListener;
  import net.minecraft.world.phys.Vec3;
  import org.joml.Vector2i;
++import org.slf4j.Logger;
  
-@@ -48,7 +49,7 @@ public class OrbitalRailgunStrikeManager {
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Comparator;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Queue;
++import java.util.concurrent.CompletableFuture;
+ import java.util.concurrent.ConcurrentLinkedQueue;
+ 
+ public class OrbitalRailgunStrikeManager {
+     public record Strike(BlockPos pos, List<Entity> entities, int startTick, ResourceKey<Level> dimension) {}
+ 
++    private static final Logger LOGGER = LogUtils.getLogger();
++
+     public static final Queue<Strike> activeStrikes = new ConcurrentLinkedQueue<>();
++    private static final List<CraterJob> activeCraters = new ArrayList<>();
++    /** Crater columns that keep being swept for loose items for a while after carving (falling mobs drop loot late). */
++    private record Sweep(ServerLevel level, BlockPos origin, int untilTick) {}
++    private static final List<Sweep> activeSweeps = new ArrayList<>();
++    private static final int SWEEP_TICKS = 200;
+     private static final ResourceKey<DamageType> STRIKE_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(OrbitalRailgun.MOD_ID, "strike"));
+     private static final int RADIUS = 24;
+     private static final int RADIUS_SQUARED = RADIUS * RADIUS;
+     private static final boolean[][] mask = new boolean[RADIUS * 2 + 1][RADIUS * 2 + 1];
+ 
++    /** Server time spent carving per tick before the rest of the crater is left for the next tick. */
++    private static final long CARVE_BUDGET_NANOS = 15_000_000L;
++    /** Blocks with a block entity go through Level#setBlock, without neighbour updates, drops or container spills. */
++    private static final int BLOCK_ENTITY_FLAGS = Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS;
++    private static final Heightmap.Types[] HEIGHTMAPS = {
++            Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE
++    };
++    private static final Direction[] HORIZONTAL = {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
++
+     public static void tick(MinecraftServer server) {
+         Iterator<Strike> iterator = activeStrikes.iterator();
+         while (iterator.hasNext()) {
+@@ -48,19 +87,27 @@ public class OrbitalRailgunStrikeManager {
  
                  DamageSource damageSource = level.damageSources().source(STRIKE_DAMAGE);
                  strike.entities().forEach(entity -> {
@@ -172,7 +361,20 @@ index 1c8bd0f..7028d02 100644
                          entity.hurtServer(level, damageSource, 100000f);
                      }
                  });
-@@ -60,7 +61,7 @@ public class OrbitalRailgunStrikeManager {
++                // Mobs that wandered into the column after the strike was aimed are hit as well.
++                for (net.minecraft.world.entity.LivingEntity living : level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, craterColumn(level, blockPos),
++                        e -> e.isAlive() && inCrater(e.getBlockX() - blockPos.getX(), e.getBlockZ() - blockPos.getZ()))) {
++                    if (!(living instanceof Player player && (player.isSpectator() || player.isCreative()))) {
++                        living.hurtServer(level, damageSource, 100000f);
++                    }
++                }
+ 
+-                explode(blockPos, level);
++                vaporizeLooseItems(level, blockPos);
++                activeCraters.add(new CraterJob(level, blockPos));
+             } else if (age >= 400) {
+                 strike.entities().forEach(entity -> {
+                     if (entity instanceof Player player && player.isSpectator()) {
                          return;
                      }
                      if (entity.level().dimension() == dimension) {
@@ -181,22 +383,404 @@ index 1c8bd0f..7028d02 100644
                          double mag = Math.min(1. / Math.abs(dir.length() - 20.) * 4. * (age - 400.) / 300., 5.);
                          dir = dir.normalize();
  
-@@ -77,7 +78,14 @@ public class OrbitalRailgunStrikeManager {
-             for (int x = -RADIUS; x <= RADIUS; x++) {
-                 for (int z = -RADIUS; z <= RADIUS; z++) {
-                     if (mask[x + RADIUS][z + RADIUS]) {
+@@ -70,20 +117,51 @@ public class OrbitalRailgunStrikeManager {
+                 });
+             }
+         }
+-    }
+ 
+-    private static void explode(BlockPos origin, Level level) {
+-        for (int y = level.getMinY(); y <= level.getMaxY(); y++) {
+-            for (int x = -RADIUS; x <= RADIUS; x++) {
+-                for (int z = -RADIUS; z <= RADIUS; z++) {
+-                    if (mask[x + RADIUS][z + RADIUS]) {
 -                        level.setBlockAndUpdate(new BlockPos(origin.getX() + x, y, origin.getZ() + z), Blocks.AIR.defaultBlockState());
-+                        BlockPos pos = new BlockPos(origin.getX() + x, y, origin.getZ() + z);
-+                        BlockState state = level.getBlockState(pos);
-+                        // Leave air alone and never break unbreakable blocks (bedrock, barriers, command blocks...),
-+                        // except the End portal: its frames and the portal itself do get blasted away.
-+                        if (state.isAir()) continue;
-+                        boolean endPortal = state.is(Blocks.END_PORTAL_FRAME) || state.is(Blocks.END_PORTAL);
-+                        if (!endPortal && state.getDestroySpeed(level, pos) < 0) continue;
-+                        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                     }
+-                    }
++        if (!activeSweeps.isEmpty()) {
++            int now = server.getTickCount();
++            activeSweeps.removeIf(sweep -> {
++                if (now % 5 == 0) {
++                    vaporizeLooseItems(sweep.level(), sweep.origin());
++                }
++                return now >= sweep.untilTick();
++            });
++        }
++
++        if (!activeCraters.isEmpty()) {
++            long deadline = System.nanoTime() + CARVE_BUDGET_NANOS;
++            Iterator<CraterJob> jobs = activeCraters.iterator();
++            while (jobs.hasNext()) {
++                CraterJob job = jobs.next();
++                if (job.tick(server, deadline)) {
++                    jobs.remove();
                  }
              }
+         }
+     }
+ 
++    /** Nothing survives the strike: dropped items and XP orbs inside the crater column are removed. */
++    static void vaporizeLooseItems(ServerLevel level, BlockPos origin) {
++        for (Entity entity : level.getEntitiesOfClass(Entity.class, craterColumn(level, origin),
++                e -> e instanceof net.minecraft.world.entity.item.ItemEntity || e instanceof net.minecraft.world.entity.ExperienceOrb)) {
++            if (inCrater(entity.getBlockX() - origin.getX(), entity.getBlockZ() - origin.getZ())) {
++                entity.discard();
++            }
++        }
++    }
++
++    private static net.minecraft.world.phys.AABB craterColumn(ServerLevel level, BlockPos origin) {
++        return new net.minecraft.world.phys.AABB(
++                origin.getX() - RADIUS, level.getMinY(), origin.getZ() - RADIUS,
++                origin.getX() + RADIUS + 1, level.getMaxY() + 1, origin.getZ() + RADIUS + 1);
++    }
++
++    public static void clear() {
++        activeStrikes.clear();
++        activeCraters.clear();
++        activeSweeps.clear();
++    }
++
+     public static void initialize() {
+         for (int x = -RADIUS; x <= RADIUS; x++) {
+             for (int z = -RADIUS; z <= RADIUS; z++) {
+@@ -91,4 +169,337 @@ public class OrbitalRailgunStrikeManager {
+             }
+         }
+     }
++
++    private static boolean inCrater(int dx, int dz) {
++        return dx >= -RADIUS && dx <= RADIUS && dz >= -RADIUS && dz <= RADIUS && mask[dx + RADIUS][dz + RADIUS];
++    }
++
++    /**
++     * Clears the crater (a radius-24 cylinder through the whole world height) over several ticks, within a
++     * fixed time budget per tick; the unit of work is one 16x16x16 chunk section. Blocks are written
++     * straight into the sections: no neighbour or shape updates except across the crater wall, no drops,
++     * no per-block packets and only the light checks that can actually change something. Once every
++     * chunk is done and the light engine has caught up, each carved chunk is resent to its watchers in
++     * one packet (blocks and finished light together), so clients rebuild each section exactly once
++     * instead of relighting ~700k block changes themselves.
++     */
++    private static final class CraterJob {
++        private final ServerLevel level;
++        private final BlockPos origin;
++        private final List<ChunkPos> pending = new ArrayList<>();
++        private final List<ChunkPos> carved = new ArrayList<>();
++        private int nextChunk = 0;
++        private ChunkCarver current;
++        private int ticks = 0;
++        private long carveNanos = 0;
++        private long maxTickNanos = 0;
++        private int removedBlocks = 0;
++        private int lightChecks = 0;
++        private int wallUpdates = 0;
++
++        CraterJob(ServerLevel level, BlockPos origin) {
++            this.level = level;
++            this.origin = origin;
++            int minChunkX = SectionPos.blockToSectionCoord(origin.getX() - RADIUS);
++            int maxChunkX = SectionPos.blockToSectionCoord(origin.getX() + RADIUS);
++            int minChunkZ = SectionPos.blockToSectionCoord(origin.getZ() - RADIUS);
++            int maxChunkZ = SectionPos.blockToSectionCoord(origin.getZ() + RADIUS);
++            for (int cx = minChunkX; cx <= maxChunkX; cx++) {
++                for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
++                    pending.add(new ChunkPos(cx, cz));
++                }
++            }
++            // Centre first, so the part under the beam goes before the fringes.
++            pending.sort(Comparator.comparingDouble(pos -> {
++                double dx = pos.getMiddleBlockX() - origin.getX();
++                double dz = pos.getMiddleBlockZ() - origin.getZ();
++                return dx * dx + dz * dz;
++            }));
++        }
++
++        /** @return true once the job is finished and can be dropped. */
++        boolean tick(MinecraftServer server, long deadline) {
++            long start = System.nanoTime();
++            // Always at least one section per tick, so a slow server still makes progress.
++            do {
++                if (current == null) {
++                    if (nextChunk >= pending.size()) {
++                        break;
++                    }
++                    ChunkPos pos = pending.get(nextChunk++);
++                    current = ChunkCarver.create(this, level.getChunk(pos.x(), pos.z()));
++                    if (current == null) {
++                        continue;
++                    }
++                }
++                if (current.carveNextSection()) {
++                    if (current.finish()) {
++                        carved.add(current.chunk.getPos());
++                    }
++                    current = null;
++                }
++            } while (System.nanoTime() < deadline);
++            long spent = System.nanoTime() - start;
++            carveNanos += spent;
++            maxTickNanos = Math.max(maxTickNanos, spent);
++            ticks++;
++
++            if (current != null || nextChunk < pending.size()) {
++                return false;
++            }
++
++            LOGGER.info("Orbital railgun crater at {}: removed {} blocks in {} chunks over {} ticks ({} ms in total, worst tick {} ms; {} light checks, {} wall updates)",
++                    origin.toShortString(), removedBlocks, carved.size(), ticks, String.format("%.1f", carveNanos / 1e6), String.format("%.1f", maxTickNanos / 1e6), lightChecks, wallUpdates);
++            vaporizeLooseItems(level, origin);
++            activeSweeps.add(new Sweep(level, origin, server.getTickCount() + SWEEP_TICKS));
++            scheduleResend(server);
++            return true;
++        }
++
++        /**
++         * Waits until the light engine has processed every check queued for the crater, then sends each
++         * carved chunk (blocks and light together) to the players watching it.
++         */
++        private void scheduleResend(MinecraftServer server) {
++            if (carved.isEmpty()) {
++                return;
++            }
++            ThreadedLevelLightEngine lightEngine = level.getChunkSource().getLightEngine();
++            CompletableFuture<?>[] lightDone = carved.stream()
++                    .map(pos -> lightEngine.waitForPendingTasks(pos.x(), pos.z()))
++                    .toArray(CompletableFuture[]::new);
++            long queued = System.nanoTime();
++            CompletableFuture.allOf(lightDone).thenRunAsync(() -> {
++                ServerChunkCache chunkSource = level.getChunkSource();
++                int packets = 0;
++                for (ChunkPos pos : carved) {
++                    LevelChunk chunk = chunkSource.getChunkNow(pos.x(), pos.z());
++                    if (chunk == null) {
++                        continue;
++                    }
++                    List<ServerPlayer> players = chunkSource.chunkMap.getPlayers(pos, false);
++                    if (players.isEmpty()) {
++                        continue;
++                    }
++                    ClientboundLevelChunkWithLightPacket packet = new ClientboundLevelChunkWithLightPacket(chunk, chunkSource.getLightEngine(), null, null);
++                    for (ServerPlayer player : players) {
++                        player.connection.send(packet);
++                        packets++;
++                    }
++                }
++                LOGGER.info("Orbital railgun crater at {}: light settled after {} ms, resent {} chunk packets",
++                        origin.toShortString(), String.format("%.1f", (System.nanoTime() - queued) / 1e6), packets);
++            }, server).exceptionally(throwable -> {
++                LOGGER.error("Failed to resend orbital railgun crater chunks", throwable);
++                return null;
++            });
++        }
++    }
++
++    /** Carves the crater's part of one chunk, one section per call, top to bottom. */
++    private static final class ChunkCarver {
++        private final CraterJob job;
++        private final ServerLevel level;
++        private final LevelChunk chunk;
++        private final ChunkPos chunkPos;
++        private final int baseX;
++        private final int baseZ;
++        /** Which of the chunk's 16x16 columns lie inside the crater, and which of those touch its wall. */
++        private final boolean[] column;
++        private final boolean[] wall;
++        private final int[] lowestChanged = new int[256];
++        private final LongArrayList wallPositions = new LongArrayList();
++        private final LongArrayList lightChecks = new LongArrayList();
++        private final Heightmap[] heightmaps = new Heightmap[HEIGHTMAPS.length];
++        private final ServerChunkCache chunkSource;
++        private final ThreadedLevelLightEngine lightEngine;
++        private final LayerLightEventListener blockLight;
++        /** Block light of the current section and its six neighbours; index 13 is the section itself. */
++        private final DataLayer[] lightAround = new DataLayer[27];
++        private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
++        private int sectionIndex;
++        private boolean changed = false;
++
++        private ChunkCarver(CraterJob job, LevelChunk chunk, boolean[] column, boolean[] wall) {
++            this.job = job;
++            this.level = job.level;
++            this.chunk = chunk;
++            this.chunkPos = chunk.getPos();
++            this.baseX = chunkPos.getMinBlockX();
++            this.baseZ = chunkPos.getMinBlockZ();
++            this.column = column;
++            this.wall = wall;
++            this.chunkSource = level.getChunkSource();
++            this.lightEngine = chunkSource.getLightEngine();
++            this.blockLight = lightEngine.getLayerListener(LightLayer.BLOCK);
++            this.sectionIndex = chunk.getSectionsCount() - 1;
++            Arrays.fill(lowestChanged, Integer.MAX_VALUE);
++            for (int i = 0; i < HEIGHTMAPS.length; i++) {
++                heightmaps[i] = chunk.getOrCreateHeightmapUnprimed(HEIGHTMAPS[i]);
++            }
++        }
++
++        static ChunkCarver create(CraterJob job, LevelChunk chunk) {
++            int baseX = chunk.getPos().getMinBlockX();
++            int baseZ = chunk.getPos().getMinBlockZ();
++            boolean[] column = new boolean[256];
++            boolean[] wall = new boolean[256];
++            boolean any = false;
++            for (int lz = 0; lz < 16; lz++) {
++                for (int lx = 0; lx < 16; lx++) {
++                    int dx = baseX + lx - job.origin.getX();
++                    int dz = baseZ + lz - job.origin.getZ();
++                    if (inCrater(dx, dz)) {
++                        int index = lz << 4 | lx;
++                        column[index] = true;
++                        wall[index] = !inCrater(dx - 1, dz) || !inCrater(dx + 1, dz) || !inCrater(dx, dz - 1) || !inCrater(dx, dz + 1);
++                        any = true;
++                    }
++                }
++            }
++            return any ? new ChunkCarver(job, chunk, column, wall) : null;
++        }
++
++        /** @return true when every section has been carved. */
++        boolean carveNextSection() {
++            while (sectionIndex >= 0 && chunk.getSection(sectionIndex).hasOnlyAir()) {
++                sectionIndex--;
++            }
++            if (sectionIndex < 0) {
++                return true;
++            }
++
++            LevelChunkSection section = chunk.getSection(sectionIndex);
++            int sectionY = chunk.getSectionYFromSectionIndex(sectionIndex);
++            int baseY = SectionPos.sectionToBlockCoord(sectionY);
++            sectionIndex--;
++            BlockState air = Blocks.AIR.defaultBlockState();
++            loadLightAround(sectionY);
++            lightChecks.clear();
++
++            for (int ly = 15; ly >= 0; ly--) {
++                int y = baseY + ly;
++                for (int index = 0; index < 256; index++) {
++                    if (!column[index]) {
++                        continue;
++                    }
++                    int lx = index & 15;
++                    int lz = index >> 4;
++                    BlockState state = section.getBlockState(lx, ly, lz);
++                    // Leave air alone and never break unbreakable blocks (bedrock, barriers, command blocks...),
++                    // except the End portal: its frames and the portal itself do get blasted away.
++                    if (state.isAir()) {
++                        continue;
++                    }
++                    pos.set(baseX + lx, y, baseZ + lz);
++                    boolean endPortal = state.is(Blocks.END_PORTAL_FRAME) || state.is(Blocks.END_PORTAL);
++                    if (!endPortal && state.getDestroySpeed(level, pos) < 0) {
++                        continue;
++                    }
++
++                    if (state.hasBlockEntity()) {
++                        // Rare; the regular path removes the block entity and takes care of its light and POI.
++                        level.setBlock(pos, air, BLOCK_ENTITY_FLAGS);
++                    } else {
++                        section.setBlockState(lx, ly, lz, air, false);
++                        for (Heightmap heightmap : heightmaps) {
++                            heightmap.update(lx, y, lz, air);
++                        }
++                        if (PoiTypes.hasPoi(state)) {
++                            level.updatePOIOnBlockStateChange(pos, state, air);
++                        }
++                        // Block light only needs a check where an emitter went away, or where light next to
++                        // the new opening now has to flow in; sky light is handled per column in finish().
++                        if (state.getLightEmission(level, pos) > 0 || hasLitNeighbour(lx, ly, lz)) {
++                            lightChecks.add(pos.asLong());
++                        }
++                    }
++
++                    if (wall[index]) {
++                        wallPositions.add(pos.asLong());
++                    }
++                    lowestChanged[index] = y;
++                    job.removedBlocks++;
++                    changed = true;
++                }
++            }
++
++            if (section.hasOnlyAir()) {
++                lightEngine.updateSectionStatus(SectionPos.of(chunkPos, sectionY), true);
++                chunkSource.onSectionEmptinessChanged(chunkPos.x(), sectionY, chunkPos.z(), true);
++            }
++            for (int i = 0; i < lightChecks.size(); i++) {
++                lightEngine.checkBlock(BlockPos.of(lightChecks.getLong(i)));
++            }
++            job.lightChecks += lightChecks.size();
++            return sectionIndex < 0;
++        }
++
++        private void loadLightAround(int sectionY) {
++            Arrays.fill(lightAround, null);
++            lightAround[13] = blockLight.getDataLayerData(SectionPos.of(chunkPos, sectionY));
++            lightAround[4] = blockLight.getDataLayerData(SectionPos.of(chunkPos.x(), sectionY - 1, chunkPos.z()));
++            lightAround[22] = blockLight.getDataLayerData(SectionPos.of(chunkPos.x(), sectionY + 1, chunkPos.z()));
++            lightAround[12] = blockLight.getDataLayerData(SectionPos.of(chunkPos.x() - 1, sectionY, chunkPos.z()));
++            lightAround[14] = blockLight.getDataLayerData(SectionPos.of(chunkPos.x() + 1, sectionY, chunkPos.z()));
++            lightAround[10] = blockLight.getDataLayerData(SectionPos.of(chunkPos.x(), sectionY, chunkPos.z() - 1));
++            lightAround[16] = blockLight.getDataLayerData(SectionPos.of(chunkPos.x(), sectionY, chunkPos.z() + 1));
++        }
++
++        private boolean hasLitNeighbour(int lx, int ly, int lz) {
++            return blockLightAt(lx - 1, ly, lz) > 1 || blockLightAt(lx + 1, ly, lz) > 1
++                    || blockLightAt(lx, ly - 1, lz) > 1 || blockLightAt(lx, ly + 1, lz) > 1
++                    || blockLightAt(lx, ly, lz - 1) > 1 || blockLightAt(lx, ly, lz + 1) > 1;
++        }
++
++        /** Stored block light at section-local coordinates that may step one block outside the section. */
++        private int blockLightAt(int lx, int ly, int lz) {
++            int sx = lx >> 4;
++            int sy = ly >> 4;
++            int sz = lz >> 4;
++            DataLayer layer = lightAround[(sx + 1) + (sy + 1) * 9 + (sz + 1) * 3];
++            return layer == null ? 0 : layer.get(lx & 15, ly & 15, lz & 15);
++        }
++
++        /** @return whether anything in the chunk changed. */
++        boolean finish() {
++            if (!changed) {
++                return false;
++            }
++
++            // Sky light: refresh the per-column sky source heights, then one check per column is enough -
++            // SkyLightEngine#checkNode re-seeds the whole column from its new lowest source and spreads it
++            // sideways into the crater wall. (Queued after all section status changes, like vanilla.)
++            chunk.getSkyLightSources().fillFrom(chunk);
++            for (int index = 0; index < 256; index++) {
++                if (lowestChanged[index] != Integer.MAX_VALUE) {
++                    lightEngine.checkBlock(new BlockPos(baseX + (index & 15), lowestChanged[index], baseZ + (index >> 4)));
++                    job.lightChecks++;
++                }
++            }
++            chunk.markUnsaved();
++
++            // Neighbour and shape updates only across the crater wall, so water, lava, sand and attached
++            // blocks outside react to the hole the way they did with setBlockAndUpdate.
++            BlockState air = Blocks.AIR.defaultBlockState();
++            BlockPos.MutableBlockPos outside = new BlockPos.MutableBlockPos();
++            for (int i = 0; i < wallPositions.size(); i++) {
++                pos.set(wallPositions.getLong(i));
++                for (Direction direction : HORIZONTAL) {
++                    outside.setWithOffset(pos, direction);
++                    if (inCrater(outside.getX() - job.origin.getX(), outside.getZ() - job.origin.getZ()) || !level.isLoaded(outside)) {
++                        continue;
++                    }
++                    if (level.getBlockState(outside).isAir()) {
++                        continue;
++                    }
++                    BlockPos outsidePos = outside.immutable();
++                    level.neighborShapeChanged(direction.getOpposite(), outsidePos, pos.immutable(), air, Block.UPDATE_CLIENTS, Block.UPDATE_LIMIT - 1);
++                    level.neighborChanged(outsidePos, Blocks.AIR, null);
++                    job.wallUpdates++;
++                }
++            }
++            return true;
++        }
++    }
+ }
 diff --git a/src/main/resources/META-INF/neoforge.mods.toml b/src/main/resources/META-INF/neoforge.mods.toml
 index 26bb72e..cd2a608 100644
 --- a/src/main/resources/META-INF/neoforge.mods.toml
@@ -228,6 +812,194 @@ index 26bb72e..cd2a608 100644
  ordering = "NONE"
  side = "BOTH"
  
+diff --git a/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun.json b/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun.json
+index bbe1f0a..871a7f7 100644
+--- a/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun.json
++++ b/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun.json
+@@ -16,6 +16,7 @@
+           { "name": "InverseTransformMatrix", "type": "matrix4x4", "value": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+           { "name": "iTime", "type": "float", "value": 0.0 },
+           { "name": "IsBlockHit", "type": "float", "value": 0.0 },
++          { "name": "NearDepth", "type": "float", "value": 1.0 },
+           { "name": "CameraPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] },
+           { "name": "BlockPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] }
+         ]
+@@ -33,6 +34,7 @@
+           { "name": "InverseTransformMatrix", "type": "matrix4x4", "value": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+           { "name": "iTime", "type": "float", "value": 0.0 },
+           { "name": "IsBlockHit", "type": "float", "value": 0.0 },
++          { "name": "NearDepth", "type": "float", "value": 1.0 },
+           { "name": "CameraPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] },
+           { "name": "BlockPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] }
+         ]
+diff --git a/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun_gui.json b/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun_gui.json
+index 13820dc..aca115f 100644
+--- a/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun_gui.json
++++ b/src/main/resources/assets/orbital_railgun/post_effect/orbital_railgun_gui.json
+@@ -15,6 +15,7 @@
+           { "name": "InverseTransformMatrix", "type": "matrix4x4", "value": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+           { "name": "iTime", "type": "float", "value": 0.0 },
+           { "name": "IsBlockHit", "type": "float", "value": 0.0 },
++          { "name": "NearDepth", "type": "float", "value": 1.0 },
+           { "name": "CameraPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] },
+           { "name": "BlockPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] }
+         ]
+diff --git a/src/main/resources/assets/orbital_railgun/shaders/post/chromatic_abjuration.fsh b/src/main/resources/assets/orbital_railgun/shaders/post/chromatic_abjuration.fsh
+index 7503968..67341cb 100644
+--- a/src/main/resources/assets/orbital_railgun/shaders/post/chromatic_abjuration.fsh
++++ b/src/main/resources/assets/orbital_railgun/shaders/post/chromatic_abjuration.fsh
+@@ -1,10 +1,11 @@
+-#version 330 compatibility
++#version 330
+ 
+ uniform sampler2D DiffuseSampler;
+ layout(std140) uniform RailgunConfig {
+     mat4 InverseTransformMatrix;
+     float iTime;
+     float IsBlockHit;
++    float NearDepth;
+     vec3 CameraPosition;
+     vec3 BlockPosition;
+ };
+diff --git a/src/main/resources/assets/orbital_railgun/shaders/post/gui.fsh b/src/main/resources/assets/orbital_railgun/shaders/post/gui.fsh
+index 5814656..b7cab93 100644
+--- a/src/main/resources/assets/orbital_railgun/shaders/post/gui.fsh
++++ b/src/main/resources/assets/orbital_railgun/shaders/post/gui.fsh
+@@ -1,4 +1,4 @@
+-#version 330 compatibility
++#version 330
+ #define STEPS 500
+ #define MIN_DIST 0.001
+ #define MAX_DIST 250.
+@@ -9,6 +9,7 @@ layout(std140) uniform RailgunConfig {
+     mat4 InverseTransformMatrix;
+     float iTime;
+     float IsBlockHit;
++    float NearDepth;
+     vec3 CameraPosition;
+     vec3 BlockPosition;
+ };
+@@ -64,12 +65,14 @@ vec3 renderUi(vec3 original, float dist) {
+     return mix(original, overlay, threshold);
+ }
+ 
+-vec2 raycast(vec3 point, vec3 dir) {
++// max_dist: anything hit past the depth-buffer surface is discarded by the
++// "cover by blocks" test anyway, so the march stops there.
++vec2 raycast(vec3 point, vec3 dir, float max_dist) {
+     float traveled = 0.;
+     int close_steps = 0;
+     for (int i = 0; i < STEPS; i++) {
+         float safe = sDist(point);
+-        if (safe <= MIN_DIST || traveled >= MAX_DIST) {
++        if (safe <= MIN_DIST || traveled >= max_dist) {
+             break;
+         }
+ 
+@@ -82,9 +85,13 @@ vec2 raycast(vec3 point, vec3 dir) {
+     return vec2(traveled, close_steps);
+ }
+ 
+-vec3 worldPos(vec3 point) {
+-    vec3 ndc = point * 2.0 - 1.0;
+-    vec4 homPos = InverseTransformMatrix * vec4(ndc, 1.0);
++// InverseTransformMatrix maps (screen uv, raw depth-buffer value) straight to
++// camera-relative world space. The uv/depth -> NDC step is folded in on the
++// Java side, because since 26.2 the depth buffer is reversed (near = 1, far = 0)
++// and clip-space depth is [0, 1] whenever GL_ARB_clip_control is available.
++// NearDepth is the raw depth value of the near plane.
++vec3 worldPos(vec2 uv, float depth) {
++    vec4 homPos = InverseTransformMatrix * vec4(uv, depth, 1.0);
+     vec3 viewPos = homPos.xyz / homPos.w;
+ 
+     return viewPos + CameraPosition;
+@@ -92,11 +99,11 @@ vec3 worldPos(vec3 point) {
+ 
+ void main() {
+     float depth = texture(DepthSampler, texCoord).r;
+-    vec3 start_point = worldPos(vec3(texCoord, 0)) - BlockPosition;
+-    vec3 end_point = worldPos(vec3(texCoord, depth)) - BlockPosition;
++    vec3 start_point = worldPos(texCoord, NearDepth) - BlockPosition;
++    vec3 end_point = worldPos(texCoord, depth) - BlockPosition;
+     vec3 dir = normalize(end_point - start_point);
+ 
+-    vec2 hit_result = raycast(start_point, dir);
++    vec2 hit_result = raycast(start_point, dir, min(MAX_DIST, distance(start_point, end_point) + 1.));
+     vec3 hit_point = start_point + dir * hit_result.x;
+ 
+     scale = vec2(min(pow(iTime * 1.5, 2.), 1.), pow(clamp(1.5 * iTime - 1., 0., 1.), 2.));
+diff --git a/src/main/resources/assets/orbital_railgun/shaders/post/strike.fsh b/src/main/resources/assets/orbital_railgun/shaders/post/strike.fsh
+index e3fe663..62d65ce 100644
+--- a/src/main/resources/assets/orbital_railgun/shaders/post/strike.fsh
++++ b/src/main/resources/assets/orbital_railgun/shaders/post/strike.fsh
+@@ -1,4 +1,4 @@
+-#version 330 compatibility
++#version 330
+ #define STEPS 800
+ #define MIN_DIST 0.001
+ #define MAX_DIST 2500.
+@@ -9,6 +9,7 @@ layout(std140) uniform RailgunConfig {
+     mat4 InverseTransformMatrix;
+     float iTime;
+     float IsBlockHit;
++    float NearDepth;
+     vec3 CameraPosition;
+     vec3 BlockPosition;
+ };
+@@ -68,12 +69,14 @@ float sDist(vec3 p) {
+     return explosion_cylindar;
+ }
+ 
+-vec2 raycast(vec3 point, vec3 dir) {
++// max_dist: anything hit past the depth-buffer surface is discarded by the
++// "cover by blocks" test anyway, so the march stops there.
++vec2 raycast(vec3 point, vec3 dir, float max_dist) {
+     float traveled = 0.;
+     int close_steps = 0;
+     for (int i = 0; i < STEPS; i++) {
+         float safe = sDist(point);
+-        if (safe <= MIN_DIST || traveled >= MAX_DIST) {
++        if (safe <= MIN_DIST || traveled >= max_dist) {
+             break;
+         }
+ 
+@@ -86,9 +89,13 @@ vec2 raycast(vec3 point, vec3 dir) {
+     return vec2(traveled, close_steps);
+ }
+ 
+-vec3 worldPos(vec3 point) {
+-    vec3 ndc = point * 2.0 - 1.0;
+-    vec4 homPos = InverseTransformMatrix * vec4(ndc, 1.0);
++// InverseTransformMatrix maps (screen uv, raw depth-buffer value) straight to
++// camera-relative world space. The uv/depth -> NDC step is folded in on the
++// Java side, because since 26.2 the depth buffer is reversed (near = 1, far = 0)
++// and clip-space depth is [0, 1] whenever GL_ARB_clip_control is available.
++// NearDepth is the raw depth value of the near plane.
++vec3 worldPos(vec2 uv, float depth) {
++    vec4 homPos = InverseTransformMatrix * vec4(uv, depth, 1.0);
+     vec3 viewPos = homPos.xyz / homPos.w;
+ 
+     return viewPos + CameraPosition;
+@@ -124,8 +131,8 @@ void main() {
+     localTime = iTime - startTime * step(startTime, iTime) - expansionTime * step(endTime, iTime);
+ 
+     float depth = texture(DepthSampler, texCoord).r;
+-    vec3 start_point = worldPos(vec3(texCoord, 0)) - BlockPosition;
+-    vec3 end_point = worldPos(vec3(texCoord, depth)) - BlockPosition;
++    vec3 start_point = worldPos(texCoord, NearDepth) - BlockPosition;
++    vec3 end_point = worldPos(texCoord, depth) - BlockPosition;
+     vec3 dir = normalize(end_point - start_point);
+ 
+     if (iTime < startTime) {
+@@ -138,7 +145,7 @@ void main() {
+         return;
+     }
+ 
+-    vec2 hit_result = raycast(start_point, dir);
++    vec2 hit_result = raycast(start_point, dir, min(MAX_DIST, distance(start_point, end_point) + 1.));
+     vec3 hit_point = start_point + dir * hit_result.x;
+ 
+     vec3 col = mix(blue, vec3(0.), abs(sin(3.14 * localTime / expansionTime))) + vec3(smoothstep(5., 10., hit_result.y)) * blue;
 diff --git a/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json b/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json
 index 0b38fae..b9c756d 100644
 --- a/src/main/resources/data/orbital_railgun/recipe/orbital_railgun.json

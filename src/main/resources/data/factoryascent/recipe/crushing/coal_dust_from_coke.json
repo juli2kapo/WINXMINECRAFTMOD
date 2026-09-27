@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:coke",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:coal_dust",
+    "count": 2
+  },
+  "time": 30,
+  "min_grade": 2
+}

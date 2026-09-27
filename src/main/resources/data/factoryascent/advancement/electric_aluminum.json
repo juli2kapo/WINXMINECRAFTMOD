@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:aluminum_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:aluminum_ingot"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_aluminum.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_aluminum.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_crusher"
+}
