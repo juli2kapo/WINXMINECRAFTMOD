@@ -3,14 +3,13 @@
   "category": "equipment",
   "pattern": [
     " G ",
-    "DED",
-    " C "
+    "DPD",
+    " G "
   ],
   "key": {
     "G": "#c:ingots/gold",
     "D": "factoryascent:ender_dust",
-    "E": "minecraft:ender_eye",
-    "C": "factoryascent:advanced_circuit"
+    "P": "minecraft:ender_pearl"
   },
   "result": {
     "id": "factoryascent:recall_charm"

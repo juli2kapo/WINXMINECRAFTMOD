@@ -24,8 +24,14 @@ public final class EnderContentClient {
     private EnderContentClient() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((EntityRenderersEvent.RegisterRenderers e) ->
-                e.registerBlockEntityRenderer(EnderContent.ENDER_ANCHOR_BE.get(), AnchorRenderer::new));
+        modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> {
+            // Anchor: two blocks of water, the pearl rides up to near the top of the upper half.
+            e.registerBlockEntityRenderer(EnderContent.ENDER_ANCHOR_BE.get(), ctx -> new AnchorRenderer<EnderAnchorBlockEntity>(
+                    ctx, EnderAnchorBlockEntity::hasPearl, 1.72f, 0.95f));
+            // Beacon: one block of water under a trapdoor lid.
+            e.registerBlockEntityRenderer(EnderContent.ENDER_BEACON_BE.get(), ctx -> new AnchorRenderer<EnderBeaconBlockEntity>(
+                    ctx, EnderBeaconBlockEntity::hasPearl, 0.68f, 0.22f));
+        });
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent e) ->
                 e.registerSpriteSet(EnderContent.STASIS_BUBBLE.get(), StasisBubbleParticle.Provider::new));
     }
@@ -43,16 +49,24 @@ public final class EnderContentClient {
      * in the top half and sinking back a little, with a small wobble, always facing the camera
      * like a dropped item. An empty chamber shows nothing.
      */
-    static final class AnchorRenderer implements BlockEntityRenderer<EnderAnchorBlockEntity, AnchorState> {
+    static final class AnchorRenderer<T extends net.minecraft.world.level.block.entity.BlockEntity>
+            implements BlockEntityRenderer<T, AnchorState> {
         private final ItemModelResolver items;
+        private final java.util.function.Predicate<T> hasPearl;
+        /** Highest point of the pearl's ride and how far it dips below it, in blocks. */
+        private final float top;
+        private final float dip;
         /**
          * Made on first render: renderers are built during resource loading, before item
          * components are bound, and an ItemStack can't exist before that.
          */
         private @Nullable ItemStack pearl;
 
-        AnchorRenderer(BlockEntityRendererProvider.Context context) {
+        AnchorRenderer(BlockEntityRendererProvider.Context context, java.util.function.Predicate<T> hasPearl, float top, float dip) {
             this.items = context.itemModelResolver();
+            this.hasPearl = hasPearl;
+            this.top = top;
+            this.dip = dip;
         }
 
         @Override
@@ -61,11 +75,11 @@ public final class EnderContentClient {
         }
 
         @Override
-        public void extractRenderState(EnderAnchorBlockEntity anchor, AnchorState state, float partialTicks,
+        public void extractRenderState(T anchor, AnchorState state, float partialTicks,
                                        Vec3 camera, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
             BlockEntityRenderer.super.extractRenderState(anchor, state, partialTicks, camera, breakProgress);
-            state.active = anchor.getBlockState().getValue(EnderAnchorBlock.ACTIVE);
-            state.hasPearl = anchor.hasPearl();
+            state.hasPearl = hasPearl.test(anchor);
+            state.active = state.hasPearl;
             state.time = anchor.getLevel() == null ? 0 : (anchor.getLevel().getGameTime() % 72000L) + partialTicks;
             state.phase = (anchor.getBlockPos().hashCode() & 0xFF) / 40f;
             if (pearl == null) pearl = new ItemStack(Items.ENDER_PEARL);
@@ -88,7 +102,7 @@ public final class EnderContentClient {
                 float t = state.time / 20f + state.phase;
                 float swell = (float) (0.5 - 0.5 * Math.cos(t * 0.9));      // 0..1, slow
                 float wobble = (float) Math.sin(t * 5.3) * 0.025f;          // bubbles jostling it
-                y = 1.72f - swell * 0.95f + wobble;
+                y = top - swell * dip + wobble;
                 float sway = (float) Math.sin(t * 2.1) * 0.05f;
                 pose.translate(0.5f + sway, y, 0.5f + (float) Math.cos(t * 1.7) * 0.05f);
             } else {

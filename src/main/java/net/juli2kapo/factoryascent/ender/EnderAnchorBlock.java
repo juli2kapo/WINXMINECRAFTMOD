@@ -156,11 +156,11 @@ public class EnderAnchorBlock extends BaseEntityBlock implements DescribedBlock 
         double x = pos.getX() + 0.2 + random.nextDouble() * 0.6;
         double z = pos.getZ() + 0.2 + random.nextDouble() * 0.6;
         if (state.getValue(HALF) == DoubleBlockHalf.LOWER) {
-            // A steady column off the soul sand (the floor's Y rides in the y-speed slot).
+            // A steady column off the soul sand (the surface's Y rides in the y-speed slot).
             for (int i = 0; i < 4; i++) {
                 double bx = pos.getX() + 0.3 + random.nextDouble() * 0.4;
                 double bz = pos.getZ() + 0.3 + random.nextDouble() * 0.4;
-                level.addAlwaysVisibleParticle(EnderContent.STASIS_BUBBLE.get(), bx, pos.getY() + 0.27, bz, 0, pos.getY(), 0);
+                level.addAlwaysVisibleParticle(EnderContent.STASIS_BUBBLE.get(), bx, pos.getY() + 0.27, bz, 0, pos.getY() + 1 + 13.0 / 16.0, 0);
             }
         } else if (random.nextInt(4) == 0) {
             level.addParticle(ParticleTypes.PORTAL, x, pos.getY() + 0.6, z, 0, 0.1, 0);

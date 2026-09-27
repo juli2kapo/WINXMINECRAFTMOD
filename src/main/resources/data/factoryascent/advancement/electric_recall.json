@@ -16,10 +16,10 @@
       "id": "factoryascent:recall_charm"
     },
     "title": {
-      "translate": "advancements.factoryascent.automation_recall.title"
+      "translate": "advancements.factoryascent.electric_recall.title"
     },
     "description": {
-      "translate": "advancements.factoryascent.automation_recall.description"
+      "translate": "advancements.factoryascent.electric_recall.description"
     },
     "frame": "task"
   },
@@ -28,5 +28,5 @@
       "got"
     ]
   ],
-  "parent": "factoryascent:age_automation"
+  "parent": "factoryascent:electric_anchor"
 }

@@ -97,11 +97,28 @@ def anchor_item_model():
             }}
 
 
-def beacon_model(on):
-    side = tex("block/ender_beacon_side", "minecraft:block/obsidian")
-    top = tex("block/ender_beacon_top_on" if on else "block/ender_beacon_top", "minecraft:block/crying_obsidian")
-    return {"parent": "minecraft:block/cube_bottom_top",
-            "textures": {"side": side, "top": top, "bottom": "minecraft:block/obsidian"}}
+def beacon_model():
+    """A one-block stasis chamber under a trapdoor lid: obsidian corner posts, glass sides, soul
+    sand floor, water, and an oak trapdoor on top (vanilla stasis chambers are closed with one;
+    its holes show the water under it). The pearl is drawn by the block entity renderer."""
+    clear = [2, 2, 14, 14]
+    els = [box([0.01, 0, 0.01], [15.99, 4, 15.99], "#base")]
+    for x, z in [(0, 0), (14, 0), (0, 14), (14, 14)]:
+        els.append(box([x, 0, z], [x + 2, 13, z + 2], "#frame", faces=SIDES + ("down",)))
+    els += [
+        box([2, 4, 0.5], [14, 13, 0.5], "#glass", faces=("north", "south"), uv=clear),
+        box([2, 4, 15.5], [14, 13, 15.5], "#glass", faces=("north", "south"), uv=clear),
+        box([0.5, 4, 2], [0.5, 13, 14], "#glass", faces=("east", "west"), uv=clear),
+        box([15.5, 4, 2], [15.5, 13, 14], "#glass", faces=("east", "west"), uv=clear),
+        box([1, 4, 1], [15, 12.5, 15], "#water", faces=SIDES + ("up",)),
+        # the trapdoor lid
+        {"from": [0, 13, 0], "to": [16, 16, 16], "faces": {
+            "up": {"texture": "#lid", "cullface": "up"}, "down": {"texture": "#lid"},
+            **{f: {"texture": "#lid", "uv": [0, 0, 16, 3]} for f in SIDES}}},
+    ]
+    textures = dict(ANCHOR_TEXTURES)
+    textures["lid"] = "minecraft:block/oak_trapdoor"
+    return {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": textures, "elements": els}
 
 
 def generate(ctx):
@@ -114,11 +131,10 @@ def generate(ctx):
         for on in ("false", "true") for half in ("lower", "upper")}})
     ctx.item_def("ender_anchor", "item/ender_anchor")
 
-    ctx.block_model("ender_beacon", beacon_model(False))
-    ctx.block_model("ender_beacon_on", beacon_model(True))
+    ctx.block_model("ender_beacon", beacon_model())
     ctx.write(A / "blockstates" / "ender_beacon.json", {"variants": {
-        "powered=false": {"model": f"{MOD}:block/ender_beacon"},
-        "powered=true": {"model": f"{MOD}:block/ender_beacon_on"}}})
+        "enabled=false": {"model": f"{MOD}:block/ender_beacon"},
+        "enabled=true": {"model": f"{MOD}:block/ender_beacon"}}})
     ctx.item_def("ender_beacon", "block/ender_beacon")
 
     # Bubbles inside the chamber use the vanilla bubble sprite (see StasisBubbleParticle).
@@ -141,23 +157,24 @@ def generate(ctx):
         "O": "minecraft:obsidian", "G": "minecraft:glass", "S": "minecraft:soul_sand",
         "W": "minecraft:water_bucket"}, "ender_anchor")
     ctx.machine("crushing", "ender_dust", [("minecraft:ender_pearl", 1)], "ender_dust", 2, time=60, min_grade=3)
-    ctx.shaped("ender_beacon", ["OEO", "DFD", "OOO"], {
-        "O": "minecraft:obsidian", "E": "minecraft:ender_eye", "D": "ender_dust",
-        "F": "advanced_machine_frame"}, "ender_beacon")
-    ctx.shaped("recall_charm", [" G ", "DED", " C "], {
-        "G": "#c:ingots/gold", "D": "ender_dust", "E": "minecraft:ender_eye",
-        "C": "advanced_circuit"}, "recall_charm", category="equipment")
+    # A stasis chamber closed with a trapdoor, like the vanilla build it is based on.
+    ctx.shaped("ender_beacon", ["OTO", "GWG", "OSO"], {
+        "O": "minecraft:obsidian", "T": "#minecraft:wooden_trapdoors", "G": "minecraft:glass",
+        "W": "minecraft:water_bucket", "S": "minecraft:soul_sand"}, "ender_beacon")
+    # The remote trigger: gold, ender dust and a pearl of its own.
+    ctx.shaped("recall_charm", [" G ", "DPD", " G "], {
+        "G": "#c:ingots/gold", "D": "ender_dust", "P": "minecraft:ender_pearl"}, "recall_charm", category="equipment")
 
     # ---------------------------------------------------------------- advancements
     ctx.advancement("electric_anchor", "age_electric", "ender_anchor", ["ender_anchor"], "Always Loaded",
                     "Build an Ender Anchor (a stasis chamber of glass, water and soul sand) and drop a pearl in",
                     "Siempre cargado",
                     "Construye un ancla de ender (una cámara de estasis de vidrio, agua y arena de almas) y echa una perla")
-    ctx.advancement("automation_recall", "age_automation", "recall_charm", ["recall_charm"],
+    ctx.advancement("electric_recall", "electric_anchor", "recall_charm", ["recall_charm"],
                     "There's No Place Like Home",
-                    "Craft a Recall Charm, link it to a charged Ender Beacon, and channel your way home",
+                    "Load an Ender Beacon with a pearl, link a Recall Charm to it, and channel your way home",
                     "No hay lugar como el hogar",
-                    "Fabrica un amuleto de retorno, vincúlalo a una baliza de ender cargada y canaliza el viaje a casa")
+                    "Carga una baliza de ender con una perla, vincula un amuleto de retorno y canaliza el viaje a casa")
 
     # ---------------------------------------------------------------- lang
     L = ctx.lang
@@ -172,10 +189,10 @@ def generate(ctx):
     L(f"{T}.ender_anchor_pearl", "Right-click with an ender pearl to start it. It runs until broken; breaking it loses the pearl",
       "Clic derecho con una perla de ender para activarla. Funciona hasta que se rompe; al romperla se pierde la perla")
     L(f"{T}.two_tall", "Two blocks tall", "Ocupa dos bloques de alto")
-    L(f"{T}.ender_beacon", "Home point for Recall Charms. Sneak-use a charm on it to link",
-      "Punto de retorno para amuletos. Agáchate y usa un amuleto sobre ella para vincularlo")
-    L(f"{T}.ender_beacon_cost", "Charge it with FE: %s FE per recall",
-      "Cárgala con FE: %s FE por retorno")
+    L(f"{T}.ender_beacon", "A stasis chamber your Recall Charm can trigger from anywhere. Sneak-use a charm on it to link",
+      "Una cámara de estasis que tu amuleto de retorno puede activar desde cualquier lugar. Agáchate y usa un amuleto sobre ella")
+    L(f"{T}.ender_beacon_pearl", "Right-click with an ender pearl to load it. Each recall uses the pearl up",
+      "Clic derecho con una perla de ender para cargarla. Cada retorno gasta la perla")
     L(f"{T}.charm_unlinked", "Not linked: sneak-use it on an Ender Beacon",
       "Sin vincular: agáchate y úsalo sobre una baliza de ender")
     L(f"{T}.charm_linked", "Home: %s, %s, %s (%s)", "Hogar: %s, %s, %s (%s)")
@@ -186,7 +203,9 @@ def generate(ctx):
     L(f"{M}.anchor_active", "Keeping %s×%s chunks loaded", "Manteniendo %s×%s chunks cargados")
     L(f"{M}.anchor_empty", "Empty: drop an ender pearl in to start it",
       "Vacía: echa una perla de ender para activarla")
-    L(f"{M}.beacon_status", "%s / %s FE · enough for %s recalls", "%s / %s FE · alcanza para %s retornos")
+    L(f"{M}.beacon_loaded", "A pearl is waiting: ready for a recall", "Hay una perla esperando: lista para un retorno")
+    L(f"{M}.beacon_empty", "Empty: load an ender pearl to be able to recall here",
+      "Vacía: carga una perla de ender para poder volver aquí")
     L(f"{M}.beacon_not_yours", "This Ender Beacon belongs to someone else",
       "Esta baliza de ender pertenece a otra persona")
     L(f"{M}.charm_linked", "Recall Charm linked to this Ender Beacon", "Amuleto vinculado a esta baliza de ender")
@@ -199,5 +218,5 @@ def generate(ctx):
     L(f"{M}.charm_beacon_gone", "Your Ender Beacon is gone", "Tu baliza de ender ya no existe")
     L(f"{M}.charm_blocked", "Something is blocking the space above your Ender Beacon",
       "Algo bloquea el espacio sobre tu baliza de ender")
-    L(f"{M}.charm_no_energy", "Your Ender Beacon doesn't have enough energy",
-      "Tu baliza de ender no tiene energía suficiente")
+    L(f"{M}.charm_no_pearl", "Your Ender Beacon has no pearl loaded",
+      "Tu baliza de ender no tiene ninguna perla cargada")

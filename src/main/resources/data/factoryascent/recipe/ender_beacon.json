@@ -2,15 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "OEO",
-    "DFD",
-    "OOO"
+    "OTO",
+    "GWG",
+    "OSO"
   ],
   "key": {
     "O": "minecraft:obsidian",
-    "E": "minecraft:ender_eye",
-    "D": "factoryascent:ender_dust",
-    "F": "factoryascent:advanced_machine_frame"
+    "T": "#minecraft:wooden_trapdoors",
+    "G": "minecraft:glass",
+    "W": "minecraft:water_bucket",
+    "S": "minecraft:soul_sand"
   },
   "result": {
     "id": "factoryascent:ender_beacon"

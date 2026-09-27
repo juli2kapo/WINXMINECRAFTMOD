@@ -125,12 +125,15 @@ the "challenge" frame. Descriptions are written as the next instruction
   - The pearl bobs on the bubble column inside.
   - Chunk loading goes through a NeoForge `TicketController`, whose tickets are checked against a ledger after every restart.
   - Limit: 4 per player (server config).
-- **Ender Beacon + Recall Charm** (Automation age): a teleporter back home.
-  - The beacon is placed at home and charged with FE, 20k FE per recall.
-  - Sneak-use the charm on the beacon to link it (only the beacon's owner can).
-  - Hold use for 5 s to channel. Taking damage interrupts it.
-  - You land on top of the beacon, then a 60 s cooldown starts.
-  - It works within the same dimension only, until the Quantum age (or the config says otherwise).
+- **Ender Beacon + Recall Charm** (Electric age): a teleporter back home, based on the vanilla stasis chamber. In vanilla, a thrown pearl hangs in a soul-sand bubble column, and triggering it brings its thrower to it.
+  - The beacon is a one-block chamber: obsidian corners, glass, water, soul sand, a trapdoor lid.
+    - Recipe: `OTO / GWG / OSO`.
+    - Right-click it with an ender pearl to load it.
+  - The charm (gold, Ender Dust, a pearl) is the remote trigger.
+    - Sneak-use it on the beacon to link. Only the beacon's owner can.
+    - Hold use for 5 s to channel. Taking real damage interrupts it.
+    - You land on top of the beacon, the beacon's pearl is used up, and a 60 s cooldown starts.
+  - It works within the same dimension until the Quantum age (config).
 - **Ender Dust:** a Crusher turns 1 ender pearl into 2 dust. It's the shared ingredient.
 
 ## Mob tools (Automation age)

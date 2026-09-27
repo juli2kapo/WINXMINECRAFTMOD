@@ -1,10 +1,10 @@
 {
   "variants": {
-    "powered=false": {
+    "enabled=false": {
       "model": "factoryascent:block/ender_beacon"
     },
-    "powered=true": {
-      "model": "factoryascent:block/ender_beacon_on"
+    "enabled=true": {
+      "model": "factoryascent:block/ender_beacon"
     }
   }
 }

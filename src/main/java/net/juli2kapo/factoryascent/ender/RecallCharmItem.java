@@ -144,10 +144,12 @@ public class RecallCharmItem extends Item {
             player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_blocked").withStyle(ChatFormatting.RED));
             return;
         }
-        if (!player.getAbilities().instabuild && !beacon.spendRecall()) {
-            player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_no_energy").withStyle(ChatFormatting.RED));
+        // Like a vanilla stasis chamber: the charm triggers the pearl waiting in the beacon, and it is used up.
+        if (!beacon.hasPearl() && !player.getAbilities().instabuild) {
+            player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_no_pearl").withStyle(ChatFormatting.RED));
             return;
         }
+        beacon.triggerPearl();
         ServerLevel from = player.level();
         from.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.9, 0.4, 0.2);
         from.playSound(null, player.blockPosition(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1f, 1f);

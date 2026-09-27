@@ -17,8 +17,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -49,9 +47,10 @@ public final class EnderContent {
                     .lightLevel(s -> s.getValue(EnderAnchorBlock.ACTIVE) ? 9 : 3)
                     .pushReaction(PushReaction.BLOCK));
     public static final DeferredBlock<EnderBeaconBlock> ENDER_BEACON = BLOCKS.registerBlock("ender_beacon",
-            EnderBeaconBlock::new, () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK)
-                    .strength(20f, 1200f).requiresCorrectToolForDrops()
-                    .lightLevel(s -> s.getValue(EnderBeaconBlock.CHARGED) ? 12 : 4)
+            EnderBeaconBlock::new, () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE)
+                    .strength(3.0f, 1200f).sound(SoundType.GLASS).noOcclusion().requiresCorrectToolForDrops()
+                    .isSuffocating((st, l, p) -> false).isViewBlocking((st, l, p) -> false)
+                    .lightLevel(st -> st.getValue(EnderBeaconBlock.LOADED) ? 7 : 2)
                     .pushReaction(PushReaction.BLOCK));
 
     public static final DeferredItem<BlockItem> ENDER_ANCHOR_ITEM = ITEMS.registerItem("ender_anchor",
@@ -95,12 +94,6 @@ public final class EnderContent {
         PARTICLES.register(modBus);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RecallCharmItem::onDamaged);
         modBus.addListener((RegisterTicketControllersEvent e) -> e.register(ANCHOR_TICKETS));
-        modBus.addListener(EnderContent::registerCapabilities);
-    }
-
-    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        // Cables can charge a beacon.
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ENDER_BEACON_BE.get(), (be, side) -> be.energy());
     }
 
     public static List<Supplier<? extends ItemLike>> creativeItems() {

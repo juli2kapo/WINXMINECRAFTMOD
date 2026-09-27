@@ -13,7 +13,6 @@ public final class Config {
     public static final ModConfigSpec.IntValue ANCHOR_RADIUS;
     public static final ModConfigSpec.IntValue ANCHORS_PER_PLAYER;
     public static final ModConfigSpec.IntValue RECALL_SECONDS;
-    public static final ModConfigSpec.IntValue RECALL_ENERGY;
     public static final ModConfigSpec.IntValue RECALL_COOLDOWN_SECONDS;
     public static final ModConfigSpec.BooleanValue RECALL_CROSS_DIMENSION;
     public static final ModConfigSpec.DoubleValue SIZE_RAY_MIN_SCALE;
@@ -40,8 +39,6 @@ public final class Config {
                 .defineInRange("anchorsPerPlayer", 4, 0, 1000);
         RECALL_SECONDS = b.comment("Recall Charm: seconds you must channel before teleporting home.")
                 .defineInRange("recallSeconds", 5, 1, 60);
-        RECALL_ENERGY = b.comment("FE the Ender Beacon spends per recall.")
-                .defineInRange("recallEnergy", 20000, 0, 10_000_000);
         RECALL_COOLDOWN_SECONDS = b.comment("Seconds before a Recall Charm can be used again.")
                 .defineInRange("recallCooldownSeconds", 60, 0, 3600);
         RECALL_CROSS_DIMENSION = b.comment("Whether a Recall Charm can bring you home from another dimension.")

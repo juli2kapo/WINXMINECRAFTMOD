@@ -436,12 +436,12 @@ public final class ModGameTests {
         });
     }
 
-    /** A linked, charged beacon pulls the player on top of itself and pays the energy. */
+    /** A linked beacon with a pearl pulls the player on top of itself; the pearl is used up, like a stasis chamber. */
     private static void recallCharmTeleportsHome(GameTestHelper h) {
         BlockPos beaconPos = new BlockPos(6, 1, 6);
         h.setBlock(beaconPos, net.juli2kapo.factoryascent.ender.EnderContent.ENDER_BEACON.get());
         var beacon = h.getBlockEntity(beaconPos, net.juli2kapo.factoryascent.ender.EnderBeaconBlockEntity.class);
-        beacon.energy().produce(50_000);
+        h.assertTrue(beacon.insertPearl(), "an empty beacon should take a pearl");
         var player = h.makeMockServerPlayerInLevel();
         player.getAbilities().instabuild = false;
         BlockPos start = h.absolutePos(new BlockPos(1, 2, 1));
@@ -452,8 +452,7 @@ public final class ModGameTests {
         net.juli2kapo.factoryascent.ender.EnderContent.RECALL_CHARM.get().recall(player, charm);
         BlockPos landed = player.blockPosition();
         h.assertTrue(landed.equals(h.absolutePos(beaconPos.above())), "player should stand on the beacon, is at " + landed);
-        int cost = net.juli2kapo.factoryascent.Config.RECALL_ENERGY.get();
-        h.assertTrue(beacon.energy().energy() == 50_000 - cost, "beacon should pay " + cost + " FE");
+        h.assertFalse(beacon.hasPearl(), "the recall should use up the beacon's pearl");
         player.discard();
         h.succeed();
     }

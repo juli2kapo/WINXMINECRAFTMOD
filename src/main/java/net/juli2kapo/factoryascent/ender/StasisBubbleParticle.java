@@ -17,13 +17,12 @@ import net.minecraft.util.RandomSource;
  * the chamber and pops when it reaches the surface.
  */
 public class StasisBubbleParticle extends SingleQuadParticle {
-    /** Height of the water surface above the lower half's floor, in blocks. */
-    private static final double SURFACE = 1.0 + 13.0 / 16.0;
-    private final double floorY;
+    /** World Y of the water surface in the chamber this bubble rose from. */
+    private final double surfaceY;
 
-    StasisBubbleParticle(ClientLevel level, double x, double y, double z, double floorY, TextureAtlasSprite sprite) {
+    StasisBubbleParticle(ClientLevel level, double x, double y, double z, double surfaceY, TextureAtlasSprite sprite) {
         super(level, x, y, z, sprite);
-        this.floorY = floorY;
+        this.surfaceY = surfaceY;
         this.gravity = -0.125F;
         this.friction = 0.85F;
         this.setSize(0.02F, 0.02F);
@@ -41,8 +40,10 @@ public class StasisBubbleParticle extends SingleQuadParticle {
         super.tick();
         if (removed) return;
         BlockPos at = BlockPos.containing(x, y, z);
-        if (!level.getBlockState(at).is(EnderContent.ENDER_ANCHOR.get()) || y >= floorY + SURFACE) {
-            level.addParticle(ParticleTypes.BUBBLE_POP, x, Math.min(y, floorY + SURFACE), z, 0, 0, 0);
+        var block = level.getBlockState(at).getBlock();
+        boolean inChamber = block == EnderContent.ENDER_ANCHOR.get() || block == EnderContent.ENDER_BEACON.get();
+        if (!inChamber || y >= surfaceY) {
+            level.addParticle(ParticleTypes.BUBBLE_POP, x, Math.min(y, surfaceY), z, 0, 0, 0);
             remove();
         }
     }
@@ -61,9 +62,9 @@ public class StasisBubbleParticle extends SingleQuadParticle {
 
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
-                                       double xa, double floorY, double za, RandomSource random) {
-            // The spawner passes the chamber floor's Y in the y-speed slot.
-            return new StasisBubbleParticle(level, x, y, z, floorY, sprites.get(random));
+                                       double xa, double surfaceY, double za, RandomSource random) {
+            // The spawner passes the water surface's Y in the y-speed slot.
+            return new StasisBubbleParticle(level, x, y, z, surfaceY, sprites.get(random));
         }
     }
 }
