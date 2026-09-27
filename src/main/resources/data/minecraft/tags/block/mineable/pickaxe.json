@@ -41,6 +41,11 @@
     "factoryascent:steel_block",
     "factoryascent:aluminum_block",
     "factoryascent:titanium_block",
-    "factoryascent:quantum_alloy_block"
+    "factoryascent:quantum_alloy_block",
+    "factoryascent:storage_cable",
+    "factoryascent:storage_controller",
+    "factoryascent:storage_drive",
+    "factoryascent:storage_terminal",
+    "factoryascent:storage_interface"
   ]
 }

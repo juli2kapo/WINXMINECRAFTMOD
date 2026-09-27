@@ -234,6 +234,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             case AbstractMachineBlockEntity.STATUS_FULL -> "full";
             case AbstractMachineBlockEntity.STATUS_INCOMPLETE -> "incomplete";
             case AbstractMachineBlockEntity.STATUS_NEEDS_CRANK -> "needs_crank";
+            case AbstractMachineBlockEntity.STATUS_LOADING -> "loading";
             default -> type().category() == MachineType.Category.MINER && data().progress() >= 1000 ? "finished" : "idle";
         };
         ChatFormatting color = switch (st) {

@@ -1,0 +1,32 @@
+{
+  "parent": "factoryascent:age_electric",
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:storage_controller"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:storage_controller"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.storage_network.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.storage_network.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ]
+}

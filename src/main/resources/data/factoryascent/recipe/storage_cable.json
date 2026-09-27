@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "WRW",
+    "III"
+  ],
+  "key": {
+    "I": "#c:plates/iron",
+    "W": "#c:wires/copper",
+    "R": "minecraft:redstone"
+  },
+  "result": {
+    "id": "factoryascent:storage_cable",
+    "count": 8
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GRG",
+    "RCR",
+    "SSS"
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "R": "minecraft:redstone",
+    "C": "factoryascent:basic_circuit",
+    "S": "#c:plates/steel"
+  },
+  "result": {
+    "id": "factoryascent:storage_cell_1k"
+  }
+}

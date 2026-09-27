@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SCS",
+    "WFW",
+    "SCS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "C": "factoryascent:basic_circuit",
+    "W": "#c:wires/copper",
+    "F": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:storage_controller"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SHS",
+    "CFC",
+    "SWS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "H": "minecraft:hopper",
+    "C": "factoryascent:basic_circuit",
+    "F": "factoryascent:machine_frame",
+    "W": "#c:wires/copper"
+  },
+  "result": {
+    "id": "factoryascent:storage_interface"
+  }
+}

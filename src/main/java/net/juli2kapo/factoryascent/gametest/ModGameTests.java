@@ -56,11 +56,13 @@ public final class ModGameTests {
             new Test("blast_furnace_makes_steel", 900, ModGameTests::blastFurnaceMakesSteel),
             new Test("generator_cable_furnace_chain", 400, ModGameTests::generatorCableFurnaceChain),
             new Test("pipe_extracts_between_chests", 100, ModGameTests::pipeExtractsBetweenChests),
-            new Test("miner_digs_only_ore", 400, ModGameTests::minerDigsOnlyOre),
+            new Test("miner_leaves_world_alone", 200, ModGameTests::minerLeavesWorldAlone),
             new Test("auto_farmer_harvests_and_replants", 600, ModGameTests::autoFarmerHarvests),
             new Test("crate_keeps_contents", 40, ModGameTests::crateKeepsContents),
             new Test("energy_cell_charges_drill", 100, ModGameTests::energyCellChargesDrill),
-            new Test("speed_upgrade_speeds_up", 20, ModGameTests::speedUpgrade)
+            new Test("speed_upgrade_speeds_up", 20, ModGameTests::speedUpgrade),
+            new Test("storage_interface_round_trip", 60, ModGameTests::storageInterfaceRoundTrip),
+            new Test("storage_cell_keeps_contents", 60, ModGameTests::storageCellKeepsContents)
     );
 
     private ModGameTests() {}
@@ -227,28 +229,26 @@ public final class ModGameTests {
         });
     }
 
-    private static void minerDigsOnlyOre(GameTestHelper h) {
+    /**
+     * The miner never digs the world around it. The GameTest server builds its world without data
+     * pack dimensions, so The Deep is missing here and the miner must wait harmlessly; digging the
+     * claim itself is covered on a dedicated server (see docs/DESIGN.md, "The Deep").
+     */
+    private static void minerLeavesWorldAlone(GameTestHelper h) {
         BlockPos minerPos = new BlockPos(4, 4, 4);
-        for (int x = 2; x <= 6; x++) {
-            for (int z = 2; z <= 6; z++) {
-                for (int y = 1; y <= 3; y++) h.setBlock(new BlockPos(x, y, z), Blocks.STONE);
-            }
-        }
-        h.setBlock(new BlockPos(3, 2, 3), Blocks.IRON_ORE);
-        h.setBlock(new BlockPos(5, 1, 5), Blocks.DEEPSLATE_COPPER_ORE);
+        BlockPos localOre = new BlockPos(4, 2, 4);
+        h.setBlock(localOre, Blocks.IRON_ORE);
         var miner = (MinerBlockEntity) place(h, minerPos, MachineType.MINER);
         charge(miner);
-        int out = miner.inventory().slots().firstOutput();
-        h.succeedWhen(() -> {
-            h.assertBlockPresent(Blocks.STONE, new BlockPos(3, 2, 3));
-            h.assertBlockPresent(Blocks.DEEPSLATE, new BlockPos(5, 1, 5));
-            h.assertBlockPresent(Blocks.STONE, new BlockPos(4, 3, 4));
-            boolean iron = false, copper = false;
-            for (int i = out; i < miner.inventory().slots().firstUpgrade(); i++) {
-                iron |= slot(miner, i).is(Items.RAW_IRON);
-                copper |= slot(miner, i).is(Items.RAW_COPPER);
+        boolean deepExists = net.juli2kapo.factoryascent.miner.TheDeep.level(h.getLevel().getServer()) != null;
+        h.runAfterDelay(100, () -> {
+            h.assertBlockPresent(Blocks.IRON_ORE, localOre);
+            if (deepExists) {
+                h.assertTrue(miner.claim() >= 0, "miner should have claimed a chunk in The Deep");
+            } else {
+                h.assertTrue(miner.claim() < 0 && miner.mined() == 0, "without The Deep the miner must not dig");
             }
-            h.assertTrue(iron && copper, "miner should have raw iron and raw copper");
+            h.succeed();
         });
     }
 
@@ -301,5 +301,109 @@ public final class ModGameTests {
         crusher.inventory().setStack(s.firstUpgrade(), new ItemStack(ModItems.SPEED_UPGRADE.get()));
         h.assertTrue(Math.abs(crusher.speedMultiplier() - 1.5f) < 0.001f, "one speed upgrade = x1.5");
         h.succeed();
+    }
+
+    // ---------------------------------------------------------------- storage network
+
+    /** Controller, cable, drive with one 1k cell, interface; returns the drive. */
+    private static net.juli2kapo.factoryascent.storagenet.StorageDriveBlockEntity storageNetwork(GameTestHelper h, boolean power) {
+        h.setBlock(new BlockPos(2, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageContent.CONTROLLER.get());
+        h.setBlock(new BlockPos(3, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageContent.CABLE.get());
+        h.setBlock(new BlockPos(4, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageContent.DRIVE.get());
+        h.setBlock(new BlockPos(5, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageContent.INTERFACE.get());
+        if (power) {
+            h.getBlockEntity(new BlockPos(2, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageControllerBlockEntity.class).fill();
+        }
+        var drive = h.getBlockEntity(new BlockPos(4, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageDriveBlockEntity.class);
+        drive.setCell(0, new ItemStack(net.juli2kapo.factoryascent.storagenet.StorageContent.CELL_1K.get()));
+        return drive;
+    }
+
+    private static net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.item.ItemResource> interfaceHandler(GameTestHelper h) {
+        var handler = h.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK,
+                h.absolutePos(new BlockPos(5, 1, 4)), Direction.EAST);
+        h.assertTrue(handler != null, "storage interface must expose an item handler");
+        return handler;
+    }
+
+    private static void storageInterfaceRoundTrip(GameTestHelper h) {
+        var drive = storageNetwork(h, false);
+        var controller = h.getBlockEntity(new BlockPos(2, 1, 4), net.juli2kapo.factoryascent.storagenet.StorageControllerBlockEntity.class);
+        var diamond = net.neoforged.neoforge.transfer.item.ItemResource.of(Items.DIAMOND);
+        h.runAfterDelay(3, () -> {
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(interfaceHandler(h).insert(diamond, 10, tx) == 0, "an unpowered network must not accept items");
+            }
+            controller.fill();
+        });
+        h.runAfterDelay(8, () -> {
+            var handler = interfaceHandler(h);
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(handler.insert(diamond, 100, tx) == 100, "should insert 100 diamonds");
+                // Aborted: nothing may stick.
+            }
+            h.assertTrue(net.juli2kapo.factoryascent.storagenet.StorageCellItem.contents(drive.cell(0)).isEmpty(),
+                    "an aborted transaction must leave the cell empty");
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(handler.insert(diamond, 100, tx) == 100, "should insert 100 diamonds");
+                tx.commit();
+            }
+            h.assertTrue(net.juli2kapo.factoryascent.storagenet.StorageCellItem.contents(drive.cell(0)).count(diamond) == 100,
+                    "the cell should hold 100 diamonds");
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(handler.extract(diamond, 40, tx) == 40, "should extract 40 diamonds");
+                tx.commit();
+            }
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(handler.extract(diamond, 1000, tx) == 60, "only 60 diamonds should be left");
+            }
+            h.assertTrue(net.juli2kapo.factoryascent.storagenet.StorageCellItem.contents(drive.cell(0)).count(diamond) == 60,
+                    "the cell should hold 60 diamonds after extracting 40");
+            var full = net.neoforged.neoforge.transfer.item.ItemResource.of(Items.COBBLESTONE);
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(handler.insert(full, 5000, tx) == 1024 - 60, "a 1k cell holds 1024 items in total");
+            }
+            h.succeed();
+        });
+    }
+
+    private static void storageCellKeepsContents(GameTestHelper h) {
+        var drive = storageNetwork(h, true);
+        var emerald = net.neoforged.neoforge.transfer.item.ItemResource.of(Items.EMERALD);
+        h.runAfterDelay(5, () -> {
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(interfaceHandler(h).insert(emerald, 37, tx) == 37, "should insert 37 emeralds");
+                tx.commit();
+            }
+            // Take the cell out through the drive's slots, as the GUI does.
+            var slots = drive.cellSlots();
+            var cellResource = slots.getResource(0);
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(slots.extract(0, cellResource, 1, tx) == 1, "the cell should come out of the drive");
+                tx.commit();
+            }
+            ItemStack cell = cellResource.toStack(1);
+            h.assertTrue(drive.cell(0).isEmpty(), "the drive slot should be empty");
+            h.assertTrue(net.juli2kapo.factoryascent.storagenet.StorageCellItem.contents(cell).count(emerald) == 37,
+                    "the removed cell should still hold 37 emeralds");
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(interfaceHandler(h).extract(emerald, 64, tx) == 0, "with the cell gone the network is empty");
+            }
+            // Put it back and break the drive: the cell drops with its contents and nothing spills.
+            drive.setCell(0, cell);
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                h.assertTrue(interfaceHandler(h).extract(emerald, 64, tx) == 37, "the re-inserted cell should be readable again");
+            }
+            h.getLevel().destroyBlock(h.absolutePos(new BlockPos(4, 1, 4)), true);
+        });
+        h.runAfterDelay(8, () -> {
+            var entities = h.getLevel().getEntitiesOfClass(ItemEntity.class,
+                    new net.minecraft.world.phys.AABB(h.absolutePos(new BlockPos(4, 1, 4))).inflate(2));
+            boolean ok = entities.stream().anyMatch(e -> e.getItem().getItem() instanceof net.juli2kapo.factoryascent.storagenet.StorageCellItem
+                    && net.juli2kapo.factoryascent.storagenet.StorageCellItem.contents(e.getItem()).count(emerald) == 37);
+            h.assertTrue(ok, "the broken drive should drop the cell with 37 emeralds inside");
+            h.assertTrue(entities.stream().noneMatch(e -> e.getItem().is(Items.EMERALD)), "emeralds must not spill");
+            h.succeed();
+        });
     }
 }

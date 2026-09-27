@@ -73,8 +73,8 @@ MACHINES = {
                     "Stores energy. Charges items in its slot.",
                     "Almacena energía. Carga objetos en su ranura."),
     "miner": ("automation", False, True,
-              "Digs out only ore blocks in a 17×17 area below it, leaving stone behind.",
-              "Extrae solo menas en un área de 17×17 debajo, dejando la piedra."),
+              "Claims its own chunk in The Deep, a sealed mining dimension, and digs out its ore.",
+              "Reclama su propio chunk en Las Profundidades, una dimensión minera sellada, y extrae sus menas."),
     "geothermal_generator": ("automation", True, True,
                              "24 FE/t for every lava source touching it. The lava is never used up.",
                              "24 FE/t por cada fuente de lava que lo toque. La lava nunca se gasta."),
@@ -159,7 +159,8 @@ def tex(name, fallback):
 def clean():
     for sub in ["blockstates", "models", "items", "lang"]:
         shutil.rmtree(ASSETS / sub, ignore_errors=True)
-    for sub in ["recipe", "loot_table", "tags", "worldgen", "neoforge", "advancement", "data_maps"]:
+    for sub in ["recipe", "loot_table", "tags", "worldgen", "neoforge", "advancement", "data_maps",
+                "dimension", "dimension_type"]:
         shutil.rmtree(DATA / MOD / sub, ignore_errors=True)
     for ns_dir in ["c", "minecraft", "neoforge"]:
         shutil.rmtree(DATA / ns_dir, ignore_errors=True)
@@ -379,7 +380,7 @@ def lang(extra_en, extra_es, advancement_text):
         ("power.none", "Needs no power", "No necesita energía"),
         ("energy_use", "Uses %s FE/t while working", "Consume %s FE/t mientras trabaja"),
         ("upgrade_slot_count", "Upgrade slots: %s", "Ranuras de mejora: %s"),
-        ("miner_radius", "Radius: %s blocks", "Radio: %s bloques"),
+        ("miner_radius", "Claim: %s×%s chunk column in The Deep", "Reclamo: columna de %s×%s chunks en Las Profundidades"),
         ("generation", "Generates %s FE/t", "Genera %s FE/t"),
         ("generation_per_lava", "Generates %s FE/t per touching lava source", "Genera %s FE/t por fuente de lava adyacente"),
         ("capacity", "Capacity: %s FE", "Capacidad: %s FE"),
@@ -416,7 +417,8 @@ def lang(extra_en, extra_es, advancement_text):
                       ("no_fuel", "No fuel", "Sin combustible"), ("full", "Energy buffer full", "Batería interna llena"),
                       ("finished", "Area finished", "Área terminada"),
                       ("incomplete", "Structure incomplete (%s blocks wrong)", "Estructura incompleta (%s bloques mal)"),
-                      ("needs_crank", "Turn the crank!", "¡Gira la manivela!")]:
+                      ("needs_crank", "Turn the crank!", "¡Gira la manivela!"),
+                      ("loading", "Reaching The Deep…", "Llegando a Las Profundidades…")]:
         add(f"{S}.{key}", e, s)
     G = f"gui.{MOD}"
     for key, e, s in [
@@ -427,8 +429,8 @@ def lang(extra_en, extra_es, advancement_text):
         ("eject_on", "Auto-eject: ON (click to toggle)", "Expulsión automática: SÍ (clic para cambiar)"),
         ("eject_off", "Auto-eject: OFF (click to toggle)", "Expulsión automática: NO (clic para cambiar)"),
         ("sunlight", "Sunlight: %s%%", "Luz solar: %s%%"), ("lava", "Lava sources: %s / 5", "Fuentes de lava: %s / 5"),
-        ("miner_info", "Radius %s · Y %s", "Radio %s · Y %s"), ("farm_info", "Field: %s wide, in front", "Campo: %s de ancho, delante"),
-        ("miner_progress", "Area swept: %s%%", "Área recorrida: %s%%"), ("miner_rate", "Up to %s ores/min", "Hasta %s menas/min"),
+        ("miner_info", "Deep claim #%s · Y %s", "Reclamo #%s en las Profundidades · Y %s"), ("farm_info", "Field: %s wide, in front", "Campo: %s de ancho, delante"),
+        ("miner_progress", "Claim dug out: %s%%", "Reclamo excavado: %s%%"), ("miner_rate", "Up to %s ores/min", "Hasta %s menas/min"),
         ("crank", "Crank", "Girar"), ("crank_hint", "Click (or sneak + right-click the Quern) to turn it",
                                      "Haz clic (o agáchate + clic derecho en el molino) para girarlo"),
         ("recipes", "What can this machine make?", "¿Qué puede fabricar esta máquina?"),
@@ -567,9 +569,72 @@ def worldgen():
     ore("bauxite", [("bauxite_ore", "stone")], 8, 6, 32, 128, "uniform")
     # Rare and deep: a few blocks per chunk, like diamonds.
     ore("titanium", [("deepslate_titanium_ore", "deepslate")], 4, 1, -64, -16, "trapezoid")
+    the_deep(wg)
     write(DATA / MOD / "neoforge" / "biome_modifier" / "ores.json", {
         "type": "neoforge:add_features", "biomes": "#minecraft:is_overworld",
         "features": [f"{MOD}:ore_tin", f"{MOD}:ore_bauxite", f"{MOD}:ore_titanium"], "step": "underground_ores"})
+
+
+# The Deep: a sealed mining dimension. Miners claim a chunk column here and dig out real ore
+# blocks, instead of creating items from nothing. Deepslate below y 80, stone above, bedrock
+# floor and ceiling, ores denser than the overworld (the whole 254-block column is ore-bearing).
+DEEP_ORES = [
+    # (name, feature, count, lo, hi)
+    ("coal", "minecraft:ore_coal", 18, 80, 254),
+    ("iron", "minecraft:ore_iron", 20, 40, 254),
+    ("copper", "minecraft:ore_copper_small", 10, 80, 254),
+    ("tin", f"{MOD}:ore_tin", 16, 50, 254),
+    ("bauxite", f"{MOD}:ore_bauxite", 10, 80, 254),
+    ("emerald", "minecraft:ore_emerald", 4, 120, 254),
+    ("gold", "minecraft:ore_gold", 8, 1, 110),
+    ("redstone", "minecraft:ore_redstone", 10, 1, 70),
+    ("lapis", "minecraft:ore_lapis", 5, 1, 90),
+    ("diamond", "minecraft:ore_diamond_small", 6, 1, 40),
+    ("titanium", f"{MOD}:ore_titanium", 4, 1, 70),
+]
+
+
+def the_deep(wg):
+    placed = []
+    for name, feature, count, lo, hi in DEEP_ORES:
+        write(wg / "placed_feature" / f"deep_ore_{name}.json", {"feature": feature, "placement": [
+            {"type": "minecraft:count", "count": count}, {"type": "minecraft:in_square"},
+            {"type": "minecraft:height_range", "height": {"type": "minecraft:uniform",
+                                                           "min_inclusive": {"absolute": lo}, "max_inclusive": {"absolute": hi}}},
+            {"type": "minecraft:biome"}]})
+        placed.append(f"{MOD}:deep_ore_{name}")
+    features = [[] for _ in range(11)]
+    features[6] = placed  # underground_ores
+    write(wg / "biome" / "the_deep.json", {
+        "attributes": {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#0e0c14"},
+        "carvers": [], "downfall": 0.0, "effects": {"water_color": "#3f76e4"},
+        "features": features, "has_precipitation": False, "spawn_costs": {},
+        "spawners": {k: [] for k in ["ambient", "axolotls", "creature", "misc", "monster",
+                                     "underground_water_creature", "water_ambient", "water_creature"]},
+        "temperature": 0.5})
+    write(DATA / MOD / "dimension_type" / "the_deep.json", {
+        "ambient_light": 0.0,
+        "attributes": {
+            "minecraft:gameplay/bed_rule": {"can_set_spawn": "never", "can_sleep": "never", "explodes": False},
+            "minecraft:gameplay/can_start_raid": False,
+            "minecraft:gameplay/respawn_anchor_works": False,
+            "minecraft:gameplay/sky_light_level": 0.0,
+            "minecraft:visual/fog_color": "#0e0c14",
+            "minecraft:visual/sky_light_factor": 0.0,
+        },
+        "cardinal_light": "default", "coordinate_scale": 1.0, "has_ceiling": True,
+        "has_ender_dragon_fight": False, "has_fixed_time": True, "has_skylight": False,
+        "height": 256, "infiniburn": "#minecraft:infiniburn_overworld", "logical_height": 256, "min_y": 0,
+        "monster_spawn_block_light_limit": 0, "monster_spawn_light_level": 0, "skybox": "none",
+        "timelines": "#minecraft:in_nether"})
+    write(DATA / MOD / "dimension" / "the_deep.json", {
+        "type": f"{MOD}:the_deep",
+        "generator": {"type": "minecraft:flat", "settings": {
+            "biome": f"{MOD}:the_deep", "features": True, "lakes": False, "structure_overrides": [],
+            "layers": [{"block": "minecraft:bedrock", "height": 1},
+                       {"block": "minecraft:deepslate", "height": 79},
+                       {"block": "minecraft:stone", "height": 175},
+                       {"block": "minecraft:bedrock", "height": 1}]}}})
 
 
 # ============================================================ recipes
@@ -874,8 +939,8 @@ def advancements(storage_terminal_id):
       "Breakthrough! Assemble an Advanced Circuit", "La Era de la Automatización",
       "¡Avance! Ensambla un circuito avanzado", frame="challenge")
     A("automation_miner", "age_automation", "miner", ["miner"], "Strip Mine",
-      "Build an Ore Miner: it digs only ores and leaves stone behind", "Mina a cielo abierto",
-      "Construye un minero de menas: solo extrae menas y deja la piedra", frame="goal")
+      "Build an Ore Miner: it digs ore out of its own claim in The Deep", "Mina a cielo abierto",
+      "Construye un minero de menas: extrae menas de su propio reclamo en Las Profundidades", frame="goal")
     A("automation_geothermal", "age_automation", "geothermal_generator", ["geothermal_generator"], "Hot Stuff",
       "Build a Geothermal Generator next to lava", "Cosa caliente", "Construye un generador geotérmico junto a lava")
 

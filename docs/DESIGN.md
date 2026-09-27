@@ -63,8 +63,8 @@ Steel Item Pipe, Steel Crate (81). **Storage Network:** Network Cable,
 Storage Controller, Storage Drive + Storage Cells (1k/4k items), Storage
 Terminal. Rewards: Electric Drill, Auto-Farmer.
 
-**4 — Automation (MV).** Ore Washer, Tree Farm, Auto-Crafter, Miner (mines
-only ores in an area), Geothermal Generator, MV cable, cell and pipe.
+**4 — Automation (MV).** Ore Washer, Tree Farm, Auto-Crafter, Ore Miner (digs
+its own claim in The Deep, see below), Geothermal Generator, MV cable, cell and pipe.
 Storage: Import/Export Bus, Crafting Terminal, 16k cells. Reward: Jetpack.
 
 **5 — Industrial (HV).** Induction Smelter (4 parallel slots), Industrial
@@ -102,6 +102,27 @@ works on dedicated servers.
 One tab, *Factory Ascent*, with a root and seven branches. Breakthroughs use
 the "challenge" frame. Descriptions are written as the next instruction
 ("Grind raw ore in a Quern to get dust"). About 45 advancements in total.
+
+## The Deep (where the Ore Miner's ore comes from)
+
+The Ore Miner doesn't create ore from nothing, and it doesn't strip-mine your base either.
+The Deep (`factoryascent:the_deep`) is a sealed dimension with:
+
+- a bedrock floor at y 0 and a bedrock ceiling at y 255
+- deepslate below y 80 and stone above
+- about 1,200 ore blocks per chunk: coal, iron, copper, tin and bauxite up high; gold, redstone, lapis, diamond and titanium down low
+
+Each Ore Miner claims its own chunk column there. Claims sit on a spiral grid with one empty
+chunk between them. The Miner sweeps its claim top-down, digs out the real ore blocks, and skips
+sections that hold none. When the claim is dug out, it moves on to the next free claim.
+
+The claim is kept loaded only while the Miner works: a ticket expires 10 s after it stops. At
+2 ores/s, a claim lasts about 10 minutes.
+
+The GameTest server builds its world without data-pack dimensions, so the GameTest only checks
+that the Miner leaves the world alone. Digging a claim is verified on a dedicated server.
+
+A Rift Portal to visit The Deep is planned for the Industrial age.
 
 ## Ores
 

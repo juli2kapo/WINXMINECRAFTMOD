@@ -46,7 +46,7 @@ public class FactoryBlockItem extends BlockItem {
                     if (type.isMultiblock()) tooltip.accept(line("multiblock." + type.id()).withStyle(ChatFormatting.GOLD));
                 }
                 case MINER -> {
-                    tooltip.accept(line("miner_radius", MinerBlockEntity.baseRadius()));
+                    tooltip.accept(line("miner_radius", MinerBlockEntity.CLAIM_CHUNKS, MinerBlockEntity.CLAIM_CHUNKS));
                     tooltip.accept(line("energy_use", type.baseEnergy()));
                 }
                 case GENERATOR -> tooltip.accept(line(type == MachineType.GEOTHERMAL_GENERATOR ? "generation_per_lava" : "generation",

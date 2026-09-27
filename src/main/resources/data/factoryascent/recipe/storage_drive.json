@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SWS",
+    "HFH",
+    "SCS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "W": "#c:wires/copper",
+    "H": "minecraft:chest",
+    "F": "factoryascent:machine_frame",
+    "C": "factoryascent:basic_circuit"
+  },
+  "result": {
+    "id": "factoryascent:storage_drive"
+  }
+}

@@ -6,36 +6,41 @@ import net.juli2kapo.factoryascent.Config;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
 import net.juli2kapo.factoryascent.machine.MachineType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import org.jspecify.annotations.Nullable;
 
 /**
- * Digs out only ore blocks ({@code #c:ores}) in a square below itself, layer by layer from the top,
- * and leaves stone/deepslate/netherrack in their place so caves and terrain stay intact. It never
- * loads chunks, and every break fires a normal break event so claim/protection mods can veto it.
+ * Mines ore in The Deep ({@link TheDeep}). On first use it claims its own chunk column there, then
+ * sweeps it layer by layer from the ceiling down, digging out every ore block (the ore becomes a
+ * tunnel) and skipping sections that have none. When the claim is dug out it takes the next free
+ * one. The claim is only kept loaded while the miner works, with a ticket that expires by itself.
  */
 public class MinerBlockEntity extends AbstractMachineBlockEntity {
-    /** Work points to dig one ore; Basic earns 1 point per tick, so one ore per second. */
+    /** Work points to dig one ore; the Miner earns 2 points per tick, so it digs two ores a second. */
     public static final int POINTS_PER_ORE = 20;
-    private static final int SCAN_PER_TICK = 384;
-    private static final int RADIUS = 8;
+    /** Positions examined per tick at most; whole ore-free sections are skipped for free. */
+    private static final int SCAN_PER_TICK = 1024;
+    /** Chunk columns in one claim (per side). */
+    public static final int CLAIM_CHUNKS = 1;
     private static final ItemStack TOOL = new ItemStack(Items.DIAMOND_PICKAXE);
 
+    private int claim = -1;
     private int cursorX;
     private int cursorZ;
     private int cursorY = Integer.MAX_VALUE;
-    private boolean finished;
     private float progress;
     private float energyCarry;
     private int mined;
@@ -45,26 +50,10 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         super(MachineType.MINER, pos, state);
     }
 
-    /** Radius before the server's {@code minerMaxRadius} cap (safe to call on the client). */
-    public static int baseRadius() {
-        return RADIUS;
-    }
-
-    public static int radius() {
-        return Math.min(RADIUS, Config.MINER_MAX_RADIUS.get());
-    }
-
     @Override
     protected void configureEnergy() {
         int capacity = Math.max(16_000, type.baseEnergy() * 4 * 400);
         energy.configure(capacity, capacity, 0);
-        restart();
-    }
-
-    /** Start the sweep again from the top (after an upgrade widens the area, or a finished run). */
-    public void restart() {
-        cursorY = Integer.MAX_VALUE;
-        finished = false;
     }
 
     private float speed() {
@@ -72,7 +61,17 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
     }
 
     private float energyPerPoint() {
+        if (!Config.MINERS_NEED_POWER.get()) return 0;
         return (float) (type.baseEnergy() / type.speed() * energyMultiplier() * Config.MACHINE_ENERGY.get());
+    }
+
+    /** The claim this miner digs in, or -1 before its first run. */
+    public int claim() {
+        return claim;
+    }
+
+    public ChunkPos claimChunk() {
+        return TheDeep.claimChunk(Math.max(claim, 0));
     }
 
     @Override
@@ -83,9 +82,9 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
             status = STATUS_OUTPUT_FULL;
             return false;
         }
-        if (finished) {
+        ServerLevel deep = TheDeep.level(level.getServer());
+        if (deep == null) { // data pack removed
             status = STATUS_IDLE;
-            if (level.getGameTime() % 1200 == 0) restart(); // look again every minute
             return false;
         }
 
@@ -96,6 +95,22 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
             status = STATUS_NO_POWER;
             return false;
         }
+
+        if (claim < 0) {
+            claim = TheDeep.allocateClaim(level.getServer());
+            cursorY = Integer.MAX_VALUE;
+            setChanged();
+        }
+        ChunkPos chunkPos = claimChunk();
+        if (level.getGameTime() % 100 == 0 || deep.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z()) == null) {
+            deep.getChunkSource().addTicketWithRadius(TheDeep.MINER_TICKET.get(), chunkPos, 0);
+        }
+        LevelChunk chunk = deep.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z());
+        if (chunk == null) { // still loading or generating, off-thread
+            status = STATUS_LOADING;
+            return false;
+        }
+
         float cost = points * epp + energyCarry;
         int whole = (int) cost;
         energyCarry = cost - whole;
@@ -104,40 +119,52 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         status = points < wanted ? STATUS_NO_POWER : STATUS_WORKING;
         progress = Math.min(progress + points, POINTS_PER_ORE * 64f);
 
-        int scanned = 0;
-        while (progress >= POINTS_PER_ORE && scanned < SCAN_PER_TICK && !finished && overflow.isEmpty()) {
-            BlockPos target = nextCandidate(level, SCAN_PER_TICK - scanned);
-            scanned += lastScanCost;
+        int budget = SCAN_PER_TICK;
+        while (progress >= POINTS_PER_ORE && budget > 0 && overflow.isEmpty()) {
+            BlockPos target = nextOre(chunk, budget);
+            budget -= lastScanCost;
             if (target == null) break;
-            if (mine(level, target)) progress -= POINTS_PER_ORE;
+            mine(deep, chunk, target);
+            progress -= POINTS_PER_ORE;
         }
-        if (finished) progress = 0;
+        if (cursorY < chunk.getMinY()) {
+            // Claim dug out: move on to a fresh one.
+            claim = TheDeep.allocateClaim(level.getServer());
+            cursorY = Integer.MAX_VALUE;
+        }
         setChanged();
         return true;
     }
 
     private int lastScanCost;
 
-    /** Advances the cursor until it finds an ore, scanning at most {@code budget} positions. */
-    private BlockPos nextCandidate(ServerLevel level, int budget) {
-        int r = radius();
-        int minY = level.getMinY();
+    /** Advances the cursor through the claim until it finds an ore, examining at most {@code budget} positions. */
+    private @Nullable BlockPos nextOre(LevelChunk chunk, int budget) {
+        int minY = chunk.getMinY();
         if (cursorY == Integer.MAX_VALUE) {
-            cursorY = worldPosition.getY() - 1;
-            cursorX = -r;
-            cursorZ = -r;
+            cursorY = chunk.getMaxY();
+            cursorX = 0;
+            cursorZ = 0;
         }
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int baseX = chunk.getPos().getMinBlockX();
+        int baseZ = chunk.getPos().getMinBlockZ();
         for (int i = 0; i < budget; i++) {
             if (cursorY < minY) {
-                finished = true;
                 lastScanCost = i;
                 return null;
             }
-            pos.set(worldPosition.getX() + cursorX, cursorY, worldPosition.getZ() + cursorZ);
-            advance(r);
-            if (!level.isLoaded(pos)) continue;
-            BlockState state = level.getBlockState(pos);
+            if (cursorX == 0 && cursorZ == 0) {
+                // Starting a layer: skip down past sections that cannot hold ore.
+                LevelChunkSection section = chunk.getSection(chunk.getSectionIndex(cursorY));
+                if (section.hasOnlyAir() || !section.maybeHas(s -> s.is(Tags.Blocks.ORES))) {
+                    cursorY = SectionPos.sectionToBlockCoord(SectionPos.blockToSectionCoord(cursorY)) - 1;
+                    continue;
+                }
+            }
+            pos.set(baseX + cursorX, cursorY, baseZ + cursorZ);
+            advance();
+            BlockState state = chunk.getBlockState(pos);
             if (state.is(Tags.Blocks.ORES) && !state.hasBlockEntity()) {
                 lastScanCost = i + 1;
                 return pos.immutable();
@@ -147,31 +174,25 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         return null;
     }
 
-    private void advance(int r) {
-        if (++cursorX > r) {
-            cursorX = -r;
-            if (++cursorZ > r) {
-                cursorZ = -r;
+    private void advance() {
+        if (++cursorX > 15) {
+            cursorX = 0;
+            if (++cursorZ > 15) {
+                cursorZ = 0;
                 cursorY--;
             }
         }
     }
 
-    private boolean mine(ServerLevel level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
-        var fakePlayer = FakePlayerFactory.getMinecraft(level);
-        if (NeoForge.EVENT_BUS.post(new BreakBlockEvent(level, pos, state, fakePlayer)).isCanceled()) return false;
-        List<ItemStack> drops = Block.getDrops(state, level, pos, null, null, TOOL);
-        BlockState filler = state.is(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE) ? Blocks.DEEPSLATE.defaultBlockState()
-                : state.is(Tags.Blocks.ORES_IN_GROUND_NETHERRACK) ? Blocks.NETHERRACK.defaultBlockState()
-                : Blocks.STONE.defaultBlockState();
-        level.setBlock(pos, filler, Block.UPDATE_ALL);
+    private void mine(ServerLevel deep, LevelChunk chunk, BlockPos pos) {
+        BlockState state = chunk.getBlockState(pos);
+        List<ItemStack> drops = Block.getDrops(state, deep, pos, null, null, TOOL);
+        deep.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         for (ItemStack drop : drops) {
             ItemStack rest = insertOutput(drop);
             if (!rest.isEmpty()) overflow.add(rest);
         }
         mined++;
-        return true;
     }
 
     private ItemStack insertOutput(ItemStack stack) {
@@ -203,15 +224,15 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         return false;
     }
 
-    /** How far through the area the sweep is, in permille. */
+    /** How far the current claim is dug, in permille. */
     @Override
     public int progressPermille() {
-        if (finished) return 1000;
-        if (cursorY == Integer.MAX_VALUE || level == null) return 0;
-        int top = worldPosition.getY() - 1;
-        int total = Math.max(1, top - level.getMinY() + 1);
-        return Math.min(1000, (top - cursorY) * 1000 / total);
+        if (claim < 0 || cursorY == Integer.MAX_VALUE) return 0;
+        return Math.clamp((DEEP_TOP - cursorY) * 1000L / DEEP_TOP, 0, 1000);
     }
+
+    /** The Deep's build height (the dimension spans y 0..255). */
+    private static final int DEEP_TOP = 255;
 
     /** Ores per minute ×10 at full speed. */
     @Override
@@ -219,15 +240,16 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         return Math.round(speed() * 1200f / POINTS_PER_ORE * 10);
     }
 
+    /** Claim number shown in the GUI (1-based, 0 = none yet). */
     @Override
     public int extraA() {
-        return radius();
+        return claim + 1;
     }
 
-    /** Current layer being scanned. */
+    /** Current layer being scanned in The Deep. */
     @Override
     public int extraB() {
-        return cursorY == Integer.MAX_VALUE ? worldPosition.getY() - 1 : cursorY;
+        return cursorY == Integer.MAX_VALUE ? DEEP_TOP : cursorY;
     }
 
     public int mined() {
@@ -240,7 +262,7 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         cursorX = input.getIntOr("cursor_x", 0);
         cursorY = input.getIntOr("cursor_y", Integer.MAX_VALUE);
         cursorZ = input.getIntOr("cursor_z", 0);
-        finished = input.getBooleanOr("finished", false);
+        claim = input.getIntOr("deep_claim", -1);
         progress = input.getFloatOr("progress", 0f);
         energyCarry = input.getFloatOr("energy_carry", 0f);
         mined = input.getIntOr("mined", 0);
@@ -255,7 +277,7 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
         output.putInt("cursor_x", cursorX);
         output.putInt("cursor_y", cursorY);
         output.putInt("cursor_z", cursorZ);
-        output.putBoolean("finished", finished);
+        output.putInt("deep_claim", claim);
         output.putFloat("progress", progress);
         output.putFloat("energy_carry", energyCarry);
         output.putInt("mined", mined);

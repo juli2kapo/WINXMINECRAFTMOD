@@ -41,6 +41,8 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
     public static final int STATUS_FULL = 7;
     public static final int STATUS_INCOMPLETE = 8;
     public static final int STATUS_NEEDS_CRANK = 9;
+    /** Waiting for a remote chunk (the Miner's claim in The Deep) to load. */
+    public static final int STATUS_LOADING = 10;
 
     protected final MachineType type;
     protected final MachineSlots slots;

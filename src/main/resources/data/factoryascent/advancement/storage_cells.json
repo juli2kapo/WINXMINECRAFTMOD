@@ -1,0 +1,32 @@
+{
+  "parent": "factoryascent:storage_network",
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:storage_cell_4k"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:storage_cell_4k"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.storage_cells.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.storage_cells.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ]
+}

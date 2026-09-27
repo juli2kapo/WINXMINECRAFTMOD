@@ -10,7 +10,6 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue MINER_RATE;
     public static final ModConfigSpec.DoubleValue GENERATOR_OUTPUT;
     public static final ModConfigSpec.BooleanValue MINERS_NEED_POWER;
-    public static final ModConfigSpec.IntValue MINER_MAX_RADIUS;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -26,8 +25,6 @@ public final class Config {
         MINERS_NEED_POWER = b.comment("If false, miners run without energy (handy for relaxed servers).")
                 .define("minersNeedPower", true);
         b.pop();
-        MINER_MAX_RADIUS = b.comment("Upper limit on miner radius (tiers use 5/8/12/16/24). Lower it on busy servers.")
-                .defineInRange("minerMaxRadius", 24, 1, 64);
         SPEC = b.build();
     }
 

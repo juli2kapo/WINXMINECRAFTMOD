@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "factoryascent:block/storage_interface_front_on",
+    "side": "factoryascent:block/storage_casing_side",
+    "top": "factoryascent:block/storage_casing_top",
+    "particle": "factoryascent:block/storage_casing_side"
+  }
+}

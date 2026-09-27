@@ -42,6 +42,7 @@ public final class FactoryAscent {
         ModRecipes.SERIALIZERS.register(modBus);
         ModCreativeTabs.TABS.register(modBus);
         container.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        net.juli2kapo.factoryascent.miner.TheDeep.register(modBus);
         ModGameTests.register(modBus);
         net.juli2kapo.factoryascent.storagenet.StorageNetwork.register(modBus);
 

@@ -1,1 +1,7 @@
 __pycache__/
+build/
+.gradle/
+run/
+out/
+.idea/
+*.iml

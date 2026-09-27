@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SGS",
+    "CFC",
+    "SWS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "G": "minecraft:glass_pane",
+    "C": "factoryascent:basic_circuit",
+    "F": "factoryascent:machine_frame",
+    "W": "#c:wires/copper"
+  },
+  "result": {
+    "id": "factoryascent:storage_terminal"
+  }
+}

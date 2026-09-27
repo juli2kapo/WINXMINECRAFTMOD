@@ -1,0 +1,30 @@
+{
+  "type": "factoryascent:the_deep",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "factoryascent:the_deep",
+      "features": true,
+      "lakes": false,
+      "structure_overrides": [],
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:deepslate",
+          "height": 79
+        },
+        {
+          "block": "minecraft:stone",
+          "height": 175
+        },
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        }
+      ]
+    }
+  }
+}

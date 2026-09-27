@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:storage_terminal"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:storage_terminal"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_storage.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_storage.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_circuit"
+}
