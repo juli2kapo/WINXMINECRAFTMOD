@@ -375,16 +375,25 @@ def m_quern():
     i = "quern"
     tx = {"side": "quern_side", "bed_top": "quern_bed_top", "runner_top": "quern_runner_top",
           "bottom": "quern_bottom", "handle": "quern_handle"}
+    # The block is only the bed stone and spout; the runner stone and crank are a separate part
+    # (quern_runner) that the block entity renderer turns while the quern has crank charge.
     base = []
     base += octo_y(8, 8, 7, 0, 6, {"side": "side", "up": "bed_top", "down": "bottom"}, c=2)      # bed stone
-    base += octo_y(8, 8, 5, 6, 11, {"side": "side", "up": "runner_top", "down": "bottom"}, c=2)  # runner stone
     base.append(Box((7, 2, 0), (9, 4, 1), {"all": "side"}))                                     # flour spout
+    return Model(i, tx, base, on={"bed_top": "quern_bed_top_on"}, boxes_on=base, particle="quern_side",
+                 desc="granite bed stone; the runner stone + crank turn (block entity renderer)")
 
-    # arm from the eye to the rim and an upright peg; a quarter turn further when working
-    idle = base + [Box((7.25, 11, 7.25), (12, 12, 8.75), "handle"), Box((10.5, 12, 7.25), (12, 16, 8.75), "handle")]
-    on = base + [Box((7.25, 11, 7.25), (8.75, 12, 12), "handle"), Box((7.25, 12, 10.5), (8.75, 16, 12), "handle")]
-    return Model(i, tx, idle, on={"bed_top": "quern_bed_top_on"}, boxes_on=on, particle="quern_side",
-                 desc="granite bed + runner stones, oak crank (turned when working)")
+
+def m_quern_runner():
+    """The turning part of the quern: runner stone, arm from the eye to the rim, upright peg."""
+    tx = {"side": "quern_side", "runner_top": "quern_runner_top", "bottom": "quern_bottom", "handle": "quern_handle"}
+    parts = octo_y(8, 8, 5, 6, 11, {"side": "side", "up": "runner_top", "down": "bottom"}, c=2)
+    parts += [Box((7.25, 11, 7.25), (12, 12, 8.75), "handle"), Box((10.5, 12, 7.25), (12, 16, 8.75), "handle")]
+    return Model("quern_runner", tx, parts, particle="quern_side", desc="quern runner stone + crank")
+
+
+# Loose parts drawn by block entity renderers (written once, without an _on variant).
+PARTS = [m_quern_runner]
 
 
 def m_brick_kiln():
@@ -719,6 +728,11 @@ def main(argv=None):
                 f = v.split("/", 1)[1]
                 if not os.path.exists(os.path.join(TEX_DIR, f + ".png")):
                     missing.add(f)
+    for part in PARTS:
+        mdl = part()
+        with open(os.path.join(OUT_DIR, mdl.id + ".json"), "w") as fh:
+            json.dump(mdl.to_json(False), fh, indent=2)
+            fh.write("\n")
     print("wrote %d models to %s" % (2 * len(models), OUT_DIR))
     if missing:
         print("MISSING TEXTURES:", ", ".join(sorted(missing)))

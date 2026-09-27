@@ -262,6 +262,10 @@ def machines():
                 variants[f"active={active},facing={f}"] = v
         write(ASSETS / "blockstates" / f"{mid}.json", {"variants": variants})
         item_def(mid, f"block/{mid}")
+    # Loose parts drawn by block entity renderers (e.g. the quern's turning runner stone).
+    for part in ("quern_runner",):
+        if (MODEL_SRC / f"{part}.json").exists():
+            block_model(part, json.loads((MODEL_SRC / f"{part}.json").read_text()))
 
 
 def conduit_models(name):

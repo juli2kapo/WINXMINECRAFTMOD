@@ -95,6 +95,22 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
 
     // ---------------------------------------------------------------- manual power
 
+    public static final int EVENT_CRANK = 1;
+
+    /** Client only: degrees the quern's runner stone still has to turn, and its current angle. */
+    public float pendingTurnDegrees;
+    public float runnerAngle;
+    public float runnerLastTime = -1;
+
+    @Override
+    public boolean triggerEvent(int id, int param) {
+        if (id == EVENT_CRANK) {
+            if (level != null && level.isClientSide()) pendingTurnDegrees = Math.min(pendingTurnDegrees + 360f, 720f);
+            return true;
+        }
+        return super.triggerEvent(id, param);
+    }
+
     /** Quern: one turn of the handle. */
     public void crank(Player player) {
         if (level == null || level.getGameTime() - lastCrank < 4) return;
@@ -102,6 +118,8 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         crankPoints = Math.min(crankPoints + CRANK_POINTS, CRANK_POINTS * 4);
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.5f,
                 0.8f + level.getRandom().nextFloat() * 0.4f);
+        // Tell watching clients to turn the runner stone one full turn (see QuernRenderer).
+        level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_CRANK, 0);
         player.causeFoodExhaustion(0.05f);
     }
 
