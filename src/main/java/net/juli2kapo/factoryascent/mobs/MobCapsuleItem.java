@@ -325,6 +325,7 @@ public class MobCapsuleItem extends Item {
 
     /** Stops the mob's pathing and pulls it back to where the capture began. */
     private static void hold(LivingEntity target, Vec3 anchor) {
+        applyHold(target); // idempotent; keeps holding even if another player's capture on it just ended
         if (target instanceof Mob mob) mob.getNavigation().stop();
         Vec3 pull = anchor.subtract(target.position()).scale(0.3);
         if (pull.length() > 0.5) pull = pull.normalize().scale(0.5);

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:mob_capsule"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:mob_capsule"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_mob_capsule.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_mob_capsule.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:has_component",
+    "component": "factoryascent:captured_mob",
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "factoryascent:item/mob_capsule_full"
+    },
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "factoryascent:item/mob_capsule"
+    }
+  }
+}

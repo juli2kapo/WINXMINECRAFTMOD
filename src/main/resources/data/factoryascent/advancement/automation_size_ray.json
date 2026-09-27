@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:minimizer_ray",
+              "factoryascent:maximizer_ray"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:minimizer_ray"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_size_ray.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_size_ray.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}
