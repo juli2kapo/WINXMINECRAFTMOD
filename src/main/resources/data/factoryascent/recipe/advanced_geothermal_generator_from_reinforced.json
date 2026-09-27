@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:reinforced_geothermal_generator",
+    "factoryascent:advanced_upgrade_kit"
+  ],
+  "result": {
+    "id": "factoryascent:advanced_geothermal_generator"
+  }
+}

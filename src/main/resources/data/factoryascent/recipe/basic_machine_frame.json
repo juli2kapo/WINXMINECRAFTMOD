@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "C C",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "C": "#c:ingots/copper"
+  },
+  "result": {
+    "id": "factoryascent:basic_machine_frame"
+  }
+}

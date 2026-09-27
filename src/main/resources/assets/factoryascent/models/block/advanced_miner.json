@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "factoryascent:block/advanced_miner_side",
+    "top": "factoryascent:block/advanced_miner_top",
+    "bottom": "factoryascent:block/advanced_miner_bottom"
+  }
+}

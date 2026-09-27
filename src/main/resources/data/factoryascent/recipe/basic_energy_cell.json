@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PBP",
+    "BMB",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "M": "factoryascent:basic_machine_frame",
+    "B": "minecraft:redstone_block",
+    "C": "minecraft:copper_block"
+  },
+  "result": {
+    "id": "factoryascent:basic_energy_cell"
+  }
+}

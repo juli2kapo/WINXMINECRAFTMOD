@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:plates/iron",
+    "#c:plates/iron",
+    "#c:plates/iron",
+    "#c:plates/iron",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "factoryascent:rod_mold"
+  }
+}

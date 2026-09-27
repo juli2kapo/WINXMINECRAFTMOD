@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " C ",
+    "PFP",
+    " C "
+  ],
+  "key": {
+    "C": "factoryascent:reinforced_circuit",
+    "P": "#c:plates/steel",
+    "F": "factoryascent:reinforced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:reinforced_upgrade_kit"
+  }
+}

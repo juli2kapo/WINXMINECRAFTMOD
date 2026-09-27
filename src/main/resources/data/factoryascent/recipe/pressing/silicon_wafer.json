@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:pressing",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:silicon",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:silicon_wafer",
+    "count": 2
+  },
+  "time": 60,
+  "mold": "factoryascent:plate_mold"
+}

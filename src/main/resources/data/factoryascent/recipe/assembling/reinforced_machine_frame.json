@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:basic_machine_frame",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:plates/steel",
+      "count": 4
+    },
+    {
+      "ingredient": "#c:gears/bronze",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:reinforced_machine_frame"
+  },
+  "time": 120
+}

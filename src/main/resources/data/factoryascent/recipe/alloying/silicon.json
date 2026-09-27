@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:alloying",
+  "ingredients": [
+    {
+      "ingredient": "#c:dusts/quartz",
+      "count": 2
+    },
+    {
+      "ingredient": "#c:dusts/coal",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:silicon"
+  },
+  "time": 80,
+  "min_tier": 2
+}

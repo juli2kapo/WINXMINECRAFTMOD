@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:raw_materials/tin",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:tin_dust",
+    "count": 3
+  },
+  "time": 60,
+  "min_tier": 3,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:iron_dust"
+    },
+    "chance": 0.1
+  }
+}

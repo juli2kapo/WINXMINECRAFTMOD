@@ -1,0 +1,26 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:advanced_machine_frame",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:plates/titanium",
+      "count": 4
+    },
+    {
+      "ingredient": "#c:gears/titanium",
+      "count": 2
+    },
+    {
+      "ingredient": "factoryascent:heating_coil",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:elite_machine_frame"
+  },
+  "time": 200,
+  "min_tier": 3
+}

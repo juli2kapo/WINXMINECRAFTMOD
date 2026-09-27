@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:pressing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/titanium",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:titanium_gear"
+  },
+  "time": 60,
+  "min_tier": 3,
+  "mold": "factoryascent:gear_mold"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:smelting",
+  "ingredients": [
+    {
+      "ingredient": "#c:ores/titanium",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:titanium_ingot"
+  },
+  "time": 160,
+  "min_tier": 3
+}

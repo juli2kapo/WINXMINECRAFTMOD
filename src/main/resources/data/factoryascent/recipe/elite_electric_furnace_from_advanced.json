@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:advanced_electric_furnace",
+    "factoryascent:elite_upgrade_kit"
+  ],
+  "result": {
+    "id": "factoryascent:elite_electric_furnace"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "factoryascent:tin_ore",
+    "factoryascent:deepslate_tin_ore",
+    "factoryascent:bauxite_ore",
+    "factoryascent:deepslate_bauxite_ore",
+    "factoryascent:tin_block",
+    "factoryascent:bronze_block",
+    "factoryascent:steel_block",
+    "factoryascent:aluminum_block",
+    "factoryascent:titanium_block",
+    "factoryascent:quantum_alloy_block"
+  ]
+}

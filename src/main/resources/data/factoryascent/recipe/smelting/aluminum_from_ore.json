@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:smelting",
+  "ingredients": [
+    {
+      "ingredient": "#c:ores/aluminum",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:aluminum_ingot"
+  },
+  "time": 60
+}

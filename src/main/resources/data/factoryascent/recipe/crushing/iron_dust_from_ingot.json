@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/iron",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:iron_dust"
+  },
+  "time": 40
+}

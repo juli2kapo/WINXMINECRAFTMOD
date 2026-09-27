@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "factoryascent:deepslate_tin_ore",
+    "factoryascent:deepslate_bauxite_ore",
+    "factoryascent:deepslate_titanium_ore"
+  ]
+}

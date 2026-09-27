@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:elite_alloy_smelter",
+    "factoryascent:ultimate_upgrade_kit"
+  ],
+  "result": {
+    "id": "factoryascent:ultimate_alloy_smelter"
+  }
+}

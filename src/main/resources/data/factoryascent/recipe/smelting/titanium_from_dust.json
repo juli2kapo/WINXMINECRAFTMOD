@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:smelting",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:titanium_dust",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:titanium_ingot"
+  },
+  "time": 100,
+  "min_tier": 3
+}

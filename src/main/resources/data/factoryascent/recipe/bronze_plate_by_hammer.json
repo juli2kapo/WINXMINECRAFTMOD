@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:ingots/bronze",
+    "#c:ingots/bronze",
+    "factoryascent:forge_hammer"
+  ],
+  "result": {
+    "id": "factoryascent:bronze_plate"
+  }
+}

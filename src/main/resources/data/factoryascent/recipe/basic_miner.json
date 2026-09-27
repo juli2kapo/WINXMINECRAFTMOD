@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PDP",
+    "GMG",
+    "PHP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "M": "factoryascent:basic_machine_frame",
+    "D": "minecraft:iron_pickaxe",
+    "G": "#c:gears/iron",
+    "H": "minecraft:hopper"
+  },
+  "result": {
+    "id": "factoryascent:basic_miner"
+  }
+}

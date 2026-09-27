@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:pressing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/copper",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:copper_wire",
+    "count": 3
+  },
+  "time": 40,
+  "mold": "factoryascent:wire_mold"
+}

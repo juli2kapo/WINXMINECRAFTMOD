@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ingots/tin",
+    "#c:ingots/bronze",
+    "#c:ingots/steel",
+    "#c:ingots/aluminum",
+    "#c:ingots/titanium",
+    "#c:ingots/quantum_alloy"
+  ]
+}

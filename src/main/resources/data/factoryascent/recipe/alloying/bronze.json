@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:alloying",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/copper",
+      "count": 3
+    },
+    {
+      "ingredient": "#c:ingots/tin",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:bronze_ingot",
+    "count": 4
+  },
+  "time": 80
+}
