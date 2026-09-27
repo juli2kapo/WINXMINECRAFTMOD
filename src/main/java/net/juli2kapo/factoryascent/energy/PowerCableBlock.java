@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 /** A thin cable that joins every touching cable into one network and connects to anything with energy. */
 public class PowerCableBlock extends PipeBlock implements EntityBlock {
     /** FE per tick a network can move; a network runs at the rate of its slowest cable. */
-    private static final int[] RATE = {512, 2_048, 8_192, 32_768, 131_072};
+    private static final int[] RATE = {512, 2_048, 8_192, 32_768};
 
     private final Tier tier;
     private final MapCodec<PowerCableBlock> codec;

@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.juli2kapo.factoryascent.FactoryAscent;
-import net.juli2kapo.factoryascent.Tier;
+import net.juli2kapo.factoryascent.farm.AutoFarmerBlockEntity;
+import net.juli2kapo.factoryascent.storage.CrateBlockEntity;
 import net.juli2kapo.factoryascent.energy.PowerCableBlockEntity;
 import net.juli2kapo.factoryascent.generator.CombustionGeneratorBlockEntity;
 import net.juli2kapo.factoryascent.generator.EnergyCellBlockEntity;
@@ -37,10 +38,12 @@ public final class ModBlockEntities {
                         case COMBUSTION_GENERATOR -> new CombustionGeneratorBlockEntity(pos, state);
                         case SOLAR_PANEL -> new SolarPanelBlockEntity(pos, state);
                         case GEOTHERMAL_GENERATOR -> new GeothermalGeneratorBlockEntity(pos, state);
-                        case ENERGY_CELL -> new EnergyCellBlockEntity(pos, state);
+                        case ENERGY_CELL, ADVANCED_ENERGY_CELL, INDUSTRIAL_ENERGY_CELL, QUANTUM_ENERGY_CELL ->
+                                new EnergyCellBlockEntity(type, pos, state);
+                        case AUTO_FARMER -> new AutoFarmerBlockEntity(pos, state);
                         default -> new ProcessingMachineBlockEntity(type, pos, state);
                     },
-                    blocks(type))));
+                    ModBlocks.machine(type).get())));
         }
     }
 
@@ -49,11 +52,8 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE = BLOCK_ENTITIES.register("item_pipe",
             () -> new BlockEntityType<>(ItemPipeBlockEntity::new, collect(ModBlocks.ITEM_PIPES.values())));
 
-    private static Set<Block> blocks(MachineType type) {
-        Set<Block> set = new HashSet<>();
-        for (Tier tier : Tier.VALUES) set.add(ModBlocks.machine(type, tier).get());
-        return set;
-    }
+    public static final Supplier<BlockEntityType<CrateBlockEntity>> CRATE = BLOCK_ENTITIES.register("crate",
+            () -> new BlockEntityType<>(CrateBlockEntity::new, ModBlocks.WOODEN_CRATE.get(), ModBlocks.BRONZE_CRATE.get()));
 
     private static Set<Block> collect(Iterable<? extends Supplier<? extends Block>> blocks) {
         Set<Block> set = new HashSet<>();

@@ -4,8 +4,13 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.juli2kapo.factoryascent.FactoryAscent;
 import net.juli2kapo.factoryascent.Tier;
+import net.juli2kapo.factoryascent.machine.ProcessingMachineBlockEntity;
+import net.juli2kapo.factoryascent.registry.ModComponents;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.core.component.DataComponents;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
-import net.juli2kapo.factoryascent.machine.MachineBlock;
 import net.juli2kapo.factoryascent.machine.MachineType;
 import net.juli2kapo.factoryascent.miner.MinerBlockEntity;
 import net.juli2kapo.factoryascent.pipe.ItemPipeBlock;
@@ -42,15 +47,20 @@ public final class ModGameTests {
     private record Test(String name, int maxTicks, Consumer<GameTestHelper> body) {}
 
     private static final List<Test> TESTS = List.of(
+            new Test("quern_grinds_with_cranks", 200, ModGameTests::quernGrindsWithCranks),
+            new Test("burner_crusher_doubles_ore", 300, ModGameTests::burnerCrusherDoublesOre),
             new Test("crusher_doubles_ore", 200, ModGameTests::crusherDoublesOre),
-            new Test("ultimate_crusher_quadruples_ore", 200, ModGameTests::ultimateCrusherQuadruplesOre),
-            new Test("upgrade_keeps_contents", 40, ModGameTests::upgradeKeepsContents),
             new Test("press_uses_mold", 200, ModGameTests::pressUsesMold),
-            new Test("recipe_needs_tier", 200, ModGameTests::recipeNeedsTier),
+            new Test("recipe_needs_better_machine", 100, ModGameTests::recipeNeedsBetterMachine),
+            new Test("coke_oven_multiblock", 600, ModGameTests::cokeOvenMultiblock),
+            new Test("blast_furnace_makes_steel", 900, ModGameTests::blastFurnaceMakesSteel),
             new Test("generator_cable_furnace_chain", 400, ModGameTests::generatorCableFurnaceChain),
             new Test("pipe_extracts_between_chests", 100, ModGameTests::pipeExtractsBetweenChests),
             new Test("miner_digs_only_ore", 400, ModGameTests::minerDigsOnlyOre),
-            new Test("speed_upgrade_needs_slot", 20, ModGameTests::speedUpgradeNeedsSlot)
+            new Test("auto_farmer_harvests_and_replants", 600, ModGameTests::autoFarmerHarvests),
+            new Test("crate_keeps_contents", 40, ModGameTests::crateKeepsContents),
+            new Test("energy_cell_charges_drill", 100, ModGameTests::energyCellChargesDrill),
+            new Test("speed_upgrade_speeds_up", 20, ModGameTests::speedUpgrade)
     );
 
     private ModGameTests() {}
@@ -74,8 +84,8 @@ public final class ModGameTests {
 
     // ---------------------------------------------------------------- helpers
 
-    private static AbstractMachineBlockEntity place(GameTestHelper h, BlockPos pos, MachineType type, Tier tier) {
-        h.setBlock(pos, ModBlocks.machine(type, tier).get());
+    private static AbstractMachineBlockEntity place(GameTestHelper h, BlockPos pos, MachineType type) {
+        h.setBlock(pos, ModBlocks.machine(type).get());
         return h.getBlockEntity(pos, AbstractMachineBlockEntity.class);
     }
 
@@ -87,82 +97,111 @@ public final class ModGameTests {
         return be.inventory().stack(index);
     }
 
+    private static Item mat(String name) {
+        return ModItems.MATERIALS.get(name).get();
+    }
+
     private static void expect(GameTestHelper h, ItemStack stack, Item item, int count, String what) {
         h.assertTrue(stack.is(item) && stack.getCount() >= count,
                 what + ": expected " + count + "x " + item + " but found " + stack);
     }
 
+    private static void fuel(AbstractMachineBlockEntity be, ItemStack fuel) {
+        be.inventory().setStack(be.inventory().slots().firstFuel(), fuel);
+    }
+
+    /** Fills the 3x3x3 cube whose front-bottom-centre is the controller at {@code c} (facing north). */
+    private static void cube(GameTestHelper h, BlockPos c, net.minecraft.world.level.block.Block wall, boolean hollow) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = 0; dy <= 2; dy++) {
+                for (int dz = 0; dz <= 2; dz++) {
+                    BlockPos p = c.offset(dx, dy, dz);
+                    if (p.equals(c)) continue;
+                    boolean center = dx == 0 && dy == 1 && dz == 1;
+                    h.setBlock(p, center && hollow ? Blocks.AIR : wall);
+                }
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- tests
 
+    private static void quernGrindsWithCranks(GameTestHelper h) {
+        var quern = (ProcessingMachineBlockEntity) place(h, new BlockPos(4, 1, 4), MachineType.QUERN);
+        quern.inventory().setStack(0, new ItemStack(Items.RAW_IRON, 4));
+        var player = FakePlayerFactory.getMinecraft(h.getLevel());
+        for (int i = 0; i < 30; i++) h.runAfterDelay(5L * i + 1, () -> quern.crank(player));
+        int out = quern.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(quern, out), mat("iron_dust"), 1, "quern output"));
+    }
+
+    private static void burnerCrusherDoublesOre(GameTestHelper h) {
+        var be = place(h, new BlockPos(4, 1, 4), MachineType.BURNER_CRUSHER);
+        fuel(be, new ItemStack(Items.COAL, 2));
+        be.inventory().setStack(0, new ItemStack(Items.RAW_IRON));
+        int out = be.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(be, out), mat("iron_dust"), 2, "burner crusher output"));
+    }
+
     private static void crusherDoublesOre(GameTestHelper h) {
-        var be = place(h, new BlockPos(4, 1, 4), MachineType.CRUSHER, Tier.BASIC);
+        var be = place(h, new BlockPos(4, 1, 4), MachineType.CRUSHER);
         charge(be);
         be.inventory().setStack(0, new ItemStack(Items.RAW_IRON));
         int out = be.inventory().slots().firstOutput();
-        h.succeedWhen(() -> expect(h, slot(be, out), ModItems.MATERIALS.get("iron_dust").get(), 2, "basic crusher output"));
-    }
-
-    private static void ultimateCrusherQuadruplesOre(GameTestHelper h) {
-        var be = place(h, new BlockPos(4, 1, 4), MachineType.CRUSHER, Tier.ULTIMATE);
-        charge(be);
-        be.inventory().setStack(0, new ItemStack(Items.RAW_IRON));
-        int out = be.inventory().slots().firstOutput();
-        h.succeedWhen(() -> {
-            ItemStack s = slot(be, out);
-            h.assertTrue(s.is(ModItems.MATERIALS.get("iron_dust").get()) && s.getCount() == 4,
-                    "ultimate crusher should give exactly 4 dust, got " + s);
-        });
-    }
-
-    private static void upgradeKeepsContents(GameTestHelper h) {
-        BlockPos pos = new BlockPos(4, 1, 4);
-        var be = place(h, pos, MachineType.ELECTRIC_FURNACE, Tier.BASIC);
-        be.inventory().setStack(0, new ItemStack(Items.COBBLESTONE, 17));
-        be.energy().produce(1234);
-        MachineBlock next = ModBlocks.machine(MachineType.ELECTRIC_FURNACE, Tier.REINFORCED).get();
-        h.setBlock(pos, next.defaultBlockState());
-        var after = h.getBlockEntity(pos, AbstractMachineBlockEntity.class);
-        after.onTierChanged();
-        h.assertTrue(after == be, "upgrade must keep the same block entity");
-        h.assertTrue(after.tier() == Tier.REINFORCED, "tier should now be reinforced, is " + after.tier());
-        expect(h, slot(after, 0), Items.COBBLESTONE, 17, "input kept");
-        h.assertTrue(after.energy().energy() >= 1234, "energy kept");
-        h.succeed();
+        h.succeedWhen(() -> expect(h, slot(be, out), mat("iron_dust"), 2, "crusher output"));
     }
 
     private static void pressUsesMold(GameTestHelper h) {
-        var be = place(h, new BlockPos(4, 1, 4), MachineType.METAL_PRESS, Tier.BASIC);
+        var be = place(h, new BlockPos(4, 1, 4), MachineType.METAL_PRESS);
         charge(be);
         var s = be.inventory().slots();
         be.inventory().setStack(s.firstInput(), new ItemStack(Items.IRON_INGOT, 2));
         be.inventory().setStack(s.firstMold(), new ItemStack(ModItems.MOLDS.get("gear_mold").get()));
         h.succeedWhen(() -> {
-            expect(h, slot(be, s.firstOutput()), ModItems.MATERIALS.get("iron_gear").get(), 1, "press output");
+            expect(h, slot(be, s.firstOutput()), mat("iron_gear"), 1, "press output");
             h.assertTrue(!slot(be, s.firstMold()).isEmpty(), "mould must not be consumed");
         });
     }
 
-    private static void recipeNeedsTier(GameTestHelper h) {
-        var basic = place(h, new BlockPos(2, 1, 4), MachineType.ELECTRIC_FURNACE, Tier.BASIC);
-        var advanced = place(h, new BlockPos(6, 1, 4), MachineType.ELECTRIC_FURNACE, Tier.ADVANCED);
-        charge(basic);
-        charge(advanced);
-        Item dust = ModItems.MATERIALS.get("titanium_dust").get();
-        basic.inventory().setStack(0, new ItemStack(dust));
-        advanced.inventory().setStack(0, new ItemStack(dust));
-        int out = basic.inventory().slots().firstOutput();
-        h.succeedWhen(() -> {
-            expect(h, slot(advanced, out), ModItems.MATERIALS.get("titanium_ingot").get(), 1, "advanced furnace");
-            h.assertTrue(slot(basic, out).isEmpty(), "basic furnace must not smelt titanium");
-            h.assertTrue(basic.status() == AbstractMachineBlockEntity.STATUS_TIER_TOO_LOW, "basic furnace should report tier too low");
+    private static void recipeNeedsBetterMachine(GameTestHelper h) {
+        var furnace = place(h, new BlockPos(4, 1, 4), MachineType.ELECTRIC_FURNACE);
+        charge(furnace);
+        furnace.inventory().setStack(0, new ItemStack(mat("titanium_dust")));
+        int out = furnace.inventory().slots().firstOutput();
+        h.runAfterDelay(60, () -> {
+            h.assertTrue(slot(furnace, out).isEmpty(), "an Electric Furnace must not smelt titanium");
+            h.assertTrue(furnace.status() == AbstractMachineBlockEntity.STATUS_TIER_TOO_LOW, "should report it needs a better machine");
+            h.succeed();
         });
     }
 
+    private static void cokeOvenMultiblock(GameTestHelper h) {
+        BlockPos c = new BlockPos(4, 1, 2);
+        var oven = place(h, c, MachineType.COKE_OVEN);
+        oven.inventory().setStack(0, new ItemStack(Items.COAL, 2));
+        h.runAfterDelay(45, () -> {
+            h.assertTrue(oven.status() == AbstractMachineBlockEntity.STATUS_INCOMPLETE, "no structure yet: must say incomplete");
+            cube(h, c, ModBlocks.COKE_OVEN_BRICKS.get(), false);
+        });
+        int out = oven.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(oven, out), mat("coke"), 1, "coke oven output"));
+    }
+
+    private static void blastFurnaceMakesSteel(GameTestHelper h) {
+        BlockPos c = new BlockPos(4, 1, 2);
+        cube(h, c, ModBlocks.FIRE_BRICKS.get(), true);
+        var furnace = place(h, c, MachineType.BLAST_FURNACE);
+        fuel(furnace, new ItemStack(mat("coke"), 4));
+        furnace.inventory().setStack(0, new ItemStack(Items.IRON_INGOT, 2));
+        int out = furnace.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(furnace, out), mat("steel_ingot"), 1, "blast furnace output"));
+    }
+
     private static void generatorCableFurnaceChain(GameTestHelper h) {
-        var gen = place(h, new BlockPos(1, 1, 4), MachineType.COMBUSTION_GENERATOR, Tier.BASIC);
-        for (int x = 2; x <= 5; x++) h.setBlock(new BlockPos(x, 1, 4), ModBlocks.POWER_CABLES.get(Tier.BASIC).get());
-        var furnace = place(h, new BlockPos(6, 1, 4), MachineType.ELECTRIC_FURNACE, Tier.BASIC);
-        gen.inventory().setStack(gen.inventory().slots().firstFuel(), new ItemStack(Items.COAL, 4));
+        var gen = place(h, new BlockPos(1, 1, 4), MachineType.COMBUSTION_GENERATOR);
+        for (int x = 2; x <= 5; x++) h.setBlock(new BlockPos(x, 1, 4), ModBlocks.POWER_CABLES.get(Tier.LV).get());
+        var furnace = place(h, new BlockPos(6, 1, 4), MachineType.ELECTRIC_FURNACE);
+        fuel(gen, new ItemStack(Items.COAL, 4));
         furnace.inventory().setStack(0, new ItemStack(Items.RAW_IRON, 3));
         int out = furnace.inventory().slots().firstOutput();
         h.succeedWhen(() -> expect(h, slot(furnace, out), Items.IRON_INGOT, 3, "furnace powered through cables"));
@@ -171,8 +210,8 @@ public final class ModGameTests {
     private static void pipeExtractsBetweenChests(GameTestHelper h) {
         BlockPos from = new BlockPos(2, 1, 4), pipePos = new BlockPos(3, 1, 4), to = new BlockPos(5, 1, 4);
         h.setBlock(from, Blocks.CHEST);
-        h.setBlock(pipePos, ModBlocks.ITEM_PIPES.get(Tier.BASIC).get());
-        h.setBlock(new BlockPos(4, 1, 4), ModBlocks.ITEM_PIPES.get(Tier.BASIC).get());
+        h.setBlock(pipePos, ModBlocks.ITEM_PIPES.get(Tier.LV).get());
+        h.setBlock(new BlockPos(4, 1, 4), ModBlocks.ITEM_PIPES.get(Tier.LV).get());
         h.setBlock(to, Blocks.CHEST);
         h.getBlockEntity(from, ChestBlockEntity.class).setItem(0, new ItemStack(Items.DIAMOND, 10));
         BlockPos abs = h.absolutePos(pipePos);
@@ -197,7 +236,7 @@ public final class ModGameTests {
         }
         h.setBlock(new BlockPos(3, 2, 3), Blocks.IRON_ORE);
         h.setBlock(new BlockPos(5, 1, 5), Blocks.DEEPSLATE_COPPER_ORE);
-        var miner = (MinerBlockEntity) place(h, minerPos, MachineType.MINER, Tier.BASIC);
+        var miner = (MinerBlockEntity) place(h, minerPos, MachineType.MINER);
         charge(miner);
         int out = miner.inventory().slots().firstOutput();
         h.succeedWhen(() -> {
@@ -213,15 +252,54 @@ public final class ModGameTests {
         });
     }
 
-    private static void speedUpgradeNeedsSlot(GameTestHelper h) {
-        var basic = place(h, new BlockPos(2, 1, 4), MachineType.CRUSHER, Tier.BASIC);
-        var s = basic.inventory().slots();
-        var speed = net.neoforged.neoforge.transfer.item.ItemResource.of(ModItems.SPEED_UPGRADE.get());
-        h.assertTrue(basic.isItemValid(s.firstUpgrade(), speed), "basic machines have one upgrade slot");
-        h.assertTrue(!basic.isItemValid(s.firstUpgrade() + 1, speed), "second slot must be locked at basic");
-        basic.inventory().setStack(s.firstUpgrade(), new ItemStack(ModItems.SPEED_UPGRADE.get()));
-        h.assertTrue(Math.abs(basic.speedMultiplier() - 1.5f) < 0.001f, "one speed upgrade = x1.5");
-        h.succeed();
+    private static void autoFarmerHarvests(GameTestHelper h) {
+        // Farmer at z=0 facing south would need a rotation; default north: field is at z-1.. so place it at the back.
+        BlockPos farmerPos = new BlockPos(4, 2, 8);
+        BlockPos crop = new BlockPos(4, 2, 6);
+        h.setBlock(crop.below(), Blocks.FARMLAND);
+        h.setBlock(crop, Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, 7));
+        var farmer = place(h, farmerPos, MachineType.AUTO_FARMER);
+        charge(farmer);
+        h.succeedWhen(() -> {
+            boolean wheat = false;
+            for (int i = farmer.inventory().slots().firstOutput(); i < farmer.inventory().slots().firstUpgrade(); i++) {
+                wheat |= slot(farmer, i).is(Items.WHEAT);
+            }
+            h.assertTrue(wheat, "farmer should have harvested wheat");
+            h.assertBlockPresent(Blocks.WHEAT, crop);
+        });
     }
 
+    private static void crateKeepsContents(GameTestHelper h) {
+        BlockPos pos = new BlockPos(4, 1, 4);
+        h.setBlock(pos, ModBlocks.WOODEN_CRATE.get());
+        h.getBlockEntity(pos, net.juli2kapo.factoryascent.storage.CrateBlockEntity.class).setItem(3, new ItemStack(Items.EMERALD, 7));
+        h.getLevel().destroyBlock(h.absolutePos(pos), true);
+        h.succeedWhen(() -> {
+            var entities = h.getLevel().getEntitiesOfClass(ItemEntity.class, new net.minecraft.world.phys.AABB(h.absolutePos(pos)).inflate(2));
+            boolean ok = entities.stream().anyMatch(e -> e.getItem().is(ModBlocks.WOODEN_CRATE.get().asItem())
+                    && e.getItem().get(DataComponents.CONTAINER) != null
+                    && e.getItem().get(DataComponents.CONTAINER).nonEmptyItemCopyStream().anyMatch(s -> s.is(Items.EMERALD) && s.getCount() == 7));
+            h.assertTrue(ok, "crate item should drop with the emeralds inside");
+            h.assertTrue(entities.stream().noneMatch(e -> e.getItem().is(Items.EMERALD)), "emeralds must not spill");
+        });
+    }
+
+    private static void energyCellChargesDrill(GameTestHelper h) {
+        var cell = place(h, new BlockPos(4, 1, 4), MachineType.ENERGY_CELL);
+        charge(cell);
+        fuel(cell, new ItemStack(ModItems.ELECTRIC_DRILL.get()));
+        h.succeedWhen(() -> {
+            ItemStack drill = slot(cell, cell.inventory().slots().firstFuel());
+            h.assertTrue(drill.getOrDefault(ModComponents.ENERGY.get(), 0) > 0, "drill should be charging");
+        });
+    }
+
+    private static void speedUpgrade(GameTestHelper h) {
+        var crusher = place(h, new BlockPos(2, 1, 4), MachineType.CRUSHER);
+        var s = crusher.inventory().slots();
+        crusher.inventory().setStack(s.firstUpgrade(), new ItemStack(ModItems.SPEED_UPGRADE.get()));
+        h.assertTrue(Math.abs(crusher.speedMultiplier() - 1.5f) < 0.001f, "one speed upgrade = x1.5");
+        h.succeed();
+    }
 }
