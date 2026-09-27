@@ -34,17 +34,17 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
     private final Optional<ChanceOutput> byproduct;
     private final Optional<Ingredient> mold;
     private final int time;
-    private final int minTier;
+    private final int minGrade;
 
     public MachineRecipe(RecipeKind kind, List<SizedIngredient> inputs, ItemStackTemplate result,
-                         Optional<ChanceOutput> byproduct, Optional<Ingredient> mold, int time, int minTier) {
+                         Optional<ChanceOutput> byproduct, Optional<Ingredient> mold, int time, int minGrade) {
         this.kind = kind;
         this.mold = mold;
         this.inputs = List.copyOf(inputs);
         this.result = result;
         this.byproduct = byproduct;
         this.time = time;
-        this.minTier = minTier;
+        this.minGrade = minGrade;
     }
 
     public RecipeKind kind() {
@@ -76,8 +76,8 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
         return time;
     }
 
-    public int minTier() {
-        return minTier;
+    public int minGrade() {
+        return minGrade;
     }
 
     /**
@@ -118,7 +118,7 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
 
     @Override
     public boolean matches(MachineRecipeInput input, Level level) {
-        return input.tier() >= minTier && findSlots(input.items()) != null;
+        return input.grade() >= minGrade && findSlots(input.items()) != null;
     }
 
     @Override
@@ -168,8 +168,8 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
                 ChanceOutput.CODEC.optionalFieldOf("byproduct").forGetter(MachineRecipe::byproduct),
                 Ingredient.CODEC.optionalFieldOf("mold").forGetter(MachineRecipe::mold),
                 Codec.intRange(1, 72000).optionalFieldOf("time", 40).forGetter(MachineRecipe::time),
-                Codec.intRange(1, 5).optionalFieldOf("min_tier", 1).forGetter(MachineRecipe::minTier)
-        ).apply(i, (in, res, by, mold, time, tier) -> new MachineRecipe(kind, in, res, by, mold, time, tier)));
+                Codec.intRange(1, 10).optionalFieldOf("min_grade", 1).forGetter(MachineRecipe::minGrade)
+        ).apply(i, (in, res, by, mold, time, grade) -> new MachineRecipe(kind, in, res, by, mold, time, grade)));
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, MachineRecipe> streamCodec(RecipeKind kind) {
@@ -179,8 +179,8 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
                 ByteBufCodecs.optional(ChanceOutput.STREAM_CODEC), MachineRecipe::byproduct,
                 ByteBufCodecs.optional(Ingredient.CONTENTS_STREAM_CODEC), MachineRecipe::mold,
                 ByteBufCodecs.VAR_INT, MachineRecipe::time,
-                ByteBufCodecs.VAR_INT, MachineRecipe::minTier,
-                (in, res, by, mold, time, tier) -> new MachineRecipe(kind, new ArrayList<>(in), res, by, mold, time, tier));
+                ByteBufCodecs.VAR_INT, MachineRecipe::minGrade,
+                (in, res, by, mold, time, grade) -> new MachineRecipe(kind, new ArrayList<>(in), res, by, mold, time, grade));
     }
 
     /** Convenience for code that only needs a plain ingredient view. */

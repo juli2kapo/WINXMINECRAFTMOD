@@ -1,20 +1,12 @@
 package net.juli2kapo.factoryascent.machine;
 
 import com.mojang.serialization.MapCodec;
-import net.juli2kapo.factoryascent.Tier;
-import net.juli2kapo.factoryascent.item.UpgradeKitItem;
 import net.juli2kapo.factoryascent.registry.ModBlockEntities;
-import net.juli2kapo.factoryascent.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -36,31 +28,26 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** One block class for every tiered machine; behaviour lives in the block entity. */
+/** One block class for every machine; behaviour lives in the block entity. */
 public class MachineBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
     private static final VoxelShape SOLAR_SHAPE = Block.box(0, 0, 0, 16, 6, 16);
+    private static final VoxelShape QUERN_SHAPE = Shapes.or(Block.box(1, 0, 1, 15, 6, 15), Block.box(3, 6, 3, 13, 11, 13));
 
     private final MachineType type;
-    private final Tier tier;
     private final MapCodec<MachineBlock> codec;
 
-    public MachineBlock(MachineType type, Tier tier, Properties properties) {
+    public MachineBlock(MachineType type, Properties properties) {
         super(properties);
         this.type = type;
-        this.tier = tier;
-        this.codec = simpleCodec(p -> new MachineBlock(type, tier, p));
+        this.codec = simpleCodec(p -> new MachineBlock(type, p));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
     }
 
     public MachineType type() {
         return type;
-    }
-
-    public Tier tier() {
-        return tier;
     }
 
     @Override
@@ -91,7 +78,11 @@ public class MachineBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return type == MachineType.SOLAR_PANEL ? SOLAR_SHAPE : Shapes.block();
+        return switch (type) {
+            case SOLAR_PANEL -> SOLAR_SHAPE;
+            case QUERN -> QUERN_SHAPE;
+            default -> Shapes.block();
+        };
     }
 
     @Override
@@ -112,54 +103,14 @@ public class MachineBlock extends BaseEntityBlock {
                 : null;
     }
 
-    /** Upgrading swaps the block for the next tier; keep the block entity (and its contents). */
-    @Override
-    protected boolean shouldChangedStateKeepBlockEntity(BlockState oldState) {
-        return oldState.getBlock() instanceof MachineBlock other && other.type == type;
-    }
-
-    @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
-        if (stack.getItem() instanceof UpgradeKitItem kit) {
-            return tryUpgrade(kit, stack, state, level, pos, player);
-        }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
-    }
-
-    private InteractionResult tryUpgrade(UpgradeKitItem kit, ItemStack stack, BlockState state, Level level,
-                                         BlockPos pos, Player player) {
-        Tier next = tier.next();
-        if (next == null) {
-            if (!level.isClientSide()) player.sendOverlayMessage(Component.translatable("message.factoryascent.max_tier"));
-            return InteractionResult.FAIL;
-        }
-        if (kit.tier() != next) {
-            if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.translatable("message.factoryascent.wrong_kit",
-                        next.displayName(), kit.tier().displayName()));
-            }
-            return InteractionResult.FAIL;
-        }
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-
-        Block target = ModBlocks.machine(type, next).get();
-        BlockState upgraded = target.defaultBlockState()
-                .setValue(FACING, state.getValue(FACING))
-                .setValue(ACTIVE, state.getValue(ACTIVE));
-        level.setBlock(pos, upgraded, Block.UPDATE_ALL);
-        if (level.getBlockEntity(pos) instanceof AbstractMachineBlockEntity be) {
-            be.onTierChanged();
-        }
-        level.invalidateCapabilities(pos);
-        if (!player.getAbilities().instabuild) stack.shrink(1);
-        level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6f, 1.2f);
-        player.sendOverlayMessage(Component.translatable("message.factoryascent.upgraded", next.displayName()));
-        return InteractionResult.SUCCESS;
-    }
-
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (type == MachineType.QUERN && player.isShiftKeyDown()) {
+            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ProcessingMachineBlockEntity quern) {
+                quern.crank(player);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof AbstractMachineBlockEntity be) {
             player.openMenu(be, pos);
         }
@@ -179,5 +130,4 @@ public class MachineBlock extends BaseEntityBlock {
     public static boolean isActive(BlockState state) {
         return state.hasProperty(ACTIVE) && state.getValue(ACTIVE);
     }
-
 }

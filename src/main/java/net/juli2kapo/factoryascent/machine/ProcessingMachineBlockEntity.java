@@ -5,13 +5,18 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import net.juli2kapo.factoryascent.Config;
-import net.juli2kapo.factoryascent.Tier;
 import net.juli2kapo.factoryascent.recipe.ChanceOutput;
 import net.juli2kapo.factoryascent.recipe.MachineRecipe;
 import net.juli2kapo.factoryascent.recipe.RecipeKind;
 import net.juli2kapo.factoryascent.registry.ModRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -29,22 +34,33 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Smelter, Crusher, Constructor, Foundry, Assembler and Manufacturer.
+ * Every recipe-driven machine: Quern, kilns, burner machines, multiblocks and electric machines.
  *
- * <p>Work model: each tick the machine earns {@code tierSpeed × speedUpgrades} work points (fewer if
- * energy runs short) and completes one operation per {@code recipe.time} points, so high tiers can
- * finish several operations in a single tick.
+ * <p>Work model: each tick the machine earns work points from its power source (crank, fuel,
+ * electricity or nothing at all for the coke oven) and completes one operation per
+ * {@code recipe.time} points. Recipes above the machine's grade are out of reach, and when several
+ * recipes match, the one with the highest {@code min_grade} wins, so better machines give better
+ * yields from the same input.
  */
 public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
-    /** Vanilla smelting runs at this fraction of the vanilla cook time in the Smelter. */
+    public static final TagKey<Item> COKE_TAG = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "coal_coke"));
+    /** Vanilla smelting runs at this fraction of the vanilla cook time in the Electric Furnace. */
     private static final int VANILLA_SMELT_DIVISOR = 5;
     private static final int MAX_OPS_PER_TICK = 64;
+    /** Work points one crank of the Quern adds. */
+    private static final int CRANK_POINTS = 10;
 
     private final RecipeKind kind;
     private @Nullable ActiveRecipe current;
     private boolean recipeDirty = true;
     private float progress;
     private float energyCarry;
+    private int burnRemaining;
+    private int burnTotal;
+    private float crankPoints;
+    private long lastCrank;
+    private boolean structureOk = true;
+    private int structureMissing;
 
     private @Nullable RecipeMap acceptCacheOwner;
     private final Map<Item, Boolean> acceptCache = new IdentityHashMap<>();
@@ -59,24 +75,44 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
     }
 
     @Override
-    protected void applyTier(Tier tier) {
-        int perTick = Math.max(1, Math.round(type.baseEnergy() * tier.speed() * tier.energyFactor()));
-        // Enough buffer for ~20 s of full-speed work with speed upgrades installed.
-        int capacity = Math.max(8_000, perTick * 4 * 400);
+    protected void configureEnergy() {
+        if (type.power() != MachineType.Power.ELECTRIC) {
+            energy.configure(0, 0, 0);
+            return;
+        }
+        int capacity = Math.max(8_000, type.baseEnergy() * 4 * 400);
         energy.configure(capacity, capacity, 0);
-        recipeDirty = true;
     }
 
     private float speed() {
-        return (float) (tier().speed() * speedMultiplier() * Config.MACHINE_SPEED.get());
+        return (float) (type.speed() * speedMultiplier() * Config.MACHINE_SPEED.get());
     }
 
+    /** Energy per work point for electric machines. */
     private float energyPerPoint() {
-        return (float) (type.baseEnergy() * tier().energyFactor() * energyMultiplier() * Config.MACHINE_ENERGY.get());
+        return (float) (type.baseEnergy() / type.speed() * energyMultiplier() * Config.MACHINE_ENERGY.get());
     }
+
+    // ---------------------------------------------------------------- manual power
+
+    /** Quern: one turn of the handle. */
+    public void crank(Player player) {
+        if (level == null || level.getGameTime() - lastCrank < 4) return;
+        lastCrank = level.getGameTime();
+        crankPoints = Math.min(crankPoints + CRANK_POINTS, CRANK_POINTS * 4);
+        level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.5f,
+                0.8f + level.getRandom().nextFloat() * 0.4f);
+        player.causeFoodExhaustion(0.05f);
+    }
+
+    // ---------------------------------------------------------------- ticking
 
     @Override
     protected boolean tickMachine(ServerLevel level) {
+        if (type.isMultiblock() && (level.getGameTime() + worldPosition.asLong()) % 40 == 0) {
+            structureMissing = Multiblocks.missing(type, level, worldPosition, getBlockState().getValue(MachineBlock.FACING));
+            structureOk = structureMissing == 0;
+        }
         if (recipeDirty) {
             ActiveRecipe next = resolve(level);
             if (next == null || current == null || !next.key().equals(current.key())) progress = 0;
@@ -84,33 +120,22 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             recipeDirty = false;
         }
         lastEnergyRate = 0;
+        if (!structureOk) {
+            status = STATUS_INCOMPLETE;
+            return false;
+        }
         if (current == null) {
             if (status != STATUS_TIER_TOO_LOW) status = STATUS_IDLE;
             progress = 0;
-            return false;
+            return burnRemaining > 0 && tickBurn();
         }
         if (!canOutput(current)) {
             status = STATUS_OUTPUT_FULL;
             return false;
         }
 
-        float wanted = speed();
-        float epp = energyPerPoint();
-        float points = wanted;
-        if (epp > 0) {
-            float affordable = (energy.energy() + energyCarry) / epp;
-            points = Math.min(wanted, affordable);
-        }
-        if (points <= 0.0001f) {
-            status = STATUS_NO_POWER;
-            return false;
-        }
-        float cost = points * epp + energyCarry;
-        int whole = (int) cost;
-        energyCarry = cost - whole;
-        energy.consume(whole);
-        lastEnergyRate = whole;
-        status = points < wanted ? STATUS_NO_POWER : STATUS_WORKING;
+        float points = earnPoints();
+        if (points <= 0.0001f) return false;
 
         progress += points;
         int ops = 0;
@@ -132,6 +157,74 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         recipeDirty = false;
         setChanged();
         return true;
+    }
+
+    /** Burns fuel without work (the fire keeps going until the current item is spent). */
+    private boolean tickBurn() {
+        burnRemaining--;
+        return true;
+    }
+
+    /** Work points available this tick from the machine's power source; sets {@link #status}. */
+    private float earnPoints() {
+        float wanted = speed();
+        switch (type.power()) {
+            case NONE -> {
+                status = STATUS_WORKING;
+                return wanted;
+            }
+            case MANUAL -> {
+                float points = Math.min(crankPoints, wanted * 2);
+                crankPoints -= points;
+                status = points > 0 ? STATUS_WORKING : STATUS_NEEDS_CRANK;
+                return points;
+            }
+            case FUEL -> {
+                if (burnRemaining <= 0 && !ignite()) {
+                    status = STATUS_NO_FUEL;
+                    return 0;
+                }
+                burnRemaining--;
+                status = STATUS_WORKING;
+                return wanted;
+            }
+            default -> {
+                float epp = energyPerPoint();
+                float points = epp <= 0 ? wanted : Math.min(wanted, (energy.energy() + energyCarry) / epp);
+                if (points <= 0.0001f) {
+                    status = STATUS_NO_POWER;
+                    return 0;
+                }
+                float cost = points * epp + energyCarry;
+                int whole = (int) cost;
+                energyCarry = cost - whole;
+                energy.consume(whole);
+                lastEnergyRate = whole;
+                status = points < wanted ? STATUS_NO_POWER : STATUS_WORKING;
+                return points;
+            }
+        }
+    }
+
+    private boolean ignite() {
+        if (level == null || slots.fuel() == 0) return false;
+        ItemStack fuel = inventory.stack(slots.firstFuel());
+        int burn = burnTime(fuel);
+        if (burn <= 0) return false;
+        var remainder = fuel.getItem().getCraftingRemainder(fuel);
+        fuel.shrink(1);
+        if (fuel.isEmpty() && remainder != null) inventory.setStack(slots.firstFuel(), remainder.create());
+        else inventory.changed(slots.firstFuel());
+        burnTotal = burn;
+        burnRemaining = burn;
+        return true;
+    }
+
+    private int burnTime(ItemStack fuel) {
+        if (fuel.isEmpty() || level == null) return 0;
+        // The Blast Furnace only runs on coke.
+        if (type == MachineType.BLAST_FURNACE && !fuel.is(COKE_TAG)) return 0;
+        return fuel.getBurnTime(RecipeType.SMELTING, level.fuelValues());
     }
 
     private boolean inputsStillSatisfy(ActiveRecipe recipe) {
@@ -162,10 +255,14 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         ChanceOutput by = recipe.byproduct();
         if (by != null && level.getRandom().nextFloat() < by.chance()) {
             ItemStack extra = by.item().create();
-            ItemStack second = inventory.stack(slots.firstOutput() + 1);
-            if (second.isEmpty() || (ItemStack.isSameItemSameComponents(second, extra)
-                    && second.getCount() + extra.getCount() <= second.getMaxStackSize())) {
-                insertOutput(slots.firstOutput() + 1, extra);
+            // Same item as the main output (e.g. the Quern's "50% chance of a second dust") goes there first.
+            int target = ItemStack.isSameItemSameComponents(extra, inventory.stack(slots.firstOutput()))
+                    && inventory.stack(slots.firstOutput()).getCount() + extra.getCount() <= 64
+                    ? slots.firstOutput() : slots.firstOutput() + 1;
+            ItemStack there = inventory.stack(target);
+            if (there.isEmpty() || (ItemStack.isSameItemSameComponents(there, extra)
+                    && there.getCount() + extra.getCount() <= there.getMaxStackSize())) {
+                insertOutput(target, extra);
             }
         }
         inventory.changed(slots.firstInput());
@@ -193,26 +290,24 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         if (items.stream().allMatch(ItemStack::isEmpty)) return null;
         RecipeManager recipes = level.recipeAccess();
         ItemStack mold = slots.mold() > 0 ? inventory.stack(slots.firstMold()) : ItemStack.EMPTY;
-        boolean blockedByTier = false;
-        // Highest min_tier first, so upgrading a machine unlocks better yields for the same input.
+        boolean blockedByGrade = false;
         List<RecipeHolder<MachineRecipe>> candidates = new ArrayList<>(recipes.recipeMap().byType(ModRecipes.type(kind)));
-        candidates.sort((a, b) -> Integer.compare(b.value().minTier(), a.value().minTier()));
+        candidates.sort((a, b) -> Integer.compare(b.value().minGrade(), a.value().minGrade()));
         for (RecipeHolder<MachineRecipe> holder : candidates) {
             MachineRecipe r = holder.value();
             if (!r.moldMatches(mold)) continue;
             int[] found = r.findSlots(items);
             if (found == null) continue;
-            if (r.minTier() > tier().level()) {
-                blockedByTier = true;
+            if (r.minGrade() > type.grade()) {
+                blockedByGrade = true;
                 continue;
             }
             int[] counts = r.inputs().stream().mapToInt(SizedIngredient::count).toArray();
             int[] absolute = new int[found.length];
             for (int i = 0; i < found.length; i++) absolute[i] = slots.firstInput() + found[i];
-            return new ActiveRecipe(holder.id(), absolute, counts, r.result().create(),
-                    r.byproduct().orElse(null), r.time());
+            return new ActiveRecipe(holder.id(), absolute, counts, r.result().create(), r.byproduct().orElse(null), r.time());
         }
-        if (kind == RecipeKind.SMELTING && !items.get(0).isEmpty()) {
+        if (type == MachineType.ELECTRIC_FURNACE && !items.get(0).isEmpty()) {
             SingleRecipeInput input = new SingleRecipeInput(items.get(0));
             var vanilla = recipes.getRecipeFor(RecipeType.SMELTING, input, level);
             if (vanilla.isPresent()) {
@@ -224,7 +319,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
                 }
             }
         }
-        if (blockedByTier) status = STATUS_TIER_TOO_LOW;
+        if (blockedByGrade) status = STATUS_TIER_TOO_LOW;
         return null;
     }
 
@@ -233,13 +328,20 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
     @Override
     public void onInventoryChanged(int index) {
         super.onInventoryChanged(index);
-        SlotRole role = slots.role(index);
-        if (role != SlotRole.FUEL) recipeDirty = true;
+        if (slots.role(index) != SlotRole.FUEL) recipeDirty = true;
+    }
+
+    @Override
+    public boolean isItemValid(int index, ItemResource resource) {
+        if (slots.role(index) == SlotRole.FUEL) return burnTime(resource.toStack(1)) > 0;
+        return super.isItemValid(index, resource);
     }
 
     @Override
     public boolean canAutomationInsert(int index, ItemResource resource) {
-        if (slots.role(index) != SlotRole.INPUT) return false;
+        SlotRole role = slots.role(index);
+        if (role == SlotRole.FUEL) return isItemValid(index, resource);
+        if (role != SlotRole.INPUT) return false;
         if (resource.getItem() instanceof net.juli2kapo.factoryascent.item.MoldItem) return false;
         if (!acceptsItem(resource.toStack(1))) return false;
         // Keep multi-input machines tidy: one item type per slot, no duplicates across slots.
@@ -252,7 +354,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         return true;
     }
 
-    /** Whether any recipe of this machine can use the item. Cached per recipe reload. */
+    /** Whether any recipe this machine can reach uses the item. Cached per recipe reload. */
     public boolean acceptsItem(ItemStack stack) {
         if (!(level instanceof ServerLevel server)) return true;
         RecipeManager recipes = server.recipeAccess();
@@ -262,13 +364,19 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         }
         return acceptCache.computeIfAbsent(stack.getItem(), item -> {
             for (RecipeHolder<MachineRecipe> holder : recipes.recipeMap().byType(ModRecipes.type(kind))) {
-                if (holder.value().accepts(stack)) return true;
+                if (holder.value().minGrade() <= type.grade() && holder.value().accepts(stack)) return true;
             }
-            return kind == RecipeKind.SMELTING && recipes.propertySet(RecipePropertySet.FURNACE_INPUT).test(stack);
+            return type == MachineType.ELECTRIC_FURNACE && recipes.propertySet(RecipePropertySet.FURNACE_INPUT).test(stack);
         });
     }
 
     // ---------------------------------------------------------------- GUI
+
+    /** For multiblocks: how many structure blocks are wrong or missing (0 = formed). */
+    @Override
+    public int extraB() {
+        return structureMissing;
+    }
 
     @Override
     public int progressPermille() {
@@ -283,9 +391,14 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         return (int) Math.min(Integer.MAX_VALUE, Math.round(opsPerMinute * current.result().getCount() * 10));
     }
 
+    /** Burn progress (permille) for fuel machines; crank charge for the Quern. */
     @Override
     public int extraA() {
-        return Math.round(speed() * energyPerPoint());
+        return switch (type.power()) {
+            case FUEL -> burnTotal <= 0 ? 0 : Math.max(0, burnRemaining * 1000 / burnTotal);
+            case MANUAL -> Math.round(crankPoints * 1000 / (CRANK_POINTS * 4));
+            default -> Math.round(speed() * energyPerPoint());
+        };
     }
 
     // ---------------------------------------------------------------- persistence
@@ -295,6 +408,9 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         super.loadAdditional(input);
         progress = input.getFloatOr("progress", 0f);
         energyCarry = input.getFloatOr("energy_carry", 0f);
+        burnRemaining = input.getIntOr("burn_remaining", 0);
+        burnTotal = input.getIntOr("burn_total", 0);
+        crankPoints = input.getFloatOr("crank", 0f);
         recipeDirty = true;
     }
 
@@ -303,5 +419,8 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         super.saveAdditional(output);
         output.putFloat("progress", progress);
         output.putFloat("energy_carry", energyCarry);
+        output.putInt("burn_remaining", burnRemaining);
+        output.putInt("burn_total", burnTotal);
+        output.putFloat("crank", crankPoints);
     }
 }

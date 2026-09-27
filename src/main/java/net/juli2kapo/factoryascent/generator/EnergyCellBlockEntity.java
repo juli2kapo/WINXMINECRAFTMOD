@@ -9,7 +9,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
+import net.juli2kapo.factoryascent.machine.SlotRole;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jspecify.annotations.Nullable;
 
@@ -24,21 +29,26 @@ public class EnergyCellBlockEntity extends AbstractMachineBlockEntity {
     private int lastOut;
     private int previousEnergy;
 
-    public EnergyCellBlockEntity(BlockPos pos, BlockState state) {
-        super(MachineType.ENERGY_CELL, pos, state);
+    public EnergyCellBlockEntity(MachineType type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public static int capacity(Tier tier) {
-        return 100_000 * (1 << (2 * (tier.level() - 1)));
+        return 100_000 << (2 * tier.ordinal());
     }
 
+    /** Matches the cable of the same tier: 512 / 2048 / 8192 / 32768 FE/t. */
     public static int transferRate(Tier tier) {
-        return 1_000 * tier.speed();
+        return 512 << (2 * tier.ordinal());
+    }
+
+    private Tier cellTier() {
+        return type.tier() == null ? Tier.LV : type.tier();
     }
 
     @Override
-    protected void applyTier(Tier tier) {
-        energy.configure(capacity(tier), transferRate(tier), transferRate(tier));
+    protected void configureEnergy() {
+        energy.configure(capacity(cellTier()), transferRate(cellTier()), transferRate(cellTier()));
     }
 
     private Direction front() {
@@ -49,11 +59,33 @@ public class EnergyCellBlockEntity extends AbstractMachineBlockEntity {
     protected boolean tickMachine(ServerLevel level) {
         int before = energy.energy();
         lastIn = Math.max(0, before - previousEnergy);
-        lastOut = EnergyUtil.push(neighbors, energy, transferRate(tier()), front());
+        lastOut = EnergyUtil.push(neighbors, energy, transferRate(cellTier()), front());
+        chargeItem();
         previousEnergy = energy.energy();
         lastEnergyRate = lastIn - lastOut;
         status = lastOut > 0 || lastIn > 0 ? STATUS_WORKING : STATUS_IDLE;
         return energy.energy() > 0;
+    }
+
+    /** Tops up whatever sits in the charging slot (drills, other mods' batteries…). */
+    private void chargeItem() {
+        int slot = slots.firstFuel();
+        if (inventory.stack(slot).isEmpty() || energy.energy() <= 0) return;
+        EnergyHandler target = ItemAccess.forHandlerIndex(inventory, slot).getCapability(Capabilities.Energy.ITEM);
+        if (target == null) return;
+        try (Transaction tx = Transaction.openRoot()) {
+            int moved = target.insert(Math.min(energy.energy(), transferRate(cellTier())), tx);
+            tx.commit();
+            if (moved > 0) energy.consume(moved);
+        }
+    }
+
+    @Override
+    public boolean isItemValid(int index, ItemResource resource) {
+        if (slots.role(index) == SlotRole.FUEL) {
+            return ItemAccess.forStack(resource.toStack(1)).getCapability(Capabilities.Energy.ITEM) != null;
+        }
+        return super.isItemValid(index, resource);
     }
 
     /** Energy that arrived since the previous tick (FE/t). */

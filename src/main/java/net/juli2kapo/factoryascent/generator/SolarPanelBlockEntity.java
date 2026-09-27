@@ -1,7 +1,6 @@
 package net.juli2kapo.factoryascent.generator;
 
 import net.juli2kapo.factoryascent.Config;
-import net.juli2kapo.factoryascent.Tier;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
 import net.juli2kapo.factoryascent.machine.MachineType;
 import net.juli2kapo.factoryascent.util.EnergyUtil;
@@ -23,8 +22,8 @@ public class SolarPanelBlockEntity extends AbstractMachineBlockEntity {
     }
 
     @Override
-    protected void applyTier(Tier tier) {
-        int out = type.baseEnergy() * tier.speed();
+    protected void configureEnergy() {
+        int out = type.baseEnergy();
         energy.configure(Math.max(4_000, out * 400), 0, out * 2);
     }
 
@@ -37,7 +36,7 @@ public class SolarPanelBlockEntity extends AbstractMachineBlockEntity {
                 sunlightPercent = level.isRaining() ? 50 : 100;
             }
         }
-        float out = (float) (type.baseEnergy() * tier().speed() * sunlightPercent / 100.0 * Config.GENERATOR_OUTPUT.get());
+        float out = (float) (type.baseEnergy() * sunlightPercent / 100.0 * Config.GENERATOR_OUTPUT.get());
         float produced = out + energyCarry;
         int whole = (int) produced;
         energyCarry = produced - whole;

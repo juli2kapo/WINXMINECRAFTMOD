@@ -3,7 +3,6 @@ package net.juli2kapo.factoryascent.miner;
 import java.util.ArrayList;
 import java.util.List;
 import net.juli2kapo.factoryascent.Config;
-import net.juli2kapo.factoryascent.Tier;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
 import net.juli2kapo.factoryascent.machine.MachineType;
 import net.minecraft.core.BlockPos;
@@ -30,7 +29,7 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
     /** Work points to dig one ore; Basic earns 1 point per tick, so one ore per second. */
     public static final int POINTS_PER_ORE = 20;
     private static final int SCAN_PER_TICK = 384;
-    private static final int[] RADIUS = {5, 8, 12, 16, 24};
+    private static final int RADIUS = 8;
     private static final ItemStack TOOL = new ItemStack(Items.DIAMOND_PICKAXE);
 
     private int cursorX;
@@ -47,18 +46,18 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
     }
 
     /** Radius before the server's {@code minerMaxRadius} cap (safe to call on the client). */
-    public static int baseRadius(Tier tier) {
-        return RADIUS[tier.ordinal()];
+    public static int baseRadius() {
+        return RADIUS;
     }
 
-    public static int radius(Tier tier) {
-        return Math.min(RADIUS[tier.ordinal()], Config.MINER_MAX_RADIUS.get());
+    public static int radius() {
+        return Math.min(RADIUS, Config.MINER_MAX_RADIUS.get());
     }
 
     @Override
-    protected void applyTier(Tier tier) {
-        int perTick = Math.max(1, Math.round(type.baseEnergy() * tier.speed() * tier.energyFactor()));
-        energy.configure(Math.max(16_000, perTick * 4 * 400), Math.max(16_000, perTick * 4 * 400), 0);
+    protected void configureEnergy() {
+        int capacity = Math.max(16_000, type.baseEnergy() * 4 * 400);
+        energy.configure(capacity, capacity, 0);
         restart();
     }
 
@@ -69,11 +68,11 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
     }
 
     private float speed() {
-        return (float) (tier().speed() * speedMultiplier() * Config.MINER_RATE.get());
+        return (float) (type.speed() * speedMultiplier() * Config.MINER_RATE.get());
     }
 
     private float energyPerPoint() {
-        return (float) (type.baseEnergy() * tier().energyFactor() * energyMultiplier() * Config.MACHINE_ENERGY.get());
+        return (float) (type.baseEnergy() / type.speed() * energyMultiplier() * Config.MACHINE_ENERGY.get());
     }
 
     @Override
@@ -121,7 +120,7 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
 
     /** Advances the cursor until it finds an ore, scanning at most {@code budget} positions. */
     private BlockPos nextCandidate(ServerLevel level, int budget) {
-        int r = radius(tier());
+        int r = radius();
         int minY = level.getMinY();
         if (cursorY == Integer.MAX_VALUE) {
             cursorY = worldPosition.getY() - 1;
@@ -222,7 +221,7 @@ public class MinerBlockEntity extends AbstractMachineBlockEntity {
 
     @Override
     public int extraA() {
-        return radius(tier());
+        return radius();
     }
 
     /** Current layer being scanned. */

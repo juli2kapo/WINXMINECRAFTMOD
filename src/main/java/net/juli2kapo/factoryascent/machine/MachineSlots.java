@@ -3,7 +3,7 @@ package net.juli2kapo.factoryascent.machine;
 /** Slot index layout of a machine inventory: inputs, mould, fuel, outputs, upgrades, in that order. */
 public record MachineSlots(int inputs, int mold, int fuel, int outputs, int upgrades) {
     public static MachineSlots of(MachineType type) {
-        return new MachineSlots(type.inputSlots(), type.moldSlots(), type.fuelSlots(), type.outputSlots(), type.upgradeSlots());
+        return new MachineSlots(type.inputSlots() + type.extraInputSlots(), type.moldSlots(), type.fuelSlots(), type.outputSlots(), type.upgradeSlots());
     }
 
     public int size() {

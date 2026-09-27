@@ -1,7 +1,6 @@
 package net.juli2kapo.factoryascent.generator;
 
 import net.juli2kapo.factoryascent.Config;
-import net.juli2kapo.factoryascent.Tier;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
 import net.juli2kapo.factoryascent.machine.MachineType;
 import net.juli2kapo.factoryascent.machine.SlotRole;
@@ -16,10 +15,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
-/**
- * Burns furnace fuel. Higher tiers burn faster (tier speed) and squeeze more energy out of every
- * item (+15% per tier), so upgrading is always better than building more generators.
- */
+/** Burns furnace fuel for 40 FE/t, like Thermal's Stirling Dynamo. */
 public class CombustionGeneratorBlockEntity extends AbstractMachineBlockEntity {
     private float burnRemaining;
     private int burnTotal;
@@ -29,19 +25,14 @@ public class CombustionGeneratorBlockEntity extends AbstractMachineBlockEntity {
         super(MachineType.COMBUSTION_GENERATOR, pos, state);
     }
 
-    public static float efficiency(Tier tier) {
-        return 1f + 0.15f * (tier.level() - 1);
-    }
-
     private float outputPerTick() {
-        return (float) (type.baseEnergy() * tier().speed() * efficiency(tier()) * Config.GENERATOR_OUTPUT.get());
+        return (float) (type.baseEnergy() * Config.GENERATOR_OUTPUT.get());
     }
 
     @Override
-    protected void applyTier(Tier tier) {
-        int out = Math.round(type.baseEnergy() * tier.speed() * efficiency(tier));
-        int capacity = Math.max(20_000, out * 400);
-        energy.configure(capacity, 0, out * 2);
+    protected void configureEnergy() {
+        int out = type.baseEnergy();
+        energy.configure(Math.max(20_000, out * 400), 0, out * 2);
     }
 
     @Override
@@ -63,7 +54,7 @@ public class CombustionGeneratorBlockEntity extends AbstractMachineBlockEntity {
                 }
             }
             if (burnRemaining > 0) {
-                burnRemaining -= tier().speed();
+                burnRemaining--;
                 float produced = out + energyCarry;
                 int whole = (int) produced;
                 energyCarry = produced - whole;
