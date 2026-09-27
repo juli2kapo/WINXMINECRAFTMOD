@@ -27,7 +27,9 @@ public class StasisBubbleParticle extends SingleQuadParticle {
         this.gravity = -0.125F;
         this.friction = 0.85F;
         this.setSize(0.02F, 0.02F);
-        this.quadSize *= random.nextFloat() * 0.6F + 0.3F;
+        // The chamber's halves are solid boxes: without this, bubbles hit the upper half's underside and pile up.
+        this.hasPhysics = false;
+        this.quadSize *= random.nextFloat() * 0.4F + 0.2F;
         this.xd = (random.nextFloat() * 2F - 1F) * 0.02F;
         this.yd = 0.05F + random.nextFloat() * 0.03F;
         this.zd = (random.nextFloat() * 2F - 1F) * 0.02F;

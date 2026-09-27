@@ -52,16 +52,19 @@ def anchor_elements(half, dy=0):
         # crying-obsidian rim and glass lid
         for frm, to in [([2, 14, 0], [14, 16, 2]), ([2, 14, 14], [14, 16, 16]), ([0, 14, 2], [2, 16, 14]), ([14, 14, 2], [16, 16, 14])]:
             els.append(box(up(frm), up(to), "#rim"))
-        els.append(box(up([2, 15.5, 2]), up([14, 15.5, 14]), "#glass", faces=("up", "down")))
+        els.append(box(up([2, 15.5, 2]), up([14, 15.5, 14]), "#glass", faces=("up", "down"), uv=[2, 2, 14, 14]))
         glass_y0 = 0
         els.append(box(up([1, 0, 1]), up([15, 13, 15]), "#water", faces=SIDES + ("up",)))
     top = 14 if half == "upper" else 16
     # glass panes between the pillars, set just inside the frame line
+    # The glass texture has a frame drawn on its border; sample only its clear middle so the two
+    # halves read as one continuous pane.
+    clear = [2, 2, 14, 14]
     els += [
-        box(up([2, glass_y0, 0.5]), up([14, top, 0.5]), "#glass", faces=("north", "south")),
-        box(up([2, glass_y0, 15.5]), up([14, top, 15.5]), "#glass", faces=("north", "south")),
-        box(up([0.5, glass_y0, 2]), up([0.5, top, 14]), "#glass", faces=("east", "west")),
-        box(up([15.5, glass_y0, 2]), up([15.5, top, 14]), "#glass", faces=("east", "west")),
+        box(up([2, glass_y0, 0.5]), up([14, top, 0.5]), "#glass", faces=("north", "south"), uv=clear),
+        box(up([2, glass_y0, 15.5]), up([14, top, 15.5]), "#glass", faces=("north", "south"), uv=clear),
+        box(up([0.5, glass_y0, 2]), up([0.5, top, 14]), "#glass", faces=("east", "west"), uv=clear),
+        box(up([15.5, glass_y0, 2]), up([15.5, top, 14]), "#glass", faces=("east", "west"), uv=clear),
     ]
     return els
 
