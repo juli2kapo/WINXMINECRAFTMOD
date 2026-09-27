@@ -1,0 +1,6 @@
+{
+  "parent": "factoryascent:item/electric_drill_3d",
+  "textures": {
+    "glow": "factoryascent:item/electric_drill_glow"
+  }
+}

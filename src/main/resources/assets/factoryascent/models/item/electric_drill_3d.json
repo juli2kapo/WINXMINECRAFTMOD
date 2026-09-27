@@ -1,0 +1,1307 @@
+{
+  "textures": {
+    "parts": "factoryascent:item/electric_drill_parts",
+    "bit": "factoryascent:item/electric_drill_bit",
+    "glow": "factoryascent:item/electric_drill_glow_off",
+    "particle": "factoryascent:item/electric_drill_parts"
+  },
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        80,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        1.5,
+        3.25
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        80,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        1.5,
+        3.25
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        5,
+        16,
+        0
+      ],
+      "translation": [
+        -2.5,
+        2.5,
+        -1
+      ],
+      "scale": [
+        0.66,
+        0.66,
+        0.66
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        5,
+        16,
+        0
+      ],
+      "translation": [
+        -2.5,
+        2.5,
+        -1
+      ],
+      "scale": [
+        0.66,
+        0.66,
+        0.66
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.45,
+        0.45,
+        0.45
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "translation": [
+        -1,
+        -1,
+        0
+      ],
+      "scale": [
+        0.72,
+        0.72,
+        0.72
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0,
+        12,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "gui": {
+      "rotation": [
+        20,
+        -125,
+        0
+      ],
+      "translation": [
+        0.5,
+        0.5,
+        0
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    }
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        8,
+        6
+      ],
+      "to": [
+        10.5,
+        13,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9.0,
+            0.0,
+            11.5,
+            2.5
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            11.5,
+            0.0,
+            14.0,
+            2.5
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            2.5
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            4.0,
+            0.0,
+            0.0,
+            2.5
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            4.0,
+            0.0,
+            6.5,
+            4.0
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            6.5,
+            0.0,
+            9.0,
+            4.0
+          ]
+        }
+      },
+      "name": "housing"
+    },
+    {
+      "from": [
+        5.25,
+        7.75,
+        10.5
+      ],
+      "to": [
+        10.75,
+        13.25,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            3,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            3,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        }
+      },
+      "light_emission": 15,
+      "name": "charge_band"
+    },
+    {
+      "from": [
+        6,
+        8.5,
+        14
+      ],
+      "to": [
+        10,
+        12.5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            4.0,
+            2.0,
+            6.0
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            4.0,
+            2.0,
+            6.0
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            14.0,
+            0.0,
+            14.5,
+            2.0
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            14.5,
+            0.0,
+            14.0,
+            2.0
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            14.0,
+            0.0,
+            14.5,
+            2.0
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            14.0,
+            0.0,
+            14.5,
+            2.0
+          ]
+        }
+      },
+      "name": "motor_cap"
+    },
+    {
+      "from": [
+        7,
+        13,
+        7
+      ],
+      "to": [
+        9,
+        13.5,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            10.0,
+            7.0,
+            11.0,
+            8.0
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            10.0,
+            7.0,
+            11.0,
+            8.0
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            10.0,
+            7.0,
+            11.0,
+            8.0
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            11.0,
+            7.0,
+            10.0,
+            8.0
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            10.0,
+            7.0,
+            11.0,
+            8.0
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            10.0,
+            7.0,
+            11.0,
+            8.0
+          ]
+        }
+      },
+      "name": "bumper"
+    },
+    {
+      "from": [
+        6.5,
+        9,
+        3.5
+      ],
+      "to": [
+        9.5,
+        12,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            4.0,
+            5.0,
+            5.5
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            4.0,
+            5.0,
+            5.5
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            2.0,
+            4.0,
+            3.5,
+            5.5
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            4.0,
+            2.0,
+            5.5
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            2.0,
+            4.0,
+            3.5,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            2.0,
+            4.0,
+            3.5,
+            5.5
+          ]
+        }
+      },
+      "name": "gearbox"
+    },
+    {
+      "from": [
+        7,
+        9.5,
+        1.5
+      ],
+      "to": [
+        9,
+        11.5,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            6.0,
+            4.0,
+            7.0,
+            5.0
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            6.0,
+            4.0,
+            7.0,
+            5.0
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            5.0,
+            4.0,
+            6.0,
+            5.0
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            6.0,
+            4.0,
+            5.0,
+            5.0
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            5.0,
+            4.0,
+            6.0,
+            5.0
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            5.0,
+            4.0,
+            6.0,
+            5.0
+          ]
+        }
+      },
+      "name": "chuck"
+    },
+    {
+      "from": [
+        7.6,
+        10.1,
+        -6
+      ],
+      "to": [
+        8.4,
+        10.9,
+        1.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        }
+      },
+      "name": "bit_core"
+    },
+    {
+      "from": [
+        6.9,
+        10.2,
+        -5.5
+      ],
+      "to": [
+        9.1,
+        10.8,
+        -4.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            4,
+            4,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            8,
+            4,
+            11
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 0,
+        "axis": "z",
+        "origin": [
+          8,
+          10.5,
+          -5.5
+        ]
+      },
+      "name": "bit_flute_0"
+    },
+    {
+      "from": [
+        6.9,
+        10.2,
+        -4.1
+      ],
+      "to": [
+        9.1,
+        10.8,
+        -2.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            4,
+            8,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            8,
+            4,
+            11
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 36,
+        "axis": "z",
+        "origin": [
+          8,
+          10.5,
+          -4.1
+        ]
+      },
+      "name": "bit_flute_1"
+    },
+    {
+      "from": [
+        6.9,
+        10.2,
+        -2.7
+      ],
+      "to": [
+        9.1,
+        10.8,
+        -1.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            8,
+            4,
+            12,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            8,
+            4,
+            11
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 72,
+        "axis": "z",
+        "origin": [
+          8,
+          10.5,
+          -2.7
+        ]
+      },
+      "name": "bit_flute_2"
+    },
+    {
+      "from": [
+        6.9,
+        10.2,
+        -1.3
+      ],
+      "to": [
+        9.1,
+        10.8,
+        0.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            4,
+            4,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            8,
+            4,
+            11
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -72,
+        "axis": "z",
+        "origin": [
+          8,
+          10.5,
+          -1.3
+        ]
+      },
+      "name": "bit_flute_3"
+    },
+    {
+      "from": [
+        6.9,
+        10.2,
+        0.1
+      ],
+      "to": [
+        9.1,
+        10.8,
+        1.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            0,
+            7,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            4,
+            4,
+            8,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            8,
+            4,
+            11
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -36,
+        "axis": "z",
+        "origin": [
+          8,
+          10.5,
+          0.1
+        ]
+      },
+      "name": "bit_flute_4"
+    },
+    {
+      "from": [
+        7.75,
+        10.25,
+        -7
+      ],
+      "to": [
+        8.25,
+        10.75,
+        -6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#bit",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        }
+      },
+      "name": "bit_tip"
+    },
+    {
+      "from": [
+        6.5,
+        1.5,
+        10
+      ],
+      "to": [
+        9.5,
+        8,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            2.0,
+            6.0,
+            3.5,
+            9.0
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            2.0,
+            6.0,
+            3.5,
+            9.0
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            6.0,
+            2.0,
+            9.0
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            2.0,
+            6.0,
+            0.0,
+            9.0
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            6.0,
+            2.0,
+            9.0
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            6.0,
+            2.0,
+            9.0
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -15,
+        "axis": "x",
+        "origin": [
+          8,
+          8,
+          11.75
+        ]
+      },
+      "name": "grip"
+    },
+    {
+      "from": [
+        7.25,
+        5.5,
+        8.75
+      ],
+      "to": [
+        8.75,
+        7.5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            6.0,
+            4.5,
+            7.0
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            6.0,
+            4.5,
+            7.0
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            6.0,
+            4.5,
+            7.0
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            4.5,
+            6.0,
+            3.5,
+            7.0
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            6.0,
+            4.5,
+            7.0
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            6.0,
+            4.5,
+            7.0
+          ]
+        }
+      },
+      "name": "trigger"
+    },
+    {
+      "from": [
+        5,
+        0,
+        9.5
+      ],
+      "to": [
+        11,
+        2.5,
+        16.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            7.0,
+            7.0,
+            10.0,
+            8.5
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            7.0,
+            7.0,
+            10.0,
+            8.5
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            0.0,
+            9.0,
+            3.5,
+            10.5
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            3.5,
+            9.0,
+            0.0,
+            10.5
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            4.0,
+            7.0,
+            7.0,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            4.0,
+            7.0,
+            7.0,
+            10.5
+          ]
+        }
+      },
+      "name": "battery"
+    }
+  ]
+}

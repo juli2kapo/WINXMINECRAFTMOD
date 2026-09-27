@@ -214,9 +214,10 @@ def atlas():
     c.bevel(x0, y0, x1, y1, G_HI, G, G_DK)
     c.rect(x0 + 2, y0 + 1, x0 + 4, y0 + 2, Y_MID)  # release latch
 
-    x0, y0, x1, y1 = r["bumper"]
-    c.rect(x0, y0, x1, y1, R)
-    c.put(x0, y0, R_HI)
+    x0, y0, x1, y1 = r["bumper"]  # mode selector knob on top of the housing
+    c.rect(x0, y0, x1, y1, G)
+    c.put(x0, y0, G_HI)
+    c.put(x1 - 1, y1 - 1, G_LO)
     return c
 
 
@@ -232,11 +233,13 @@ def bit_frame(phase):
 
 
 def glow(lit):
+    """Charge band: an even glow with a few brighter sparkles (any sub-rectangle reads the same)."""
     c = Canvas(16, 16)
     hi, mid, lo = (CYAN_HI, CYAN, CYAN_LO) if lit else (OFF_HI, OFF, OFF_LO)
     for y in range(16):
         for x in range(16):
-            c.put(x, y, hi if y % 4 == 0 else (mid if (x + y) % 5 else lo))
+            k = (x * 7 + y * 3) % 11
+            c.put(x, y, hi if k == 0 else lo if k == 5 else mid)
     return c
 
 
@@ -244,47 +247,47 @@ def glow(lit):
 def icon():
     """Side view, bit to the right: motor housing, glow band, pistol grip + trigger, battery pack."""
     c = Canvas(16, 16)
-    # Motor housing (x 2..9, rows 3..7)
-    c.rect(2, 3, 10, 8, Y)
-    for x in range(2, 10):
+    # Motor housing (x 2..8, rows 3..7) with vents and the cyan charge band.
+    c.rect(2, 3, 9, 8, Y)
+    for x in range(2, 9):
         c.put(x, 3, Y_HI)
         c.put(x, 7, Y_LO)
     c.put(2, 4, Y_HI)
     c.put(3, 5, G_DK)
-    c.put(4, 5, G_DK)
-    # Motor cap at the back
+    c.put(3, 6, Y_MID)
+    for y in range(3, 8):
+        c.put(5, y, CYAN if 3 < y < 7 else CYAN_LO)
+    c.put(5, 4, CYAN_HI)
+    # Motor cap at the back.
     c.rect(1, 4, 2, 7, G)
     c.put(1, 4, G_HI)
-    # Glow band
-    for y in range(3, 8):
-        c.put(6, y, CYAN if y not in (3, 7) else CYAN_LO)
-    c.put(6, 4, CYAN_HI)
-    # Nose + chuck
-    c.rect(10, 4, 11, 7, G)
-    c.put(10, 4, G_HI)
-    c.rect(11, 5, 12, 7, S)
-    c.put(11, 5, S_HI)
-    # Spiral bit
-    for x in range(12, 16):
-        c.put(x, 5, S_HI if x % 2 == 0 else S_MID)
-        c.put(x, 6, S_LO if x % 2 == 0 else S)
-    c.put(15, 6, (0, 0, 0, 0))
-    # Pistol grip, slanted back (x 4..6, rows 8..12)
+    # Gearbox nose + chuck.
+    c.rect(9, 4, 10, 7, G)
+    c.put(9, 4, G_HI)
+    c.put(9, 6, G_LO)
+    c.rect(10, 5, 11, 7, S_MID)
+    c.put(10, 5, S_HI)
+    # Spiral bit, tapering to a point.
+    for x in range(11, 15):
+        c.put(x, 5, S_HI if x % 2 else S_MID)
+        c.put(x, 6, S_LO if x % 2 else S)
+    c.put(15, 5, S)
+    # Pistol grip, raked back (rows 8..11) and the trigger.
     for i, y in enumerate(range(8, 12)):
-        off = -1 if i >= 2 else 0
-        c.put(5 + off, y, R_HI)
-        c.put(6 + off, y, R)
-        c.put(7 + off, y, R_LO if i < 2 else R)
-    # Trigger
-    c.put(8, 8, RED)
-    c.put(8, 9, RED_LO)
-    # Battery pack (x 2..9, rows 12..13)
-    c.rect(2, 12, 10, 14, G)
-    for x in range(2, 10):
+        off = -(i // 2)
+        c.put(4 + off, y, R_HI)
+        c.put(5 + off, y, R)
+        c.put(6 + off, y, R_LO)
+    c.put(7, 8, RED)
+    c.put(7, 9, RED_LO)
+    # Battery pack (x 1..7, rows 12..13) with charge LEDs.
+    c.rect(1, 12, 8, 14, G)
+    for x in range(1, 8):
         c.put(x, 12, Y_MID)
+    c.put(2, 13, GREEN)
     c.put(3, 13, GREEN)
-    c.put(4, 13, GREEN)
-    c.put(5, 13, GREEN_DK)
+    c.put(4, 13, GREEN_DK)
+    c.put(7, 13, G_LO)
     c.outline()
     return c
 

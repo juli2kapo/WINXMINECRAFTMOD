@@ -70,7 +70,14 @@ public final class ModGameTests {
             new Test("recall_charm_teleports_home", 40, ModGameTests::recallCharmTeleportsHome),
             new Test("mob_capsule_round_trip", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::capsuleRoundTrip),
             new Test("mob_capsule_refuses_blacklisted", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::capsuleRefusesBlacklisted),
-            new Test("size_rays_scale_mobs", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::sizeRays)
+            new Test("size_rays_scale_mobs", 20, net.juli2kapo.factoryascent.mobs.MobGameTests::sizeRays),
+            new Test("drill_area_breaks_3x3", 20, net.juli2kapo.factoryascent.item.drill.DrillGameTests::areaBreaksThreeByThree),
+            new Test("drill_area_skips_bedrock", 20, net.juli2kapo.factoryascent.item.drill.DrillGameTests::areaSkipsBedrock),
+            new Test("drill_vein_mines_cluster", 20, net.juli2kapo.factoryascent.item.drill.DrillGameTests::veinMinesCluster),
+            new Test("team_create_invite_join", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::teamCreateInviteJoin),
+            new Test("launch_registers_satellite", 200, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::launchRegistersSatellite),
+            new Test("coverage_follows_team", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::coverageFollowsTeam),
+            new Test("ground_station_fills_map", 200, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::groundStationFillsMap)
     );
 
     private ModGameTests() {}

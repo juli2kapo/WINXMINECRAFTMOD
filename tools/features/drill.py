@@ -105,8 +105,8 @@ DISPLAY = {
     "thirdperson_righthand": {"rotation": [80, 0, 0], "translation": [0, 1.5, 3.25], "scale": [0.7, 0.7, 0.7]},
     "thirdperson_lefthand": {"rotation": [80, 0, 0], "translation": [0, 1.5, 3.25], "scale": [0.7, 0.7, 0.7]},
     # First person: camera looks down -Z, so the bit already points into the screen; yaw it toward the crosshair.
-    "firstperson_righthand": {"rotation": [4, 12, 0], "translation": [-1, 1.5, -2], "scale": [0.62, 0.62, 0.62]},
-    "firstperson_lefthand": {"rotation": [4, 12, 0], "translation": [-1, 1.5, -2], "scale": [0.62, 0.62, 0.62]},
+    "firstperson_righthand": {"rotation": [5, 16, 0], "translation": [-2.5, 2.5, -1], "scale": [0.66, 0.66, 0.66]},
+    "firstperson_lefthand": {"rotation": [5, 16, 0], "translation": [-2.5, 2.5, -1], "scale": [0.66, 0.66, 0.66]},
     "ground": {"rotation": [0, 90, 0], "translation": [0, 2, 0], "scale": [0.45, 0.45, 0.45]},
     "fixed": {"rotation": [0, -90, 0], "translation": [-1, -1, 0], "scale": [0.72, 0.72, 0.72]},
     "head": {"rotation": [0, 90, 0], "translation": [0, 12, 0], "scale": [0.8, 0.8, 0.8]},
@@ -339,31 +339,32 @@ def preview(path):
 
     def player_frame(p):  # (right, forward, up) in blocks -> world (x = right, y = up, z = -forward)
         return [p[0], p[2], -p[1]]
-    cam = _mul(_rot("x", 12), _rot("y", 210))
+    def tpv_for(cam):
+        def tpv_world(w):
+            return _app(cam, [w[0], w[1] - 1.0, w[2]])
 
-    def tpv_world(w):
-        return _app(cam, [w[0], w[1] - 1.0, w[2]])
-
-    def tpv(p):
-        q = tp(p)
-        return tpv_world(player_frame([hand[0] + q[0], hand[1] + q[1], hand[2] + q[2]]))
+        def tpv(p):
+            q = tp(p)
+            return tpv_world(player_frame([hand[0] + q[0], hand[1] + q[1], hand[2] + q[2]]))
+        return tpv_world, tpv
 
     steve = []
-    skin, shirt, pants = (190, 140, 110, 255), (60, 170, 180, 255), (60, 60, 150, 255)
-    # boxes in player frame (right, forward, up), pixels -> converted to world in quads' to_view
+    skin, shirt, pants, eye = (190, 140, 110, 255), (60, 170, 180, 255), (60, 60, 150, 255), (40, 40, 90, 255)
+    # boxes in player frame (right, forward, up) in pixels; arms hang straight down (idle pose)
     for frm, to, col in (((-4, -2, 0), (4, 2, 12), pants), ((-4, -2, 12), (4, 2, 24), shirt),
                          ((-4, -4, 24), (4, 4, 32), skin), ((4, -2, 12), (8, 2, 24), shirt),
-                         ((-8, -2, 12), (-4, 2, 24), shirt)):
+                         ((-8, -2, 12), (-4, 2, 24), shirt), ((-3, 4, 27), (-1, 4.3, 28), eye),
+                         ((1, 4, 27), (3, 4.3, 28), eye)):
         for corners, c, n, e in _cuboid_quads(frm, to, col):
             steve.append(([[v / 16 for v in pt] for pt in corners], c, n, e))
 
-    def steve_view(p):
-        return tpv_world(player_frame(p))
-
     def ortho(q):
-        return (240 + q[0] * 220, 250 - q[1] * 220)
-    tp_img = _render_mixed([(quads, tpv), (steve, steve_view)], ortho, (480, 480), bg)
-    panels.append(("third person (right hand)", tp_img))
+        return (240 + q[0] * 200, 240 - q[1] * 200)
+    for label, cam in (("third person, from the right", _mul(_rot("x", 8), _rot("y", -90))),
+                       ("third person, front 3/4", _mul(_rot("x", 15), _rot("y", 225)))):
+        world, tpv = tpv_for(cam)
+        panels.append((label, _render_mixed([(quads, tpv), (steve, lambda p, w=world: w(player_frame(p)))],
+                                            ortho, (400, 480), bg)))
 
     # 5) gui: the flat icon at 16 px and 8x.
     icon = load("electric_drill_icon")
