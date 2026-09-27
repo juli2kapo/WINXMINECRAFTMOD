@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Electric Drill: 3D item model, item definition and lang for the mining modes.
 
-The model is a pistol-grip power drill built from cuboids: yellow motor housing with a glowing charge band,
-gunmetal gearbox, steel chuck, a twisted spiral bit (5 flutes rotated 36 degrees apart), rubber grip with a
-red trigger and a battery pack. Textures come from tools/features/drill_textures.py.
+The model is a mining drill (IC2 / Mekanism style): a big conical drill head built from 7 stacked square
+rings shrinking to a point, each twisted 12 degrees further round the axis so it reads as a spiral, in a steel
+collar; behind it a yellow motor body with vents and a glowing charge band, a carry handle on top, a power pack
+with charge LEDs and a D-shaped rear grip. 26.2 accepts any element rotation angle (CuboidModelElement reads
+it as a free float, no 22.5-degree check). Textures come from tools/features/drill_textures.py.
 
 Item definition (assets/factoryascent/items/electric_drill.json):
   gui                         -> flat sprite item/electric_drill_icon (reads better at 16 px)
