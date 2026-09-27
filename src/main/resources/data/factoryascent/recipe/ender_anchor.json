@@ -2,11 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "GGG",
+    "OGO",
     "GWG",
-    "GSG"
+    "OSO"
   ],
   "key": {
+    "O": "minecraft:obsidian",
     "G": "minecraft:glass",
     "S": "minecraft:soul_sand",
     "W": "minecraft:water_bucket"

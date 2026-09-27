@@ -432,7 +432,8 @@ def lang(extra_en, extra_es, advancement_text):
         ("generation_per_lava", "Generates %s FE/t per touching lava source", "Genera %s FE/t por fuente de lava adyacente"),
         ("capacity", "Capacity: %s FE", "Capacidad: %s FE"),
         ("transfer", "Transfer: %s FE/t", "Transferencia: %s FE/t"),
-        ("cell_front", "Outputs only from its front face", "Solo emite energía por su cara frontal"),
+        ("cell_front", "Power comes OUT of the lightning-bolt face and goes IN through every other face. Right-click a side with a Wrench to make it the output. The slot charges tools",
+         "La energía SALE por la cara del rayo y ENTRA por las demás. Clic derecho en un lado con la llave para que sea la salida. La ranura carga herramientas"),
         ("cable_rate", "Network throughput: %s FE/t", "Capacidad de red: %s FE/t"),
         ("cable_bottleneck", "A network runs at the rate of its slowest cable", "Una red funciona al ritmo de su cable más lento"),
         ("pipe_rate", "Pulls up to %s items/s per extracting face", "Extrae hasta %s objetos/s por cara de extracción"),
@@ -447,13 +448,18 @@ def lang(extra_en, extra_es, advancement_text):
         ("upgrade_slots", "Fits in the upgrade slots of electric machines", "Va en las ranuras de mejora de las máquinas eléctricas"),
         ("mold", "Press mould: decides what a press makes. Never used up.", "Molde de prensa: decide qué fabrica. No se gasta."),
         ("forge_hammer", "Craft with 2 ingots to make a plate", "Combínalo con 2 lingotes para hacer una placa"),
-        ("wrench", "Rotates machines; toggles item pipe faces between insert and extract", "Gira máquinas; alterna las caras de las tuberías entre insertar y extraer"),
+        ("wrench", "Rotates machines; sets an Energy Cell's output face; toggles item pipe faces between insert and extract",
+         "Gira máquinas; elige la cara de salida de una celda de energía; alterna las caras de las tuberías entre insertar y extraer"),
         ("stored_energy", "Energy: %s / %s FE", "Energía: %s / %s FE"),
         ("electric_drill", "Mines faster than netherite while charged. Charge it in an Energy Cell.", "Pica más rápido que la netherita mientras tenga carga. Cárgalo en una celda de energía."),
     ]:
         add(f"{T}.{key}", e, s)
     M = f"message.{MOD}"
     add(f"{M}.pipe_extract", "Pipe face: extracting", "Cara de tubería: extrayendo")
+    add(f"{M}.cell_output", "Energy Cell output: %s face", "Salida de la celda de energía: cara %s")
+    for d, e, es_ in [("north", "north", "norte"), ("south", "south", "sur"), ("east", "east", "este"),
+                      ("west", "west", "oeste"), ("up", "top", "superior"), ("down", "bottom", "inferior")]:
+        add(f"direction.{MOD}.{d}", e, es_)
     add(f"{M}.pipe_insert", "Pipe face: inserting", "Cara de tubería: insertando")
     S = f"status.{MOD}"
     for key, e, s in [("working", "Working", "Trabajando"), ("idle", "Idle", "En espera"),

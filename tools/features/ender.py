@@ -31,26 +31,48 @@ INSET = 0.02  # water sits just inside the glass so the two never z-fight
 
 
 def anchor_elements(half, dy=0):
-    """One half of the stasis chamber: glass all round, soul sand floor (lower), water column,
-    open-water surface near the top (upper). dy shifts the half up (for the item model)."""
+    """One half of the stasis chamber. Obsidian corner pillars run the full two blocks; glass
+    panes fill the sides between them; soul sand floor (lower half); a crying-obsidian rim
+    around a glass lid (upper half); water inside. dy shifts the half up (for the item model)."""
     def up(v):
         return [v[0], v[1] + dy, v[2]]
     els = []
+    # corner pillars
+    for x, z in [(0, 0), (14, 0), (0, 14), (14, 14)]:
+        faces = SIDES + (("down",) if half == "lower" else ("up",))
+        els.append(box(up([x, 0, z]), up([x + 2, 16, z + 2]), "#frame", faces=faces))
     if half == "lower":
-        els.append(box(up([0, 0, 0]), up([16, 4, 16]), "#base", cull=True))
-        els.append(box(up([0, 4, 0]), up([16, 16, 16]), "#glass", faces=SIDES, cull=True))
-        els.append(box(up([INSET, 4, INSET]), up([16 - INSET, 16, 16 - INSET]), "#water", faces=SIDES))
+        els.append(box(up([0.01, 0, 0.01]), up([15.99, 4, 15.99]), "#base", cull=False))
+        # obsidian sill along the bottom edge of the glass
+        for frm, to in [([2, 4, 0], [14, 5, 1]), ([2, 4, 15], [14, 5, 16]), ([0, 4, 2], [1, 5, 14]), ([15, 4, 2], [16, 5, 14])]:
+            els.append(box(up(frm), up(to), "#frame"))
+        glass_y0, water_y1 = 5, 16
+        els.append(box(up([1, 5, 1]), up([15, 16, 15]), "#water", faces=SIDES))
     else:
-        els.append(box(up([0, 0, 0]), up([16, 16, 16]), "#glass", faces=SIDES + ("up",), cull=True))
-        els.append(box(up([INSET, 0, INSET]), up([16 - INSET, 14, 16 - INSET]), "#water", faces=SIDES + ("up",)))
+        # crying-obsidian rim and glass lid
+        for frm, to in [([2, 14, 0], [14, 16, 2]), ([2, 14, 14], [14, 16, 16]), ([0, 14, 2], [2, 16, 14]), ([14, 14, 2], [16, 16, 14])]:
+            els.append(box(up(frm), up(to), "#rim"))
+        els.append(box(up([2, 15.5, 2]), up([14, 15.5, 14]), "#glass", faces=("up", "down")))
+        glass_y0 = 0
+        els.append(box(up([1, 0, 1]), up([15, 13, 15]), "#water", faces=SIDES + ("up",)))
+    top = 14 if half == "upper" else 16
+    # glass panes between the pillars, set just inside the frame line
+    els += [
+        box(up([2, glass_y0, 0.5]), up([14, top, 0.5]), "#glass", faces=("north", "south")),
+        box(up([2, glass_y0, 15.5]), up([14, top, 15.5]), "#glass", faces=("north", "south")),
+        box(up([0.5, glass_y0, 2]), up([0.5, top, 14]), "#glass", faces=("east", "west")),
+        box(up([15.5, glass_y0, 2]), up([15.5, top, 14]), "#glass", faces=("east", "west")),
+    ]
     return els
 
 
 ANCHOR_TEXTURES = {
     "base": "minecraft:block/soul_sand",
+    "frame": "minecraft:block/obsidian",
+    "rim": "minecraft:block/crying_obsidian",
     "glass": translucent("minecraft:block/glass"),
     "water": translucent(tex("block/ender_anchor_water", "minecraft:block/blue_stained_glass")),
-    "particle": "minecraft:block/glass",
+    "particle": "minecraft:block/obsidian",
 }
 
 
@@ -96,6 +118,8 @@ def generate(ctx):
         "powered=true": {"model": f"{MOD}:block/ender_beacon_on"}}})
     ctx.item_def("ender_beacon", "block/ender_beacon")
 
+    # Bubbles inside the chamber use the vanilla bubble sprite (see StasisBubbleParticle).
+    ctx.write(A / "particles" / "stasis_bubble.json", {"textures": ["minecraft:bubble"]})
     ctx.flat_item("ender_dust")
     ctx.flat_item("recall_charm")
     # Only the lower half drops the item (like a door); breaking the top takes the bottom with it.
@@ -109,9 +133,10 @@ def generate(ctx):
     ctx.loot_self("ender_beacon")
 
     # ---------------------------------------------------------------- recipes
-    # A stasis chamber: glass all round, water in the middle, soul sand at the bottom. The bucket comes back.
-    ctx.shaped("ender_anchor", ["GGG", "GWG", "GSG"], {
-        "G": "minecraft:glass", "S": "minecraft:soul_sand", "W": "minecraft:water_bucket"}, "ender_anchor")
+    # A stasis chamber: obsidian corners, glass sides, water in the middle, soul sand at the bottom. The bucket comes back.
+    ctx.shaped("ender_anchor", ["OGO", "GWG", "OSO"], {
+        "O": "minecraft:obsidian", "G": "minecraft:glass", "S": "minecraft:soul_sand",
+        "W": "minecraft:water_bucket"}, "ender_anchor")
     ctx.machine("crushing", "ender_dust", [("minecraft:ender_pearl", 1)], "ender_dust", 2, time=60, min_grade=3)
     ctx.shaped("ender_beacon", ["OEO", "DFD", "OOO"], {
         "O": "minecraft:obsidian", "E": "minecraft:ender_eye", "D": "ender_dust",

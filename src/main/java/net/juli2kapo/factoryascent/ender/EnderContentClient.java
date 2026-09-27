@@ -26,6 +26,8 @@ public final class EnderContentClient {
     public static void register(IEventBus modBus) {
         modBus.addListener((EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerBlockEntityRenderer(EnderContent.ENDER_ANCHOR_BE.get(), AnchorRenderer::new));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent e) ->
+                e.registerSpriteSet(EnderContent.STASIS_BUBBLE.get(), StasisBubbleParticle.Provider::new));
     }
 
     static final class AnchorState extends BlockEntityRenderState {

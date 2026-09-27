@@ -2,6 +2,7 @@ package net.juli2kapo.factoryascent.item;
 
 import java.util.function.Consumer;
 import net.juli2kapo.factoryascent.machine.MachineBlock;
+import net.juli2kapo.factoryascent.machine.MachineType;
 import net.juli2kapo.factoryascent.pipe.ItemPipeBlock;
 import net.juli2kapo.factoryascent.pipe.PipeConnection;
 import net.minecraft.ChatFormatting;
@@ -46,6 +47,23 @@ public class WrenchItem extends Item {
                 return InteractionResult.SUCCESS;
             }
             return InteractionResult.FAIL;
+        }
+
+        // Energy cells: the wrenched face becomes the output (the bolt face).
+        if (state.getBlock() instanceof MachineBlock machine && machine.type().category() == MachineType.Category.STORAGE
+                && context.getClickedFace().getAxis().isHorizontal()) {
+            if (level.isClientSide()) return InteractionResult.SUCCESS;
+            Direction face = context.getClickedFace();
+            if (state.getValue(MachineBlock.FACING) != face) {
+                level.setBlock(pos, state.setValue(MachineBlock.FACING, face), Block.UPDATE_ALL);
+                level.invalidateCapabilities(pos);
+            }
+            if (context.getPlayer() != null) {
+                context.getPlayer().sendOverlayMessage(Component.translatable("message.factoryascent.cell_output",
+                        Component.translatable("direction.factoryascent." + face.getName())));
+            }
+            level.playSound(null, pos, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8f, 1.3f);
+            return InteractionResult.SUCCESS;
         }
 
         if (state.getBlock() instanceof MachineBlock machine && machine.type().hasFacing()) {

@@ -34,6 +34,11 @@ public final class EnderContent {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FactoryAscent.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, FactoryAscent.MOD_ID);
+    private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES =
+            DeferredRegister.create(Registries.PARTICLE_TYPE, FactoryAscent.MOD_ID);
+    /** Bubbles rising inside an Ender Anchor (see StasisBubbleParticle). */
+    public static final Supplier<net.minecraft.core.particles.SimpleParticleType> STASIS_BUBBLE =
+            PARTICLES.register("stasis_bubble", () -> new net.minecraft.core.particles.SimpleParticleType(false));
     private static final DeferredRegister.DataComponents COMPONENTS =
             DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FactoryAscent.MOD_ID);
 
@@ -87,6 +92,8 @@ public final class EnderContent {
         ITEMS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         COMPONENTS.register(modBus);
+        PARTICLES.register(modBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RecallCharmItem::onDamaged);
         modBus.addListener((RegisterTicketControllersEvent e) -> e.register(ANCHOR_TICKETS));
         modBus.addListener(EnderContent::registerCapabilities);
     }

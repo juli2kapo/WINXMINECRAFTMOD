@@ -16,6 +16,8 @@ public final class Config {
     public static final ModConfigSpec.IntValue RECALL_ENERGY;
     public static final ModConfigSpec.IntValue RECALL_COOLDOWN_SECONDS;
     public static final ModConfigSpec.BooleanValue RECALL_CROSS_DIMENSION;
+    public static final ModConfigSpec.DoubleValue SIZE_RAY_MIN_SCALE;
+    public static final ModConfigSpec.DoubleValue SIZE_RAY_MAX_SCALE;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -44,6 +46,12 @@ public final class Config {
                 .defineInRange("recallCooldownSeconds", 60, 0, 3600);
         RECALL_CROSS_DIMENSION = b.comment("Whether a Recall Charm can bring you home from another dimension.")
                 .define("recallCrossDimension", false);
+        b.pop();
+        b.push("mob_tools");
+        SIZE_RAY_MIN_SCALE = b.comment("Smallest size the Minimizer Ray can shrink a creature to (1.0 = normal; vanilla allows down to 0.0625).")
+                .defineInRange("sizeRayMinScale", 0.25, 0.0625, 1.0);
+        SIZE_RAY_MAX_SCALE = b.comment("Largest size the Maximizer Ray can grow a creature to (1.0 = normal; vanilla allows up to 16).")
+                .defineInRange("sizeRayMaxScale", 4.0, 1.0, 16.0);
         b.pop();
         SPEC = b.build();
     }

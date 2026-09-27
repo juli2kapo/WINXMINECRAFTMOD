@@ -95,13 +95,6 @@ public class RecallCharmItem extends Item {
     @Override
     public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int ticksRemaining) {
         if (!(level instanceof ServerLevel server) || !(entity instanceof ServerPlayer player)) return;
-        // Getting hit breaks the channel: no escaping a fight with it.
-        if (player.hurtTime >= player.hurtDuration - 1 && ticksRemaining < channelTicks() - 1) {
-            player.stopUsingItem();
-            player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_interrupted").withStyle(ChatFormatting.RED));
-            player.getCooldowns().addCooldown(stack, 40);
-            return;
-        }
         float progress = 1f - (float) ticksRemaining / channelTicks();
         server.sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() + 1, player.getZ(),
                 4 + (int) (progress * 12), 0.4, 0.8, 0.4, 0.5 + progress);
@@ -112,6 +105,17 @@ public class RecallCharmItem extends Item {
             player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_channel", seconds)
                     .withStyle(ChatFormatting.LIGHT_PURPLE));
         }
+    }
+
+    /** Taking real damage while channelling breaks the recall: no escaping a fight with it. */
+    static void onDamaged(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || event.getInflictedDamage() <= 0) return;
+        ItemStack using = player.getUseItem();
+        if (!player.isUsingItem() || !(using.getItem() instanceof RecallCharmItem)) return;
+        player.stopUsingItem();
+        player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_interrupted").withStyle(ChatFormatting.RED));
+        player.getCooldowns().addCooldown(using, 40);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.ENDER_EYE_DEATH, SoundSource.PLAYERS, 0.8f, 1.2f);
     }
 
     @Override
