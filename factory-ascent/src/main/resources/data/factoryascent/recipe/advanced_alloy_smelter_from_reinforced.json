@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:reinforced_alloy_smelter",
+    "factoryascent:advanced_upgrade_kit"
+  ],
+  "result": {
+    "id": "factoryascent:advanced_alloy_smelter"
+  }
+}

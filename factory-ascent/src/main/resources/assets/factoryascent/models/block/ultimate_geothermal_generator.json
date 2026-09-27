@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "front": "factoryascent:block/ultimate_geothermal_generator_front",
+    "side": "factoryascent:block/casing_ultimate_side",
+    "top": "factoryascent:block/casing_ultimate_top",
+    "bottom": "factoryascent:block/casing_ultimate_bottom"
+  }
+}

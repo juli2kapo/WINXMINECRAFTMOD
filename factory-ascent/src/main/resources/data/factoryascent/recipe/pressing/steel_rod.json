@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:pressing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/steel",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:steel_rod",
+    "count": 2
+  },
+  "time": 40,
+  "mold": "factoryascent:rod_mold"
+}

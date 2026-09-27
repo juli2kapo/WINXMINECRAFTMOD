@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:smelting",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:raw_bauxite",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:aluminum_ingot"
+  },
+  "time": 60
+}

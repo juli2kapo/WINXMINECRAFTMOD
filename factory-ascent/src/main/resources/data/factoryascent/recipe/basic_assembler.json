@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PTP",
+    "GMG",
+    "PRP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "M": "factoryascent:basic_machine_frame",
+    "R": "minecraft:redstone",
+    "T": "minecraft:crafting_table",
+    "G": "#c:gears/iron"
+  },
+  "result": {
+    "id": "factoryascent:basic_assembler"
+  }
+}

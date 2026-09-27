@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ores/gold",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:gold_dust",
+    "count": 4
+  },
+  "time": 80,
+  "min_tier": 3
+}

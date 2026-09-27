@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CXC",
+    "CCC"
+  ],
+  "key": {
+    "C": "factoryascent:basic_item_pipe",
+    "X": "#c:ingots/steel"
+  },
+  "result": {
+    "id": "factoryascent:reinforced_item_pipe",
+    "count": 8
+  }
+}

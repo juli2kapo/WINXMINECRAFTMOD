@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:gears/iron",
+    "#c:gears/bronze",
+    "#c:gears/steel",
+    "#c:gears/titanium"
+  ]
+}

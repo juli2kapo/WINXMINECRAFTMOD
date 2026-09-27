@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PLP",
+    "CMC",
+    "PRP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "M": "factoryascent:basic_machine_frame",
+    "R": "minecraft:redstone",
+    "L": "minecraft:magma_block",
+    "C": "#c:ingots/copper"
+  },
+  "result": {
+    "id": "factoryascent:basic_geothermal_generator"
+  }
+}

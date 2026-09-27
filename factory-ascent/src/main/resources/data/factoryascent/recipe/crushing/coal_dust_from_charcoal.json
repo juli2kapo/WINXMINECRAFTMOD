@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:charcoal",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:coal_dust"
+  },
+  "time": 30
+}

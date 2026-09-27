@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:pressing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/iron",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:iron_plate"
+  },
+  "time": 40,
+  "mold": "factoryascent:plate_mold"
+}

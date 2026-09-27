@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "#c:wires/copper",
+      "count": 3
+    },
+    {
+      "ingredient": "minecraft:redstone",
+      "count": 2
+    },
+    {
+      "ingredient": "#c:plates/iron",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:basic_circuit"
+  },
+  "time": 80
+}

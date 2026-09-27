@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " I ",
+    "ISI",
+    " S "
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "S": "#c:rods/wooden"
+  },
+  "result": {
+    "id": "factoryascent:forge_hammer"
+  }
+}

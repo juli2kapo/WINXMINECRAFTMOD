@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "#c:rods/iron",
+      "count": 2
+    },
+    {
+      "ingredient": "#c:wires/copper",
+      "count": 4
+    },
+    {
+      "ingredient": "#c:plates/iron",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:motor"
+  },
+  "time": 80
+}

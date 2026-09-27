@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:basic_combustion_generator",
+    "factoryascent:reinforced_upgrade_kit"
+  ],
+  "result": {
+    "id": "factoryascent:reinforced_combustion_generator"
+  }
+}
