@@ -8,7 +8,9 @@ public enum RecipeKind {
     CRUSHING(1, false),
     PRESSING(1, true),
     ALLOYING(2, false),
-    ASSEMBLING(4, false);
+    ASSEMBLING(4, false),
+    COKING(1, false),
+    BLASTING(2, false);
 
     public static final RecipeKind[] VALUES = values();
 

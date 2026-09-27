@@ -1,6 +1,5 @@
 package net.juli2kapo.factoryascent.machine;
 
-import net.juli2kapo.factoryascent.Tier;
 import net.juli2kapo.factoryascent.item.UpgradeItem;
 import net.juli2kapo.factoryascent.registry.ModBlockEntities;
 import net.juli2kapo.factoryascent.util.NeighborCaches;
@@ -28,7 +27,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Shared plumbing for every tiered machine: tier lookup, energy buffer, inventory, GUI sync,
+ * Shared plumbing for every machine: energy buffer, inventory, GUI sync,
  * auto-eject and drops. Subclasses implement {@link #tickMachine}.
  */
 public abstract class AbstractMachineBlockEntity extends BlockEntity implements MenuProvider {
@@ -40,6 +39,8 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
     public static final int STATUS_TIER_TOO_LOW = 5;
     public static final int STATUS_NO_FUEL = 6;
     public static final int STATUS_FULL = 7;
+    public static final int STATUS_INCOMPLETE = 8;
+    public static final int STATUS_NEEDS_CRANK = 9;
 
     protected final MachineType type;
     protected final MachineSlots slots;
@@ -49,7 +50,6 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
     protected final MachineData data = new MachineData();
     protected final NeighborCaches neighbors;
 
-    private Tier cachedTier;
     protected boolean autoEject = true;
     protected int status = STATUS_IDLE;
     /** Energy moved last tick, in FE/t (consumed by machines, produced by generators). */
@@ -64,20 +64,11 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
         this.automation = new AutomationItemHandler(this, inventory);
         this.energy = new MachineEnergy(this::setChanged);
         this.neighbors = new NeighborCaches(this);
-        this.cachedTier = tierOf(state);
-        applyTier(cachedTier);
-    }
-
-    private static Tier tierOf(BlockState state) {
-        return state.getBlock() instanceof MachineBlock mb ? mb.tier() : Tier.BASIC;
+        configureEnergy();
     }
 
     public MachineType type() {
         return type;
-    }
-
-    public Tier tier() {
-        return cachedTier;
     }
 
     public MachineInventory inventory() {
@@ -92,25 +83,12 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
         return data;
     }
 
-    // ---------------------------------------------------------------- tier
-
-    /** Called after an in-place upgrade swapped the block under us. */
-    public void onTierChanged() {
-        Tier now = tierOf(getBlockState());
-        if (now != cachedTier) {
-            cachedTier = now;
-            applyTier(now);
-            setChanged();
-        }
-    }
-
-    /** Sets the energy buffer limits for a tier. */
-    protected abstract void applyTier(Tier tier);
+    /** Sets the energy buffer limits for this machine. */
+    protected abstract void configureEnergy();
 
     // ---------------------------------------------------------------- ticking
 
     public final void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
-        if (tierOf(state) != cachedTier) onTierChanged();
         boolean active = tickMachine(level);
         if (MachineBlock.isActive(state) != active) {
             level.setBlock(pos, state.setValue(MachineBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
@@ -127,8 +105,7 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
 
     private int countUpgrades(UpgradeItem.Kind kind) {
         int count = 0;
-        int usable = Math.min(slots.upgrades(), cachedTier.upgradeSlots());
-        for (int i = 0; i < usable; i++) {
+        for (int i = 0; i < slots.upgrades(); i++) {
             if (inventory.stack(slots.firstUpgrade() + i).getItem() instanceof UpgradeItem u && u.kind() == kind) count++;
         }
         return count;
@@ -173,8 +150,7 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
     /** Whether a player (or the machine itself) may put this item in the slot. */
     public boolean isItemValid(int index, ItemResource resource) {
         return switch (slots.role(index)) {
-            case UPGRADE -> resource.getItem() instanceof UpgradeItem
-                    && index - slots.firstUpgrade() < cachedTier.upgradeSlots();
+            case UPGRADE -> resource.getItem() instanceof UpgradeItem;
             default -> true; // outputs: menu slots block players separately
         };
     }

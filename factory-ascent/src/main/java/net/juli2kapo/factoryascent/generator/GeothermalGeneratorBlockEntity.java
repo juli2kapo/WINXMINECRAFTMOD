@@ -3,7 +3,6 @@ package net.juli2kapo.factoryascent.generator;
 import java.util.ArrayList;
 import java.util.List;
 import net.juli2kapo.factoryascent.Config;
-import net.juli2kapo.factoryascent.Tier;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
 import net.juli2kapo.factoryascent.machine.MachineType;
 import net.juli2kapo.factoryascent.util.EnergyUtil;
@@ -25,8 +24,8 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity {
     }
 
     @Override
-    protected void applyTier(Tier tier) {
-        int out = type.baseEnergy() * tier.speed() * 5;
+    protected void configureEnergy() {
+        int out = type.baseEnergy() / 2 * 5;
         energy.configure(Math.max(20_000, out * 200), 0, out * 2);
     }
 
@@ -43,7 +42,7 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity {
             lavaSources = Math.min(count, 5);
             outputSides = sides.toArray(Direction[]::new);
         }
-        float out = (float) (type.baseEnergy() * lavaSources * tier().speed() * Config.GENERATOR_OUTPUT.get());
+        float out = (float) (type.baseEnergy() / 2f * lavaSources * Config.GENERATOR_OUTPUT.get());
         float produced = out + energyCarry;
         int whole = (int) produced;
         energyCarry = produced - whole;

@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeInput;
 
 /** The input slots of a processing machine, in slot order. */
-public record MachineRecipeInput(List<ItemStack> items, int tier) implements RecipeInput {
+public record MachineRecipeInput(List<ItemStack> items, int grade) implements RecipeInput {
     @Override
     public ItemStack getItem(int index) {
         return items.get(index);

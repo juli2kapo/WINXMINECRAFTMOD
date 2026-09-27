@@ -31,7 +31,7 @@ public class MachineData implements ContainerData {
         putInt(RATE_ITEMS, be.ratePerMinuteX10());
         values[EXTRA_A] = be.extraA();
         values[EXTRA_B] = be.extraB();
-        values[SPEED] = Math.round(be.speedMultiplier() * be.tier().speed() * 100);
+        values[SPEED] = Math.round(be.speedMultiplier() * be.type().speed() * 100);
     }
 
     private void putInt(int index, int value) {
