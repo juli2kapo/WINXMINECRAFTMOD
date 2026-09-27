@@ -39,8 +39,9 @@ public final class EnderContentClient {
      * sinks and rests still near the bottom of the tank.
      */
     static final class AnchorRenderer implements BlockEntityRenderer<EnderAnchorBlockEntity, AnchorState> {
-        private static final ItemStack EYE = new ItemStack(Items.ENDER_EYE);
         private final ItemModelResolver items;
+        /** Created with the renderer: an ItemStack can't exist before item components are bound. */
+        private final ItemStack eye = new ItemStack(Items.ENDER_EYE);
 
         AnchorRenderer(BlockEntityRendererProvider.Context context) {
             this.items = context.itemModelResolver();
@@ -57,7 +58,7 @@ public final class EnderContentClient {
             BlockEntityRenderer.super.extractRenderState(anchor, state, partialTicks, camera, breakProgress);
             state.active = anchor.getBlockState().getValue(EnderAnchorBlock.ACTIVE);
             state.time = anchor.getLevel() == null ? 0 : (anchor.getLevel().getGameTime() % 24000L) + partialTicks;
-            items.updateForTopItem(state.eye, EYE, ItemDisplayContext.FIXED, anchor.getLevel(), null,
+            items.updateForTopItem(state.eye, eye, ItemDisplayContext.FIXED, anchor.getLevel(), null,
                     (int) anchor.getBlockPos().asLong());
         }
 
