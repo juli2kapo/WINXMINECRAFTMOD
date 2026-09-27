@@ -356,7 +356,8 @@ def lang(extra_en, extra_es, advancement_text):
                        ("logistics", "Factory Ascent: Logistics & Storage", "Factory Ascent: Logística y almacenamiento"),
                        ("tools", "Factory Ascent: Tools", "Factory Ascent: Herramientas"),
                        ("materials", "Factory Ascent: Materials", "Factory Ascent: Materiales"),
-                       ("world", "Factory Ascent: World", "Factory Ascent: Mundo")]:
+                       ("world", "Factory Ascent: World", "Factory Ascent: Mundo"),
+                       ("orbital", "Factory Ascent: Orbital", "Factory Ascent: Orbital")]:
         add(f"itemGroup.{MOD}.{key}", e, s_)
     for key, e, s_ in [("smelting", "Electric Furnace", "Horno eléctrico"),
                        ("crushing", "Crushing", "Triturado"),

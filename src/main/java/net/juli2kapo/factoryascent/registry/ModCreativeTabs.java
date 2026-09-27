@@ -61,7 +61,7 @@ public final class ModCreativeTabs {
             () -> ModItems.ELECTRIC_DRILL.get(),
             out -> ModItems.TOOLS.values().forEach(t -> out.accept(t.get())));
 
-    public static final Supplier<CreativeModeTab> MATERIALS = tab("materials", "utility",
+    public static final Supplier<CreativeModeTab> MATERIALS = tab("materials", "orbital",
             () -> ModItems.MATERIALS.get("bronze_ingot").get(),
             out -> ModItems.MATERIALS.values().forEach(m -> out.accept(m.get())));
 
@@ -71,6 +71,10 @@ public final class ModCreativeTabs {
                 net.juli2kapo.factoryascent.ender.EnderContent.creativeItems().forEach(i -> out.accept(i.get()));
                 net.juli2kapo.factoryascent.mobs.MobContent.creativeItems().forEach(i -> out.accept(i.get()));
             });
+
+    public static final Supplier<CreativeModeTab> ORBITAL = tab("orbital", "utility",
+            net.juli2kapo.factoryascent.orbital.OrbitalContent::tabIcon,
+            out -> net.juli2kapo.factoryascent.orbital.OrbitalContent.creativeItems().forEach(i -> out.accept(i.get())));
 
     public static final Supplier<CreativeModeTab> WORLD = tab("world", "materials",
             () -> ModBlocks.SIMPLE.get("tin_ore").get(),
