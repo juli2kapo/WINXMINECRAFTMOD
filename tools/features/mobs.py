@@ -88,8 +88,11 @@ def recipes(ctx):
                "mob_capsule", category="equipment")
     for name, special in (("minimizer_ray", "minecraft:fermented_spider_eye"),
                           ("maximizer_ray", "minecraft:golden_apple")):
-        ctx.shaped(name, ["GA ", "ACX", " AA"],
-                   {"G": "minecraft:glass", "A": "#c:plates/aluminum", "C": "advanced_circuit", "X": special},
+        # An eye of ender focuses the beam at the muzzle, ender dust is wound along the barrel,
+        # and the shrinking or growing catalyst sits in the grip.
+        ctx.shaped(name, [" DE", "ACD", "XA "],
+                   {"D": "ender_dust", "E": "minecraft:ender_eye", "A": "#c:plates/aluminum",
+                    "C": "advanced_circuit", "X": special},
                    name, category="equipment")
 
 

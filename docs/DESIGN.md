@@ -136,7 +136,7 @@ the "challenge" frame. Descriptions are written as the next instruction
 ## Mob tools (Automation age)
 
 - **Mob Capsule:** hold it on a mob for 3 s to trap it (the mob is pinned while the trap forms), then use it on a block to release the mob. Bosses and players can't be captured.
-- **Minimizer / Maximizer rays:** FE guns that halve or double any living thing's size (vanilla `scale` attribute, 0.25×–4×). Shrunk mobs fit through 1-block gaps.
+- **Minimizer / Maximizer rays:** FE guns that halve or double any living thing's size (vanilla `scale` attribute, 0.25×–4×). Shrunk mobs fit through 1-block gaps. Recipe: an eye of ender as the lens, ender dust along the barrel, aluminium plates, an advanced circuit, and a fermented spider eye (Minimizer) or golden apple (Maximizer) as the catalyst.
 
 ## The Deep (where the Ore Miner's ore comes from)
 

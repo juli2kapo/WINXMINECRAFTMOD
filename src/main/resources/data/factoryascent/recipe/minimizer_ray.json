@@ -2,12 +2,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "GA ",
-    "ACX",
-    " AA"
+    " DE",
+    "ACD",
+    "XA "
   ],
   "key": {
-    "G": "minecraft:glass",
+    "D": "factoryascent:ender_dust",
+    "E": "minecraft:ender_eye",
     "A": "#c:plates/aluminum",
     "C": "factoryascent:advanced_circuit",
     "X": "minecraft:fermented_spider_eye"
