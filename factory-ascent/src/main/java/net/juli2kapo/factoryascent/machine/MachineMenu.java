@@ -17,6 +17,7 @@ import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 /** One menu for every machine; the slot set comes from the machine's {@link MachineSlots}. */
 public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_TOGGLE_EJECT = 0;
+    public static final int BUTTON_CRANK = 1;
 
     private final AbstractMachineBlockEntity machine;
     private final MachineData data;
@@ -38,7 +39,7 @@ public class MachineMenu extends AbstractContainerMenu {
             addSlot(new ResourceHandlerSlot(inv, inv::set, s.firstInput() + i, p.x(), p.y()));
         }
         for (int i = 0; i < s.mold(); i++) {
-            MachineLayout.Pos p = MachineLayout.mold(i);
+            MachineLayout.Pos p = MachineLayout.mold(type);
             addSlot(new ResourceHandlerSlot(inv, inv::set, s.firstMold() + i, p.x(), p.y()) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
@@ -52,7 +53,7 @@ public class MachineMenu extends AbstractContainerMenu {
             });
         }
         for (int i = 0; i < s.fuel(); i++) {
-            MachineLayout.Pos p = MachineLayout.fuel(i);
+            MachineLayout.Pos p = MachineLayout.fuel(type);
             addSlot(new ResourceHandlerSlot(inv, inv::set, s.firstFuel() + i, p.x(), p.y()));
         }
         for (int i = 0; i < s.outputs(); i++) {
@@ -99,6 +100,10 @@ public class MachineMenu extends AbstractContainerMenu {
     public boolean clickMenuButton(Player player, int buttonId) {
         if (buttonId == BUTTON_TOGGLE_EJECT) {
             machine.toggleAutoEject();
+            return true;
+        }
+        if (buttonId == BUTTON_CRANK && machine instanceof ProcessingMachineBlockEntity p && machine.type() == MachineType.QUERN) {
+            p.crank(player);
             return true;
         }
         return false;

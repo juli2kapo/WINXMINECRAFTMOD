@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 public class ItemPipeBlock extends BaseEntityBlock {
     public static final Map<Direction, EnumProperty<PipeConnection>> PROPERTIES;
     /** Items pulled per extracting face every {@link ItemPipeBlockEntity#EXTRACT_INTERVAL} ticks. */
-    private static final int[] RATE = {4, 16, 32, 64, 128};
+    private static final int[] RATE = {8, 32, 64, 128};
 
     static {
         EnumMap<Direction, EnumProperty<PipeConnection>> map = new EnumMap<>(Direction.class);

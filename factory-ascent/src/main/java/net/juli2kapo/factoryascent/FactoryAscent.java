@@ -6,11 +6,18 @@ import net.juli2kapo.factoryascent.machine.MachineType;
 import net.juli2kapo.factoryascent.pipe.ItemNetworkManager;
 import net.juli2kapo.factoryascent.registry.ModBlockEntities;
 import net.juli2kapo.factoryascent.registry.ModBlocks;
+import net.juli2kapo.factoryascent.registry.ModComponents;
 import net.juli2kapo.factoryascent.registry.ModCreativeTabs;
 import net.juli2kapo.factoryascent.registry.ModItems;
 import net.juli2kapo.factoryascent.registry.ModMenus;
 import net.juli2kapo.factoryascent.registry.ModRecipes;
+import net.juli2kapo.factoryascent.item.ElectricDrillItem;
+import net.juli2kapo.factoryascent.recipe.RecipeKind;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -28,6 +35,7 @@ public final class FactoryAscent {
     public FactoryAscent(IEventBus modBus, ModContainer container) {
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        ModComponents.COMPONENTS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModMenus.MENUS.register(modBus);
         ModRecipes.TYPES.register(modBus);
@@ -35,10 +43,12 @@ public final class FactoryAscent {
         ModCreativeTabs.TABS.register(modBus);
         container.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
         ModGameTests.register(modBus);
+        net.juli2kapo.factoryascent.storagenet.StorageNetwork.register(modBus);
 
         modBus.addListener(FactoryAscent::registerCapabilities);
         NeoForge.EVENT_BUS.addListener(FactoryAscent::onLevelTick);
         NeoForge.EVENT_BUS.addListener(FactoryAscent::onLevelUnload);
+        NeoForge.EVENT_BUS.addListener(FactoryAscent::onDatapackSync);
     }
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -49,6 +59,15 @@ public final class FactoryAscent {
         }
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.POWER_CABLE.get(), (be, side) -> be.energyHandler());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.ITEM_PIPE.get(), (be, side) -> be.itemHandler(side));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CRATE.get(), (be, side) -> VanillaContainerWrapper.of(be));
+        event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new ItemAccessEnergyHandler(access,
+                ModComponents.ENERGY.get(), ElectricDrillItem.CAPACITY, ElectricDrillItem.CAPACITY / 50, 0), ModItems.ELECTRIC_DRILL.get());
+    }
+
+    /** Send machine recipes (and smelting, for the Electric Furnace) to clients for tooltips, GUIs and JEI. */
+    private static void onDatapackSync(OnDatapackSyncEvent event) {
+        for (RecipeKind kind : RecipeKind.VALUES) event.sendRecipes(ModRecipes.type(kind));
+        event.sendRecipes(RecipeType.SMELTING);
     }
 
     private static void onLevelTick(LevelTickEvent.Post event) {
