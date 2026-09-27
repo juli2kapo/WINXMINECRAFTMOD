@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "ACA",
+    "SFS"
+  ],
+  "key": {
+    "P": "#c:plates/titanium",
+    "A": "factoryascent:advanced_circuit",
+    "C": "minecraft:compass",
+    "S": "#c:plates/steel",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:ground_station"
+  }
+}

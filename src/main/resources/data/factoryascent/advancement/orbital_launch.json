@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:orbital_pad",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:survey_satellite"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_launch.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_launch.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

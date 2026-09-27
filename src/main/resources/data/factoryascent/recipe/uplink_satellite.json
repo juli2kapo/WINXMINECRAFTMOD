@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PLP",
+    "COC",
+    "PAP"
+  ],
+  "key": {
+    "P": "#c:plates/titanium",
+    "L": "minecraft:lightning_rod",
+    "C": "factoryascent:solar_panel",
+    "O": "factoryascent:orbital_targeting_core",
+    "A": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:uplink_satellite"
+  }
+}

@@ -53,6 +53,9 @@
     "factoryascent:storage_terminal",
     "factoryascent:storage_interface",
     "factoryascent:ender_anchor",
-    "factoryascent:ender_beacon"
+    "factoryascent:ender_beacon",
+    "factoryascent:launch_pad",
+    "factoryascent:launch_controller",
+    "factoryascent:ground_station"
   ]
 }

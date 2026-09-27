@@ -573,9 +573,92 @@ def m_geothermal():
                  desc="aluminium casing, barred lava window, lava channels down the sides")
 
 
+def m_ore_washer():
+    i = "ore_washer"
+    tx = {"front": i + "_front", "side": i + "_side", "top": i + "_top", "bottom": i + "_bottom",
+          "inner": "aluminum_machine_inner", "spraybar": i + "_spraybar", "nozzle": i + "_nozzle"}
+    b = carved(i, STD)
+    b.append(Box((3, 12.5, 0.5), (13, 13.5, 1.5), "spraybar"))                # spray bar over the drum
+    for u in gt.WASH_NOZZLES:
+        b.append(Box((15.25 - u, 12, 0.75), (15.75 - u, 12.5, 1.25), "nozzle"))
+    return Model(i, tx, b, on={"front": i + "_front_on"}, particle=i + "_side",
+                 desc="aluminium washer: spray bar over a water drum, drain grate")
+
+
+# ---- industrial age -----------------------------------------------------------------------
+
+
+def m_induction_smelter():
+    i = "induction_smelter"
+    tx = fam("titanium", front=i + "_front", top=i + "_top", fin=i + "_fin", coil=i + "_coil",
+             crucible=i + "_crucible", melt=i + "_melt")
+    on = {"front": i + "_front_on", "top": i + "_top_on", "coil": i + "_coil_on",
+          "crucible": i + "_crucible_on", "melt": i + "_melt_on"}
+    b = carved(i, STD)
+    b += octo_y(8, 2.1, 1.8, 5, 11, {"side": "crucible", "up": "melt", "down": "crucible"}, c=0.7)
+    for y in (5.75, 7.25, 8.75):                                                  # induction coil turns
+        b.append(Box((5.5, y, 0.25), (10.5, y + 0.75, 3.95), "coil"))
+    b.append(Box((10.5, 6, 1.75), (13, 6.5, 2.25), "coil"))                      # coil leads
+    b.append(Box((10.5, 9.5, 1.75), (13, 10, 2.25), "coil"))
+    for x in (4, 6, 8, 10, 12):                                                   # cooling fins on top
+        b.append(Box((x, 14, 3), (x + 1, 16, 13), "fin"))
+    return Model(i, tx, b, on=on, particle="titanium_machine_side",
+                 desc="titanium: copper induction coil round a crucible, cooling fins")
+
+
+def m_hydraulic_press():
+    i = "hydraulic_press"
+    tx = fam("titanium", front=i + "_front", top=i + "_top", cyl=i + "_cylinder", rod=i + "_rod",
+             ram=i + "_ram", die=i + "_die", plate=i + "_plate")
+    b = carved(i, STD)
+    fixed = [Box((3, 13, 0.5), (6, 15, 3.5), "cyl"), Box((10, 13, 0.5), (13, 15, 3.5), "cyl"),
+             Box((3.5, 5, 0.5), (12.5, 6, 3.5), "die"), Box((5, 6, 1), (11, 6.5, 3), "plate")]
+
+    def ram(y):
+        return [Box((4, y + 2, 1.25), (5, 13, 2.75), "rod"), Box((11, y + 2, 1.25), (12, 13, 2.75), "rod"),
+                Box((2.5, y, 0.5), (13.5, y + 2, 3.5), "ram")]
+    return Model(i, tx, b + fixed + ram(10), on={"front": i + "_front_on"}, boxes_on=b + fixed + ram(6.5),
+                 particle="titanium_machine_side", desc="titanium: twin pistons drive a hazard ram onto a die")
+
+
+# ---- orbital age --------------------------------------------------------------------------
+
+
+def m_precision_assembler():
+    i = "precision_assembler"
+    tx = fam("orbital", front=i + "_front", side=i + "_side", top=i + "_top", table=i + "_table", chip=i + "_chip",
+             arm=i + "_arm", joint=i + "_joint", tip=i + "_tip", laser=i + "_laser")
+    b = carved(i, STD)
+    b += [Box((4, 6, 0.75), (12, 6.5, 3.75), "table"),                  # work table
+          Box((6, 6.5, 1.5), (9, 7, 3), "chip"),                        # workpiece
+          Box((10.25, 6.5, 2), (12, 7.5, 3.5), "joint"),                # arm base
+          Box((10.875, 7.5, 2.5), (11.375, 12, 3), "arm"),              # upper arm
+          Box((10.625, 11.75, 2.25), (11.625, 12.75, 3.25), "joint"),   # elbow
+          Box((7.75, 12, 2.5), (10.625, 12.5, 3), "arm"),               # forearm
+          Box((7.25, 9.5, 2.5), (7.75, 12.5, 3), "arm"),                # wrist
+          Box((7, 8.75, 2.25), (8, 9.5, 3.25), "tip")]                  # laser head
+    laser = [Box((7.375, 7, 2.625), (7.625, 8.75, 2.875), "laser", shade=False)]
+    return Model(i, tx, b, on={"front": i + "_front_on", "tip": i + "_tip_on"}, boxes_on=b + laser,
+                 particle=i + "_side", desc="white/gold clean-room dome, fine laser arm, gold foil")
+
+
+def m_plasma_forge():
+    i = "plasma_forge"
+    tx = fam("orbital", front=i + "_front", top=i + "_top", pole=i + "_pole", electrode=i + "_electrode")
+    on = {"front": i + "_front_on", "top": i + "_top_on", "pole": i + "_pole_on", "electrode": i + "_electrode_on"}
+    b = carved(i, STD)
+    b += [Box((7.25, 11, 1), (8.75, 14, 2.5), "electrode"),            # electrodes above and below the arc
+          Box((7.25, 3, 1), (8.75, 6, 2.5), "electrode")]
+    for (x, y) in ((3.25, 5.25), (10.75, 5.25), (3.25, 9.75), (10.75, 9.75)):
+        b.append(Box((x, y, 1.25), (x + 2, y + 2, 3), "pole"))          # magnet pole shoes
+    return Model(i, tx, b, on=on, particle="orbital_machine_side",
+                 desc="white/gold sealed chamber, magnetic ring, violet-cyan plasma arc")
+
+
 MODELS = [m_quern, m_brick_kiln, m_burner_crusher, m_burner_press, m_coke_oven, m_blast_furnace,
           m_electric_furnace, m_crusher, m_metal_press, m_alloy_smelter, m_assembler,
-          m_combustion_generator, m_solar_panel, m_auto_farmer, m_miner, m_geothermal] + \
+          m_combustion_generator, m_solar_panel, m_auto_farmer, m_miner, m_geothermal,
+          m_ore_washer, m_induction_smelter, m_hydraulic_press, m_precision_assembler, m_plasma_forge] + \
     [lambda c=c: m_energy_cell(c) for c in gt.ENERGY_CELLS]
 
 

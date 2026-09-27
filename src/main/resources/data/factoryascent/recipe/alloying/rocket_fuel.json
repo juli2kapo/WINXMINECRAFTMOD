@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:alloying",
+  "ingredients": [
+    {
+      "ingredient": "#c:dusts/coal",
+      "count": 2
+    },
+    {
+      "ingredient": "minecraft:blaze_powder",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:rocket_fuel"
+  },
+  "time": 100,
+  "min_grade": 3
+}

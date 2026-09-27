@@ -497,6 +497,15 @@ LAYOUT = {
                              "west": [(3, 1, 4, 14, 1), (11, 1, 12, 14, 1)],
                              "east": [(3, 1, 4, 14, 1), (11, 1, 12, 14, 1)]},
     "solar_panel": {"up": [(1, 1, 14, 14, 1)]},
+    # automation: washer drum window + drain grate, water basin on top
+    "ore_washer": {"north": [(3, 2, 12, 10, 2), (6, 12, 9, 13, 1)], "up": [(4, 4, 11, 11, 2)]},
+    # industrial: coil bay around a crucible, cooling-fin well on top
+    "induction_smelter": {"north": [(3, 3, 12, 10, 4)], "up": [(3, 3, 12, 12, 2)]},
+    "hydraulic_press": {"north": [(2, 1, 13, 10, 4)]},
+    # orbital: domed clean-room bay (arch = stacked windows), octagonal plasma chamber
+    "precision_assembler": {"north": [(6, 2, 9, 2, 4), (4, 3, 11, 3, 4), (3, 4, 12, 10, 4)]},
+    "plasma_forge": {"north": [(5, 2, 10, 2, 3), (4, 3, 11, 3, 3), (3, 4, 12, 10, 3),
+                               (4, 11, 11, 11, 3), (5, 12, 10, 12, 3)]},
 }
 ENERGY_CELLS = {"energy_cell": 1, "advanced_energy_cell": 3, "industrial_energy_cell": 4, "quantum_energy_cell": 5}
 for _cell in ENERGY_CELLS:
@@ -516,8 +525,18 @@ ALU_T = Tier(0, "aluminum",
              ["#FFFFFF", "#E8EEF4", "#BEC8D2", "#8C96A2", "#646C78"],
              ["#F2F6FA", "#E2E8EE", "#D6DEE6", "#BAC4CE", "#9AA4B0"],
              "#62D0FF")
+# industrial age: titanium, a darker blue-violet steel with a bold amber trim
+TITAN_T = Tier(0, "titanium",
+               ["#C6C2EE", "#8E8AC8", "#605C98", "#3A366A", "#211E42"],
+               ["#7A76A4", "#6A6694", "#5C5886", "#4A4670", "#363258"],
+               "#FFB02E")
+# orbital age: white spacecraft panels in a gold frame
+ORBITAL_T = Tier(0, "orbital",
+                 ["#FFFFFF", "#F2F3F5", "#C6CAD0", "#8E949C", "#5E646C"],
+                 ["#FFFFFF", "#F4F5F6", "#E6E8EA", "#CCD0D4", "#A8ACB2"],
+                 "#3A7BD5")
 IRON = ramp("#A2A6AE", "#767A82", "#55585F", "#393B40", "#232428")      # hi .. deep
-FAMILY = {"bronze": BRONZE_T, "steel": STEEL_T, "aluminum": ALU_T}
+FAMILY = {"bronze": BRONZE_T, "steel": STEEL_T, "aluminum": ALU_T, "titanium": TITAN_T, "orbital": ORBITAL_T}
 SOOT = ramp("#0E0A09", "#17110E", "#211813", "#2C2019")                 # deep .. light
 
 
@@ -883,6 +902,27 @@ def family_side(T, rng, kind):
             if y % 2 == 1:
                 t.hline(5, 10, y, F[1]); t.set(10, y, F[3])
         t.hline(4, 11, 13, T.accent)
+    elif kind == "titanium":    # corrugated armour sheet under heavy corner brackets, amber trim
+        ti_brackets(t, None, "west")
+        for y in range(4, 11):
+            for x in range(3, 13):
+                t.set(x, y, [P[0], P[1], P[3], P[4]][(x - 3) % 4] if y not in (4, 10) else
+                      (F[3] if y == 4 else F[1]))
+        t.hline(3, 12, 12, T.accent); t.hline(3, 12, 13, darken(T.accent, 0.45))
+        for x in (4, 7, 10):
+            t.set(x, 12, darken(T.accent, 0.6))
+    elif kind == "orbital":     # white heat-shield tiles, gold seams, blue mission stripe
+        t.rect(2, 2, 13, 13, P[1])
+        for y in range(2, 14):
+            for x in range(2, 14):
+                if (x - 2) % 4 == 3 or (y - 2) % 4 == 3:
+                    t.set(x, y, P[3])
+                elif rng.random() < 0.12:
+                    t.set(x, y, P[2])
+        for (x, y) in [(2, 2), (12, 2), (2, 12), (12, 12)]:
+            rivet(t, x, y, T)
+        t.rect(10, 6, 12, 8, T.accent); t.hline(10, 12, 6, lighten(T.accent, 0.35))
+        t.hline(10, 12, 8, darken(T.accent, 0.35))
     else:                       # aluminium: brushed sheet with a blue accent stripe
         t.rect(2, 2, 13, 13, P[2])
         for y in range(2, 14):
@@ -1440,6 +1480,438 @@ def anim(frames):
     t = Tex(16, 16 * len(frames))
     for i, f in enumerate(frames):
         t.blit(f, 0, 16 * i)
+    return t
+
+
+# ---- automation / industrial / orbital processing machines -------------------------------
+# ore washer (aluminium), induction smelter + hydraulic press (titanium),
+# precision assembler + plasma forge (orbital white/gold)
+
+WATER = ramp("#0E2448", "#1A4E9A", "#2F7CC8", "#5AB4E8", "#BDEBFF")      # deep .. foam
+WATER_PIPE = ramp("#9AD4FF", "#4A9AE0", "#2A6AB0", "#1A4478")              # hi .. deep
+GOLD_FOIL = ramp("#6A4A08", "#A87C14", "#DDB030", "#F6D860", "#FFF6C0")    # deep .. hi
+WET_ORE = [("#C87438", "#7A3A14", "#FFD0A0"), ("#B8B8BE", "#5E5E66", "#FFFFFF"),
+           ("#E0B024", "#7A5408", "#FFF4A6")]                                # body, shadow, glint
+
+
+def win_pixels(name, face="north"):
+    return {(u, v) for (u0, v0, u1, v1, _) in win_list(name, face)
+            for u in range(u0, u1 + 1) for v in range(v0, v1 + 1)}
+
+
+def win_ring(name, face="north"):
+    """Flush-face pixels touching a (possibly stepped) window, 8-neighbourhood."""
+    W = win_pixels(name, face)
+    return {(u + du, v + dv) for (u, v) in W for du in (-1, 0, 1) for dv in (-1, 0, 1)} - W
+
+
+def ti_brackets(t, name, face="north"):
+    """Heavy L-shaped corner plates: the titanium casing's bold trim."""
+    F = TITAN_T.frame
+    for (cx, cy, sx, sy) in ((2, 2, 1, 1), (13, 2, -1, 1), (2, 13, 1, -1), (13, 13, -1, -1)):
+        pix = [(cx + sx * i, cy) for i in range(4)] + [(cx, cy + sy * i) for i in range(1, 4)]
+        if name and any(in_window(name, face, x + dx, y + dy) for (x, y) in pix
+                        for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
+            continue
+        for (x, y) in pix:
+            t.set(x, y, F[0] if (sx > 0 and y == cy) or (sy > 0 and x == cx) else F[1])
+        for i in range(1, 4):   # cast shadow inside the L
+            t.set(cx + sx * i, cy + sy, mix(t.get(cx + sx * i, cy + sy), F[4], 0.5))
+            t.set(cx + sx, cy + sy * i, mix(t.get(cx + sx, cy + sy * i), F[4], 0.5))
+        t.set(cx + sx, cy + sy, F[3])   # bolt head
+        t.set(cx, cy, TITAN_T.accent)
+
+
+def ti_face(rng, name=None, face="north"):
+    t = casing_face(TITAN_T, rng, name, face, rivets=())
+    ti_brackets(t, name, face)
+    return t
+
+
+def glint(t, u, v, n, amt=0.3):
+    for i in range(n):
+        t.set(u + i, v - i, mix(t.get(u + i, v - i), "#FFFFFF", amt))
+
+
+def ore_chunk(t, u, v, k):
+    body, shade, hi = WET_ORE[k % 3]
+    t.set(u, v, hi); t.set(u + 1, v, body); t.set(u, v + 1, body); t.set(u + 1, v + 1, shade)
+
+
+# ---- ore washer ---------------------------------------------------------------------------
+
+WASH_NOZZLES = (4, 7, 11)   # texture columns of the spray nozzles (model: x = 16 - u)
+
+
+def washer_front(rng, on, phase=0):
+    t = casing_face(ALU_T, rng, "ore_washer")
+    (u0, v0, u1, v1, _), (d0, e0, d1, e1, _) = win_list("ore_washer")
+    wl = v0 + 2                                      # water line (spray bar hangs above it)
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            if v < wl:
+                c = mix(VOID2, "#1A2A3A", (v - v0) / 2.0)
+            else:
+                f = (v - wl) / max(1, v1 - wl)
+                if on:
+                    base = mix(WATER[3], WATER[1], f)
+                    n = lava_value(u * 2 - phase * 2, v + phase * 2)
+                    c = lighten(base, 0.4) if n < 0.28 else darken(base, 0.18) if n > 0.66 else base
+                else:
+                    c = mix(WATER[2], WATER[0], f * 0.9 + 0.1)
+            t.set(u, v, c)
+    # surface: churning foam when on, a calm lit line when idle
+    for u in range(u0, u1 + 1):
+        if on:
+            t.set(u, wl, WATER[4] if (u + phase) % 3 else WATER[3])
+        else:
+            t.set(u, wl, WATER[3] if u % 4 else WATER[2])
+    # spray from the nozzles
+    if on:
+        for u in WASH_NOZZLES:
+            for v in range(v0 + 1, wl):
+                t.set(u, v, WATER[4] if (v + phase) % 2 else WATER[3])
+            t.set(u - 1, wl + 1, WATER[4]); t.set(u + 1, wl + 1, WATER[4])
+    # ore: tumbling in the drum when on, resting on the bottom when idle
+    for k in range(3):
+        if on:
+            a = 2 * math.pi * (phase / 8.0 + k / 3.0)
+            cu, cv = 7.0 + 3.2 * math.cos(a), (wl + v1) / 2.0 + 1.6 * math.sin(a)
+            ore_chunk(t, int(round(cu)), int(round(cv)), k)
+        else:
+            ore_chunk(t, u0 + 1 + 3 * k, v1 - 1, k)
+    # drum ribs at the window edges and a glass glint
+    for v in range(wl + 1, v1 + 1):
+        t.set(u0, v, darken(t.get(u0, v), 0.35)); t.set(u1, v, darken(t.get(u1, v), 0.25))
+    glint(t, u0 + 5, v1 - 1, 3, 0.35); glint(t, u0 + 7, v1 - 1, 2, 0.25)
+    win_shadow(t, u0, v0, u1, v1, 0.3)
+    # drain grate: bars with water running through when on
+    for v in range(e0, e1 + 1):
+        for u in range(d0, d1 + 1):
+            if (u - d0) % 2 == 0:
+                t.set(u, v, IRON[1] if v == e0 else IRON[2])
+            else:
+                t.set(u, v, (WATER[3] if (v + phase) % 2 else WATER[2]) if on else VOID)
+    # inlet valve wheel and status light
+    t.set(3, 12, WATER_PIPE[1]); t.set(4, 12, WATER_PIPE[0]); t.set(3, 13, WATER_PIPE[2]); t.set(4, 13, WATER_PIPE[3])
+    status_led(t, 12, 12, on)
+    return t
+
+
+def washer_top(rng):
+    t = casing_face(ALU_T, rng, "ore_washer", "up")
+    u0, v0, u1, v1, _ = win_list("ore_washer", "up")[0]
+    rr = rng_for("ore_washer/basin")
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            c = WATER[2] if (u + 2 * v) % 5 else WATER[3]
+            if rr.random() < 0.12:
+                c = rr.choice([WET_ORE[0][0], WET_ORE[1][0], WET_ORE[1][1], "#3A3430"])
+            t.set(u, v, c)
+    glint(t, u0 + 1, v1 - 2, 3, 0.4)
+    win_shadow(t, u0, v0, u1, v1, 0.5)
+    # water inlet pipe running in from the back edge
+    for v in range(1, v0 - 1):
+        t.set(7, v, WATER_PIPE[1]); t.set(8, v, WATER_PIPE[3])
+    return t
+
+
+def washer_side(rng):
+    t = family_side(ALU_T, rng, "aluminum")
+    # sight glass showing the water level
+    t.rect(4, 2, 6, 8, IRON[2]); t.vline(4, 2, 8, IRON[1]); t.vline(6, 2, 8, IRON[3])
+    for v in range(3, 8):
+        t.set(5, v, WATER[3] if v >= 5 else "#1A2430")
+    t.set(5, 5, WATER[4])
+    # blue supply pipe with a valve
+    for v in range(2, 10):
+        t.set(10, v, WATER_PIPE[0]); t.set(11, v, WATER_PIPE[1]); t.set(12, v, WATER_PIPE[3])
+    t.rect(9, 4, 13, 4, "#C82828"); t.set(9, 4, "#FF6A5A"); t.set(13, 4, "#7A1010")
+    return t
+
+
+# ---- induction smelter --------------------------------------------------------------------
+
+
+def induction_front(rng, on):
+    t = ti_face(rng, "induction_smelter")
+    u0, v0, u1, v1, _ = win_list("induction_smelter")[0]
+    cx, cy = (u0 + u1 + 1) / 2.0, v1 - 2.0
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            brick = (v - v0) % 3 == 2 or (u + (v - v0) // 3 * 2) % 4 == 0
+            base = "#2A2630" if brick else "#3A3542"
+            if on:
+                d = math.hypot((u + 0.5 - cx) / 6.0, (v + 0.5 - cy) / 5.0)
+                g = max(0.0, 1.0 - d)
+                base = mix(base, "#FF7A20", g * 0.85)
+            t.set(u, v, base)
+    win_shadow(t, u0, v0, u1, v1, 0.35)
+    # current readout + LED under the bay
+    t.rect(3, 12, 9, 13, "#140E0C")
+    for u in range(4, 9):
+        if on or u < 5:
+            t.set(u, 12 + (u % 2), "#FFB02E" if on else "#6A4410")
+    status_led(t, 11, 12, on)
+    t.set(11, 13, TITAN_T.frame[3]); t.set(12, 13, TITAN_T.frame[3])
+    return t
+
+
+def induction_top(rng, on):
+    t = ti_face(rng, "induction_smelter", "up")
+    u0, v0, u1, v1, _ = win_list("induction_smelter", "up")[0]
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            f = abs((v + 0.5) - (v0 + v1 + 1) / 2.0) / ((v1 - v0 + 1) / 2.0)
+            t.set(u, v, mix("#FFD27A", "#A8300E", f) if on else mix("#2A2226", VOID2, f))
+    win_shadow(t, u0, v0, u1, v1, 0.4)
+    return t
+
+
+def fin_tex(rng):
+    F = TITAN_T.frame
+    t = flat(F[2], rng, (F[3], F[1]))
+    t.hline(0, 15, 0, F[0]); t.hline(0, 15, 1, F[1])
+    return t
+
+
+def induction_coil(on):
+    """Copper tube wound round the crucible, lit orange by the heat when on."""
+    Cu = MAT["copper"]
+    pal = [Cu[4], Cu[3], Cu[2], Cu[1]] if not on else ["#FFF2D0", "#FFC47A", "#F09040", "#B85A20"]
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, pal[(x + 2 * y) % 4] if y % 2 == 0 else pal[2 + (x % 2)])
+    return t
+
+
+def induction_crucible(on):
+    t = Tex()
+    G = ramp("#26242C", "#34323C", "#46444E", "#5C5A66")
+    for y in range(16):
+        for x in range(16):
+            if on:
+                t.set(x, y, "#FFF6D8" if (x + y) % 5 == 0 else "#FFE08A" if y % 3 else "#FFB43C")
+            else:
+                t.set(x, y, G[3] if y % 5 == 0 else G[1 + (x % 3 == 0)])
+    return t
+
+
+# ---- hydraulic press ----------------------------------------------------------------------
+
+
+def hpress_front(rng, on):
+    t = ti_face(rng, "hydraulic_press")
+    u0, v0, u1, v1, _ = win_list("hydraulic_press")[0]
+    void_fill(t, u0, v0, u1, v1, top=VOID2, bottom="#1E1C28")
+    F = TITAN_T.frame
+    # guide columns at the window edges, red oil lines feeding both cylinders
+    for v in range(v0, v1 + 1):
+        t.set(u0, v, F[3]); t.set(u0 + 1, v, F[2])
+        t.set(u1 - 1, v, F[2]); t.set(u1, v, F[3])
+    for v in range(v0 + 2, v1 - 1):      # red oil hoses down the back wall
+        t.set(u0 + 3, v, "#A01818"); t.set(u1 - 3, v, "#6A0E0E")
+    win_shadow(t, u0, v0, u1, v1, 0.3)
+    # pressure bar display, e-stop and LED under the bay
+    t.rect(3, 12, 9, 13, "#100E14")
+    lit = 9 if on else 4
+    for u in range(4, lit):
+        t.set(u, 12, HAZARD_Y[2] if u < 7 else "#FF5A2A"); t.set(u, 13, HAZARD_Y[1] if u < 7 else "#C8300C")
+    t.set(10, 12, "#E02424"); t.set(10, 13, "#8A1010")
+    status_led(t, 12, 12, on)
+    return t
+
+
+def hpress_top(rng):
+    t = ti_face(rng)
+    F = TITAN_T.frame
+    for (cx, cy) in ((5.5, 8.0), (10.5, 8.0)):
+        for (x, y) in sorted(disc_mask(cx, cy, 2.8)):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            t.set(x, y, F[0] if dx + dy < -1.8 else F[1] if dx + dy < 0.8 else F[3])
+        t.set(int(cx), int(cy), F[4])
+    for x in range(5, 11):              # oil manifold linking the two cylinders
+        t.set(x, 12, "#A01818"); t.set(x, 13, "#6A0E0E")
+    t.rect(7, 3, 8, 4, TITAN_T.accent); t.set(8, 4, darken(TITAN_T.accent, 0.4))
+    return t
+
+
+def hpress_cyl(rng):
+    t = rod_tex(ramp("#F4F2FF", "#CAC6F0", "#9490CC", "#4E4A7A"))
+    for y in range(0, 16, 4):
+        t.hline(0, 15, y, "#3A366A")
+    return t
+
+
+def hazard_ram():
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, HAZARD_Y[1] if (x + y) % 6 < 3 else HAZARD_K[0])
+    return t
+
+
+# ---- precision assembler ------------------------------------------------------------------
+
+
+def gold_foil(t, rng, u0, v0, u1, v1):
+    """Crinkled multi-layer insulation."""
+    for v in range(v0, v1 + 1):
+        for u in range(u0, u1 + 1):
+            n = rng.random()
+            t.set(u, v, GOLD_FOIL[4] if n < 0.1 else GOLD_FOIL[3] if n < 0.45 else
+                  GOLD_FOIL[2] if n < 0.85 else GOLD_FOIL[1])
+    for _ in range(max(1, (u1 - u0 + 1) * (v1 - v0 + 1) // 12)):   # creases
+        u, v = rng.randint(u0, u1 - 1), rng.randint(v0, v1)
+        t.set(u, v, GOLD_FOIL[4]); t.set(u + 1, v, GOLD_FOIL[1])
+
+
+def dome_rim(t, name):
+    """Glass rim around a stepped window: lit up-left, dark down-right."""
+    W = win_pixels(name)
+    us = [u for u, _ in W]; vs = [v for _, v in W]
+    cx, cy = (min(us) + max(us) + 1) / 2.0, (min(vs) + max(vs) + 1) / 2.0
+    for (u, v) in win_ring(name):
+        lit = (u + 0.5 - cx) + (v + 0.5 - cy) < 0
+        t.set(u, v, GLASS[4] if lit else GLASS[1])
+
+
+def passembler_front(rng, on):
+    name = "precision_assembler"
+    t = casing_face(ORBITAL_T, rng, name, rivets=((2, 12), (12, 12)))
+    W = win_pixels(name)
+    vs = [v for _, v in W]
+    v0, v1 = min(vs), max(vs)
+    for (u, v) in W:
+        f = (v - v0) / float(v1 - v0)
+        grid = u % 3 == 0 or v % 3 == 0
+        top, bot = ("#E8F6FF", "#9CC4DC") if on else ("#8AA4B8", "#4A6074")
+        c = mix(top, bot, f)
+        t.set(u, v, darken(c, 0.08) if grid else c)
+    dome_rim(t, name)
+    for (u, v) in W:   # the dome's own shadow on the back wall
+        if (u, v - 1) not in W or (u - 1, v) not in W:
+            t.set(u, v, darken(t.get(u, v), 0.3))
+    glint(t, 4, 7, 3, 0.45); glint(t, 5, 8, 2, 0.3)
+    gold_foil(t, rng_for("pa/foil"), 3, 12, 10, 13)
+    status_led(t, 12, 13, on)
+    return t
+
+
+def passembler_top(rng):
+    """HEPA filter grille of the clean room between gold foil strips."""
+    T = ORBITAL_T
+    t = casing_face(T, rng)
+    recess(t, 4, 4, 11, 11, T, fill=T.panel[3])
+    for y in range(5, 11):
+        for x in range(5, 11):
+            t.set(x, y, T.panel[0] if (x + y) % 2 else T.panel[2])
+    gold_foil(t, rng_for("pa/topfoil"), 4, 13, 11, 13)
+    gold_foil(t, rng_for("pa/topfoil2"), 4, 2, 11, 2)
+    return t
+
+
+def passembler_side(rng):
+    t = family_side(ORBITAL_T, rng, "orbital")
+    t.rect(3, 3, 12, 10, GOLD_FOIL[1])
+    gold_foil(t, rng_for("pa/sidefoil"), 3, 3, 12, 9)
+    t.hline(3, 12, 10, GOLD_FOIL[0])
+    t.hline(3, 12, 12, ORBITAL_T.accent)
+    return t
+
+
+# ---- plasma forge -------------------------------------------------------------------------
+
+
+def plasma_front(rng, on, phase=0):
+    name = "plasma_forge"
+    t = casing_face(ORBITAL_T, rng, name, rivets=((2, 2), (12, 2), (2, 12), (12, 12)))
+    W = win_pixels(name)
+    cx, cy = 8.0, 7.5
+    # magnetic ring: copper windings between dark pole shoes, energised violet when on
+    Cu = MAT["copper"]
+    for (u, v) in win_ring(name):
+        a = math.atan2(v + 0.5 - cy, u + 0.5 - cx)
+        seg = int((a + math.pi) / (2 * math.pi) * 16) % 2
+        lit = (u + 0.5 - cx) + (v + 0.5 - cy) < 0
+        if seg:
+            c = (Cu[3] if lit else Cu[1])
+        else:
+            c = (VIOLET_GLOW[2] if lit else VIOLET_GLOW[1]) if on else (IRON[2] if lit else IRON[4])
+        t.set(u, v, c)
+    # the chamber
+    arc = {}
+    if on:
+        ar = rng_for("pf/arc%d" % phase)
+        x = cx - 0.5
+        for v in range(4, 12):
+            x = max(5.0, min(10.0, x + ar.choice((-1, 0, 0, 1))))
+            arc[v] = int(x)
+    for (u, v) in W:
+        d = math.hypot((u + 0.5 - cx) / 5.0, (v + 0.5 - cy) / 5.5)
+        if on:
+            pulse = 0.12 * math.sin(2 * math.pi * phase / 8.0)
+            g = max(0.0, 1.0 - d + pulse)
+            c = mix("#12081E", VIOLET_GLOW[1], min(1.0, g * 1.2))
+            if v in arc:
+                dx = abs(u - arc[v])
+                if dx == 0:
+                    c = "#F4FFFF"
+                elif dx == 1:
+                    c = CYAN_GLOW[2]
+                elif dx == 2:
+                    c = mix(c, VIOLET_GLOW[2], 0.6)
+        else:
+            c = mix("#2A1840", "#0C0814", min(1.0, d))
+        t.set(u, v, c)
+    for (u, v) in W:
+        if (u, v - 1) not in W or (u - 1, v) not in W:
+            t.set(u, v, darken(t.get(u, v), 0.3))
+    status_led(t, 12, 14, on)
+    t.set(3, 14, ORBITAL_T.accent); t.set(4, 14, ORBITAL_T.accent)
+    return t
+
+
+def plasma_top(rng, on):
+    """Sealed round hatch with a gold bolt circle and a violet sight port."""
+    T = ORBITAL_T
+    t = casing_face(T, rng)
+    for (x, y) in sorted(disc_mask(8, 8, 5.2)):
+        dx, dy = x + 0.5 - 8, y + 0.5 - 8
+        d = math.hypot(dx, dy)
+        if d > 4.3:
+            c = T.panel[3] if dx + dy > 0 else T.panel[0]
+        else:
+            c = T.panel[1] if dx + dy < 0 else T.panel[2]
+        t.set(x, y, c)
+    for k in range(8):
+        a = k * math.pi / 4
+        t.set(int(8 + 3.6 * math.cos(a)), int(8 + 3.6 * math.sin(a)), T.frame[1])
+    port = VIOLET_GLOW if on else ramp("#1A0E2A", "#2A1840", "#3A2458", "#4A3070")
+    t.rect(7, 7, 8, 8, port[1]); t.set(7, 7, port[3]); t.set(8, 8, port[0])
+    return t
+
+
+def pole_tex(on):
+    """Magnet pole piece: copper winding with a glowing tip when on."""
+    Cu = MAT["copper"]
+    t = Tex()
+    for y in range(16):
+        for x in range(16):
+            t.set(x, y, Cu[3] if (x + y) % 2 else Cu[1])
+            if on and (x + y) % 5 == 0:
+                t.set(x, y, VIOLET_GLOW[2])
+    return t
+
+
+def electrode_tex(on):
+    t = rod_tex(ramp("#E8ECF2", "#B4BAC4", "#7A8290", "#3A3E48"))
+    if on:
+        for x in range(16):
+            for y in range(16):
+                if y % 4 == 0:
+                    t.set(x, y, CYAN_GLOW[2])
     return t
 
 
@@ -2674,6 +3146,53 @@ def build():
     blk("geothermal_generator_top", lambda r: casing_top(ALU_T, r))
     blk("geothermal_generator_bottom", basalt)
     blk("geothermal_generator_bar", lambda r: rod_tex(IRON))
+
+    # ---- automation / industrial / orbital processing machines
+    blk("ore_washer_front", lambda r: washer_front(r, False))
+    ani("ore_washer_front_on", [washer_front(rng_for("block/ore_washer_front"), True, p) for p in range(8)], 2)
+    blk("ore_washer_top", washer_top)
+    blk("ore_washer_side", washer_side)
+    blk("ore_washer_bottom", lambda r: casing_bottom(ALU_T, r))
+    blk("ore_washer_spraybar", lambda r: flat(WATER_PIPE[1], r, (WATER_PIPE[2], WATER_PIPE[0])))
+    blk("ore_washer_nozzle", lambda r: flat(IRON[1], r, (IRON[2], IRON[0])))
+    blk("induction_smelter_front", lambda r: induction_front(r, False))
+    blk("induction_smelter_front_on", lambda r: induction_front(rng_for("block/induction_smelter_front"), True))
+    blk("induction_smelter_top", lambda r: induction_top(r, False))
+    blk("induction_smelter_top_on", lambda r: induction_top(rng_for("block/induction_smelter_top"), True))
+    blk("induction_smelter_fin", fin_tex)
+    blk("induction_smelter_coil", lambda r: induction_coil(False))
+    blk("induction_smelter_coil_on", lambda r: induction_coil(True))
+    blk("induction_smelter_crucible", lambda r: induction_crucible(False))
+    blk("induction_smelter_crucible_on", lambda r: induction_crucible(True))
+    blk("induction_smelter_melt", lambda r: crucible_top(False, MAT["titanium"]))
+    blk("induction_smelter_melt_on", lambda r: crucible_top(True, ramp("#FFB43C", "#FFD27A", "#FFE8A8", "#FFF6D8", "#FFFFFF")))
+    blk("hydraulic_press_front", lambda r: hpress_front(r, False))
+    blk("hydraulic_press_front_on", lambda r: hpress_front(rng_for("block/hydraulic_press_front"), True))
+    blk("hydraulic_press_top", hpress_top)
+    blk("hydraulic_press_cylinder", hpress_cyl)
+    blk("hydraulic_press_rod", lambda r: rod_tex(ramp("#FFFFFF", "#DCE2EA", "#9AA4B2", "#5A6270", "#343A44")))
+    blk("hydraulic_press_ram", lambda r: hazard_ram())
+    blk("hydraulic_press_die", lambda r: flat(MAT["titanium"][1], r, (MAT["titanium"][0], MAT["titanium"][2])))
+    blk("hydraulic_press_plate", lambda r: flat(MAT["titanium"][3], r, (MAT["titanium"][2], MAT["titanium"][4])))
+    blk("precision_assembler_front", lambda r: passembler_front(r, False))
+    blk("precision_assembler_front_on", lambda r: passembler_front(rng_for("block/precision_assembler_front"), True))
+    blk("precision_assembler_top", passembler_top)
+    blk("precision_assembler_side", passembler_side)
+    blk("precision_assembler_table", lambda r: flat(ORBITAL_T.panel[1], r, (ORBITAL_T.panel[3], ORBITAL_T.panel[0])))
+    blk("precision_assembler_chip", lambda r: flat(PCB[1][3], r, (PCB[1][2], "#E8C040")))
+    blk("precision_assembler_arm", lambda r: flat(ORBITAL_T.panel[1], r, (ORBITAL_T.panel[3], "#FFFFFF")))
+    blk("precision_assembler_joint", lambda r: flat(GOLD_FOIL[2], r, (GOLD_FOIL[1], GOLD_FOIL[3])))
+    blk("precision_assembler_tip", lambda r: flat("#2A2A30", r, ("#1A1A1E", "#5A1A1A")))
+    blk("precision_assembler_tip_on", lambda r: flat("#FF2A1A", r, ("#C81010", "#FFB0A0")))
+    blk("precision_assembler_laser", lambda r: flat("#FF3A2A", r, ("#FF6A5A", "#FFC0B0")))
+    ani("plasma_forge_front_on", [plasma_front(rng_for("block/plasma_forge_front"), True, p) for p in range(8)], 2)
+    blk("plasma_forge_front", lambda r: plasma_front(r, False))
+    blk("plasma_forge_top", lambda r: plasma_top(r, False))
+    blk("plasma_forge_top_on", lambda r: plasma_top(rng_for("block/plasma_forge_top"), True))
+    blk("plasma_forge_pole", lambda r: pole_tex(False))
+    blk("plasma_forge_pole_on", lambda r: pole_tex(True))
+    blk("plasma_forge_electrode", lambda r: electrode_tex(False))
+    blk("plasma_forge_electrode_on", lambda r: electrode_tex(True))
 
     # ---- crates
     blk("wooden_crate_side", lambda r: crate_face(r, False, False))

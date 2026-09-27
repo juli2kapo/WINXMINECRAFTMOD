@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:launch_controller"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:launch_controller"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_pad.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_pad.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_orbital"
+}

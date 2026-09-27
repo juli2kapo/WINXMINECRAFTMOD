@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "SBS"
+  ],
+  "key": {
+    "P": "#c:plates/titanium",
+    "S": "#c:plates/steel",
+    "B": "#c:storage_blocks/steel"
+  },
+  "result": {
+    "id": "factoryascent:launch_pad",
+    "count": 4
+  }
+}

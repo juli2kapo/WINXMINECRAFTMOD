@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PAP",
+    "CFC",
+    "PRP"
+  ],
+  "key": {
+    "P": "#c:plates/titanium",
+    "A": "factoryascent:advanced_circuit",
+    "C": "minecraft:comparator",
+    "F": "factoryascent:advanced_machine_frame",
+    "R": "minecraft:redstone_block"
+  },
+  "result": {
+    "id": "factoryascent:launch_controller"
+  }
+}

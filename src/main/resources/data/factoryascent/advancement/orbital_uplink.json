@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:orbital_launch",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:uplink_satellite"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_uplink.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_uplink.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}
