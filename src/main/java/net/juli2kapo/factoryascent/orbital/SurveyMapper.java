@@ -63,7 +63,7 @@ public final class SurveyMapper {
         level.setMapData(id, data);
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         map.set(DataComponents.MAP_ID, id);
-        map.set(DataComponents.ITEM_NAME, Component.translatable("item.factoryascent.survey_map"));
+        map.set(DataComponents.ITEM_NAME, Component.translatable("orbital.factoryascent.survey_map"));
         MapItemSavedData.addTargetDecoration(map, station, "ground_station", MapDecorationTypes.TARGET_POINT);
         int n = 0;
         for (ChunkPos rich : oreRichChunks(level, station)) {

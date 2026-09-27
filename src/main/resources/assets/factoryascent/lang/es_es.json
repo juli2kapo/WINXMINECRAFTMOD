@@ -425,7 +425,7 @@
   "item.factoryascent.uplink_satellite": "Satélite de enlace",
   "item.factoryascent.rocket_fuel": "Combustible de cohete",
   "item.factoryascent.wireless_terminal": "Terminal inalámbrica",
-  "item.factoryascent.survey_map": "Mapa de reconocimiento",
+  "orbital.factoryascent.survey_map": "Mapa de reconocimiento",
   "orbital.factoryascent.type.survey": "Reconocimiento",
   "orbital.factoryascent.type.uplink": "Enlace",
   "orbital.factoryascent.dimension.minecraft.overworld": "el Mundo Superior",

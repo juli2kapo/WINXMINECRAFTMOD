@@ -425,7 +425,7 @@
   "item.factoryascent.uplink_satellite": "Uplink Satellite",
   "item.factoryascent.rocket_fuel": "Rocket Fuel",
   "item.factoryascent.wireless_terminal": "Wireless Terminal",
-  "item.factoryascent.survey_map": "Survey Map",
+  "orbital.factoryascent.survey_map": "Survey Map",
   "orbital.factoryascent.type.survey": "Survey",
   "orbital.factoryascent.type.uplink": "Uplink",
   "orbital.factoryascent.dimension.minecraft.overworld": "the Overworld",

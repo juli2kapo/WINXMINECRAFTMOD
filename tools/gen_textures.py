@@ -911,7 +911,8 @@ def family_side(T, rng, kind):
         t.hline(3, 12, 12, T.accent); t.hline(3, 12, 13, darken(T.accent, 0.45))
         for x in (4, 7, 10):
             t.set(x, 12, darken(T.accent, 0.6))
-    elif kind == "orbital":     # white heat-shield tiles, gold seams, blue mission stripe
+    elif kind == "orbital":     # white heat-shield tiles, blue mission stripe, gold trim
+        gold_trim(t)
         t.rect(2, 2, 13, 13, P[1])
         for y in range(2, 14):
             for x in range(2, 14):
@@ -1522,6 +1523,23 @@ def ti_brackets(t, name, face="north"):
         t.set(cx, cy, TITAN_T.accent)
 
 
+def gold_trim(t):
+    """Orbital casings: a gold inner ring on the white frame."""
+    for i in range(1, 15):
+        t.set(i, 1, GOLD_FOIL[3]); t.set(1, i, GOLD_FOIL[3])
+        t.set(i, 14, GOLD_FOIL[1]); t.set(14, i, GOLD_FOIL[1])
+    t.set(1, 14, GOLD_FOIL[2]); t.set(14, 1, GOLD_FOIL[2])
+
+
+def orb_face(rng, name=None, face="north", rivets=((2, 2), (12, 2), (2, 12), (12, 12))):
+    t = casing_face(ORBITAL_T, rng, name, face, rivets=())
+    gold_trim(t)
+    for (x, y) in rivets:
+        if name is None or not any(in_window(name, face, x + dx, y + dy) for dx in (-1, 0, 1, 2) for dy in (-1, 0, 1, 2)):
+            rivet(t, x, y, ORBITAL_T, pal=[GOLD_FOIL[4], GOLD_FOIL[3], GOLD_FOIL[2], GOLD_FOIL[1], GOLD_FOIL[0]])
+    return t
+
+
 def ti_face(rng, name=None, face="north"):
     t = casing_face(TITAN_T, rng, name, face, rivets=())
     ti_brackets(t, name, face)
@@ -1779,7 +1797,7 @@ def dome_rim(t, name):
 
 def passembler_front(rng, on):
     name = "precision_assembler"
-    t = casing_face(ORBITAL_T, rng, name, rivets=((2, 12), (12, 12)))
+    t = orb_face(rng, name, rivets=((2, 12), (12, 12)))
     W = win_pixels(name)
     vs = [v for _, v in W]
     v0, v1 = min(vs), max(vs)
@@ -1802,7 +1820,7 @@ def passembler_front(rng, on):
 def passembler_top(rng):
     """HEPA filter grille of the clean room between gold foil strips."""
     T = ORBITAL_T
-    t = casing_face(T, rng)
+    t = orb_face(rng)
     recess(t, 4, 4, 11, 11, T, fill=T.panel[3])
     for y in range(5, 11):
         for x in range(5, 11):
@@ -1814,10 +1832,8 @@ def passembler_top(rng):
 
 def passembler_side(rng):
     t = family_side(ORBITAL_T, rng, "orbital")
-    t.rect(3, 3, 12, 10, GOLD_FOIL[1])
-    gold_foil(t, rng_for("pa/sidefoil"), 3, 3, 12, 9)
-    t.hline(3, 12, 10, GOLD_FOIL[0])
-    t.hline(3, 12, 12, ORBITAL_T.accent)
+    recess(t, 3, 3, 9, 10, ORBITAL_T)
+    gold_foil(t, rng_for("pa/sidefoil"), 4, 4, 9, 10)
     return t
 
 
@@ -1826,7 +1842,7 @@ def passembler_side(rng):
 
 def plasma_front(rng, on, phase=0):
     name = "plasma_forge"
-    t = casing_face(ORBITAL_T, rng, name, rivets=((2, 2), (12, 2), (2, 12), (12, 12)))
+    t = orb_face(rng, name)
     W = win_pixels(name)
     cx, cy = 8.0, 7.5
     # magnetic ring: copper windings between dark pole shoes, energised violet when on
@@ -1844,9 +1860,9 @@ def plasma_front(rng, on, phase=0):
     arc = {}
     if on:
         ar = rng_for("pf/arc%d" % phase)
-        x = cx - 0.5
-        for v in range(4, 12):
-            x = max(5.0, min(10.0, x + ar.choice((-1, 0, 0, 1))))
+        x = 7.0
+        for v in range(4, 12):     # jagged arc between the electrode tips (u 7-8)
+            x = max(6.0, min(9.0, x + ar.choice((-1, 0, 0, 1)))) if 5 < v < 10 else (7.0 if v < 8 else 8.0)
             arc[v] = int(x)
     for (u, v) in W:
         d = math.hypot((u + 0.5 - cx) / 5.0, (v + 0.5 - cy) / 5.5)
@@ -1876,7 +1892,7 @@ def plasma_front(rng, on, phase=0):
 def plasma_top(rng, on):
     """Sealed round hatch with a gold bolt circle and a violet sight port."""
     T = ORBITAL_T
-    t = casing_face(T, rng)
+    t = orb_face(rng, rivets=())
     for (x, y) in sorted(disc_mask(8, 8, 5.2)):
         dx, dy = x + 0.5 - 8, y + 0.5 - 8
         d = math.hypot(dx, dy)

@@ -611,13 +611,13 @@ def m_hydraulic_press():
     tx = fam("titanium", front=i + "_front", top=i + "_top", cyl=i + "_cylinder", rod=i + "_rod",
              ram=i + "_ram", die=i + "_die", plate=i + "_plate")
     b = carved(i, STD)
-    fixed = [Box((3, 13, 0.5), (6, 15, 3.5), "cyl"), Box((10, 13, 0.5), (13, 15, 3.5), "cyl"),
+    fixed = [Box((2.5, 12, 0.5), (6.5, 15, 3.5), "cyl"), Box((9.5, 12, 0.5), (13.5, 15, 3.5), "cyl"),
              Box((3.5, 5, 0.5), (12.5, 6, 3.5), "die"), Box((5, 6, 1), (11, 6.5, 3), "plate")]
 
     def ram(y):
-        return [Box((4, y + 2, 1.25), (5, 13, 2.75), "rod"), Box((11, y + 2, 1.25), (12, 13, 2.75), "rod"),
+        return [Box((4, y + 2, 1.25), (5, 12, 2.75), "rod"), Box((11, y + 2, 1.25), (12, 12, 2.75), "rod"),
                 Box((2.5, y, 0.5), (13.5, y + 2, 3.5), "ram")]
-    return Model(i, tx, b + fixed + ram(10), on={"front": i + "_front_on"}, boxes_on=b + fixed + ram(6.5),
+    return Model(i, tx, b + fixed + ram(9.5), on={"front": i + "_front_on"}, boxes_on=b + fixed + ram(6.5),
                  particle="titanium_machine_side", desc="titanium: twin pistons drive a hazard ram onto a die")
 
 
