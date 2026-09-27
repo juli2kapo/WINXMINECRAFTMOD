@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TCT",
+    "AFA",
+    "TCT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "C": "factoryascent:advanced_circuit",
+    "A": "factoryascent:assembler",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:precision_assembler"
+  }
+}

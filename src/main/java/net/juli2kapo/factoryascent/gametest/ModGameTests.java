@@ -50,6 +50,9 @@ public final class ModGameTests {
             new Test("quern_grinds_with_cranks", 200, ModGameTests::quernGrindsWithCranks),
             new Test("burner_crusher_doubles_ore", 300, ModGameTests::burnerCrusherDoublesOre),
             new Test("crusher_doubles_ore", 200, ModGameTests::crusherDoublesOre),
+            new Test("ore_washer_triples_ore", 200, ModGameTests::oreWasherTriplesOre),
+            new Test("induction_smelter_makes_titanium", 200, ModGameTests::inductionSmelterMakesTitanium),
+            new Test("plasma_forge_makes_quantum_alloy", 400, ModGameTests::plasmaForgeMakesQuantumAlloy),
             new Test("press_uses_mold", 200, ModGameTests::pressUsesMold),
             new Test("recipe_needs_better_machine", 100, ModGameTests::recipeNeedsBetterMachine),
             new Test("coke_oven_multiblock", 800, ModGameTests::cokeOvenMultiblock),
@@ -156,6 +159,34 @@ public final class ModGameTests {
         be.inventory().setStack(0, new ItemStack(Items.RAW_IRON));
         int out = be.inventory().slots().firstOutput();
         h.succeedWhen(() -> expect(h, slot(be, out), mat("iron_dust"), 2, "crusher output"));
+    }
+
+    /** The Ore Washer (grade 4) runs the 3-dust recipe, not the Crusher's 2. */
+    private static void oreWasherTriplesOre(GameTestHelper h) {
+        var be = place(h, new BlockPos(4, 1, 4), MachineType.ORE_WASHER);
+        charge(be);
+        be.inventory().setStack(0, new ItemStack(Items.RAW_IRON));
+        int out = be.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(be, out), mat("iron_dust"), 3, "ore washer output"));
+    }
+
+    /** Titanium needs grade 5: the Induction Smelter makes it. */
+    private static void inductionSmelterMakesTitanium(GameTestHelper h) {
+        var be = place(h, new BlockPos(4, 1, 4), MachineType.INDUCTION_SMELTER);
+        charge(be);
+        be.inventory().setStack(0, new ItemStack(mat("titanium_dust")));
+        int out = be.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(be, out), mat("titanium_ingot"), 1, "induction smelter output"));
+    }
+
+    /** Quantum alloy needs grade 7: the Plasma Forge makes it. */
+    private static void plasmaForgeMakesQuantumAlloy(GameTestHelper h) {
+        var be = place(h, new BlockPos(4, 1, 4), MachineType.PLASMA_FORGE);
+        charge(be);
+        be.inventory().setStack(0, new ItemStack(mat("titanium_ingot")));
+        be.inventory().setStack(1, new ItemStack(Items.ENDER_PEARL));
+        int out = be.inventory().slots().firstOutput();
+        h.succeedWhen(() -> expect(h, slot(be, out), mat("quantum_alloy_ingot"), 1, "plasma forge output"));
     }
 
     private static void pressUsesMold(GameTestHelper h) {

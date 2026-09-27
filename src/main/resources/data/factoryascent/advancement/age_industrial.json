@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:titanium_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:titanium_ingot"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.age_industrial.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.age_industrial.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_induction"
+}

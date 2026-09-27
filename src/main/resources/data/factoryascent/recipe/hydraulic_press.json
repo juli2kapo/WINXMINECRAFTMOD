@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "CFC",
+    "PBP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "M": "factoryascent:motor",
+    "C": "factoryascent:advanced_circuit",
+    "F": "factoryascent:advanced_machine_frame",
+    "B": "#c:storage_blocks/steel"
+  },
+  "result": {
+    "id": "factoryascent:hydraulic_press"
+  }
+}

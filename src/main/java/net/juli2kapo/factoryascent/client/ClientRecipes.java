@@ -84,7 +84,7 @@ public final class ClientRecipes {
                         break;
                     }
                 }
-                if (!used && type == MachineType.ELECTRIC_FURNACE) {
+                if (!used && type.runsVanillaSmelting()) {
                     for (RecipeHolder<SmeltingRecipe> holder : recipes.byType(RecipeType.SMELTING)) {
                         if (holder.value().input().test(stack)) {
                             used = true;

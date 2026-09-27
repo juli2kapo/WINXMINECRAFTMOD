@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PHP",
+    "CFC",
+    "PHP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "H": "factoryascent:heating_coil",
+    "C": "factoryascent:advanced_circuit",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:induction_smelter"
+  }
+}

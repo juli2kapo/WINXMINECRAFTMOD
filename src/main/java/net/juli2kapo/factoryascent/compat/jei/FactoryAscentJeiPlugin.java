@@ -70,7 +70,9 @@ public final class FactoryAscentJeiPlugin implements IModPlugin {
             IRecipeType<?> type = type(kind);
             registration.addCraftingStation(type, ModBlocks.machine(machine).get());
         }
-        // The Electric Furnace also runs every vanilla smelting recipe.
-        registration.addCraftingStation(RecipeTypes.SMELTING, ModBlocks.machine(MachineType.ELECTRIC_FURNACE).get());
+        // Electric smelters also run every vanilla smelting recipe.
+        for (MachineType machine : MachineType.VALUES) {
+            if (machine.runsVanillaSmelting()) registration.addCraftingStation(RecipeTypes.SMELTING, ModBlocks.machine(machine).get());
+        }
     }
 }

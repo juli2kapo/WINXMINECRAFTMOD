@@ -98,6 +98,20 @@ cells and crates. Tiers work well there. Machines don't use tiers; they get
 replaced by better *different* machines. Speed and energy upgrade cards
 fine-tune machines.
 
+## Survival reachability
+
+`python3 tools/check_progression.py` starts from vanilla items plus the mod's ore drops. It applies every recipe, respecting machine grades, and lists any mod item you can't obtain; it currently reports 119/119. `--why <item>` explains a gap.
+
+The late machines that close the chain:
+
+| Age | Machine | Kind, grade | Unlocks |
+|-----|---------|-------------|---------|
+| Automation | Ore Washer | crushing 4 | 3 dust per raw ore |
+| Industrial | Induction Smelter | smelting 5 | titanium ingots (the breakthrough) |
+| Industrial | Hydraulic Press | pressing 5 | titanium plates and gears |
+| Orbital | Precision Assembler | assembling 6 | Orbital Targeting Core (the breakthrough, the railgun, satellites) |
+| Orbital | Plasma Forge | alloying 7 | quantum alloy (the Quantum breakthrough) |
+
 ## Knowing what goes where
 
 - **Machine GUI:** a panel docked to the left of every processing machine lists everything it

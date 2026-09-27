@@ -325,7 +325,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             for (int i = 0; i < found.length; i++) absolute[i] = slots.firstInput() + found[i];
             return new ActiveRecipe(holder.id(), absolute, counts, r.result().create(), r.byproduct().orElse(null), r.time());
         }
-        if (type == MachineType.ELECTRIC_FURNACE && !items.get(0).isEmpty()) {
+        if (type.runsVanillaSmelting() && !items.get(0).isEmpty()) {
             SingleRecipeInput input = new SingleRecipeInput(items.get(0));
             var vanilla = recipes.getRecipeFor(RecipeType.SMELTING, input, level);
             if (vanilla.isPresent()) {
@@ -384,7 +384,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             for (RecipeHolder<MachineRecipe> holder : recipes.recipeMap().byType(ModRecipes.type(kind))) {
                 if (holder.value().minGrade() <= type.grade() && holder.value().accepts(stack)) return true;
             }
-            return type == MachineType.ELECTRIC_FURNACE && recipes.propertySet(RecipePropertySet.FURNACE_INPUT).test(stack);
+            return type.runsVanillaSmelting() && recipes.propertySet(RecipePropertySet.FURNACE_INPUT).test(stack);
         });
     }
 

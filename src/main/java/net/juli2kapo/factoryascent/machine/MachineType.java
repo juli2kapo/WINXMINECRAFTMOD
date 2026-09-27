@@ -34,8 +34,20 @@ public enum MachineType {
     MINER(Age.AUTOMATION, Category.MINER, null, Power.ELECTRIC, 4, 2f, 64, 3),
     GEOTHERMAL_GENERATOR(Age.AUTOMATION, Category.GENERATOR, null, Power.NONE, 1, 1f, 48, 0),
     ADVANCED_ENERGY_CELL(Age.AUTOMATION, Category.STORAGE, null, Power.ELECTRIC, 1, 1f, 0, 0, Tier.MV),
-    // ---- Industrial age and beyond (more machines arrive in later phases)
+    /** Washes raw ore into 3 dust (grade 4 crushing). */
+    ORE_WASHER(Age.AUTOMATION, Category.PROCESSOR, RecipeKind.CRUSHING, Power.ELECTRIC, 4, 2.5f, 48, 3),
+    // ---- Industrial age
+    /** Smelts titanium (grade 5) and runs every smelting recipe fast. */
+    INDUCTION_SMELTER(Age.INDUSTRIAL, Category.PROCESSOR, RecipeKind.SMELTING, Power.ELECTRIC, 5, 4f, 64, 3),
+    /** Presses titanium plates and gears (grade 5). */
+    HYDRAULIC_PRESS(Age.INDUSTRIAL, Category.PROCESSOR, RecipeKind.PRESSING, Power.ELECTRIC, 5, 3f, 64, 3),
     INDUSTRIAL_ENERGY_CELL(Age.INDUSTRIAL, Category.STORAGE, null, Power.ELECTRIC, 1, 1f, 0, 0, Tier.HV),
+    // ---- Orbital age
+    /** Builds orbital components such as the Orbital Targeting Core (grade 6). */
+    PRECISION_ASSEMBLER(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ASSEMBLING, Power.ELECTRIC, 6, 2f, 128, 3),
+    /** Forges quantum alloy (grade 7): the breakthrough into the Quantum age. */
+    PLASMA_FORGE(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ALLOYING, Power.ELECTRIC, 7, 2f, 256, 3),
+    // ---- Quantum age
     QUANTUM_ENERGY_CELL(Age.QUANTUM, Category.STORAGE, null, Power.ELECTRIC, 1, 1f, 0, 0, Tier.EV);
 
     public static final MachineType[] VALUES = values();
@@ -76,6 +88,11 @@ public enum MachineType {
     public Age age() { return age; }
     public Category category() { return category; }
     public @Nullable RecipeKind recipeKind() { return recipeKind; }
+
+    /** Electric smelters also run every vanilla furnace recipe (at a fifth of the furnace's time). */
+    public boolean runsVanillaSmelting() {
+        return recipeKind == RecipeKind.SMELTING && power == Power.ELECTRIC;
+    }
     public Power power() { return power; }
     /** Recipes with {@code min_grade} above this are out of reach for this machine. */
     public int grade() { return grade; }

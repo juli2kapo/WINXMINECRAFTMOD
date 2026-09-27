@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GWG",
+    "CMC",
+    "PFP"
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "W": "minecraft:water_bucket",
+    "C": "factoryascent:advanced_circuit",
+    "M": "factoryascent:motor",
+    "P": "#c:plates/aluminum",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:ore_washer"
+  }
+}

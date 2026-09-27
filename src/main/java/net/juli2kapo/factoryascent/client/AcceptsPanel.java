@@ -72,7 +72,7 @@ final class AcceptsPanel {
                 counts.merge(key, in.count(), Math::min);
             }
         }
-        if (type == MachineType.ELECTRIC_FURNACE) {
+        if (type.runsVanillaSmelting()) {
             for (SmeltingRecipe r : ClientRecipes.vanillaSmelting()) {
                 List<Holder<Item>> key = r.input().items().toList();
                 if (key.isEmpty() || open.containsKey(key)) continue;

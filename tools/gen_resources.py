@@ -79,7 +79,22 @@ MACHINES = {
                              "24 FE/t for every lava source touching it. The lava is never used up.",
                              "24 FE/t por cada fuente de lava que lo toque. La lava nunca se gasta."),
     "advanced_energy_cell": ("automation", True, False, "Stores 4× more energy.", "Almacena 4 veces más energía."),
+    "ore_washer": ("automation", True, True,
+                   "Washes raw ore into 3 dust (4 from ore blocks), with a better byproduct chance.",
+                   "Lava el mineral en bruto en 3 polvos (4 de bloques de mena), con más probabilidad de subproducto."),
+    "induction_smelter": ("industrial", True, True,
+                          "Induction heating: the only smelter hot enough for titanium. Also smelts anything a furnace can, very fast.",
+                          "Calentamiento por inducción: el único horno capaz de fundir titanio. También funde todo lo de un horno, muy rápido."),
+    "hydraulic_press": ("industrial", True, True,
+                        "Presses titanium into plates and gears. The mould decides what it makes.",
+                        "Prensa titanio en placas y engranajes. El molde decide qué fabrica."),
     "industrial_energy_cell": ("industrial", True, False, "Stores 16× more energy.", "Almacena 16 veces más energía."),
+    "precision_assembler": ("orbital", True, True,
+                            "Clean-room assembler for spacecraft parts such as the Orbital Targeting Core.",
+                            "Ensambladora de sala limpia para piezas espaciales como el núcleo de puntería orbital."),
+    "plasma_forge": ("orbital", True, True,
+                     "Forges quantum alloy in a plasma arc: the way into the Quantum age.",
+                     "Forja aleación cuántica en un arco de plasma: la entrada a la Era Cuántica."),
     "quantum_energy_cell": ("quantum", True, False, "Stores 64× more energy.", "Almacena 64 veces más energía."),
 }
 MACHINE_EN = {
@@ -89,6 +104,8 @@ MACHINE_EN = {
     "combustion_generator": "Combustion Generator", "solar_panel": "Solar Panel", "auto_farmer": "Auto-Farmer",
     "energy_cell": "Energy Cell", "miner": "Ore Miner", "geothermal_generator": "Geothermal Generator",
     "advanced_energy_cell": "Advanced Energy Cell", "industrial_energy_cell": "Industrial Energy Cell",
+    "ore_washer": "Ore Washer", "induction_smelter": "Induction Smelter", "hydraulic_press": "Hydraulic Press",
+    "precision_assembler": "Precision Assembler", "plasma_forge": "Plasma Forge",
     "quantum_energy_cell": "Quantum Energy Cell",
 }
 MACHINE_ES = {
@@ -99,6 +116,8 @@ MACHINE_ES = {
     "combustion_generator": "Generador de combustión", "solar_panel": "Panel solar", "auto_farmer": "Granjero automático",
     "energy_cell": "Celda de energía", "miner": "Minero de menas", "geothermal_generator": "Generador geotérmico",
     "advanced_energy_cell": "Celda de energía avanzada", "industrial_energy_cell": "Celda de energía industrial",
+    "ore_washer": "Lavadora de mineral", "induction_smelter": "Fundidora de inducción", "hydraulic_press": "Prensa hidráulica",
+    "precision_assembler": "Ensambladora de precisión", "plasma_forge": "Forja de plasma",
     "quantum_energy_cell": "Celda de energía cuántica",
 }
 
@@ -830,6 +849,20 @@ def recipes():
                                                           "M": AM, "W": CW}, "geothermal_generator")
     shaped("advanced_energy_cell", [" C ", "AEA", " C "], {"C": AC, "A": "#c:plates/aluminum", "E": "energy_cell"}, "advanced_energy_cell")
     shaped("industrial_energy_cell", [" T ", "TET", " T "], {"T": "#c:plates/titanium", "E": "advanced_energy_cell"}, "industrial_energy_cell")
+    # ---------------------------------------------------------------- the late-age machines: each is built from the
+    # previous age's materials, and each unlocks the next breakthrough.
+    AP, AC2 = "#c:plates/aluminum", "advanced_circuit"
+    shaped("ore_washer", ["GWG", "CMC", "PFP"], {"G": "minecraft:glass", "W": "minecraft:water_bucket", "C": AC2,
+                                               "M": "motor", "P": AP, "F": "advanced_machine_frame"}, "ore_washer")
+    shaped("induction_smelter", ["PHP", "CFC", "PHP"], {"P": AP, "H": "heating_coil", "C": AC2,
+                                                      "F": "advanced_machine_frame"}, "induction_smelter")
+    shaped("hydraulic_press", ["PMP", "CFC", "PBP"], {"P": AP, "M": "motor", "C": AC2, "F": "advanced_machine_frame",
+                                                    "B": "#c:storage_blocks/steel"}, "hydraulic_press")
+    shaped("precision_assembler", ["TCT", "AFA", "TCT"], {"T": "#c:plates/titanium", "C": AC2, "A": "assembler",
+                                                        "F": "advanced_machine_frame"}, "precision_assembler")
+    shaped("plasma_forge", ["TOT", "HFH", "TBT"], {"T": "#c:plates/titanium", "O": "orbital_targeting_core",
+                                                 "H": "heating_coil", "F": "advanced_machine_frame",
+                                                 "B": "#c:storage_blocks/titanium"}, "plasma_forge")
     shaped("quantum_energy_cell", [" Q ", "QEQ", " Q "], {"Q": "#c:ingots/quantum_alloy", "E": "industrial_energy_cell"}, "quantum_energy_cell")
     order = ["lv", "mv", "hv", "ev"]
     up = {"mv": "#c:ingots/aluminum", "hv": "#c:ingots/titanium", "ev": "#c:ingots/quantum_alloy"}
@@ -871,6 +904,9 @@ def recipes():
         machine("crushing", f"{dust}_from_raw", [(raw, 1)], dust, 2, time=60, min_grade=3, byproduct=(by, 0.10))
         machine("crushing", f"{dust}_from_ore_burner", [(ore_tag, 1)], dust, 2, time=80, min_grade=2)
         machine("crushing", f"{dust}_from_ore", [(ore_tag, 1)], dust, 3, time=80, min_grade=3, byproduct=(by, 0.10))
+        # Ore Washer (Automation): 3 per raw ore, 4 per ore block, better byproduct
+        machine("crushing", f"{dust}_from_raw_washed", [(raw, 1)], dust, 3, time=60, min_grade=4, byproduct=(by, 0.25))
+        machine("crushing", f"{dust}_from_ore_washed", [(ore_tag, 1)], dust, 4, time=80, min_grade=4, byproduct=(by, 0.25))
     machine("crushing", "coal_dust", [("minecraft:coal", 1)], "coal_dust", time=30)
     machine("crushing", "coal_dust_from_coke", [("coke", 1)], "coal_dust", 2, time=30, min_grade=2)
     machine("crushing", "quartz_dust", [("minecraft:quartz", 1)], "quartz_dust", time=30)
@@ -1022,6 +1058,36 @@ def advancements(storage_terminal_id):
       "Construye un minero de menas: extrae menas de su propio reclamo en Las Profundidades", frame="goal")
     A("automation_geothermal", "age_automation", "geothermal_generator", ["geothermal_generator"], "Hot Stuff",
       "Build a Geothermal Generator next to lava", "Cosa caliente", "Construye un generador geotérmico junto a lava")
+    A("automation_washer", "age_automation", "ore_washer", ["ore_washer"], "Squeaky Clean",
+      "Build an Ore Washer: 3 dust from every raw ore", "Limpio y reluciente",
+      "Construye una lavadora de mineral: 3 polvos por cada mineral en bruto")
+    A("automation_induction", "automation_washer", "induction_smelter", ["induction_smelter"], "Hotter Than Fire",
+      "Build an Induction Smelter, the only furnace hot enough for titanium", "Más caliente que el fuego",
+      "Construye una fundidora de inducción, el único horno capaz de fundir titanio")
+    # ---------------------------------------------------------------- Industrial
+    A("age_industrial", "automation_induction", "titanium_ingot", ["titanium_ingot"], "The Industrial Age",
+      "Breakthrough! Smelt titanium in an Induction Smelter", "La Era Industrial",
+      "¡Avance! Funde titanio en una fundidora de inducción", frame="challenge")
+    A("industrial_press", "age_industrial", "hydraulic_press", ["hydraulic_press"], "Under Pressure",
+      "Build a Hydraulic Press and press titanium plates", "Bajo presión",
+      "Construye una prensa hidráulica y prensa placas de titanio")
+    A("industrial_cell", "industrial_press", "industrial_energy_cell", ["industrial_energy_cell"], "Big Battery",
+      "Build an Industrial Energy Cell", "Batería grande", "Construye una celda de energía industrial")
+    A("industrial_precision", "industrial_press", "precision_assembler", ["precision_assembler"], "Clean Room",
+      "Build a Precision Assembler for spacecraft parts", "Sala limpia",
+      "Construye una ensambladora de precisión para piezas espaciales")
+    # ---------------------------------------------------------------- Orbital
+    A("age_orbital", "industrial_precision", "orbital_targeting_core", ["orbital_targeting_core"], "The Orbital Age",
+      "Breakthrough! Assemble an Orbital Targeting Core", "La Era Orbital",
+      "¡Avance! Ensambla un núcleo de puntería orbital", frame="challenge")
+    A("orbital_forge", "age_orbital", "plasma_forge", ["plasma_forge"], "Star in a Box",
+      "Build a Plasma Forge", "Una estrella en una caja", "Construye una forja de plasma")
+    # ---------------------------------------------------------------- Quantum
+    A("age_quantum", "orbital_forge", "quantum_alloy_ingot", ["quantum_alloy_ingot"], "The Quantum Age",
+      "Breakthrough! Forge quantum alloy in the Plasma Forge", "La Era Cuántica",
+      "¡Avance! Forja aleación cuántica en la forja de plasma", frame="challenge")
+    A("quantum_cell", "age_quantum", "quantum_energy_cell", ["quantum_energy_cell"], "Bottled Lightning",
+      "Build a Quantum Energy Cell", "Rayos embotellados", "Construye una celda de energía cuántica")
 
 
 def main():

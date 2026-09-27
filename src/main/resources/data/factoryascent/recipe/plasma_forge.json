@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TOT",
+    "HFH",
+    "TBT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "O": "factoryascent:orbital_targeting_core",
+    "H": "factoryascent:heating_coil",
+    "F": "factoryascent:advanced_machine_frame",
+    "B": "#c:storage_blocks/titanium"
+  },
+  "result": {
+    "id": "factoryascent:plasma_forge"
+  }
+}

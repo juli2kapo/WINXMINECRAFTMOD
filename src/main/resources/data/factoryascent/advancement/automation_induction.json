@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:induction_smelter"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:induction_smelter"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_induction.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_induction.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_washer"
+}

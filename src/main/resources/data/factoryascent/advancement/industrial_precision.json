@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:precision_assembler"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:precision_assembler"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_precision.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_precision.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_press"
+}

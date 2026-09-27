@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:hydraulic_press"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:hydraulic_press"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_press.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_press.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_industrial"
+}

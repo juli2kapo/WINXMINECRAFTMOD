@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:industrial_energy_cell"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:industrial_energy_cell"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_cell.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_cell.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_press"
+}

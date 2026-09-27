@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:ore_washer"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:ore_washer"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_washer.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_washer.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

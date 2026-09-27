@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:plasma_forge"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:plasma_forge"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_forge.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_forge.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_orbital"
+}

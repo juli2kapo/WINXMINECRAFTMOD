@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:orbital_targeting_core"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:orbital_targeting_core"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.age_orbital.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.age_orbital.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_precision"
+}
