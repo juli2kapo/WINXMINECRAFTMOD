@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/orientable_with_bottom",
-  "textures": {
-    "front": "factoryascent:block/reinforced_geothermal_generator_front_on",
-    "side": "factoryascent:block/casing_reinforced_side",
-    "top": "factoryascent:block/casing_reinforced_top",
-    "bottom": "factoryascent:block/casing_reinforced_bottom"
-  }
-}

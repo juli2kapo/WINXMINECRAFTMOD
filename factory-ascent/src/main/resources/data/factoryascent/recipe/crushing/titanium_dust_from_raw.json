@@ -11,10 +11,11 @@
     "count": 2
   },
   "time": 60,
+  "min_grade": 3,
   "byproduct": {
     "item": {
       "id": "factoryascent:iron_dust"
     },
-    "chance": 0.15
+    "chance": 0.1
   }
 }

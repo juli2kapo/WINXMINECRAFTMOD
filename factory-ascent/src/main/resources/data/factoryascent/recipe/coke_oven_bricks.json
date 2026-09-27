@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "CBC",
+    "BSB",
+    "CBC"
+  ],
+  "key": {
+    "C": "minecraft:clay_ball",
+    "B": "minecraft:brick",
+    "S": "minecraft:sandstone"
+  },
+  "result": {
+    "id": "factoryascent:coke_oven_bricks",
+    "count": 3
+  }
+}

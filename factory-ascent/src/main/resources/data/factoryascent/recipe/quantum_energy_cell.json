@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " Q ",
+    "QEQ",
+    " Q "
+  ],
+  "key": {
+    "Q": "#c:ingots/quantum_alloy",
+    "E": "factoryascent:industrial_energy_cell"
+  },
+  "result": {
+    "id": "factoryascent:quantum_energy_cell"
+  }
+}

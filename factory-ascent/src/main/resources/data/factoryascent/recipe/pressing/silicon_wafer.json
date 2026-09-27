@@ -11,5 +11,6 @@
     "count": 2
   },
   "time": 60,
+  "min_grade": 3,
   "mold": "factoryascent:plate_mold"
 }

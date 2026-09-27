@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CXC",
+    "CCC"
+  ],
+  "key": {
+    "C": "factoryascent:titanium_cable",
+    "X": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "factoryascent:superconductor_cable",
+    "count": 8
+  }
+}

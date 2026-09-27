@@ -10,6 +10,6 @@
     "id": "factoryascent:titanium_plate"
   },
   "time": 40,
-  "min_tier": 3,
+  "min_grade": 5,
   "mold": "factoryascent:plate_mold"
 }

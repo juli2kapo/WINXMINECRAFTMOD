@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PWP",
+    "FMF",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "W": "#c:wires/copper",
+    "F": "minecraft:furnace",
+    "M": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:combustion_generator"
+  }
+}

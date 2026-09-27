@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PDP",
+    "CMC",
+    "PHP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "D": "minecraft:diamond_pickaxe",
+    "C": "factoryascent:advanced_circuit",
+    "M": "factoryascent:advanced_machine_frame",
+    "H": "minecraft:hopper"
+  },
+  "result": {
+    "id": "factoryascent:miner"
+  }
+}

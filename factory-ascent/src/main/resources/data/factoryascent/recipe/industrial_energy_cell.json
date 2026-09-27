@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "TET",
+    " T "
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "E": "factoryascent:advanced_energy_cell"
+  },
+  "result": {
+    "id": "factoryascent:industrial_energy_cell"
+  }
+}

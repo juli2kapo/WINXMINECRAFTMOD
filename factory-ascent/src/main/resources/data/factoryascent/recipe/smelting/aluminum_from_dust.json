@@ -9,5 +9,6 @@
   "result": {
     "id": "factoryascent:aluminum_ingot"
   },
-  "time": 40
+  "time": 40,
+  "min_grade": 3
 }

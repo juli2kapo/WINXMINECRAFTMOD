@@ -1,0 +1,34 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:crafting_table"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:quern"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.root.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.root.description"
+    },
+    "frame": "task",
+    "background": "minecraft:gui/advancements/backgrounds/stone",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ]
+}

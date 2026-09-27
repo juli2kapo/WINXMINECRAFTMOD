@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:steel_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:steel_ingot"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.age_electric.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.age_electric.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:bronze_coke"
+}

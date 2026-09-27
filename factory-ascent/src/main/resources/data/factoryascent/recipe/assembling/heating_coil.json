@@ -13,5 +13,6 @@
   "result": {
     "id": "factoryascent:heating_coil"
   },
-  "time": 60
+  "time": 60,
+  "min_grade": 3
 }

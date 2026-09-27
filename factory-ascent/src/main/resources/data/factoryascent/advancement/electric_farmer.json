@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:auto_farmer"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:auto_farmer"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_farmer.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_farmer.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_circuit"
+}

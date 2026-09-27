@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:basic_circuit"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:basic_circuit"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_circuit.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_circuit.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_assembler"
+}

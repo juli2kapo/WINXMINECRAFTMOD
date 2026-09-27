@@ -48,6 +48,12 @@ public final class ClientRecipes {
         return list;
     }
 
+    /** Every synced recipe of a kind, whatever machine grade it needs (used by the JEI plugin). */
+    public static List<RecipeHolder<MachineRecipe>> holders(RecipeKind kind) {
+        if (recipes == null) return List.of();
+        return List.copyOf(recipes.byType(ModRecipes.type(kind)));
+    }
+
     public static List<SmeltingRecipe> vanillaSmelting() {
         List<SmeltingRecipe> list = new ArrayList<>();
         if (recipes == null) return list;

@@ -11,6 +11,7 @@
     "count": 2
   },
   "time": 60,
+  "min_grade": 3,
   "byproduct": {
     "item": {
       "id": "factoryascent:gold_dust"

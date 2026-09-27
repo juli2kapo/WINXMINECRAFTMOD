@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/orientable_with_bottom",
-  "textures": {
-    "front": "factoryascent:block/elite_metal_press_front_on",
-    "side": "factoryascent:block/casing_elite_side",
-    "top": "factoryascent:block/casing_elite_top",
-    "bottom": "factoryascent:block/casing_elite_bottom"
-  }
-}

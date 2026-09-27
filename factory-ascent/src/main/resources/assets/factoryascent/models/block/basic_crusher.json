@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/orientable_with_bottom",
-  "textures": {
-    "front": "factoryascent:block/basic_crusher_front",
-    "side": "factoryascent:block/casing_basic_side",
-    "top": "factoryascent:block/casing_basic_top",
-    "bottom": "factoryascent:block/casing_basic_bottom"
-  }
-}

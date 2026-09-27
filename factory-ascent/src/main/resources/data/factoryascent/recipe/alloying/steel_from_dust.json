@@ -7,11 +7,12 @@
     },
     {
       "ingredient": "#c:dusts/coal",
-      "count": 1
+      "count": 2
     }
   ],
   "result": {
     "id": "factoryascent:steel_ingot"
   },
-  "time": 60
+  "time": 80,
+  "min_grade": 3
 }

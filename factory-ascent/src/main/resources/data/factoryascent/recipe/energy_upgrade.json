@@ -2,14 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ALA",
-    "LCL",
-    "ALA"
+    "LWL",
+    "WCW",
+    "LWL"
   ],
   "key": {
-    "A": "#c:plates/aluminum",
     "L": "#c:gems/lapis",
-    "C": "factoryascent:reinforced_circuit"
+    "W": "#c:wires/gold",
+    "C": "factoryascent:basic_circuit"
   },
   "result": {
     "id": "factoryascent:energy_upgrade",
