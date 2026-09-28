@@ -149,7 +149,7 @@ public class TreeFarmBlockEntity extends AbstractMachineBlockEntity {
     }
 
     private boolean plant(ServerLevel level, BlockPos pos) {
-        if (!level.getBlockState(pos.below()).is(BlockTags.DIRT)) return false;
+        // Each sapling's own rule decides the soil (26.x's #dirt no longer contains grass blocks).
         for (int i = 0; i < slots.inputs(); i++) {
             ItemStack stack = inventory.stack(slots.firstInput() + i);
             if (!stack.is(ItemTags.SAPLINGS) || !(stack.getItem() instanceof BlockItem bi)) continue;

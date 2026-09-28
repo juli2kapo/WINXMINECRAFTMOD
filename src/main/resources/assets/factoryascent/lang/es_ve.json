@@ -241,7 +241,7 @@
   "gui.factoryascent.sunlight": "Luz solar: %s%%",
   "gui.factoryascent.lava": "Fuentes de lava: %s / 5",
   "gui.factoryascent.miner_info": "Reclamo #%s en las Profundidades · Y %s",
-  "gui.factoryascent.farm_info": "Campo: %s de ancho, delante",
+  "gui.factoryascent.farm_info": "Campo de %s",
   "gui.factoryascent.miner_progress": "Reclamo excavado: %s%%",
   "gui.factoryascent.miner_rate": "Hasta %s menas/min",
   "gui.factoryascent.crank": "Girar",

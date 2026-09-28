@@ -553,7 +553,7 @@ def lang(extra_en, extra_es, advancement_text):
         ("eject_on", "Auto-eject: ON (click to toggle)", "Expulsión automática: SÍ (clic para cambiar)"),
         ("eject_off", "Auto-eject: OFF (click to toggle)", "Expulsión automática: NO (clic para cambiar)"),
         ("sunlight", "Sunlight: %s%%", "Luz solar: %s%%"), ("lava", "Lava sources: %s / 5", "Fuentes de lava: %s / 5"),
-        ("miner_info", "Deep claim #%s · Y %s", "Reclamo #%s en las Profundidades · Y %s"), ("farm_info", "Field: %s wide, in front", "Campo: %s de ancho, delante"),
+        ("miner_info", "Deep claim #%s · Y %s", "Reclamo #%s en las Profundidades · Y %s"), ("farm_info", "Field %s wide", "Campo de %s"),
         ("miner_progress", "Claim dug out: %s%%", "Reclamo excavado: %s%%"), ("miner_rate", "Up to %s ores/min", "Hasta %s menas/min"),
         ("crank", "Crank", "Girar"), ("crank_hint", "Click (or sneak + right-click the Quern) to turn it",
                                      "Haz clic (o agáchate + clic derecho en el molino) para girarlo"),

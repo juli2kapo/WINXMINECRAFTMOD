@@ -278,11 +278,27 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
     }
 
     private boolean canOutput(ActiveRecipe recipe) {
-        ItemStack out = inventory.stack(slots.firstOutput());
-        ItemStack result = recipe.result();
-        if (out.isEmpty()) return true;
-        return ItemStack.isSameItemSameComponents(out, result)
-                && out.getCount() + result.getCount() <= Math.min(out.getMaxStackSize(), 99);
+        return mainOutputSlot(recipe.result()) >= 0;
+    }
+
+    /**
+     * Where the main result goes: the first output slot, or once that is full, the next output slot
+     * holding the same item with room or else an empty one (so a four-output machine like the Sieve
+     * or the Industrial Grinder doesn't stop at 64 with three empty slots). -1 if nowhere.
+     */
+    private int mainOutputSlot(ItemStack result) {
+        int empty = -1;
+        for (int i = slots.firstOutput(); i < slots.firstUpgrade(); i++) {
+            ItemStack out = inventory.stack(i);
+            if (out.isEmpty()) {
+                if (i == slots.firstOutput()) return i;
+                if (empty < 0) empty = i;
+            } else if (ItemStack.isSameItemSameComponents(out, result)
+                    && out.getCount() + result.getCount() <= Math.min(out.getMaxStackSize(), 99)) {
+                return i;
+            }
+        }
+        return empty;
     }
 
     private void craft(ServerLevel level, ActiveRecipe recipe) {
@@ -294,7 +310,8 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             in.shrink(recipe.counts()[i]);
             if (in.isEmpty() && !remainder.isEmpty()) inventory.setStack(slot, remainder);
         }
-        insertOutput(slots.firstOutput(), recipe.result().copy());
+        int target = mainOutputSlot(recipe.result());
+        insertOutput(target >= 0 ? target : slots.firstOutput(), recipe.result().copy());
         ChanceOutput by = recipe.byproduct();
         if (by != null && level.getRandom().nextFloat() < by.chance()) insertChanceOutput(by.item().create());
         for (ChanceOutput extra : recipe.extras()) {

@@ -270,7 +270,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         return imageWidth - 2 * BTN_W - 9;
     }
 
-    private static final int CRANK_X = 8, CRANK_Y = 58, CRANK_W = 24, CRANK_H = 13;
+    private static final int CRANK_X = 8, CRANK_Y = 58, CRANK_W = 36, CRANK_H = 13;
 
     // ---------------------------------------------------------------- drawing
 
@@ -443,11 +443,23 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         g.text(font, status, (imageWidth - font.width(status)) / 2, 76, TEXT, false);
         String info = infoLine();
         if (!info.isEmpty()) {
-            var line = FactoryGui.fit(font, Component.literal(info), imageWidth - 8);
-            g.text(font, line, (imageWidth - font.width(line)) / 2, 64, TEXT, false);
+            if (type().category() == MachineType.Category.FARMER) {
+                // farmers: input column and progress gauge on the left, upgrades on the right; centre between them
+                // (gauge at x 62..70, upgrades from x 151)
+                var line = FactoryGui.fit(font, Component.literal(info), 76);
+                g.text(font, line, 73 + (76 - font.width(line)) / 2, 65, TEXT, false);
+            } else {
+                // centred in the space right of the energy bar, when there is one
+                // and left of the upgrade column
+                int left = type().usesEnergy() ? 28 : 4;
+                int right = imageWidth - (type().upgradeSlots() > 0 ? 28 : 4);
+                var line = FactoryGui.fit(font, Component.literal(info), right - left);
+                g.text(font, line, left + (right - left - font.width(line)) / 2, 65, TEXT, false);
+            }
         }
         if (type().power() == MachineType.Power.MANUAL) {
-            g.text(font, Component.translatable("gui.factoryascent.crank"), CRANK_X + 2, CRANK_Y + 2, 0xFFFFFFFF, false);
+            var crank = FactoryGui.fit(font, Component.translatable("gui.factoryascent.crank"), CRANK_W - 2);
+            g.text(font, crank, CRANK_X + (CRANK_W - font.width(crank)) / 2, CRANK_Y + 3, 0xFFFFFFFF, false);
         }
         if (hasRecipeButton()) g.text(font, "?", recipeX() + 5, BTN_Y + 2, 0xFFFFFFFF, false);
         drawSidesLabels(g);

@@ -126,11 +126,23 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity implements 
         return (float) (Math.pow(speedMultiplier(), 0.6) * Math.pow(0.8, countUpgrades(UpgradeItem.Kind.ENERGY)));
     }
 
+    /**
+     * A hopper pointing into this machine is its feed, not an output: ejecting into it would clog
+     * the hopper with products it can only push straight back.
+     */
+    private boolean feedsThisMachine(Direction dir) {
+        if (level == null) return false;
+        var state = level.getBlockState(worldPosition.relative(dir));
+        return state.getBlock() instanceof net.minecraft.world.level.block.HopperBlock
+                && state.getValue(net.minecraft.world.level.block.HopperBlock.FACING) == dir.getOpposite();
+    }
+
     private void ejectOutputs() {
         for (int i = slots.firstOutput(); i < slots.firstUpgrade(); i++) {
             ItemStack stack = inventory.stack(i);
             if (stack.isEmpty()) continue;
             for (Direction dir : Direction.values()) {
+                if (feedsThisMachine(dir)) continue;
                 ResourceHandler<ItemResource> target = neighbors.items(dir);
                 if (target == null) continue;
                 int moved;
