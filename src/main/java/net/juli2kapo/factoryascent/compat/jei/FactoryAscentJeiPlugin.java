@@ -63,6 +63,17 @@ public final class FactoryAscentJeiPlugin implements IModPlugin {
     }
 
     @Override
+    public void registerGuiHandlers(mezz.jei.api.registration.IGuiHandlerRegistration registration) {
+        registration.addGuiContainerHandler(net.juli2kapo.factoryascent.client.MachineScreen.class,
+                new mezz.jei.api.gui.handlers.IGuiContainerHandler<net.juli2kapo.factoryascent.client.MachineScreen>() {
+                    @Override
+                    public List<net.minecraft.client.renderer.Rect2i> getGuiExtraAreas(net.juli2kapo.factoryascent.client.MachineScreen screen) {
+                        return screen.extraAreas();
+                    }
+                });
+    }
+
+    @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         for (MachineType machine : MachineType.VALUES) {
             RecipeKind kind = machine.recipeKind();

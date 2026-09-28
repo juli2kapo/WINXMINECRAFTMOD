@@ -161,8 +161,8 @@ public class RecallCharmScreen extends Screen {
                 ? Component.translatable("gui.factoryascent.charm.cooldown", Math.max(1, Math.round(cd * view.cooldownSeconds())))
                 : Component.translatable("gui.factoryascent.charm.no_cooldown");
         g.text(font, cdText, x + 8, barY, FactoryGui.TEXT, false);
-        g.text(font, FactoryGui.fit(font, Component.translatable("gui.factoryascent.charm.rules", view.recallSeconds(), view.cooldownSeconds()),
-                W - 16), x + 8, barY + 21, FactoryGui.MUTED, false);
+        var rules = font.split(Component.translatable("gui.factoryascent.charm.rules", view.recallSeconds(), view.cooldownSeconds()), W - 16);
+        for (int i = 0; i < Math.min(2, rules.size()); i++) g.text(font, rules.get(i), x + 8, barY + 20 + i * 10, FactoryGui.MUTED, false);
         super.extractRenderState(g, mouseX, mouseY, partial);
     }
 

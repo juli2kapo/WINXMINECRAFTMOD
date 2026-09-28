@@ -165,7 +165,10 @@ public class TeamScreen extends Screen {
             String more = (scroll + 1) + "-" + Math.min(view.satellites().size(), scroll + ROWS) + "/" + view.satellites().size();
             g.text(font, more, x + W - 8 - font.width(more), y + LIST_Y - 12, OrbitalGui.MUTED, false);
         }
-        g.text(font, OrbitalGui.fit(font, view.message(), W - 18), x + 9, y + H - 14, OrbitalGui.TEXT, false);
+        var msg = font.split(view.message(), W - 18);
+        for (int i = 0; i < Math.min(2, msg.size()); i++) {
+            g.text(font, msg.get(i), x + 9, y + H - (msg.size() > 1 ? 24 : 14) + i * 10, OrbitalGui.TEXT, false);
+        }
         super.extractRenderState(g, mouseX, mouseY, partial);
     }
 

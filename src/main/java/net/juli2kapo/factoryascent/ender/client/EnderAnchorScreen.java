@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class EnderAnchorScreen extends AbstractContainerScreen<EnderAnchorMenu> {
     private static final int GRID_X = 50, GRID_Y = 17, GRID = 64;
-    private static final int INFO_X = 120, INFO_Y = 16, INFO_W = 68, INFO_H = 52;
+    private static final int INFO_X = 120, INFO_Y = 16, INFO_W = 104, INFO_H = 52;
 
     private @Nullable Button toggle;
 

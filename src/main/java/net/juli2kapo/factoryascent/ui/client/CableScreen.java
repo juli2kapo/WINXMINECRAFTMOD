@@ -123,7 +123,9 @@ public class CableScreen extends NetScreen {
         Component extra = view.storage() > 0
                 ? Component.translatable("gui.factoryascent.cable.storage", view.storage())
                 : Component.translatable("gui.factoryascent.cable.this_cable", fe(view.cableRate()));
-        g.text(font, FactoryGui.fit(font, extra, W - 76), x + 8, y + H - 19, FactoryGui.MUTED, false);
+        var extraLines = font.split(extra, W - 76);
+        int ey = y + H - 19 - (extraLines.size() > 1 ? 5 : 0);
+        for (int i = 0; i < Math.min(2, extraLines.size()); i++) g.text(font, extraLines.get(i), x + 8, ey + i * 10, FactoryGui.MUTED, false);
         super.extractRenderState(g, mouseX, mouseY, partial);
         if (FactoryGui.inside(mouseX, mouseY, x + 8, y + 30, W - 16, 10)) {
             g.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.factoryascent.cable.buffer_tip")

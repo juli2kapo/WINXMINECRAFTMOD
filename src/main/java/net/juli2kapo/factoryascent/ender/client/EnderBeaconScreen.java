@@ -27,8 +27,8 @@ import org.jspecify.annotations.Nullable;
  * linked to this beacon.
  */
 public class EnderBeaconScreen extends AbstractContainerScreen<EnderBeaconMenu> {
-    private static final int FIELD_X = 50, FIELD_Y = 17, FIELD_W = 100;
-    private static final int INFO_X = 50, INFO_Y = 36, INFO_W = 138, INFO_H = 46;
+    private static final int FIELD_X = 50, FIELD_Y = 17, FIELD_W = 110;
+    private static final int INFO_X = 50, INFO_Y = 36, INFO_W = 174, INFO_H = 46;
 
     private @Nullable EditBox name;
     private @Nullable Button save;
@@ -124,13 +124,13 @@ public class EnderBeaconScreen extends AbstractContainerScreen<EnderBeaconMenu> 
         FactoryGui.lamp(g, tx, ly, statusColor);
         g.text(font, FactoryGui.fit(font, Component.translatable(ready ? "gui.factoryascent.beacon.ready" : "gui.factoryascent.beacon.empty"),
                 w - 10), tx + 10, ly, statusColor, false);
-        ly += 11;
+        ly += 10;
         String owner = menu.ownerName().isEmpty() ? "-" : menu.ownerName();
         g.text(font, FactoryGui.fit(font, Component.translatable("gui.factoryascent.owner", owner), w), tx, ly, FactoryGui.DISPLAY_TEXT, false);
-        ly += 11;
+        ly += 10;
         g.text(font, FactoryGui.fit(font, Component.translatable("gui.factoryascent.beacon.rules", menu.recallSeconds(),
                 menu.cooldownSeconds()), w), tx, ly, FactoryGui.DISPLAY_MUTED, false);
-        ly += 11;
+        ly += 10;
         g.text(font, FactoryGui.fit(font, Component.translatable(menu.crossDimension()
                 ? "gui.factoryascent.beacon.cross_yes" : "gui.factoryascent.beacon.cross_no"), w), tx, ly, FactoryGui.DISPLAY_MUTED, false);
         int linked = linkedCharms();

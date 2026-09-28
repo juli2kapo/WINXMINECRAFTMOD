@@ -19,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class StorageNetScreen extends NetScreen {
     private static final int W = 220, H = 184;
-    private static final int GRID_X = 8, GRID_Y = 118, COLS = 11;
+    private static final int GRID_Y = 118, COLS = 11, GRID_X = (W - COLS * 18) / 2 - 1;
 
     private StorageView view;
 
@@ -74,8 +74,12 @@ public class StorageNetScreen extends NetScreen {
         float items = frac(view.used(), view.capacityItems()), types = frac(view.types(), view.typeCapacity());
         FactoryGui.bar(g, x + 8, y + 70, (W - 20) / 2, 7, items, usageColor(items));
         FactoryGui.bar(g, x + 12 + (W - 20) / 2, y + 70, (W - 20) / 2, 7, types, usageColor(types));
-        for (int i = 0; i < 2 * COLS; i++) {
-            FactoryGui.slot(g, x + GRID_X + 1 + (i % COLS) * 18, y + GRID_Y + (i / COLS) * 18);
+        if (view.top().isEmpty()) {
+            FactoryGui.well(g, x + GRID_X, y + GRID_Y - 1, COLS * 18, 36);
+        } else {
+            for (int i = 0; i < 2 * COLS; i++) {
+                FactoryGui.slot(g, x + GRID_X + 1 + (i % COLS) * 18, y + GRID_Y + (i / COLS) * 18);
+            }
         }
     }
 
@@ -87,11 +91,12 @@ public class StorageNetScreen extends NetScreen {
         boolean online = status == StorageNet.Status.ONLINE;
         int color = online ? FactoryGui.GOOD : FactoryGui.BAD;
         FactoryGui.lamp(g, x + 12, y + 22, color);
-        g.text(font, Component.translatable(status.key()), x + 23, y + 22, color, false);
+        Component statusText = Component.translatable(status.key());
+        g.text(font, statusText, x + 23, y + 22, color, false);
         Component devices = Component.translatable("gui.factoryascent.storage.net_devices", view.devices(), view.drives(),
                 Math.max(0, view.members() - view.devices() - 1));
-        g.text(font, FactoryGui.fit(font, devices, W - 110), x + W - 12 - Math.min(W - 110, font.width(devices)), y + 22,
-                FactoryGui.DISPLAY_MUTED, false);
+        int devW = Math.min(font.width(devices), W - 42 - font.width(statusText));
+        g.text(font, FactoryGui.fit(font, devices, devW), x + W - 12 - devW, y + 22, FactoryGui.DISPLAY_MUTED, false);
         FactoryGui.row(g, font, Component.translatable("gui.factoryascent.storage.net_energy"),
                 Component.translatable("gui.factoryascent.storage.net_energy_value", EnergyUtil.format(view.energy()),
                         EnergyUtil.format(view.capacity()), view.drain()), x + 8, x + W - 8, y + 38, FactoryGui.TEXT, FactoryGui.TEXT);
@@ -115,7 +120,7 @@ public class StorageNetScreen extends NetScreen {
             g.pose().popMatrix();
         }
         if (view.top().isEmpty()) {
-            g.text(font, Component.translatable("gui.factoryascent.storage.empty"), x + GRID_X + 4, y + GRID_Y + 4, FactoryGui.MUTED, false);
+            g.centeredText(font, Component.translatable("gui.factoryascent.storage.empty"), x + GRID_X + COLS * 9, y + GRID_Y + 13, 0xFF4A4A4A);
         }
         super.extractRenderState(g, mouseX, mouseY, partial);
         for (int i = 0; i < view.top().size() && i < 2 * COLS; i++) {

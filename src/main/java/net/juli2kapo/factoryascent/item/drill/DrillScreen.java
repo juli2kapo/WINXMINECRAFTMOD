@@ -21,8 +21,8 @@ import org.jspecify.annotations.Nullable;
  * with a little picture of what it digs. Clicking a card sends a {@link ScreenPayloads.DrillAction}.
  */
 public class DrillScreen extends Screen {
-    private static final int W = 222, H = 160;
-    private static final int CARD_Y = 44, CARD_W = 66, CARD_H = 84, CARD_GAP = 6;
+    private static final int W = 222, H = 180;
+    private static final int CARD_Y = 38, CARD_W = 66, CARD_H = 104, CARD_GAP = 6;
 
     private final InteractionHand hand;
     /** The mode just clicked, shown until the item's component catches up. */
@@ -88,7 +88,7 @@ public class DrillScreen extends Screen {
         int x = left(), y = top();
         FactoryGui.panel(g, x, y, W, H, FactoryGui.ELECTRIC);
         ItemStack drill = drill();
-        FactoryGui.energyBar(g, x + 30, y + 26, W - 38, 9, ElectricDrillItem.energy(drill) / (float) ElectricDrillItem.CAPACITY);
+        FactoryGui.energyBar(g, x + 30, y + 22, W - 38, 9, ElectricDrillItem.energy(drill) / (float) ElectricDrillItem.CAPACITY);
         DrillMode selected = shownMode();
         for (DrillMode mode : DrillMode.values()) {
             int cx = cardX(mode.ordinal()), cy = y + CARD_Y;
@@ -131,11 +131,12 @@ public class DrillScreen extends Screen {
         int x = left(), y = top();
         ItemStack drill = drill();
         g.text(font, title, x + 8, y + 8, FactoryGui.TEXT, false);
-        g.item(drill, x + 8, y + 22);
+        g.item(drill, x + 8, y + 18);
         int energy = ElectricDrillItem.energy(drill);
         Component charge = Component.translatable("gui.factoryascent.drill.charge", EnergyUtil.format(energy),
                 EnergyUtil.format(ElectricDrillItem.CAPACITY), energy / ElectricDrillItem.COST_PER_BLOCK);
-        g.text(font, FactoryGui.fit(font, charge, W - 38), x + 30, y + 16, FactoryGui.TEXT, false);
+        int chargeW = Math.min(font.width(charge), W - 24 - font.width(title));
+        g.text(font, FactoryGui.fit(font, charge, chargeW), x + W - 8 - chargeW, y + 8, FactoryGui.MUTED, false);
         DrillMode selected = shownMode();
         for (DrillMode mode : DrillMode.values()) {
             int cx = cardX(mode.ordinal()), cy = y + CARD_Y;
@@ -145,10 +146,12 @@ public class DrillScreen extends Screen {
             g.textWithWordWrap(font, Component.translatable("gui.factoryascent.drill.desc." + mode.getSerializedName(), DrillMining.MAX_VEIN),
                     cx + 4, cy + 60, CARD_W - 8, mode == selected ? FactoryGui.DISPLAY_TEXT : FactoryGui.DISPLAY_MUTED, false);
         }
-        g.text(font, FactoryGui.fit(font, Component.translatable("gui.factoryascent.drill.tip"), W - 84), x + 8, y + H - 20,
-                FactoryGui.MUTED, false);
+        var tip = font.split(Component.translatable("gui.factoryascent.drill.tip"), W - 84);
+        for (int i = 0; i < Math.min(2, tip.size()); i++) {
+            g.text(font, tip.get(i), x + 8, y + H - (tip.size() > 1 ? 26 : 20) + i * 10, FactoryGui.MUTED, false);
+        }
         super.extractRenderState(g, mouseX, mouseY, partial);
-        if (FactoryGui.inside(mouseX, mouseY, x + 30, y + 26, W - 38, 9)) {
+        if (FactoryGui.inside(mouseX, mouseY, x + 30, y + 22, W - 38, 9)) {
             g.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.factoryascent.drill.charge_tip",
                     ElectricDrillItem.COST_PER_BLOCK).withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
         }

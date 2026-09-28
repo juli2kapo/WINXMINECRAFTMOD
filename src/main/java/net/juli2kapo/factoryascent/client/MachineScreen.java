@@ -41,7 +41,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private static boolean sidesOpen = false;
     /** The Sides tab on the right edge, and the panel it opens (relative to leftPos/topPos). */
     private static final int TAB_W = 16, TAB_H = 22, TAB_Y = 8;
-    private static final int SIDES_W = 78, SIDES_H = 104;
+    private static final int SIDES_W = 96, SIDES_H = 104;
     private @org.jspecify.annotations.Nullable AcceptsPanel accepts;
     private @org.jspecify.annotations.Nullable Object hoveredCell;
 
@@ -91,6 +91,17 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     private int sidesX() {
         return imageWidth + 2;
+    }
+
+    /** Screen areas outside the machine GUI (the Sides tab or panel, the "accepts" panel), so JEI keeps clear of them. */
+    public List<net.minecraft.client.renderer.Rect2i> extraAreas() {
+        List<net.minecraft.client.renderer.Rect2i> areas = new java.util.ArrayList<>();
+        if (hasSides()) {
+            areas.add(sidesOpen ? new net.minecraft.client.renderer.Rect2i(leftPos + sidesX(), topPos, SIDES_W, SIDES_H)
+                    : new net.minecraft.client.renderer.Rect2i(leftPos + imageWidth - 1, topPos + TAB_Y, TAB_W, TAB_H));
+        }
+        if (panelShown()) areas.add(new net.minecraft.client.renderer.Rect2i(panelX(), topPos, AcceptsPanel.WIDTH, imageHeight));
+        return areas;
     }
 
     /** Where the button for one compass face sits in the sides panel (relative). */

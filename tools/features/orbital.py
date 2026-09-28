@@ -322,7 +322,7 @@ def lang(L):
     L(f"{SV}.waiting", "Waiting for imagery…", "Esperando imágenes…")
     L(f"{SV}.satellites", "Satellites here: %s", "Satélites aquí: %s")
     L(f"{SV}.no_satellites", "Your team has no satellites over this dimension", "Tu equipo no tiene satélites sobre esta dimensión")
-    L(f"{SV}.days", "%s days in orbit", "%s días en órbita")
+    L(f"{SV}.days", "%s days up", "%s días arriba")
     L(f"{SV}.legend_station", "Station", "Estación")
     L(f"{SV}.legend_pad", "Launch Pad", "Plataforma")
     L(f"{SV}.legend_you", "You", "Tú")

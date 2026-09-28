@@ -194,7 +194,8 @@ public class PipeScreen extends NetScreen {
         int x = left(), y = top();
         g.text(font, title, x + 8, y + 8, FactoryGui.TEXT, false);
         Component rate = Component.translatable("gui.factoryascent.pipe.rate", view.rate());
-        g.text(font, rate, x + W - 8 - font.width(rate), y + 8, FactoryGui.MUTED, false);
+        int rateW = Math.min(font.width(rate), W - 24 - font.width(title));
+        g.text(font, FactoryGui.fit(font, rate, rateW), x + W - 8 - rateW, y + 8, FactoryGui.MUTED, false);
         for (Direction dir : Direction.values()) {
             int side = dir.get3DDataValue();
             int[] c = cell(dir);
@@ -212,7 +213,7 @@ public class PipeScreen extends NetScreen {
         for (int side = 0; side < 6; side++) {
             Direction dir = Direction.from3DDataValue(side);
             int ry = y + ROWS_Y + side * ROW_H;
-            Component face = Component.translatable("direction.factoryascent." + dir.getName());
+            Component face = Component.translatable("gui.factoryascent.face." + dir.getName());
             g.text(font, FactoryGui.fit(font, face, 40), x + ROWS_X + 6, ry, FactoryGui.TEXT, false);
             ItemStack icon = view.neighbours().get(side);
             if (!icon.isEmpty()) g.item(icon, x + ROWS_X + 48, ry - 4);
@@ -238,7 +239,7 @@ public class PipeScreen extends NetScreen {
             boolean overRowIcon = FactoryGui.inside(mouseX, mouseY, x + ROWS_X + 48, y + ROWS_Y + side * ROW_H - 4, 16, 16);
             if (!FactoryGui.inside(mouseX, mouseY, x + c[0], y + c[1], CELL, CELL) && !overRowIcon) continue;
             List<Component> lines = new ArrayList<>();
-            lines.add(Component.translatable("direction.factoryascent." + dir.getName()).withStyle(ChatFormatting.YELLOW));
+            lines.add(Component.translatable("gui.factoryascent.face." + dir.getName()).withStyle(ChatFormatting.YELLOW));
             ItemStack icon = view.neighbours().get(side);
             if (!icon.isEmpty()) lines.add(icon.getHoverName());
             String key = switch (view.kinds().get(side)) {

@@ -13,8 +13,8 @@ import org.jspecify.annotations.Nullable;
 
 /** What the Ender Anchor and Ender Beacon menus share: layout, owner names, shift-click. */
 public final class ChamberMenus {
-    public static final int WIDTH = 196, HEIGHT = 190;
-    public static final int INV_X = 18, PLAYER_INV_Y = 108;
+    public static final int WIDTH = 232, HEIGHT = 190;
+    public static final int INV_X = 36, PLAYER_INV_Y = 108;
     /** The pearl slot, inside the drawn chamber on the left. */
     public static final int PEARL_X = 18, PEARL_Y = 34;
 

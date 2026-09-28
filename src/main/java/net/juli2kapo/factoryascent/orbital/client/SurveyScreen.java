@@ -372,7 +372,8 @@ public class SurveyScreen extends Screen {
             Row row = view.satellites().get(scroll + i);
             int ry = listTop() + i * ROW_H;
             g.text(font, OrbitalGui.fit(font, row.line(), SIDE - 8), sx + 4, ry + 3, OrbitalGui.TEXT, false);
-            g.text(font, Component.translatable("gui.factoryascent.survey.days", row.progress()), sx + 4, ry + 14, OrbitalGui.MUTED, false);
+            g.text(font, OrbitalGui.fit(font, Component.translatable("gui.factoryascent.survey.days", row.progress()), SIDE - 66),
+                    sx + 4, ry + 14, OrbitalGui.MUTED, false);
             if (i > 0) g.fill(sx + 2, ry, sx + SIDE - 2, ry + 1, OrbitalGui.EDGE_LIGHT);
         }
         if (maxScroll() > 0) {
@@ -382,15 +383,15 @@ public class SurveyScreen extends Screen {
         // legend
         int ly = mapTop() + 19;
         legend(g, sx, ly, 0xFFB060E0, "gui.factoryascent.survey.legend_station");
-        legend(g, sx + 64, ly, 0xFFE0A040, "gui.factoryascent.survey.legend_pad");
+        legend(g, sx + 58, ly, 0xFFE0A040, "gui.factoryascent.survey.legend_pad");
         legend(g, sx, ly + 9, 0xFFFFFFFF, "gui.factoryascent.survey.legend_you");
-        legend(g, sx + 64, ly + 9, 0xFF40D0E0, "gui.factoryascent.survey.legend_team");
+        legend(g, sx + 58, ly + 9, 0xFF40D0E0, "gui.factoryascent.survey.legend_team");
     }
 
     private void legend(GuiGraphicsExtractor g, int x, int y, int color, String key) {
         g.fill(x, y + 1, x + 5, y + 6, 0xFF000000);
         g.fill(x + 1, y + 2, x + 4, y + 5, color);
-        g.text(font, OrbitalGui.fit(font, Component.translatable(key), 56), x + 8, y, OrbitalGui.MUTED, false);
+        g.text(font, OrbitalGui.fit(font, Component.translatable(key), 62), x + 8, y, OrbitalGui.MUTED, false);
     }
 
     @Override
