@@ -113,7 +113,7 @@ public final class OrbitalContentClient {
         float height;
         /** Pre-launch rumble offset. */
         float shakeX, shakeZ;
-        /** Fairing halves: opening angle (degrees) and, once jettisoned, their drift from the rocket. */
+        /** Fairing halves once jettisoned: how far they have swung open (degrees), drifted out and fallen behind. */
         float fairingAngle, fairingOut, fairingDrop;
         /** Exhaust plume length (0: off) and flicker. */
         float plume;
@@ -122,9 +122,8 @@ public final class OrbitalContentClient {
     /**
      * The launch vehicle standing on the pad while a payload is mounted: two stages, a black
      * interstage, grid fins and five engine bells, with the satellite (wings folded) inside a
-     * fairing whose halves stand open on the pad so everyone can see what is going up; the
-     * anti-satellite missile rides bare as a dark kill vehicle. When the countdown starts the
-     * fairing closes; the rocket rumbles, then climbs at {@link LaunchControllerBlockEntity#ACCEL}·t²
+     * fairing with a clear window band, so everyone can see what is going up; the anti-satellite
+     * missile rides bare as a dark kill vehicle. The rocket rumbles, then climbs at {@link LaunchControllerBlockEntity#ACCEL}·t²
      * blocks (the same curve the server's exhaust trail follows) on a flickering plume, and
      * jettisons the fairing halves once {@link #FAIRING_SEPARATION} blocks up.
      */
@@ -132,9 +131,6 @@ public final class OrbitalContentClient {
         // Mirrors SEGMENT_BASE / FAIRING_BASE / PAYLOAD_BASE / PAYLOAD_SCALE / RF in tools/features/satellites.py (rocket pixels).
         private static final float LOWER_BASE = 15.5f, UPPER_BASE = 63.5f, ADAPTER_BASE = 80f, FAIRING_MODEL_BASE = 110f,
                 KV_BASE = 102f, PLUME_BASE = -30.5f, FAIRING_HINGE = 94f, PAYLOAD_BASE = 95f, PAYLOAD_SCALE = 1.3f, FAIRING_RADIUS = 8.5f;
-        private static final float OPEN_ANGLE = 45f;
-        /** Ticks the fairing takes to close when the countdown starts. */
-        private static final float CLOSE_TICKS = 20f;
         static final float FAIRING_SEPARATION = 30f;
 
         RocketRenderer(BlockEntityRendererProvider.Context context) {}
@@ -158,14 +154,13 @@ public final class OrbitalContentClient {
             };
             state.height = 0;
             state.shakeX = state.shakeZ = 0;
-            state.fairingAngle = OPEN_ANGLE;
+            state.fairingAngle = 0;
             state.fairingOut = state.fairingDrop = 0;
             state.plume = 0;
             if (pad.launchStart() >= 0 && pad.getLevel() != null) {
                 float t = pad.getLevel().getGameTime() - pad.launchStart() + partialTicks;
                 float liftoff = LaunchControllerBlockEntity.LIFTOFF;
                 float accel = LaunchControllerBlockEntity.ACCEL;
-                state.fairingAngle = OPEN_ANGLE * Math.max(0f, 1f - t / CLOSE_TICKS);
                 float flicker = 0.85f + 0.15f * (float) Math.sin(t * 2.7) * (float) Math.cos(t * 1.3);
                 if (t > liftoff) {
                     float dt = t - liftoff;
@@ -233,7 +228,13 @@ public final class OrbitalContentClient {
                     pose.translate(hinge, FAIRING_HINGE / 16f, 0f);
                     pose.mulPose(Axis.ZP.rotationDegrees(-side * state.fairingAngle));
                     pose.translate(-hinge, -FAIRING_HINGE / 16f, 0f);
-                    part(pose, collector, side > 0 ? LV_FAIRING_A : LV_FAIRING_B, FAIRING_MODEL_BASE, light);
+                    BlockStateModelPart half = Minecraft.getInstance().getModelManager()
+                            .getStandaloneModel(side > 0 ? LV_FAIRING_A : LV_FAIRING_B);
+                    if (half != null) {
+                        pose.translate(-0.5f, FAIRING_MODEL_BASE / 16f, -0.5f);
+                        collector.submitBlockModel(pose, Sheets.translucentBlockItemSheet(), List.of(half), new int[0],
+                                light, OverlayTexture.NO_OVERLAY, 0);
+                    }
                     pose.popPose();
                 }
             }

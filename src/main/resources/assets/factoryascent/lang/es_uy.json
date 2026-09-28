@@ -701,7 +701,7 @@
   "gui.factoryascent.pipe.extract_tip": "La tubería saca objetos de este inventario. Clic para entregar en él",
   "gui.factoryascent.pipe.to_pipe": "Tubería",
   "gui.factoryascent.pipe.nothing": "—",
-  "gui.factoryascent.pipe.up_short": "Arr.",
+  "gui.factoryascent.pipe.up_short": "Arriba",
   "gui.factoryascent.pipe.down_short": "Abajo",
   "gui.factoryascent.pipe.state_pipe": "Unida a otra tubería",
   "gui.factoryascent.pipe.state_insert": "Entrega en este inventario",

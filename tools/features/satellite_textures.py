@@ -262,6 +262,23 @@ def fairing_inner():
     return c
 
 
+def fairing_glass():
+    """The fairing's clear window: faintly blue, with a white frame line along the top and bottom
+    and a few soft reflections (translucent)."""
+    from PIL import Image
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            a, col = 70, (205, 228, 255)
+            if (x - y) % 11 in (0, 1):
+                a, col = 120, (240, 248, 255)
+            img.putpixel((x, y), col + (a,))
+    for x in range(16):
+        img.putpixel((x, 0), WHITE[1])
+        img.putpixel((x, 15), WHITE[2])
+    return img
+
+
 def adapter():
     c = Canvas()
     for y in range(16):
@@ -382,7 +399,7 @@ BLOCKS = {
     "sat_lens": lens, "sat_dish": dish, "sat_red": red,
     "lv_hull": hull, "lv_hull_flag": hull_flag, "lv_hull_asat": hull_asat, "lv_carbon": carbon, "lv_bell": bell,
     "lv_bell_inner": bell_inner, "lv_gridfin": gridfin, "lv_fin": fin, "lv_fairing": fairing,
-    "lv_fairing_inner": fairing_inner, "lv_adapter": adapter, "lv_seeker": seeker, "lv_kv_body": kv_body,
+    "lv_fairing_inner": fairing_inner, "lv_fairing_glass": fairing_glass, "lv_adapter": adapter, "lv_seeker": seeker, "lv_kv_body": kv_body,
     "lv_plume": plume,
 }
 ITEMS = {f"{k}_satellite_icon": (lambda k=k: icon(k)) for k in ("survey", "uplink", "guardian")}

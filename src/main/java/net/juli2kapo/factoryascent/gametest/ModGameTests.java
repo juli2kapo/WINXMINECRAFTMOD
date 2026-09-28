@@ -89,7 +89,13 @@ public final class ModGameTests {
             new Test("asat_destroys_own_satellite", 300, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::asatDestroysOwnSatellite),
             new Test("guardian_intercepts_asat", 300, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::guardianIntercepts),
             new Test("asat_disabled_blocks_launch", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::asatDisabledBlocksLaunch),
-            new Test("hopper_feeds_launch_controller", 200, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::hopperFeedsController)
+            new Test("hopper_feeds_launch_controller", 200, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::hopperFeedsController),
+            new Test("ui_beacon_rename_owner_only", 20, net.juli2kapo.factoryascent.ender.EnderUiGameTests::beaconRename),
+            new Test("ui_charm_unlink", 20, net.juli2kapo.factoryascent.ender.EnderUiGameTests::charmUnlink),
+            new Test("ui_anchor_slot_and_switch", 40, net.juli2kapo.factoryascent.ender.EnderUiGameTests::anchorMenu),
+            new Test("ui_pipe_side_config", 20, net.juli2kapo.factoryascent.ui.UiGameTests::pipeSideConfig),
+            new Test("ui_drill_mode_screen", 20, net.juli2kapo.factoryascent.ui.UiGameTests::drillModeScreen),
+            new Test("ui_machine_sides_panel", 20, net.juli2kapo.factoryascent.ui.UiGameTests::machineSidesPanel)
     );
 
     private ModGameTests() {}

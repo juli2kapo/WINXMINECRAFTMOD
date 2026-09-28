@@ -93,7 +93,7 @@ LANG = [
      "La tubería saca objetos de este inventario. Clic para entregar en él"),
     (f"{G}.pipe.to_pipe", "Pipe", "Tubería"),
     (f"{G}.pipe.nothing", "—", "—"),
-    (f"{G}.pipe.up_short", "Up", "Arr."),
+    (f"{G}.pipe.up_short", "Up", "Arriba"),
     (f"{G}.pipe.down_short", "Down", "Abajo"),
     (f"{G}.pipe.state_pipe", "Joined to another pipe", "Unida a otra tubería"),
     (f"{G}.pipe.state_insert", "Delivers into this inventory", "Entrega en este inventario"),

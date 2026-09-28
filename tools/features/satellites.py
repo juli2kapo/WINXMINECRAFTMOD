@@ -149,10 +149,12 @@ def turn(els, m, pivot):
     return [e.transformed(m, pivot) for e in els]
 
 
-def ring(cx, cz, y0, y1, r0, r1, tex, n=8, th=0.6, inner=None, u0=0, v0=0, caps=True, sides=None, phase=None):
+def ring(cx, cz, y0, y1, r0, r1, tex, n=8, th=0.6, inner=None, u0=0, v0=0, caps=True, sides=None, phase=None, edge=None):
     """An n-sided frustum (a prism when r0 == r1) around the vertical axis through (cx, cz): n
     panels, each tilted to the slope and turned about the axis. Outer faces on tex, inner faces
-    on inner (omitted when None). The panel texture runs around the ring, one texel per pixel."""
+    on inner (omitted when None), panel edges on edge (default tex). The panel texture runs around
+    the ring, one texel per pixel."""
+    edge = edge or tex
     phase = 180 / n if phase is None else phase
     h = y1 - y0
     slope = math.degrees(math.atan2(r0 - r1, h))
@@ -167,10 +169,10 @@ def ring(cx, cz, y0, y1, r0, r1, tex, n=8, th=0.6, inner=None, u0=0, v0=0, caps=
         if inner:
             faces["north"] = (inner, _uv(u0 + k * w, v0, w, length))
         if caps:
-            faces["up"] = (tex, _uv(u0, v0, w, th))
-            faces["down"] = (tex, _uv(u0, v0, w, th))
-        faces["east"] = (tex, _uv(u0, v0, th, length))
-        faces["west"] = (tex, _uv(u0, v0, th, length))
+            faces["up"] = (edge, _uv(u0, v0, w, th))
+            faces["down"] = (edge, _uv(u0, v0, w, th))
+        faces["east"] = (edge, _uv(u0, v0, th, length))
+        faces["west"] = (edge, _uv(u0, v0, th, length))
         # panel standing at +z, middle of its outer face at radius rm and height (y0+y1)/2
         ym = (y0 + y1) / 2
         e = El([cx - w / 2, ym - length / 2, cz + rm - th], [cx + w / 2, ym + length / 2, cz + rm], faces,
@@ -344,7 +346,7 @@ def model(els, tex, display=None, particle=None):
 
 LV_TEX = {k: f"{MOD}:block/{v}" for k, v in {
     "hull": "lv_hull", "flag": "lv_hull_flag", "carbon": "lv_carbon", "bell": "lv_bell", "throat": "lv_bell_inner",
-    "gridfin": "lv_gridfin", "fin": "lv_fin", "fairing": "lv_fairing", "blanket": "lv_fairing_inner",
+    "gridfin": "lv_gridfin", "fin": "lv_fin", "fairing": "lv_fairing", "blanket": "lv_fairing_inner", "glass": "lv_fairing_glass",
     "adapter": "lv_adapter", "seeker": "lv_seeker", "kv": "lv_kv_body", "plume": "lv_plume",
     "steel": "sat_steel", "dark": "sat_dark", "red": "sat_red"}.items()}
 ASAT_TEX = {"hull": f"{MOD}:block/lv_hull_asat", "flag": f"{MOD}:block/lv_hull_asat", "fin": f"{MOD}:block/sat_dark"}
@@ -406,9 +408,12 @@ def adapter():
 
 
 def fairing_half(sides):
-    """Fairing panels for the given octagon sides (0-3: +x half, 4-7: -x half)."""
-    els = []
-    for y0, y1, r0, r1 in ((95, 111, RF, RF), (111, 114, RF, RF), (114, 118, RF, 7.9), (118, 122, 7.9, 6.7),
+    """Fairing panels for the given octagon sides (0-3: +x half, 4-7: -x half): a clear window
+    band framed in white (so the payload shows from every side, even from the ground) under a
+    white ogive nose. Drawn translucent."""
+    els = ring(8, 8, 95, 97.5, RF, RF, "fairing", inner="blanket", th=0.5, sides=sides)
+    els += ring(8, 8, 97.5, 113, RF, RF, "glass", inner="glass", edge="fairing", th=0.5, sides=sides)
+    for y0, y1, r0, r1 in ((113, 115, RF, RF), (115, 118, RF, 7.9), (118, 122, 7.9, 6.7),
                            (122, 125.5, 6.7, 5), (125.5, 128, 5, 2.8), (128, 129.5, 2.8, 1)):
         els += ring(8, 8, y0, y1, r0, r1, "fairing", inner="blanket", th=0.5, sides=sides, v0=y0 - 95)
     return els
@@ -540,8 +545,8 @@ def preview(path):
             panels.append((f"{kind} {yaw}/{pitch}", img))
     # rocket, open fairing with a survey satellite
     els = stage_lower() + stage_upper() + adapter()
-    fa = spin(fairing_half([0, 1, 2, 3]), -45, [8 + RF, FAIRING_BASE, 8], axis="z")
-    fb = spin(fairing_half([4, 5, 6, 7]), 45, [8 - RF, FAIRING_BASE, 8], axis="z")
+    fa = spin(fairing_half([0, 1, 2, 3]), 0, [8 + RF, FAIRING_BASE, 8], axis="z")
+    fb = spin(fairing_half([4, 5, 6, 7]), 0, [8 - RF, FAIRING_BASE, 8], axis="z")
     sat = [e.moved(0, PAYLOAD_BASE, 0) for e in satellite_elements("uplink", False)]
     q = _quads(els + fa + fb + sat, tex)
     for yaw, pitch in ((-20, 10), (30, 25)):

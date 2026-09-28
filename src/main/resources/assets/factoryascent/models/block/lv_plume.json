@@ -10,6 +10,7 @@
     "fin": "factoryascent:block/lv_fin",
     "fairing": "factoryascent:block/lv_fairing",
     "blanket": "factoryascent:block/lv_fairing_inner",
+    "glass": "factoryascent:block/lv_fairing_glass",
     "adapter": "factoryascent:block/lv_adapter",
     "seeker": "factoryascent:block/lv_seeker",
     "kv": "factoryascent:block/lv_kv_body",

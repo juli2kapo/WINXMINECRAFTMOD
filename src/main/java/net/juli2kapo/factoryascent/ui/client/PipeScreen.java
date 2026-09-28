@@ -202,10 +202,10 @@ public class PipeScreen extends NetScreen {
             if (!icon.isEmpty()) g.item(icon, x + c[0] + 3, y + c[1] + 3);
             else g.text(font, "·", x + c[0] + CELL / 2 - 1, y + c[1] + 7, 0xFF5A5F68, false);
         }
-        g.text(font, Component.translatable("gui.factoryascent.pipe.up_short"), x + cell(Direction.UP)[0] + 2,
-                y + cell(Direction.UP)[1] - 10, FactoryGui.DISPLAY_MUTED, false);
-        g.text(font, Component.translatable("gui.factoryascent.pipe.down_short"), x + cell(Direction.DOWN)[0] + 2,
-                y + cell(Direction.DOWN)[1] + CELL + 2, FactoryGui.DISPLAY_MUTED, false);
+        Component up = Component.translatable("gui.factoryascent.pipe.up_short");
+        Component down = Component.translatable("gui.factoryascent.pipe.down_short");
+        g.text(font, up, x + COLUMN_X + CELL - font.width(up), y + cell(Direction.UP)[1] - 10, FactoryGui.DISPLAY_MUTED, false);
+        g.text(font, down, x + COLUMN_X + CELL - font.width(down), y + cell(Direction.DOWN)[1] + CELL + 2, FactoryGui.DISPLAY_MUTED, false);
         int[] n = cell(Direction.NORTH);
         g.text(font, "N", x + n[0] - 9, y + n[1] + 1, FactoryGui.DISPLAY_MUTED, false);
         // face rows
