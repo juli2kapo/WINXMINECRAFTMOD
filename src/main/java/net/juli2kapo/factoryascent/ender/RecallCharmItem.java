@@ -235,9 +235,17 @@ public class RecallCharmItem extends Item {
 
     /**
      * A charm screen button: refresh, or unlink the charm in {@code hand}. Only acts on a Recall
-     * Charm actually held there. Returns whether it did anything (for GameTests).
+     * Charm actually held there, and answers with a fresh view.
      */
-    public static boolean handleAction(ServerPlayer player, int handIndex, int action) {
+    public static void handleAction(ServerPlayer player, int handIndex, int action) {
+        InteractionHand hand = net.juli2kapo.factoryascent.ui.ScreenPayloads.hand(handIndex);
+        if (hand == null || !(player.getItemInHand(hand).getItem() instanceof RecallCharmItem)) return;
+        applyAction(player, handIndex, action);
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, view(player, hand, false));
+    }
+
+    /** The change behind {@link #handleAction}, without the reply packet (GameTests call this). */
+    public static boolean applyAction(ServerPlayer player, int handIndex, int action) {
         InteractionHand hand = net.juli2kapo.factoryascent.ui.ScreenPayloads.hand(handIndex);
         if (hand == null) return false;
         ItemStack stack = player.getItemInHand(hand);
@@ -253,7 +261,6 @@ public class RecallCharmItem extends Item {
         } else if (action != net.juli2kapo.factoryascent.ui.ScreenPayloads.CharmAction.REFRESH) {
             return false;
         }
-        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, view(player, hand, false));
         return done;
     }
 

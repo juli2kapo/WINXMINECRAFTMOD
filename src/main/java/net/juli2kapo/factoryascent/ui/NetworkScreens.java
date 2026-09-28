@@ -106,10 +106,20 @@ public final class NetworkScreens {
 
     /**
      * The pipe screen sets one face to delivering or extracting. Checks reach and that the face
-     * touches an inventory (as the Wrench does), then answers with a fresh view. Returns whether
-     * the face now has the requested mode (for GameTests).
+     * touches an inventory (as the Wrench does), then answers with a fresh view.
      */
-    public static boolean handlePipeAction(ServerPlayer player, BlockPos pos, int side, int mode) {
+    static void handlePipeAction(ServerPlayer player, BlockPos pos, int side, int mode) {
+        setPipeFace(player, pos, side, mode);
+        if (inReach(player, pos) && player.level().getBlockState(pos).getBlock() instanceof ItemPipeBlock) {
+            PacketDistributor.sendToPlayer(player, pipeView(player.level(), pos, false));
+        }
+    }
+
+    /**
+     * The checks and the change behind {@link #handlePipeAction}, without the reply packet (GameTests
+     * call this). Returns whether the face now has the requested mode.
+     */
+    public static boolean setPipeFace(ServerPlayer player, BlockPos pos, int side, int mode) {
         if (!inReach(player, pos) || side < 0 || side >= 6) return false;
         if (mode != ScreenPayloads.PipeAction.INSERT && mode != ScreenPayloads.PipeAction.EXTRACT) return false;
         ServerLevel level = player.level();
@@ -122,7 +132,6 @@ public final class NetworkScreens {
         if (ok && changed) {
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8f, extract ? 1.2f : 0.9f);
         }
-        PacketDistributor.sendToPlayer(player, pipeView(level, pos, false));
         return ok;
     }
 
