@@ -114,19 +114,21 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
         } else {
             g.text(font, OrbitalGui.fit(font, payload.getHoverName(), w), tx, ty, OrbitalGui.TEXT, false);
             Component detail;
+            boolean renamed = payload.getCustomName() != null;
             if (payload.getItem() instanceof AsatMissileItem) {
                 AsatMissileItem.Target target = AsatMissileItem.target(payload);
                 detail = target == null ? Component.translatable("gui.factoryascent.pad.missile_unprogrammed").withStyle(ChatFormatting.RED)
                         : Component.translatable("gui.factoryascent.pad.missile_target", target.label()).withStyle(ChatFormatting.GOLD);
-            } else if (payload.getItem() instanceof SatelliteItem sat) {
+            } else if (payload.getItem() instanceof SatelliteItem sat && renamed) {
+                // the name alone says what it is unless it was renamed in an anvil
                 detail = Component.translatable("gui.factoryascent.pad.satellite_type", sat.type().shortName()).withStyle(sat.type().color());
             } else {
                 detail = Component.empty();
             }
             g.text(font, OrbitalGui.fit(font, detail, w), tx, ty + 10, OrbitalGui.TEXT, false);
         }
-        g.text(font, Component.translatable("gui.factoryascent.pad.fuel_amount", menu.fuel(), LaunchControllerBlockEntity.FUEL_MAX,
-                LaunchControllerBlockEntity.FUEL_PER_LAUNCH), tx, ty + 22, OrbitalGui.MUTED, false);
+        g.text(font, OrbitalGui.fit(font, Component.translatable("gui.factoryascent.pad.fuel_amount", menu.fuel(),
+                LaunchControllerBlockEntity.FUEL_MAX, LaunchControllerBlockEntity.FUEL_PER_LAUNCH), w), tx, ty + 22, OrbitalGui.MUTED, false);
         int status = menu.status();
         Component line = switch (status) {
             case LaunchControllerBlockEntity.STATUS_READY -> Component.translatable("gui.factoryascent.pad.status.ready").withStyle(ChatFormatting.GREEN);
@@ -140,12 +142,12 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
             case LaunchControllerBlockEntity.STATUS_BLOCKED -> Component.translatable("gui.factoryascent.pad.status.blocked").withStyle(ChatFormatting.RED);
             default -> Component.translatable("gui.factoryascent.pad.status.missile").withStyle(ChatFormatting.YELLOW);
         };
-        g.text(font, OrbitalGui.fit(font, line, w), tx, ty + 33, OrbitalGui.TEXT, false);
         if (messageTicks > 0) {
-            g.text(font, OrbitalGui.fit(font, message, imageWidth - 16), 8, 86, OrbitalGui.TEXT, false);
+            // a refusal after pressing Launch replaces the status line (up to two lines)
+            var lines = font.split(message, w);
+            for (int i = 0; i < Math.min(2, lines.size()); i++) g.text(font, lines.get(i), tx, ty + 33 + i * 10, OrbitalGui.TEXT, false);
         } else {
-            g.text(font, OrbitalGui.fit(font, Component.translatable("gui.factoryascent.pad.hint"), imageWidth - 76), 8, 86,
-                    OrbitalGui.MUTED, false);
+            g.text(font, OrbitalGui.fit(font, line, w), tx, ty + 33, OrbitalGui.TEXT, false);
         }
     }
 

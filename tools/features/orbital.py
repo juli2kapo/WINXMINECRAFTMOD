@@ -332,27 +332,26 @@ def lang(L):
     L(f"{PD}.payload", "Payload", "Carga")
     L(f"{PD}.fuel", "Fuel", "Combustible")
     L(f"{PD}.launch", "Launch", "Lanzar")
-    L(f"{PD}.launch_tip", "Launch now (same rules as flint and steel or a redstone pulse)",
-      "Lanzar ahora (mismas reglas que el mechero o un pulso de redstone)")
+    L(f"{PD}.launch_tip", "Launch now. A redstone pulse or sneak-using flint and steel on the pad also launches",
+      "Lanzar ahora. Un pulso de redstone o usar un mechero agachado sobre la plataforma también lanza")
     L(f"{PD}.no_payload", "No payload", "Sin carga")
     L(f"{PD}.missile_unprogrammed", "No target: program it at an Orbital Radar", "Sin objetivo: prográmalo en un radar orbital")
     L(f"{PD}.missile_target", "Target: %s", "Objetivo: %s")
     L(f"{PD}.satellite_type", "%s satellite", "Satélite de %s")
-    L(f"{PD}.fuel_amount", "Fuel %s/%s (%s per launch)", "Combustible %s/%s (%s por lanzamiento)")
+    L(f"{PD}.fuel_amount", "Fuel %s/%s (uses %s)", "Combustible %s/%s (usa %s)")
     L(f"{PD}.fuel_tip", "%s = 1, %s = 4", "%s = 1, %s = 4")
     L(f"{PD}.payload_tip", "Put a satellite or an Anti-Satellite Missile here; take it out to get it back",
       "Pon aquí un satélite o un misil antisatélite; sácalo para recuperarlo")
     L(f"{PD}.fuel_slot_tip", "Put Blaze Powder or Rocket Fuel here: it goes straight into the tank",
       "Pon aquí polvo de blaze o combustible de cohete: va directo al tanque")
-    L(f"{PD}.hint", "Or: redstone pulse, sneak + flint and steel", "O: pulso de redstone, agachado + mechero")
     L(f"{PD}.status.ready", "Ready for launch", "Listo para lanzar")
     L(f"{PD}.status.countdown", "Launch in %s…", "Lanzamiento en %s…")
-    L(f"{PD}.status.climbing", "Liftoff! Climbing to orbit", "¡Despegue! Subiendo a la órbita")
-    L(f"{PD}.status.incomplete", "Pad incomplete: 8 Launch Pad blocks around", "Plataforma incompleta: 8 bloques alrededor")
+    L(f"{PD}.status.climbing", "Liftoff! Climbing…", "¡Despegue! Subiendo…")
+    L(f"{PD}.status.incomplete", "Needs 8 Launch Pads around", "Faltan plataformas alrededor")
     L(f"{PD}.status.no_payload", "Mount a payload", "Monta una carga")
     L(f"{PD}.status.no_fuel", "Needs more fuel", "Necesita más combustible")
     L(f"{PD}.status.blocked", "Something blocks the rocket's path", "Algo bloquea la trayectoria")
-    L(f"{PD}.status.missile", "Missile not ready: press Launch to see why", "Misil no listo: pulsa Lanzar para ver por qué")
+    L(f"{PD}.status.missile", "Missile: press Launch", "Misil: pulsa Lanzar")
 
     TM = f"{M}.team"
     L(f"{TM}.ok", "Done", "Hecho")
