@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:orbital_launch",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:orbital_radar"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_radar_lock.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_radar_lock.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

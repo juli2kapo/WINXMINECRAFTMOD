@@ -27,7 +27,8 @@ import org.jspecify.annotations.Nullable;
  * Wireless Terminal: sneak-use it on a Storage Terminal to link it, then use it anywhere in the
  * same dimension to open that terminal, as long as your team has uplink coverage there
  * ({@link OrbitalSignal}) and the terminal's chunk is loaded (an Ender Anchor can keep it loaded).
- * The session stays open while you hold the linked terminal and keep the signal.
+ * The session stays open while you hold the linked terminal and keep the signal. Sneak-use it in
+ * the air to open the Team screen ({@link OrbitalConsole}).
  */
 public class WirelessTerminalItem extends Item {
     public WirelessTerminalItem(Properties properties) {
@@ -54,6 +55,10 @@ public class WirelessTerminalItem extends Item {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
+        if (sp.isShiftKeyDown()) {
+            OrbitalConsole.open(sp);
+            return InteractionResult.SUCCESS;
+        }
         Component problem = open(sp, stack);
         if (problem != null) {
             sp.sendOverlayMessage(problem.copy().withStyle(ChatFormatting.RED));
@@ -122,5 +127,6 @@ public class WirelessTerminalItem extends Item {
                     OrbitalText.dimensionName(link.dimension())).withStyle(ChatFormatting.GRAY));
         }
         tooltip.accept(Component.translatable("tooltip.factoryascent.wireless_needs_uplink").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.wireless_console").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PDP",
+    "AOA",
+    "SFS"
+  ],
+  "key": {
+    "P": "#c:plates/titanium",
+    "D": "factoryascent:ground_station",
+    "A": "factoryascent:advanced_circuit",
+    "O": "factoryascent:orbital_targeting_core",
+    "S": "#c:plates/steel",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:orbital_radar"
+  }
+}

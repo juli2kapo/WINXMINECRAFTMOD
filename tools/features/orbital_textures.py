@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Textures of the Orbital age (16x16): launch pad, launch controller, ground station dish, the
-rocket drawn on the pad, satellites, rocket fuel and the wireless terminal.
+rocket drawn on the pad (and its dark anti-satellite variant), the orbital radar, satellites,
+the anti-satellite missile, rocket fuel and the wireless terminal.
 
 Run:  python3 tools/features/orbital_textures.py      (redraws all of them)
 
@@ -228,25 +229,35 @@ def station_feed():
     return c
 
 
-def rocket_body():
-    """White hull with a black roll pattern, a porthole and a flag-red stripe; tiles vertically."""
+def rocket_body(pal=None, band=None):
+    """White hull with a black roll pattern, a porthole and a flag-red stripe; tiles vertically.
+    The anti-satellite missile uses a gunmetal hull (pal) with a hazard band."""
+    pal = pal or WHITE
     c = Canvas()
     for y in range(16):
         for x in range(16):
-            t = WHITE[1] if 3 <= x <= 10 else WHITE[2] if x > 10 else WHITE[0]
+            t = pal[1] if 3 <= x <= 10 else pal[2] if x > 10 else pal[0]
             c.put(x, y, t)
     for y in range(0, 4):  # roll pattern checker
         for x in range(0, 8):
             c.put(x, y, HAZ_K if (x < 4) == (y < 2) else c.get(x, y))
     for x in range(16):
-        c.put(x, 9, RED[1])
-        c.put(x, 10, RED[2])
-    for y, x in ((5, 7), (5, 8), (6, 6), (6, 9), (7, 7), (7, 8)):
-        c.put(x, y, DARK[3])
-    c.put(7, 6, CYAN[1])
-    c.put(8, 6, CYAN[2])
+        if band == "hazard":
+            c.put(x, 9, HAZ_Y if (x // 2) % 2 == 0 else HAZ_K)
+            c.put(x, 10, HAZ_K if (x // 2) % 2 == 0 else HAZ_Y)
+        else:
+            c.put(x, 9, RED[1])
+            c.put(x, 10, RED[2])
+    if band == "hazard":  # a warhead stencil instead of the porthole
+        for y, x in ((5, 7), (5, 8), (6, 7), (6, 8), (7, 6), (7, 9)):
+            c.put(x, y, RED[1])
+    else:
+        for y, x in ((5, 7), (5, 8), (6, 6), (6, 9), (7, 7), (7, 8)):
+            c.put(x, y, DARK[3])
+        c.put(7, 6, CYAN[1])
+        c.put(8, 6, CYAN[2])
     for y in range(16):
-        c.put(15, y, WHITE[3])
+        c.put(15, y, pal[3])
     return c
 
 
@@ -260,13 +271,57 @@ def rocket_nose(pal):
     return c
 
 
-def rocket_fin():
+def rocket_fin(pal=None):
+    pal = pal or RED
     c = Canvas()
     for y in range(16):
         for x in range(16):
-            c.put(x, y, RED[1] if x < 8 else RED[2])
+            c.put(x, y, pal[1] if x < 8 else pal[2])
     for x in range(16):
-        c.put(x, 0, RED[0])
+        c.put(x, 0, pal[0])
+    return c
+
+
+def radar_base():
+    """The radar's plinth: dark steel with a red warning band and a lit status strip."""
+    rng = random.Random(31)
+    c = Canvas()
+    noisy(c, DARK, rng, base=2)
+    c.bevel(0, 0, 15, 15, DARK[0], DARK[4])
+    for x in range(1, 15):
+        c.put(x, 12, RED[2] if (x // 2) % 2 == 0 else HAZ_K)
+        c.put(x, 13, RED[3] if (x // 2) % 2 == 0 else HAZ_K)
+    for x in (3, 5, 7):
+        c.put(x, 3, RED[1])
+    c.put(10, 3, GREEN[1])
+    for x, y in ((2, 7), (12, 7)):
+        rivet(c, x, y, STEEL)
+    return c
+
+
+def radar_array():
+    """Front of the phased-array antenna: a grid of emitter cells between dark ribs."""
+    c = Canvas()
+    for y in range(16):
+        for x in range(16):
+            if x % 4 == 0 or y % 4 == 0:
+                c.put(x, y, DARK[3])
+            else:
+                c.put(x, y, RED[1] if (x % 4, y % 4) == (2, 2) else STEEL[1] if (x + y) % 2 else STEEL[2])
+    for x in range(16):
+        c.put(x, 0, DARK[4])
+        c.put(x, 15, DARK[4])
+    return c
+
+
+def radar_back():
+    rng = random.Random(32)
+    c = Canvas()
+    noisy(c, DARK, rng, base=1)
+    for y in (5, 10):
+        for x in range(16):
+            c.put(x, y, DARK[3])
+    c.bevel(0, 0, 15, 15, DARK[0], DARK[4])
     return c
 
 
@@ -305,7 +360,15 @@ def satellite_item(kind):
     for y in range(4, 13):
         c.put(10, y, GOLD[2])
     c.put(6, 6, GOLD[0])
-    if kind == "survey":
+    if kind == "guardian":
+        # a small gold-rimmed red shield on top
+        for y, row in enumerate(("..GGGG..", ".GRRRRG.", ".GRWRRG.", "..GRRG..", "...GG...")):
+            for i, ch in enumerate(row):
+                if ch != ".":
+                    c.put(4 + i, y, {"G": GOLD[2], "R": RED[1], "W": WHITE[0]}[ch])
+        for x in range(5, 11):  # red trim on the bus
+            c.put(x, 12, RED[2])
+    elif kind == "survey":
         for y, x, col in ((12, 7, DARK[3]), (12, 8, DARK[3]), (13, 7, GREEN[2]), (13, 8, GREEN[1]), (14, 7, DARK[3]), (14, 8, DARK[3])):
             c.put(x, y, col)
         c.put(8, 13, GREEN[0])
@@ -325,6 +388,37 @@ def satellite_item(kind):
         c.put(8, 0, CYAN[1])
         c.put(7, 2, STEEL[3])
         c.put(8, 2, STEEL[3])
+    c.outline()
+    return c
+
+
+def asat_missile():
+    """A slim gunmetal missile flying up and to the right: red warhead, hazard band, dark fins, flame."""
+    c = Canvas()
+    GUN = DARK
+    for i in range(3, 13):  # body along the diagonal, 3 px wide
+        x, y = i, 15 - i
+        c.put(x, y, GUN[1])
+        c.put(x - 1, y, GUN[2])
+        c.put(x, y + 1, GUN[3])
+        c.put(x - 1, y - 1, GUN[0])
+    for i in (7, 8):  # hazard band
+        c.put(i, 15 - i, HAZ_Y)
+        c.put(i - 1, 15 - i, HAZ_K)
+        c.put(i, 16 - i, HAZ_K)
+    for i in range(12, 15):  # warhead
+        c.put(i, 15 - i, RED[1])
+        c.put(i - 1, 15 - i, RED[2])
+        c.put(i, 16 - i, RED[3])
+    c.put(14, 1, RED[0])
+    c.put(15, 0, RED[1])
+    for x, y in ((2, 11), (1, 11), (4, 14), (4, 15), (3, 10), (5, 13)):  # fins
+        c.put(x, y, GUN[3])
+    c.put(1, 14, FLAME[1])
+    c.put(2, 13, FLAME[2])
+    c.put(0, 15, FLAME[0])
+    c.put(1, 15, FLAME[2])
+    c.put(0, 14, FLAME[3])
     c.outline()
     return c
 
@@ -386,10 +480,15 @@ BLOCKS = {
     "ground_station_dish_back": station_dish_back, "ground_station_feed": station_feed,
     "rocket_body": rocket_body, "rocket_nose_survey": lambda: rocket_nose(GREEN),
     "rocket_nose_uplink": lambda: rocket_nose(CYAN), "rocket_fin": rocket_fin, "rocket_engine": rocket_engine,
+    "rocket_nose_guardian": lambda: rocket_nose(GOLD),
+    "rocket_body_asat": lambda: rocket_body(DARK, "hazard"), "rocket_nose_asat": lambda: rocket_nose(RED),
+    "rocket_fin_asat": lambda: rocket_fin(DARK),
+    "orbital_radar_base": radar_base, "orbital_radar_array": radar_array, "orbital_radar_back": radar_back,
 }
 ITEMS = {
     "survey_satellite": lambda: satellite_item("survey"), "uplink_satellite": lambda: satellite_item("uplink"),
     "rocket_fuel": rocket_fuel, "wireless_terminal": wireless_terminal,
+    "guardian_satellite": lambda: satellite_item("guardian"), "asat_missile": asat_missile,
 }
 
 

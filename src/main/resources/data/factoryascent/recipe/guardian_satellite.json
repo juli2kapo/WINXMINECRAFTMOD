@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PSP",
+    "COC",
+    "PAP"
+  ],
+  "key": {
+    "P": "#c:plates/titanium",
+    "S": "minecraft:shield",
+    "C": "factoryascent:solar_panel",
+    "O": "factoryascent:orbital_targeting_core",
+    "A": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:guardian_satellite"
+  }
+}

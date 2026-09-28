@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " O ",
+    "PTP",
+    "PRP"
+  ],
+  "key": {
+    "O": "factoryascent:orbital_targeting_core",
+    "P": "#c:plates/titanium",
+    "T": "minecraft:tnt",
+    "R": "factoryascent:rocket_fuel"
+  },
+  "result": {
+    "id": "factoryascent:asat_missile"
+  }
+}

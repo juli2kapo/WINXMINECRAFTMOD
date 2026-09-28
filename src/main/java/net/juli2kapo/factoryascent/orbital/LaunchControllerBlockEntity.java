@@ -1,6 +1,7 @@
 package net.juli2kapo.factoryascent.orbital;
 
 import java.util.UUID;
+import net.juli2kapo.factoryascent.Config;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -24,16 +25,26 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The Launch Pad's controller: the mounted satellite (and who mounted it), the fuel tank, and the
- * launch sequence.
+ * The Launch Pad's controller: the mounted payload (a satellite or an Anti-Satellite missile) and
+ * who mounted it, the fuel tank, and the launch sequence.
+ *
+ * <p>Hoppers and pipes can feed it through {@link #itemHandler()}: payloads and fuel go in under
+ * the same rules as by hand, and an automated payload counts as mounted by the controller's
+ * {@link #owner} (whoever placed it). Nothing can be pulled out.
  *
  * <p>Launch sequence ({@link #SEQUENCE} ticks): a countdown with smoke and flames at the base,
  * liftoff at {@link #LIFTOFF}, then the rocket climbs ever faster (drawn by the client renderer
  * from the synced start time; the server puts the exhaust trail at the same height). At the end
- * the satellite is added to the launcher's team in {@link OrbitRegistry} and the team is told.
+ * the satellite is added to the launcher's team in {@link OrbitRegistry} and the team is told; a
+ * missile instead strikes its target (see {@link #strike}).
  */
 public class LaunchControllerBlockEntity extends BlockEntity {
     public static final int FUEL_PER_LAUNCH = 4;
@@ -43,8 +54,11 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     /** Rocket height above the pad after liftoff: {@code ACCEL * t²} blocks, t in ticks since liftoff. */
     public static final float ACCEL = 0.075f;
 
+    /** The mounted payload: a {@link SatelliteItem} or an {@link AsatMissileItem}. */
     private ItemStack satellite = ItemStack.EMPTY;
     private @Nullable UUID launcher;
+    /** Who placed the controller: the launcher of payloads that arrive by hopper or pipe. */
+    private @Nullable UUID owner;
     private int fuel;
     /** Ticks into the launch sequence, or -1 when idle. */
     private int launchTick = -1;
@@ -63,6 +77,25 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
     public @Nullable SatelliteType satelliteType() {
         return satellite.getItem() instanceof SatelliteItem item ? item.type() : null;
+    }
+
+    /** An Anti-Satellite missile is mounted. */
+    public boolean hasMissile() {
+        return satellite.getItem() instanceof AsatMissileItem;
+    }
+
+    /** Can this item ride the rocket? */
+    public static boolean isPayload(ItemStack stack) {
+        return stack.getItem() instanceof SatelliteItem || stack.getItem() instanceof AsatMissileItem;
+    }
+
+    public @Nullable UUID owner() {
+        return owner;
+    }
+
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
+        setChanged();
     }
 
     public int fuel() {
@@ -99,13 +132,22 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
     // ---------------------------------------------------------------- actions
 
-    /** Mounts one satellite from the stack; null on success, else why not. The caller shrinks the stack. */
-    public @Nullable Component mount(ItemStack stack, UUID player) {
+    /** Null if a payload could be mounted now, else why not (the rules for hands and hoppers alike). */
+    public @Nullable Component mountProblem() {
         if (launching()) return Component.translatable("message.factoryascent.pad_busy").withStyle(ChatFormatting.RED);
         if (!satellite.isEmpty()) return Component.translatable("message.factoryascent.pad_occupied").withStyle(ChatFormatting.RED);
         if (!isFormed()) return Component.translatable("message.factoryascent.pad_incomplete").withStyle(ChatFormatting.RED);
+        return null;
+    }
+
+    /** Mounts one satellite or missile from the stack; null on success, else why not. The caller shrinks the stack. */
+    public @Nullable Component mount(ItemStack stack, UUID player) {
+        if (!isPayload(stack)) return Component.translatable("message.factoryascent.pad_empty").withStyle(ChatFormatting.RED);
+        Component problem = mountProblem();
+        if (problem != null) return problem;
         satellite = stack.copyWithCount(1);
         launcher = player;
+        if (owner == null) owner = player;
         changed();
         if (level != null) {
             level.playSound(null, worldPosition, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.7f, 0.8f);
@@ -139,6 +181,10 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         if (satellite.isEmpty()) return Component.translatable("message.factoryascent.pad_empty").withStyle(ChatFormatting.RED);
         if (fuel < FUEL_PER_LAUNCH) {
             return Component.translatable("message.factoryascent.pad_no_fuel", fuel, FUEL_PER_LAUNCH).withStyle(ChatFormatting.RED);
+        }
+        if (hasMissile()) {
+            Component problem = missileProblem((ServerLevel) level);
+            if (problem != null) return problem;
         }
         for (int y = 1; y <= 4; y++) {
             if (!level.getBlockState(worldPosition.above(y)).getCollisionShape(level, worldPosition.above(y)).isEmpty()) {
@@ -213,11 +259,41 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         }
     }
 
-    /** The satellite joins the launcher's team's orbit over this dimension. */
+    /**
+     * Null if the mounted missile may fly now, else why not: missiles must be allowed on the
+     * server, programmed by a radar of the launcher's team in this dimension that still holds its
+     * lock, and aimed at a satellite of another team that is still over this dimension.
+     */
+    public @Nullable Component missileProblem(ServerLevel level) {
+        if (!Config.ASAT_ENABLED.get()) return Component.translatable("message.factoryascent.asat_disabled").withStyle(ChatFormatting.RED);
+        AsatMissileItem.Target target = AsatMissileItem.target(satellite);
+        if (target == null) return Component.translatable("message.factoryascent.asat_unprogrammed").withStyle(ChatFormatting.RED);
+        MinecraftServer server = level.getServer();
+        FactoryTeams teams = FactoryTeams.get(server);
+        String team = teams.teamOf(launcher != null ? launcher : new UUID(0, 0));
+        var found = OrbitRegistry.get(server).find(target.satellite());
+        if (found.isEmpty() || !found.get().satellite().dimension().equals(level.dimension())) {
+            return Component.translatable("message.factoryascent.asat_target_gone").withStyle(ChatFormatting.RED);
+        }
+        if (found.get().team().equals(team)) return Component.translatable("message.factoryascent.asat_own_team").withStyle(ChatFormatting.RED);
+        BlockPos radarPos = target.radar().pos();
+        if (!target.radar().dimension().equals(level.dimension()) || !level.isLoaded(radarPos)
+                || !(level.getBlockEntity(radarPos) instanceof OrbitalRadarBlockEntity radar)
+                || !radar.isLocked(target.satellite())) {
+            return Component.translatable("message.factoryascent.asat_no_lock").withStyle(ChatFormatting.RED);
+        }
+        if (radar.owner() == null || !teams.teamOf(radar.owner()).equals(team)) {
+            return Component.translatable("message.factoryascent.asat_foreign_radar").withStyle(ChatFormatting.RED);
+        }
+        return null;
+    }
+
+    /** The payload arrives: a satellite joins the launcher's team's orbit over this dimension, a missile strikes. */
     private void reachOrbit(ServerLevel level) {
         MinecraftServer server = level.getServer();
         SatelliteType type = satelliteType();
         UUID who = launcher != null ? launcher : new UUID(0, 0);
+        if (hasMissile()) strike(level, who);
         if (type != null) {
             FactoryTeams teams = FactoryTeams.get(server);
             String team = teams.teamOf(who);
@@ -237,6 +313,129 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         launchTick = -1;
         launchStart = -1;
         changed();
+    }
+
+    /**
+     * The missile reaches its target. A Guardian Satellite of the target's team over this
+     * dimension intercepts it and is used up; otherwise the target is destroyed. Both teams are told.
+     */
+    private void strike(ServerLevel level, UUID who) {
+        MinecraftServer server = level.getServer();
+        FactoryTeams teams = FactoryTeams.get(server);
+        OrbitRegistry orbit = OrbitRegistry.get(server);
+        String team = teams.teamOf(who);
+        AsatMissileItem.Target target = AsatMissileItem.target(satellite);
+        var found = target == null ? java.util.Optional.<OrbitRegistry.Owned>empty() : orbit.find(target.satellite());
+        if (found.isEmpty() || found.get().team().equals(team) || !found.get().satellite().dimension().equals(level.dimension())) {
+            OrbitalText.tellTeam(server, team, Component.translatable("message.factoryascent.asat_missed").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        String victims = found.get().team();
+        Satellite victim = found.get().satellite();
+        String shooter = teams.displayName(team), shooterPlayer = teams.playerName(who);
+        var guardian = orbit.first(victims, level.dimension(), SatelliteType.DEFENSE);
+        if (guardian.isPresent()) {
+            orbit.remove(guardian.get().id());
+            OrbitalText.tellTeam(server, victims, Component.translatable("message.factoryascent.asat_intercepted_owner",
+                    guardian.get().name(), shooter, victim.name()).withStyle(ChatFormatting.GOLD));
+            OrbitalText.tellTeam(server, team, Component.translatable("message.factoryascent.asat_intercepted_shooter",
+                    victim.name(), teams.displayName(victims)).withStyle(ChatFormatting.YELLOW));
+            return;
+        }
+        orbit.remove(victim.id());
+        OrbitalText.tellTeam(server, victims, Component.translatable("message.factoryascent.asat_destroyed_owner",
+                victim.type().displayName(), victim.name(), shooter, shooterPlayer).withStyle(ChatFormatting.RED));
+        OrbitalText.tellTeam(server, team, Component.translatable("message.factoryascent.asat_destroyed_shooter",
+                victim.type().displayName(), victim.name(), teams.displayName(victims)).withStyle(ChatFormatting.GREEN));
+        OrbitalContent.award(server, teams.members(team), "orbital_shootdown");
+    }
+
+    // ---------------------------------------------------------------- automation
+
+    private final Journal journal = new Journal();
+    private final PadItems items = new PadItems();
+
+    /** What hoppers and pipes see (any side). */
+    public ResourceHandler<ItemResource> itemHandler() {
+        return items;
+    }
+
+    private record Snapshot(ItemStack satellite, @Nullable UUID launcher, int fuel) {}
+
+    private final class Journal extends SnapshotJournal<Snapshot> {
+        @Override
+        protected Snapshot createSnapshot() {
+            return new Snapshot(satellite, launcher, fuel);
+        }
+
+        @Override
+        protected void revertToSnapshot(Snapshot snapshot) {
+            satellite = snapshot.satellite();
+            launcher = snapshot.launcher();
+            fuel = snapshot.fuel();
+        }
+
+        @Override
+        protected void onRootCommit(Snapshot originalState) {
+            changed();
+        }
+    }
+
+    /**
+     * Insert-only view for automation. Slot 0 is the payload (one satellite or missile, only while
+     * the pad could take one by hand, and only once the controller has an owner); slot 1 is the fuel
+     * tank, which takes Blaze Powder or Rocket Fuel while whole items fit.
+     */
+    private final class PadItems implements ResourceHandler<ItemResource> {
+        @Override
+        public int size() {
+            return 2;
+        }
+
+        @Override
+        public ItemResource getResource(int index) {
+            return index == 0 ? ItemResource.of(satellite) : ItemResource.EMPTY;
+        }
+
+        @Override
+        public long getAmountAsLong(int index) {
+            return index == 0 ? satellite.getCount() : 0;
+        }
+
+        @Override
+        public long getCapacityAsLong(int index, ItemResource resource) {
+            return index == 0 ? 1 : FUEL_MAX;
+        }
+
+        @Override
+        public boolean isValid(int index, ItemResource resource) {
+            ItemStack stack = resource.toStack(1);
+            return index == 0 ? isPayload(stack) : fuelValue(stack) > 0;
+        }
+
+        @Override
+        public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
+            TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+            if (amount == 0 || !isValid(index, resource)) return 0;
+            if (index == 0) {
+                if (owner == null || mountProblem() != null) return 0;
+                journal.updateSnapshots(tx);
+                satellite = resource.toStack(1);
+                launcher = owner;
+                return 1;
+            }
+            int units = fuelValue(resource.toStack(1));
+            int fits = Math.min(amount, (FUEL_MAX - fuel) / units);
+            if (fits <= 0) return 0;
+            journal.updateSnapshots(tx);
+            fuel += fits * units;
+            return fits;
+        }
+
+        @Override
+        public int extract(int index, ItemResource resource, int amount, TransactionContext tx) {
+            return 0;
+        }
     }
 
     // ---------------------------------------------------------------- save / sync
@@ -269,6 +468,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         super.loadAdditional(input);
         satellite = input.read("satellite", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
         launcher = input.read("launcher", UUIDUtil.CODEC).orElse(null);
+        owner = input.read("owner", UUIDUtil.CODEC).orElse(null);
         fuel = input.getIntOr("fuel", 0);
         launchTick = input.getIntOr("launch_tick", -1);
         launchStart = input.getLongOr("launch_start", -1L);
@@ -279,6 +479,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         super.saveAdditional(output);
         if (!satellite.isEmpty()) output.store("satellite", ItemStack.OPTIONAL_CODEC, satellite);
         if (launcher != null) output.store("launcher", UUIDUtil.CODEC, launcher);
+        if (owner != null) output.store("owner", UUIDUtil.CODEC, owner);
         output.putInt("fuel", fuel);
         output.putInt("launch_tick", launchTick);
         output.putLong("launch_start", launchStart);

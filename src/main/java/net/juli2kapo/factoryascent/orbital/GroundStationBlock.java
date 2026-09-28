@@ -29,7 +29,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Ground Station: a satellite dish. Right-click lists your team's satellites over this dimension.
  * With a Survey Satellite up there, right-click with an empty map to get a map of the area around
- * the station, filled in from orbit (see {@link SurveyMapper}).
+ * the station, filled in from orbit (see {@link SurveyMapper}). Sneak-use with an empty hand opens
+ * the Team screen ({@link OrbitalConsole}): team management and deorbiting.
  */
 public class GroundStationBlock extends BaseEntityBlock implements DescribedBlock {
     public static final MapCodec<GroundStationBlock> CODEC = simpleCodec(GroundStationBlock::new);
@@ -58,6 +59,7 @@ public class GroundStationBlock extends BaseEntityBlock implements DescribedBloc
     public void describe(Consumer<Component> tooltip) {
         tooltip.accept(Component.translatable("tooltip.factoryascent.ground_station").withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.ground_station_map").withStyle(ChatFormatting.DARK_GREEN));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.ground_station_console").withStyle(ChatFormatting.DARK_AQUA));
     }
 
     @Override
@@ -89,6 +91,10 @@ public class GroundStationBlock extends BaseEntityBlock implements DescribedBloc
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level instanceof ServerLevel server && player instanceof ServerPlayer sp) {
+            if (sp.isShiftKeyDown()) {
+                OrbitalConsole.open(sp);
+                return InteractionResult.SUCCESS;
+            }
             FactoryTeams teams = FactoryTeams.get(server.getServer());
             teams.remember(sp);
             String team = teams.teamOf(sp.getUUID());
@@ -98,9 +104,8 @@ public class GroundStationBlock extends BaseEntityBlock implements DescribedBloc
             if (sats.isEmpty()) {
                 sp.sendSystemMessage(Component.translatable("message.factoryascent.station_empty").withStyle(ChatFormatting.GRAY));
             }
-            long now = server.getServer().overworld().getGameTime();
             for (Satellite s : sats) {
-                long days = Math.max(0, now - s.launchTime()) / 24000L;
+                long days = OrbitalText.daysInOrbit(server.getServer(), s);
                 sp.sendSystemMessage(OrbitalText.satelliteLine(s).append(
                         Component.translatable("message.factoryascent.station_age", days).withStyle(ChatFormatting.DARK_GRAY)));
             }
@@ -109,6 +114,7 @@ public class GroundStationBlock extends BaseEntityBlock implements DescribedBloc
                     .withStyle(signal ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
             sp.sendSystemMessage(Component.translatable(survey ? "message.factoryascent.station_survey_on" : "message.factoryascent.station_survey_off")
                     .withStyle(survey ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+            sp.sendSystemMessage(Component.translatable("message.factoryascent.station_console_hint").withStyle(ChatFormatting.DARK_GRAY));
         }
         return InteractionResult.SUCCESS;
     }

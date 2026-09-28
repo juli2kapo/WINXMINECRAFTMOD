@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:orbital_radar_lock",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:asat_missile"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_shootdown.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_shootdown.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

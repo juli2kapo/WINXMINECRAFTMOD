@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,10 +33,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The centre of the 3×3 Launch Pad: holds the rocket, its satellite and its fuel. Right-click
- * with a satellite to mount it, with Blaze Powder or Rocket Fuel to fuel it; launch with a
- * redstone pulse or by sneak-using flint and steel. Sneak with an empty hand to take the
- * satellite back off.
+ * The centre of the 3×3 Launch Pad: holds the rocket, its payload and its fuel. Right-click
+ * with a satellite or an Anti-Satellite missile to mount it, with Blaze Powder or Rocket Fuel to
+ * fuel it (hoppers and pipes can do both); launch with a redstone pulse or by sneak-using flint
+ * and steel. Sneak with an empty hand to take the payload back off.
  */
 public class LaunchControllerBlock extends BaseEntityBlock implements DescribedBlock {
     public static final MapCodec<LaunchControllerBlock> CODEC = simpleCodec(LaunchControllerBlock::new);
@@ -72,6 +73,16 @@ public class LaunchControllerBlock extends BaseEntityBlock implements DescribedB
         tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_how",
                 LaunchControllerBlockEntity.FUEL_PER_LAUNCH).withStyle(ChatFormatting.DARK_AQUA));
         tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_multiblock").withStyle(ChatFormatting.GOLD));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_automation").withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    /** The placer owns the controller: payloads fed in by hoppers or pipes launch for their team. */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof LaunchControllerBlockEntity controller) {
+            controller.setOwner(player.getUUID());
+        }
     }
 
     @Override
@@ -91,7 +102,7 @@ public class LaunchControllerBlock extends BaseEntityBlock implements DescribedB
     static InteractionResult interact(LaunchControllerBlockEntity controller, ItemStack stack, Level level, Player player,
                                       InteractionHand hand) {
         boolean creative = player.getAbilities().instabuild;
-        if (stack.getItem() instanceof SatelliteItem) {
+        if (LaunchControllerBlockEntity.isPayload(stack)) {
             if (!level.isClientSide()) {
                 Component problem = controller.mount(stack, player.getUUID());
                 if (problem == null) {
