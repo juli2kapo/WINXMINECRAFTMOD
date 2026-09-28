@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:sieve"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:sieve"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.stone_sieve.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.stone_sieve.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:stone_quern"
+}

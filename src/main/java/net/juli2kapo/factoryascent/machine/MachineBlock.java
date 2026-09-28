@@ -35,6 +35,11 @@ public class MachineBlock extends BaseEntityBlock {
 
     private static final VoxelShape SOLAR_SHAPE = Block.box(0, 0, 0, 16, 6, 16);
     private static final VoxelShape QUERN_SHAPE = Shapes.or(Block.box(1, 0, 1, 15, 6, 15), Block.box(3, 6, 3, 13, 11, 13));
+    private static final VoxelShape SIEVE_SHAPE = Block.box(0, 0, 0, 16, 12, 16);
+    private static final VoxelShape RACK_SHAPE = Block.box(1, 0, 1, 15, 15, 15);
+    private static final VoxelShape FLOODLIGHT_SHAPE = Shapes.or(Block.box(2, 0, 2, 14, 3, 14), Block.box(3, 3, 3, 13, 14, 13));
+    private static final VoxelShape CHARGER_SHAPE = Block.box(1, 0, 1, 15, 10, 15);
+    private static final VoxelShape VACUUM_SHAPE = Shapes.or(Block.box(0, 4, 0, 16, 16, 16), Block.box(4, 0, 4, 12, 4, 12));
 
     private final MachineType type;
     private final MapCodec<MachineBlock> codec;
@@ -81,6 +86,11 @@ public class MachineBlock extends BaseEntityBlock {
         return switch (type) {
             case SOLAR_PANEL -> SOLAR_SHAPE;
             case QUERN -> QUERN_SHAPE;
+            case SIEVE -> SIEVE_SHAPE;
+            case DRYING_RACK -> RACK_SHAPE;
+            case FLOODLIGHT -> FLOODLIGHT_SHAPE;
+            case CHARGER -> CHARGER_SHAPE;
+            case VACUUM_HOPPER -> VACUUM_SHAPE;
             default -> Shapes.block();
         };
     }
@@ -105,7 +115,7 @@ public class MachineBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (type == MachineType.QUERN && player.isShiftKeyDown()) {
+        if (type.power() == MachineType.Power.MANUAL && player.isShiftKeyDown()) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ProcessingMachineBlockEntity quern) {
                 quern.crank(player);
             }

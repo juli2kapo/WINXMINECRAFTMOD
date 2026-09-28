@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:water_wheel"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:water_wheel"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.stone_water_wheel.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.stone_water_wheel.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:stone_quern"
+}

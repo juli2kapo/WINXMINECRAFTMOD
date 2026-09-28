@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:night_vision_goggles"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:night_vision_goggles"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_goggles.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_goggles.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_charger"
+}

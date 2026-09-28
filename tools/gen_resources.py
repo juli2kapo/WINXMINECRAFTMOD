@@ -33,6 +33,19 @@ MACHINES = {
     "brick_kiln": ("stone", True, True,
                    "Fuel-fired kiln that alloys copper and tin into bronze.",
                    "Horno de ladrillo a combustible que alea cobre y estaño en bronce."),
+    # early and mid-game additions (models, recipes and lang in tools/features/early.py)
+    "sieve": ("stone", False, True,
+              "Sifts gravel, sand, dirt and soul sand for flint, clay, seeds and nuggets. Sneak + right-click or use the Crank button; a Water Wheel or Windmill can turn it for you.",
+              "Criba grava, arena, tierra y arena de almas en busca de pedernal, arcilla, semillas y pepitas. Agáchate + clic derecho o usa el botón Girar; una rueda hidráulica o un molino de viento pueden girarla por ti."),
+    "drying_rack": ("stone", True, True,
+                    "Air-dries what hangs on it: rotten flesh into leather, kelp, wet sponges. Needs no fuel, only time.",
+                    "Seca al aire lo que cuelga de él: carne podrida en cuero, algas, esponjas mojadas. No usa combustible, solo tiempo."),
+    "water_wheel": ("stone", True, True,
+                    "Turns in water (flowing water turns it fastest) and cranks the Quern or Sieve next to it for you.",
+                    "Gira con el agua (la corriente la mueve más rápido) y hace girar el molino de mano o la criba de al lado por ti."),
+    "windmill": ("stone", True, True,
+                 "Turns in the wind, faster the higher it stands and in storms, and cranks the Quern or Sieve next to it. Its sails need open air in front.",
+                 "Gira con el viento, más rápido cuanto más alto esté y con tormenta, y hace girar el molino de mano o la criba de al lado. Sus aspas necesitan aire libre delante."),
     "burner_crusher": ("bronze", True, True,
                        "Fuel-powered crusher: 2 dust per raw ore.",
                        "Trituradora a combustible: 2 polvos por mineral en bruto."),
@@ -72,6 +85,12 @@ MACHINES = {
     "energy_cell": ("electric", True, False,
                     "Stores energy. Charges items in its slot.",
                     "Almacena energía. Carga objetos en su ranura."),
+    "charger": ("electric", True, True,
+                "Charges any FE item (drill, rays, magnet, goggles, jetpacks…) fast and hands it out when full, so pipes can run it.",
+                "Carga rápido cualquier objeto con FE (taladro, rayos, imán, gafas, mochilas cohete…) y lo entrega lleno, así las tuberías pueden automatizarlo."),
+    "floodlight": ("electric", True, True,
+                   "Throws bright light up to 28 blocks where it points. Uses a trickle of power.",
+                   "Proyecta luz intensa hasta 28 bloques hacia donde apunta. Consume muy poca energía."),
     "miner": ("automation", False, True,
               "Claims its own chunk in The Deep, a sealed mining dimension, and digs out its ore.",
               "Reclama su propio chunk en Las Profundidades, una dimensión minera sellada, y extrae sus menas."),
@@ -82,6 +101,18 @@ MACHINES = {
     "ore_washer": ("automation", True, True,
                    "Washes raw ore into 3 dust (4 from ore blocks), with a better byproduct chance.",
                    "Lava el mineral en bruto en 3 polvos (4 de bloques de mena), con más probabilidad de subproducto."),
+    "block_breaker": ("automation", True, True,
+                      "Breaks the block in front of it and keeps the drops. A tool in its slot lends it its enchantments.",
+                      "Rompe el bloque que tiene delante y guarda lo que suelta. Una herramienta en su ranura le presta sus encantamientos."),
+    "block_placer": ("automation", True, True,
+                     "Places blocks from its inventory in the space in front of it.",
+                     "Coloca bloques de su inventario en el espacio que tiene delante."),
+    "vacuum_hopper": ("automation", False, True,
+                      "Pulls dropped items within 6 blocks into its inventory, then pushes them into a chest or pipe touching it.",
+                      "Aspira los objetos tirados a 6 bloques a su inventario y los pasa a un cofre o tubería que lo toque."),
+    "tree_farm": ("automation", True, True,
+                  "Plants saplings in a 7×7 field in front of it and fells the trees that grow. Bone meal speeds them up.",
+                  "Planta brotes en un campo de 7×7 frente a él y tala los árboles que crecen. El polvo de hueso los acelera."),
     "induction_smelter": ("industrial", True, True,
                           "Induction heating: the only smelter hot enough for titanium. Also smelts anything a furnace can, very fast.",
                           "Calentamiento por inducción: el único horno capaz de fundir titanio. También funde todo lo de un horno, muy rápido."),
@@ -89,6 +120,15 @@ MACHINES = {
                         "Presses titanium into plates and gears. The mould decides what it makes.",
                         "Prensa titanio en placas y engranajes. El molde decide qué fabrica."),
     "industrial_energy_cell": ("industrial", True, False, "Stores 16× more energy.", "Almacena 16 veces más energía."),
+    "industrial_grinder": ("industrial", True, True,
+                           "4 dust per raw ore (5 per ore block) with two byproduct chances. Runs every crushing recipe, fast.",
+                           "4 polvos por mineral en bruto (5 por bloque de mena) con dos probabilidades de subproducto. Hace todo lo de una trituradora, rápido."),
+    "recycler": ("industrial", True, True,
+                 "Turns junk (cobblestone, dirt, rotten flesh…) into scrap, and worn-out iron, gold, diamond and bronze gear back into materials.",
+                 "Convierte basura (piedra, tierra, carne podrida…) en chatarra, y el equipo gastado de hierro, oro, diamante y bronce otra vez en materiales."),
+    "mob_farm": ("industrial", True, True,
+                 "Put a filled Mob Capsule in: it produces that mob's drops with power, without the mob. Bosses are refused.",
+                 "Pon una cápsula de criaturas llena: produce lo que suelta esa criatura usando energía, sin la criatura. Rechaza jefes."),
     "precision_assembler": ("orbital", True, True,
                             "Clean-room assembler for spacecraft parts such as the Orbital Targeting Core.",
                             "Ensambladora de sala limpia para piezas espaciales como el núcleo de puntería orbital."),
@@ -107,6 +147,10 @@ MACHINE_EN = {
     "ore_washer": "Ore Washer", "induction_smelter": "Induction Smelter", "hydraulic_press": "Hydraulic Press",
     "precision_assembler": "Precision Assembler", "plasma_forge": "Plasma Forge",
     "quantum_energy_cell": "Quantum Energy Cell",
+    "sieve": "Sieve", "drying_rack": "Drying Rack", "water_wheel": "Water Wheel", "windmill": "Windmill",
+    "charger": "Charger", "floodlight": "Floodlight", "block_breaker": "Block Breaker", "block_placer": "Block Placer",
+    "vacuum_hopper": "Vacuum Hopper", "tree_farm": "Tree Farm", "industrial_grinder": "Industrial Grinder",
+    "recycler": "Recycler", "mob_farm": "Mob Farm Controller",
 }
 MACHINE_ES = {
     "quern": "Molino de mano", "brick_kiln": "Horno de ladrillo", "burner_crusher": "Trituradora a combustión",
@@ -119,6 +163,10 @@ MACHINE_ES = {
     "ore_washer": "Lavadora de mineral", "induction_smelter": "Fundidora de inducción", "hydraulic_press": "Prensa hidráulica",
     "precision_assembler": "Ensambladora de precisión", "plasma_forge": "Forja de plasma",
     "quantum_energy_cell": "Celda de energía cuántica",
+    "sieve": "Criba", "drying_rack": "Secadero", "water_wheel": "Rueda hidráulica", "windmill": "Molino de viento",
+    "charger": "Cargador", "floodlight": "Reflector", "block_breaker": "Rompedor de bloques", "block_placer": "Colocador de bloques",
+    "vacuum_hopper": "Tolva aspiradora", "tree_farm": "Granja de árboles", "industrial_grinder": "Moledora industrial",
+    "recycler": "Recicladora", "mob_farm": "Controlador de granja de criaturas",
 }
 
 CABLES = {"lv": "copper_cable", "mv": "aluminum_cable", "hv": "titanium_cable", "ev": "superconductor_cable"}
@@ -583,11 +631,11 @@ def tag(namespace, kind, path, values):
           {"replace": False, "values": [v if v.startswith("#") else ns(v) for v in values]})
 
 
-def tags(extra_pickaxe):
-    pickaxe = (list(MACHINES) + list(CABLES.values()) + list(PIPES.values()) + ["coke_oven_bricks", "fire_bricks", "bronze_crate"]
+def tags(extra_pickaxe, extra_axe=()):
+    pickaxe = ([m for m in MACHINES if m not in extra_axe] + list(CABLES.values()) + list(PIPES.values()) + ["coke_oven_bricks", "fire_bricks", "bronze_crate"]
                + list(ORES) + [f"{m}_block" for m in STORAGE_METALS] + extra_pickaxe)
     tag("minecraft", "block", "mineable/pickaxe", pickaxe)
-    tag("minecraft", "block", "mineable/axe", ["wooden_crate"])
+    tag("minecraft", "block", "mineable/axe", ["wooden_crate"] + list(extra_axe))
     tag("minecraft", "block", "needs_stone_tool", [o for o, v in ORES.items() if v[1] == "stone"] + [f"{m}_block" for m in STORAGE_METALS])
     tag("minecraft", "block", "needs_iron_tool", [o for o, v in ORES.items() if v[1] == "iron"])
     by_metal = {}
@@ -1098,7 +1146,7 @@ def main():
     cables_and_pipes()
     simple_blocks()
     items()
-    extra_en, extra_es, extra_pickaxe = {}, {}, []
+    extra_en, extra_es, extra_pickaxe, extra_axe = {}, {}, [], []
     if storage:
         storage.generate(write, ASSETS, DATA, MOD)
         extra_en, extra_es = storage.lang()
@@ -1110,11 +1158,12 @@ def main():
     for feature in features:
         feature.generate(ctx)
         extra_pickaxe += list(getattr(feature, "PICKAXE_BLOCKS", []))
+        extra_axe += list(getattr(feature, "AXE_BLOCKS", []))
     extra_en.update(ctx.en)
     extra_es.update(ctx.es)
     lang(extra_en, extra_es, ADV)
     loot()
-    tags(extra_pickaxe)
+    tags(extra_pickaxe, extra_axe)
     worldgen()
     count = sum(1 for _ in ROOT.rglob("*.json"))
     print(f"wrote resources, {count} json files under {ROOT} (storage module: {'yes' if storage else 'no'}, "

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "GLG",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "#c:glass_blocks/colorless",
+    "L": "minecraft:glowstone",
+    "W": "#c:wires/copper"
+  },
+  "result": {
+    "id": "factoryascent:floodlight"
+  }
+}

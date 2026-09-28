@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "T T",
+    "S S"
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "T": "minecraft:string"
+  },
+  "result": {
+    "id": "factoryascent:drying_rack"
+  }
+}

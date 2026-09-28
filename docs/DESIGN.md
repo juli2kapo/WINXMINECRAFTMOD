@@ -44,7 +44,7 @@ automation of chores.
 | Bronze | Burner Crusher | 2 |
 | Electric | Crusher | 2 + byproduct |
 | Automation | Ore Washer (needs an adjacent water source) | 3 |
-| Industrial | Industrial Refinery (multiblock) | 4 |
+| Industrial | Industrial Grinder | 4 + two byproducts (5 from ore blocks) |
 
 ### Roster by age
 

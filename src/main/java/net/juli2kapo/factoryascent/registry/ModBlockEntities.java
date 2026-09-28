@@ -41,6 +41,14 @@ public final class ModBlockEntities {
                         case ENERGY_CELL, ADVANCED_ENERGY_CELL, INDUSTRIAL_ENERGY_CELL, QUANTUM_ENERGY_CELL ->
                                 new EnergyCellBlockEntity(type, pos, state);
                         case AUTO_FARMER -> new AutoFarmerBlockEntity(pos, state);
+                        case WATER_WHEEL, WINDMILL -> new net.juli2kapo.factoryascent.kinetic.KineticBlockEntity(type, pos, state);
+                        case CHARGER -> new net.juli2kapo.factoryascent.automation.ChargerBlockEntity(pos, state);
+                        case FLOODLIGHT -> new net.juli2kapo.factoryascent.automation.FloodlightBlockEntity(pos, state);
+                        case BLOCK_BREAKER -> new net.juli2kapo.factoryascent.automation.BlockBreakerBlockEntity(pos, state);
+                        case BLOCK_PLACER -> new net.juli2kapo.factoryascent.automation.BlockPlacerBlockEntity(pos, state);
+                        case VACUUM_HOPPER -> new net.juli2kapo.factoryascent.automation.VacuumHopperBlockEntity(pos, state);
+                        case TREE_FARM -> new net.juli2kapo.factoryascent.automation.TreeFarmBlockEntity(pos, state);
+                        case MOB_FARM -> new net.juli2kapo.factoryascent.automation.MobFarmBlockEntity(pos, state);
                         default -> new ProcessingMachineBlockEntity(type, pos, state);
                     },
                     ModBlocks.machine(type).get())));

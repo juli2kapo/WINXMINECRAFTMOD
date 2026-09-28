@@ -1,0 +1,33 @@
+{
+  "type": "factoryascent:sifting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:soul_sand",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:quartz"
+  },
+  "time": 60,
+  "byproduct": {
+    "item": {
+      "id": "minecraft:gold_nugget"
+    },
+    "chance": 0.2
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "minecraft:nether_wart"
+      },
+      "chance": 0.06
+    },
+    {
+      "item": {
+        "id": "minecraft:ghast_tear"
+      },
+      "chance": 0.02
+    }
+  ]
+}

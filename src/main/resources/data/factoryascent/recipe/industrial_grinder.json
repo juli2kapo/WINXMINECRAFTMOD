@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TCT",
+    "GXG",
+    "TFT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "C": "factoryascent:advanced_circuit",
+    "G": "#c:gears/titanium",
+    "X": "factoryascent:crusher",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:industrial_grinder"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "WMW",
+    "PRP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "factoryascent:basic_circuit",
+    "W": "#c:wires/copper",
+    "M": "factoryascent:machine_frame",
+    "R": "minecraft:redstone_block"
+  },
+  "result": {
+    "id": "factoryascent:charger"
+  }
+}

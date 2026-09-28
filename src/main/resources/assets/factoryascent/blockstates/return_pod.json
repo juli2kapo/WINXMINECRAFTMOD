@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "factoryascent:block/return_pod"
+    },
+    "facing=west": {
+      "model": "factoryascent:block/return_pod",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "factoryascent:block/return_pod",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "factoryascent:block/return_pod",
+      "y": 270
+    }
+  }
+}

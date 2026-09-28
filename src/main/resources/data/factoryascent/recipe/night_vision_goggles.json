@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "LCL",
+    "GTG"
+  ],
+  "key": {
+    "L": "minecraft:leather",
+    "C": "factoryascent:basic_circuit",
+    "G": "minecraft:glass_pane",
+    "T": "minecraft:golden_carrot"
+  },
+  "result": {
+    "id": "factoryascent:night_vision_goggles"
+  }
+}

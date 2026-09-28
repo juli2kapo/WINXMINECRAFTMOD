@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PCP",
+    "PEP",
+    "M M"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "factoryascent:basic_circuit",
+    "E": "factoryascent:energy_cell",
+    "M": "factoryascent:motor"
+  },
+  "result": {
+    "id": "factoryascent:electric_jetpack"
+  }
+}

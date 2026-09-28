@@ -109,6 +109,8 @@ public final class OrbitalContentClient {
         /** The satellite inside the fairing, or null for the anti-satellite missile. */
         @Nullable StandaloneModelKey<BlockStateModelPart> payload;
         boolean missile;
+        /** [space hook] A Crew Capsule instead of the fairing. */
+        boolean crew;
         /** Blocks above the pad. */
         float height;
         /** Pre-launch rumble offset. */
@@ -146,7 +148,8 @@ public final class OrbitalContentClient {
             BlockEntityRenderer.super.extractRenderState(pad, state, partialTicks, camera, breakProgress);
             SatelliteType type = pad.satelliteType();
             state.missile = pad.hasMissile();
-            state.present = state.missile || type != null;
+            state.crew = net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(pad.satellite()); // [space hook]
+            state.present = state.missile || type != null || state.crew;
             state.payload = type == null ? null : switch (type) {
                 case SURVEY -> PAYLOAD_SURVEY;
                 case UPLINK -> PAYLOAD_UPLINK;
@@ -209,6 +212,9 @@ public final class OrbitalContentClient {
                 part(pose, collector, LV_KILL_VEHICLE, KV_BASE, light);
             } else {
                 part(pose, collector, LV_ADAPTER, ADAPTER_BASE, light);
+                if (state.crew) { // [space hook] the crew capsule sits where the fairing would
+                    net.juli2kapo.factoryascent.space.client.SpaceClient.submitCapsule(pose, collector, light);
+                } else {
                 if (state.payload != null) {
                     BlockStateModelPart sat = Minecraft.getInstance().getModelManager().getStandaloneModel(state.payload);
                     if (sat != null) {
@@ -236,6 +242,7 @@ public final class OrbitalContentClient {
                                 light, OverlayTexture.NO_OVERLAY, 0);
                     }
                     pose.popPose();
+                }
                 }
             }
             if (state.plume > 0) {

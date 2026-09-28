@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:item_magnet"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:item_magnet"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_magnet.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_magnet.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_charger"
+}

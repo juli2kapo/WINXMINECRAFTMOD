@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:drying_rack"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:drying_rack"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.stone_drying_rack.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.stone_drying_rack.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:stone_hammer"
+}

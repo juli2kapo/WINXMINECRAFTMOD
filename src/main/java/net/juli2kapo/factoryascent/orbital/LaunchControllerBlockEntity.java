@@ -88,7 +88,30 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
     /** Can this item ride the rocket? */
     public static boolean isPayload(ItemStack stack) {
-        return stack.getItem() instanceof SatelliteItem || stack.getItem() instanceof AsatMissileItem;
+        return stack.getItem() instanceof SatelliteItem || stack.getItem() instanceof AsatMissileItem
+                || net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(stack); // [space hook] crew capsules ride too
+    }
+
+    /** [space hook] Fuel units the mounted payload needs (a crew capsule may need more). */
+    public int fuelCost() {
+        return net.juli2kapo.factoryascent.space.CrewLaunch.fuelCost(satellite, FUEL_PER_LAUNCH);
+    }
+
+    /** [space hook] Length of this launch's sequence (crewed launches climb longer). */
+    public int sequence() {
+        return net.juli2kapo.factoryascent.space.CrewLaunch.sequence(satellite, SEQUENCE);
+    }
+
+    /**
+     * [space hook] Scrubs a launch still in its countdown (the crew climbed out): the rocket stays
+     * on the pad with its payload and the fuel goes back into the tank.
+     */
+    public void abortLaunch() {
+        if (!launching() || launchTick >= LIFTOFF) return;
+        fuel = Math.min(FUEL_MAX, fuel + fuelCost());
+        launchTick = -1;
+        launchStart = -1;
+        changed();
     }
 
     public @Nullable UUID owner() {
@@ -178,7 +201,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         if (launching()) return STATUS_LAUNCHING;
         if (!isFormed()) return STATUS_INCOMPLETE;
         if (satellite.isEmpty()) return STATUS_NO_PAYLOAD;
-        if (fuel < FUEL_PER_LAUNCH) return STATUS_NO_FUEL;
+        if (fuel < fuelCost()) return STATUS_NO_FUEL;
         if (pathBlocked()) return STATUS_BLOCKED;
         if (hasMissile() && level instanceof ServerLevel server && missileProblem(server) != null) return STATUS_MISSILE;
         return STATUS_READY;
@@ -227,15 +250,17 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         if (launching()) return Component.translatable("message.factoryascent.pad_busy").withStyle(ChatFormatting.RED);
         if (!isFormed()) return Component.translatable("message.factoryascent.pad_incomplete").withStyle(ChatFormatting.RED);
         if (satellite.isEmpty()) return Component.translatable("message.factoryascent.pad_empty").withStyle(ChatFormatting.RED);
-        if (fuel < FUEL_PER_LAUNCH) {
-            return Component.translatable("message.factoryascent.pad_no_fuel", fuel, FUEL_PER_LAUNCH).withStyle(ChatFormatting.RED);
+        if (fuel < fuelCost()) {
+            return Component.translatable("message.factoryascent.pad_no_fuel", fuel, fuelCost()).withStyle(ChatFormatting.RED);
         }
         if (hasMissile()) {
             Component problem = missileProblem((ServerLevel) level);
             if (problem != null) return problem;
         }
         if (pathBlocked()) return Component.translatable("message.factoryascent.pad_blocked").withStyle(ChatFormatting.RED);
-        fuel -= FUEL_PER_LAUNCH;
+        Component crew = net.juli2kapo.factoryascent.space.CrewLaunch.launchProblem(this); // [space hook] capsules need a crew
+        if (crew != null) return crew;
+        fuel -= fuelCost();
         launchTick = 0;
         launchStart = level.getGameTime();
         changed();
@@ -294,7 +319,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
             level.sendParticles(ParticleTypes.LARGE_SMOKE, true, false, x, y + 0.3, z, 60, 1.5, 0.2, 1.5, 0.06);
             level.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, true, false, x, y + 0.3, z, 20, 1.2, 0.2, 1.2, 0.02);
             level.sendParticles(ParticleTypes.FLAME, true, false, x, y, z, 40, 0.6, 0.1, 0.6, 0.12);
-        } else if (t < SEQUENCE) {
+        } else if (t < sequence()) {
             // Exhaust trail at the rocket's current height (same curve the renderer draws).
             float dt = t - LIFTOFF;
             double h = y + ACCEL * dt * dt;
@@ -343,6 +368,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         SatelliteType type = satelliteType();
         UUID who = launcher != null ? launcher : new UUID(0, 0);
         if (hasMissile()) strike(level, who);
+        if (net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(satellite)) net.juli2kapo.factoryascent.space.CrewLaunch.arrive(level, this); // [space hook]
         if (type != null) {
             FactoryTeams teams = FactoryTeams.get(server);
             String team = teams.teamOf(who);
@@ -510,6 +536,9 @@ public class LaunchControllerBlockEntity extends BlockEntity {
      */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide() && net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(satellite)) {
+            net.juli2kapo.factoryascent.space.CrewLaunch.abort(level, pos); // [space hook] crew out, gently
+        }
         if (level != null && !satellite.isEmpty()) Block.popResource(level, pos, satellite.copy());
         satellite = ItemStack.EMPTY;
         if (level instanceof ServerLevel server) SurveySites.get(server.getServer()).remove(server.dimension(), pos);

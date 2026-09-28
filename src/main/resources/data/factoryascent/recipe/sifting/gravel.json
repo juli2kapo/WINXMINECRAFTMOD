@@ -1,0 +1,33 @@
+{
+  "type": "factoryascent:sifting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:gravel",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:flint"
+  },
+  "time": 60,
+  "byproduct": {
+    "item": {
+      "id": "minecraft:iron_nugget"
+    },
+    "chance": 0.3
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "minecraft:copper_nugget"
+      },
+      "chance": 0.25
+    },
+    {
+      "item": {
+        "id": "factoryascent:tin_nugget"
+      },
+      "chance": 0.25
+    }
+  ]
+}

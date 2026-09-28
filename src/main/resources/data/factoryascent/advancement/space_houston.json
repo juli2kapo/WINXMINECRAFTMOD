@@ -1,0 +1,26 @@
+{
+  "parent": "factoryascent:space_orbit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:astronaut_helmet"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.space_houston.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.space_houston.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

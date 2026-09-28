@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:jet_suit"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:jet_suit"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.space_jet_suit.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.space_jet_suit.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:space_suit"
+}

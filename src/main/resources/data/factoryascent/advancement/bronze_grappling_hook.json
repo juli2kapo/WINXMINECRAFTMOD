@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:grappling_hook"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:grappling_hook"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_grappling_hook.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_grappling_hook.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_bronze"
+}

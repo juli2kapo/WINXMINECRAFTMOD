@@ -80,6 +80,18 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<RecipeHolder<Ma
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(
                         Component.translatable("gui.factoryascent.jei_chance", Math.round(chance.chance() * 100))
                                 .withStyle(ChatFormatting.GOLD))));
+        // Further chance outputs (Sieve, Industrial Grinder) line up after the byproduct.
+        int extraX = outX + 45;
+        for (var extra : recipe.extras()) {
+            if (extraX + 18 > WIDTH) break;
+            builder.addOutputSlot(extraX + 1, 5)
+                    .setStandardSlotBackground()
+                    .add(extra.item())
+                    .addRichTooltipCallback((view, tooltip) -> tooltip.add(
+                            Component.translatable("gui.factoryascent.jei_chance", Math.round(extra.chance() * 100))
+                                    .withStyle(ChatFormatting.GOLD)));
+            extraX += 22;
+        }
     }
 
     @Override
@@ -95,6 +107,13 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<RecipeHolder<Ma
         recipe.byproduct().ifPresent(chance -> builder.addText(
                         Component.literal(Math.round(chance.chance() * 100) + "%"), 18, 9)
                 .setPosition(Math.max(x, 36) + 51, 25).setColor(0xFFB07000));
+        int extraX = Math.max(x, 36) + 28 + 45;
+        for (var extra : recipe.extras()) {
+            if (extraX + 18 > WIDTH) break;
+            builder.addText(Component.literal(Math.round(extra.chance() * 100) + "%"), 20, 9)
+                    .setPosition(extraX + 1, 25).setColor(0xFFB07000);
+            extraX += 22;
+        }
 
         MachineType weakest = weakestFor(kind, recipe.minGrade());
         MachineType first = machines(kind).getFirst();

@@ -67,7 +67,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
 
     /** A resolved operation: which slots to consume, how much, and what comes out. */
     private record ActiveRecipe(Object key, int[] slots, int[] counts, ItemStack result,
-                                @Nullable ChanceOutput byproduct, int time) {}
+                                @Nullable ChanceOutput byproduct, List<ChanceOutput> extras, int time) {}
 
     public ProcessingMachineBlockEntity(MachineType type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -111,16 +111,41 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         return super.triggerEvent(id, param);
     }
 
-    /** Quern: one turn of the handle. */
+    /** Quern or Sieve: one turn of the handle. */
     public void crank(Player player) {
         if (level == null || level.getGameTime() - lastCrank < 4) return;
         lastCrank = level.getGameTime();
         crankPoints = Math.min(crankPoints + CRANK_POINTS, CRANK_POINTS * 4);
-        level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.5f,
-                0.8f + level.getRandom().nextFloat() * 0.4f);
+        level.playSound(null, worldPosition, type == MachineType.SIEVE ? SoundEvents.GRAVEL_HIT : SoundEvents.GRINDSTONE_USE,
+                SoundSource.BLOCKS, 0.5f, 0.8f + level.getRandom().nextFloat() * 0.4f);
         // Tell watching clients to turn the runner stone one full turn (see QuernRenderer).
         level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_CRANK, 0);
         player.causeFoodExhaustion(0.05f);
+    }
+
+    private float kineticPoints;
+
+    /**
+     * Mechanical rotation from a Water Wheel or Windmill next to a hand-cranked machine: every
+     * {@link #CRANK_POINTS} of rotation count as one turn of the handle, but only while there is
+     * something to work on (an idle quern doesn't bank rotation).
+     */
+    public void driveKinetic(float points) {
+        if (level == null || type.power() != MachineType.Power.MANUAL || points <= 0) return;
+        if (current == null && !recipeDirty) {
+            kineticPoints = 0;
+            return;
+        }
+        kineticPoints += points;
+        while (kineticPoints >= CRANK_POINTS) {
+            kineticPoints -= CRANK_POINTS;
+            if (crankPoints + CRANK_POINTS > CRANK_POINTS * 4) {
+                kineticPoints = Math.min(kineticPoints, CRANK_POINTS);
+                return;
+            }
+            crankPoints += CRANK_POINTS;
+            level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_CRANK, 0);
+        }
     }
 
     // ---------------------------------------------------------------- ticking
@@ -271,19 +296,35 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
         }
         insertOutput(slots.firstOutput(), recipe.result().copy());
         ChanceOutput by = recipe.byproduct();
-        if (by != null && level.getRandom().nextFloat() < by.chance()) {
-            ItemStack extra = by.item().create();
-            // Same item as the main output (e.g. the Quern's "50% chance of a second dust") goes there first.
-            int target = ItemStack.isSameItemSameComponents(extra, inventory.stack(slots.firstOutput()))
-                    && inventory.stack(slots.firstOutput()).getCount() + extra.getCount() <= 64
-                    ? slots.firstOutput() : slots.firstOutput() + 1;
-            ItemStack there = inventory.stack(target);
-            if (there.isEmpty() || (ItemStack.isSameItemSameComponents(there, extra)
-                    && there.getCount() + extra.getCount() <= there.getMaxStackSize())) {
-                insertOutput(target, extra);
-            }
+        if (by != null && level.getRandom().nextFloat() < by.chance()) insertChanceOutput(by.item().create());
+        for (ChanceOutput extra : recipe.extras()) {
+            if (level.getRandom().nextFloat() < extra.chance()) insertChanceOutput(extra.item().create());
         }
         inventory.changed(slots.firstInput());
+    }
+
+    /**
+     * A byproduct: the same item as the main output (e.g. the Quern's "50% chance of a second
+     * dust") goes there first, anything else into the first secondary output slot that can take
+     * it. With no room it is lost, like a sieve spilling.
+     */
+    private void insertChanceOutput(ItemStack extra) {
+        ItemStack main = inventory.stack(slots.firstOutput());
+        if (ItemStack.isSameItemSameComponents(extra, main) && main.getCount() + extra.getCount() <= Math.min(64, main.getMaxStackSize())) {
+            insertOutput(slots.firstOutput(), extra);
+            return;
+        }
+        int empty = -1;
+        for (int i = slots.firstOutput() + 1; i < slots.firstUpgrade(); i++) {
+            ItemStack there = inventory.stack(i);
+            if (there.isEmpty()) {
+                if (empty < 0) empty = i;
+            } else if (ItemStack.isSameItemSameComponents(there, extra) && there.getCount() + extra.getCount() <= there.getMaxStackSize()) {
+                insertOutput(i, extra);
+                return;
+            }
+        }
+        if (empty >= 0) insertOutput(empty, extra);
     }
 
     private void insertOutput(int slot, ItemStack stack) {
@@ -323,7 +364,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             int[] counts = r.inputs().stream().mapToInt(SizedIngredient::count).toArray();
             int[] absolute = new int[found.length];
             for (int i = 0; i < found.length; i++) absolute[i] = slots.firstInput() + found[i];
-            return new ActiveRecipe(holder.id(), absolute, counts, r.result().create(), r.byproduct().orElse(null), r.time());
+            return new ActiveRecipe(holder.id(), absolute, counts, r.result().create(), r.byproduct().orElse(null), r.extras(), r.time());
         }
         if (type.runsVanillaSmelting() && !items.get(0).isEmpty()) {
             SingleRecipeInput input = new SingleRecipeInput(items.get(0));
@@ -333,7 +374,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
                 ItemStack result = holder.value().assemble(input);
                 if (!result.isEmpty()) {
                     int time = Math.max(4, holder.value().cookingTime() / VANILLA_SMELT_DIVISOR);
-                    return new ActiveRecipe(holder.id(), new int[]{slots.firstInput()}, new int[]{1}, result, null, time);
+                    return new ActiveRecipe(holder.id(), new int[]{slots.firstInput()}, new int[]{1}, result, null, List.of(), time);
                 }
             }
         }

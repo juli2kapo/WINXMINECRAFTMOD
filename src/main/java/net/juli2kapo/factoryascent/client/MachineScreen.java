@@ -305,6 +305,10 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             case PROCESSOR -> arrow(g, x + MachineLayout.arrowX(type), y + MachineLayout.ARROW_Y, data().progress() / 1000f);
             case MINER, FARMER -> depthGauge(g, x + 62, y + 22);
             case STORAGE -> bolt(g, x + 100, y + 36);
+            case UTILITY -> {
+                if (MachineLayout.hasArrow(type)) arrow(g, x + MachineLayout.arrowX(type), y + MachineLayout.ARROW_Y, data().progress() / 1000f);
+            }
+            case KINETIC -> rotationGauge(g, x + 38, y + 30, data().extraA() / 1000f, data().progress());
             default -> {
                 if (type == MachineType.COMBUSTION_GENERATOR) flame(g, x + 81, y + 30, data().progress() / 1000f);
             }
@@ -408,6 +412,22 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         g.fill(x + 4, y + 8, x + 8, y + 15, c);
     }
 
+    /** Water Wheel / Windmill: a spoked wheel that turns with the machine, and how fast it turns. */
+    private void rotationGauge(GuiGraphicsExtractor g, int x, int y, float fraction, int angle) {
+        FactoryGui.display(g, x, y, 100, 26);
+        int cx = x + 13, cy = y + 13;
+        double a = Math.toRadians(angle);
+        for (int spoke = 0; spoke < 4; spoke++) {
+            double t = a + spoke * Math.PI / 4;
+            for (int r = -8; r <= 8; r++) {
+                int px = cx + (int) Math.round(Math.cos(t) * r), py = cy + (int) Math.round(Math.sin(t) * r);
+                g.fill(px, py, px + 1, py + 1, 0xFFB08850);
+            }
+        }
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, 0xFF5A3A1A);
+        FactoryGui.bar(g, x + 28, y + 9, 66, 8, fraction, fraction > 0 ? accent() : 0xFF555555);
+    }
+
     private void depthGauge(GuiGraphicsExtractor g, int x, int y) {
         g.fill(x, y, x + 8, y + 44, SLOT_DARK);
         g.fill(x + 1, y + 1, x + 7, y + 43, 0xFF3A3A3A);
@@ -463,7 +483,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             case SOLAR_PANEL -> Component.translatable("gui.factoryascent.sunlight", d.extraA()).getString();
             case GEOTHERMAL_GENERATOR -> Component.translatable("gui.factoryascent.lava", d.extraA()).getString();
             case MINER -> Component.translatable("gui.factoryascent.miner_info", d.extraA(), d.extraB()).getString();
-            case AUTO_FARMER -> Component.translatable("gui.factoryascent.farm_info", d.extraA()).getString();
+            case AUTO_FARMER, TREE_FARM -> Component.translatable("gui.factoryascent.farm_info", d.extraA()).getString();
+            case WATER_WHEEL, WINDMILL -> Component.translatable("gui.factoryascent.kinetic_info", d.extraA() / 10, d.extraB()).getString();
+            case FLOODLIGHT -> Component.translatable("gui.factoryascent.floodlight_info", d.extraA()).getString();
+            case MOB_FARM -> {
+                var mob = net.juli2kapo.factoryascent.mobs.MobCapsuleItem.captured(menu.machine().inventory().stack(0));
+                yield mob == null ? Component.translatable("gui.factoryascent.mob_farm_empty").getString()
+                        : Component.translatable("gui.factoryascent.mob_farm_info", mob.type().getDescription()).getString();
+            }
             default -> "";
         };
     }
@@ -481,6 +508,10 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             g.setComponentTooltipForNextFrame(font, accepts().tooltip(hoveredCell, gameTick()), mouseX, mouseY);
         } else if (type.usesEnergy() && isHovering(ENERGY_X, ENERGY_Y, ENERGY_W, ENERGY_H, mouseX, mouseY)) {
             g.setComponentTooltipForNextFrame(font, energyTooltip(), mouseX, mouseY);
+        } else if (type.category() == MachineType.Category.UTILITY && MachineLayout.hasArrow(type)
+                && isHovering(MachineLayout.arrowX(type), MachineLayout.ARROW_Y, 24, 16, mouseX, mouseY)) {
+            g.setComponentTooltipForNextFrame(font, List.of(
+                    Component.translatable("gui.factoryascent.progress", data().progress() / 10)), mouseX, mouseY);
         } else if (type.category() == MachineType.Category.PROCESSOR
                 && isHovering(MachineLayout.arrowX(type), MachineLayout.ARROW_Y, 24, 16, mouseX, mouseY)) {
             g.setComponentTooltipForNextFrame(font, List.of(

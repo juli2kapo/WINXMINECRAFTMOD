@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:orbital_pad",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:crew_capsule"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.space_orbit.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.space_orbit.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "factoryascent:bronze_helmet",
+    "factoryascent:bronze_chestplate",
+    "factoryascent:bronze_leggings",
+    "factoryascent:bronze_boots"
+  ]
+}

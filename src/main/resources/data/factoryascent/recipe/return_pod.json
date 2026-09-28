@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TGT",
+    "WAW",
+    "HHH"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "G": "minecraft:tinted_glass",
+    "W": "minecraft:white_wool",
+    "A": "factoryascent:advanced_circuit",
+    "H": "factoryascent:fire_bricks"
+  },
+  "result": {
+    "id": "factoryascent:return_pod"
+  }
+}

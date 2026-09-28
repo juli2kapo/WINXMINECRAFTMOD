@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " PP",
+    " TP",
+    "T  "
+  ],
+  "key": {
+    "P": "#c:plates/bronze",
+    "T": "minecraft:string"
+  },
+  "result": {
+    "id": "factoryascent:grappling_hook"
+  }
+}

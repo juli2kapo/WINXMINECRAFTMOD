@@ -85,7 +85,13 @@ public final class ModBlocks {
         };
         if (type == MachineType.COKE_OVEN) p = p.mapColor(MapColor.COLOR_BROWN).sound(SoundType.STONE);
         if (type == MachineType.BLAST_FURNACE) p = p.mapColor(MapColor.TERRACOTTA_YELLOW).sound(SoundType.STONE);
-        if (type == MachineType.SOLAR_PANEL || type == MachineType.QUERN) p = p.noOcclusion();
+        if (type.isWooden()) {
+            // Wooden stone-age contraptions: an axe job, and they drop without the right tool.
+            p = BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2f, 3f).sound(SoundType.WOOD).noOcclusion();
+        }
+        if (type == MachineType.SOLAR_PANEL || type == MachineType.QUERN || type == MachineType.FLOODLIGHT
+                || type == MachineType.VACUUM_HOPPER || type == MachineType.CHARGER) p = p.noOcclusion();
+        if (type == MachineType.FLOODLIGHT) p = p.lightLevel(state -> MachineBlock.isActive(state) ? 15 : 0);
         if (type.power() == MachineType.Power.FUEL || type == MachineType.ELECTRIC_FURNACE
                 || type == MachineType.ALLOY_SMELTER || type == MachineType.COKE_OVEN || type == MachineType.GEOTHERMAL_GENERATOR) {
             p = p.lightLevel(state -> MachineBlock.isActive(state) ? 12 : 0);

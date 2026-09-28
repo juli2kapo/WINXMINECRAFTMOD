@@ -1,0 +1,358 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stripped_oak_log",
+    "bearing": "minecraft:block/iron_block",
+    "post": "minecraft:block/stripped_oak_log",
+    "sill": "minecraft:block/oak_planks"
+  },
+  "elements": [
+    {
+      "from": [
+        6.0,
+        0.0,
+        0.0
+      ],
+      "to": [
+        10.0,
+        9.0,
+        2.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.0,
+            7.0,
+            10.0,
+            16.0
+          ],
+          "texture": "#post",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            6.0,
+            7.0,
+            10.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            7.0,
+            2.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "east": {
+          "uv": [
+            14.0,
+            7.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "up": {
+          "uv": [
+            6.0,
+            0.0,
+            10.0,
+            2.0
+          ],
+          "texture": "#post"
+        },
+        "down": {
+          "uv": [
+            6.0,
+            14.0,
+            10.0,
+            16.0
+          ],
+          "texture": "#post",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        6.0,
+        0.0,
+        14.0
+      ],
+      "to": [
+        10.0,
+        9.0,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.0,
+            7.0,
+            10.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "south": {
+          "uv": [
+            6.0,
+            7.0,
+            10.0,
+            16.0
+          ],
+          "texture": "#post",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            14.0,
+            7.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            7.0,
+            2.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "up": {
+          "uv": [
+            6.0,
+            14.0,
+            10.0,
+            16.0
+          ],
+          "texture": "#post"
+        },
+        "down": {
+          "uv": [
+            6.0,
+            0.0,
+            10.0,
+            2.0
+          ],
+          "texture": "#post",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        6.5,
+        0.5
+      ],
+      "to": [
+        9.5,
+        9.5,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "south": {
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            6.5,
+            2.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "east": {
+          "uv": [
+            13.5,
+            6.5,
+            15.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "up": {
+          "uv": [
+            6.5,
+            0.5,
+            9.5,
+            2.5
+          ],
+          "texture": "#bearing"
+        },
+        "down": {
+          "uv": [
+            6.5,
+            13.5,
+            9.5,
+            15.5
+          ],
+          "texture": "#bearing"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        6.5,
+        13.5
+      ],
+      "to": [
+        9.5,
+        9.5,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "south": {
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "west": {
+          "uv": [
+            13.5,
+            6.5,
+            15.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            6.5,
+            2.5,
+            9.5
+          ],
+          "texture": "#bearing"
+        },
+        "up": {
+          "uv": [
+            6.5,
+            13.5,
+            9.5,
+            15.5
+          ],
+          "texture": "#bearing"
+        },
+        "down": {
+          "uv": [
+            6.5,
+            0.5,
+            9.5,
+            2.5
+          ],
+          "texture": "#bearing"
+        }
+      }
+    },
+    {
+      "from": [
+        4.0,
+        0.0,
+        0.0
+      ],
+      "to": [
+        12.0,
+        1.0,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.0,
+            15.0,
+            12.0,
+            16.0
+          ],
+          "texture": "#sill",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            4.0,
+            15.0,
+            12.0,
+            16.0
+          ],
+          "texture": "#sill",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            15.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#sill"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            15.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#sill"
+        },
+        "up": {
+          "uv": [
+            4.0,
+            0.0,
+            12.0,
+            16.0
+          ],
+          "texture": "#sill"
+        },
+        "down": {
+          "uv": [
+            4.0,
+            0.0,
+            12.0,
+            16.0
+          ],
+          "texture": "#sill",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

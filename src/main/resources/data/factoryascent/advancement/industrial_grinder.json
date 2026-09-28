@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:industrial_grinder"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:industrial_grinder"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_grinder.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_grinder.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_industrial"
+}

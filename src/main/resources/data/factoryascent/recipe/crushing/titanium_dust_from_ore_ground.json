@@ -1,0 +1,29 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ores/titanium",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:titanium_dust",
+    "count": 5
+  },
+  "time": 80,
+  "min_grade": 5,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:iron_dust"
+    },
+    "chance": 0.35
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "factoryascent:bauxite_dust"
+      },
+      "chance": 0.15
+    }
+  ]
+}

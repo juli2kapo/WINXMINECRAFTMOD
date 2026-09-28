@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:poisonous_potato",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "factoryascent:scrap"
+  },
+  "time": 40,
+  "min_grade": 5
+}

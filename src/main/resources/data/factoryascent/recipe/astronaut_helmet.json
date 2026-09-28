@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "TAT",
+    "TGT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "A": "factoryascent:advanced_circuit",
+    "G": "minecraft:tinted_glass"
+  },
+  "result": {
+    "id": "factoryascent:astronaut_helmet"
+  }
+}

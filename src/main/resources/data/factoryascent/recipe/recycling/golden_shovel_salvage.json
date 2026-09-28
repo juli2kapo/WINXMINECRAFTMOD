@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:golden_shovel",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:gold_dust"
+  },
+  "time": 80,
+  "min_grade": 5
+}

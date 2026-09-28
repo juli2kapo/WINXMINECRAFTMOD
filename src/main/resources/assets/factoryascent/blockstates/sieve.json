@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "factoryascent:block/sieve"
+    },
+    "active=true,facing=north": {
+      "model": "factoryascent:block/sieve_on"
+    },
+    "active=false,facing=east": {
+      "model": "factoryascent:block/sieve"
+    },
+    "active=true,facing=east": {
+      "model": "factoryascent:block/sieve_on"
+    },
+    "active=false,facing=south": {
+      "model": "factoryascent:block/sieve"
+    },
+    "active=true,facing=south": {
+      "model": "factoryascent:block/sieve_on"
+    },
+    "active=false,facing=west": {
+      "model": "factoryascent:block/sieve"
+    },
+    "active=true,facing=west": {
+      "model": "factoryascent:block/sieve_on"
+    }
+  }
+}

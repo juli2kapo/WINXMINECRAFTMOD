@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "P P",
+    "R R",
+    "ICI"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "R": "minecraft:redstone",
+    "I": "#c:ingots/iron",
+    "C": "factoryascent:basic_circuit"
+  },
+  "result": {
+    "id": "factoryascent:item_magnet"
+  }
+}

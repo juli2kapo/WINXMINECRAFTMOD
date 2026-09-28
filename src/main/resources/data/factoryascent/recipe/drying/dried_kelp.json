@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:drying",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:kelp",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:dried_kelp"
+  },
+  "time": 200
+}

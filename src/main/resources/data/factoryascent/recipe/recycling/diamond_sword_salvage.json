@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:diamond_sword",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:diamond"
+  },
+  "time": 80,
+  "min_grade": 5
+}

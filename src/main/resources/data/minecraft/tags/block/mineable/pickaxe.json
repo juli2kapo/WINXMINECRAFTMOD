@@ -16,13 +16,22 @@
     "factoryascent:solar_panel",
     "factoryascent:auto_farmer",
     "factoryascent:energy_cell",
+    "factoryascent:charger",
+    "factoryascent:floodlight",
     "factoryascent:miner",
     "factoryascent:geothermal_generator",
     "factoryascent:advanced_energy_cell",
     "factoryascent:ore_washer",
+    "factoryascent:block_breaker",
+    "factoryascent:block_placer",
+    "factoryascent:vacuum_hopper",
+    "factoryascent:tree_farm",
     "factoryascent:induction_smelter",
     "factoryascent:hydraulic_press",
     "factoryascent:industrial_energy_cell",
+    "factoryascent:industrial_grinder",
+    "factoryascent:recycler",
+    "factoryascent:mob_farm",
     "factoryascent:precision_assembler",
     "factoryascent:plasma_forge",
     "factoryascent:quantum_energy_cell",
@@ -57,6 +66,9 @@
     "factoryascent:launch_pad",
     "factoryascent:launch_controller",
     "factoryascent:ground_station",
-    "factoryascent:orbital_radar"
+    "factoryascent:orbital_radar",
+    "factoryascent:return_pod",
+    "factoryascent:oxygen_compressor",
+    "factoryascent:oxygen_sealer"
   ]
 }

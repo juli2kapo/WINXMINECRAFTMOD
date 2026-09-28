@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:diamond_leggings",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:diamond",
+    "count": 6
+  },
+  "time": 80,
+  "min_grade": 5
+}

@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:drying",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:wet_sponge",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:sponge"
+  },
+  "time": 600
+}

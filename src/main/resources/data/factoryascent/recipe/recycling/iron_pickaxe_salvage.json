@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:iron_pickaxe",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:iron_dust",
+    "count": 2
+  },
+  "time": 80,
+  "min_grade": 5
+}

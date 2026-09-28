@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:golden_helmet",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:gold_dust",
+    "count": 4
+  },
+  "time": 80,
+  "min_grade": 5
+}

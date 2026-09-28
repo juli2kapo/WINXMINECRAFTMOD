@@ -154,7 +154,7 @@ def load_recipes(tags):
         elif t == "minecraft:crafting_shapeless":
             ins = [ingredient_options(i, tags) for i in r["ingredients"]]
             outs = [result_id(r["result"])]
-        elif t == "minecraft:crafting_transmute":
+        elif t in ("minecraft:crafting_transmute", f"{MOD}:jet_suit"):  # jet_suit: a transmute that keeps both items' data
             ins = [ingredient_options(r["input"], tags), ingredient_options(r["material"], tags)]
             outs = [result_id(r["result"])]
         elif t in ("minecraft:smelting", "minecraft:blasting", "minecraft:smoking", "minecraft:campfire_cooking"):
@@ -168,6 +168,8 @@ def load_recipes(tags):
             outs = [result_id(r["result"])]
             if r.get("byproduct"):
                 outs.append(result_id(r["byproduct"]["item"]))
+            for extra in r.get("extras", []):
+                outs.append(result_id(extra["item"]))
             need = (kind, r.get("min_grade", 1))
         else:
             continue  # special recipes (custom types) are reported separately

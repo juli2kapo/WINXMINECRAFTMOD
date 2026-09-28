@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:floodlight"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:floodlight"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_floodlight.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_floodlight.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_power"
+}

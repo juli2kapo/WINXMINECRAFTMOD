@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TCT",
+    "HFH",
+    "TGT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "C": "factoryascent:advanced_circuit",
+    "H": "minecraft:hopper",
+    "F": "factoryascent:advanced_machine_frame",
+    "G": "#c:gears/steel"
+  },
+  "result": {
+    "id": "factoryascent:recycler"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:electric_circuit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:electric_jetpack"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.jetpack_flight.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.jetpack_flight.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

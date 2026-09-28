@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WSW",
+    "SGS",
+    "LBL"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "S": "minecraft:stick",
+    "G": "#c:gears/iron",
+    "L": "#minecraft:logs",
+    "B": "minecraft:bricks"
+  },
+  "result": {
+    "id": "factoryascent:windmill"
+  }
+}

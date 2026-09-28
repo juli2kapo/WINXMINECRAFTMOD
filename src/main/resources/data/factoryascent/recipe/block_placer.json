@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PDP",
+    "CMC",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "D": "minecraft:dispenser",
+    "C": "factoryascent:advanced_circuit",
+    "M": "factoryascent:machine_frame",
+    "W": "#c:wires/copper"
+  },
+  "result": {
+    "id": "factoryascent:block_placer"
+  }
+}

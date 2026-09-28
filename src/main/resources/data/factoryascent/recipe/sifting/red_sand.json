@@ -1,0 +1,33 @@
+{
+  "type": "factoryascent:sifting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:red_sand",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:clay_ball"
+  },
+  "time": 60,
+  "byproduct": {
+    "item": {
+      "id": "minecraft:gold_nugget"
+    },
+    "chance": 0.2
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "minecraft:redstone"
+      },
+      "chance": 0.08
+    },
+    {
+      "item": {
+        "id": "minecraft:dead_bush"
+      },
+      "chance": 0.05
+    }
+  ]
+}

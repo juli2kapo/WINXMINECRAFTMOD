@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,lit=false": {
+      "model": "factoryascent:block/oxygen_sealer"
+    },
+    "facing=north,lit=true": {
+      "model": "factoryascent:block/oxygen_sealer_on"
+    },
+    "facing=east,lit=false": {
+      "model": "factoryascent:block/oxygen_sealer"
+    },
+    "facing=east,lit=true": {
+      "model": "factoryascent:block/oxygen_sealer_on"
+    },
+    "facing=south,lit=false": {
+      "model": "factoryascent:block/oxygen_sealer"
+    },
+    "facing=south,lit=true": {
+      "model": "factoryascent:block/oxygen_sealer_on"
+    },
+    "facing=west,lit=false": {
+      "model": "factoryascent:block/oxygen_sealer"
+    },
+    "facing=west,lit=true": {
+      "model": "factoryascent:block/oxygen_sealer_on"
+    }
+  }
+}

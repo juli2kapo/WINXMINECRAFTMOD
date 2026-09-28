@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "factoryascent:block/vacuum_hopper"
+    },
+    "active=true,facing=north": {
+      "model": "factoryascent:block/vacuum_hopper_on"
+    },
+    "active=false,facing=east": {
+      "model": "factoryascent:block/vacuum_hopper"
+    },
+    "active=true,facing=east": {
+      "model": "factoryascent:block/vacuum_hopper_on"
+    },
+    "active=false,facing=south": {
+      "model": "factoryascent:block/vacuum_hopper"
+    },
+    "active=true,facing=south": {
+      "model": "factoryascent:block/vacuum_hopper_on"
+    },
+    "active=false,facing=west": {
+      "model": "factoryascent:block/vacuum_hopper"
+    },
+    "active=true,facing=west": {
+      "model": "factoryascent:block/vacuum_hopper_on"
+    }
+  }
+}

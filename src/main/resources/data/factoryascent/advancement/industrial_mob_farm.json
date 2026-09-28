@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:mob_farm"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:mob_farm"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_mob_farm.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_mob_farm.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_industrial"
+}

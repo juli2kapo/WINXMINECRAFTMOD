@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:drying",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:rotten_flesh",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:leather"
+  },
+  "time": 400
+}

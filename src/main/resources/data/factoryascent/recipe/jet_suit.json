@@ -1,0 +1,9 @@
+{
+  "type": "factoryascent:jet_suit",
+  "category": "equipment",
+  "input": "factoryascent:astronaut_suit",
+  "material": "factoryascent:advanced_jetpack",
+  "result": {
+    "id": "factoryascent:jet_suit"
+  }
+}

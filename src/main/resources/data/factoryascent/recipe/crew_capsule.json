@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TGT",
+    "TOT",
+    "HFH"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "G": "minecraft:tinted_glass",
+    "O": "factoryascent:orbital_targeting_core",
+    "H": "factoryascent:fire_bricks",
+    "F": "factoryascent:advanced_machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:crew_capsule"
+  }
+}

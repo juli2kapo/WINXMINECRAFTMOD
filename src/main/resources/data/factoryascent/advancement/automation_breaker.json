@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:block_breaker"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:block_breaker"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_breaker.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_breaker.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

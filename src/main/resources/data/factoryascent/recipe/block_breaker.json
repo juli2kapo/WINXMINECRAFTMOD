@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PAP",
+    "CMC",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "A": "minecraft:iron_pickaxe",
+    "C": "factoryascent:advanced_circuit",
+    "M": "factoryascent:machine_frame",
+    "W": "#c:wires/copper"
+  },
+  "result": {
+    "id": "factoryascent:block_breaker"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:astronaut_suit"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:astronaut_helmet"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.space_suit.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.space_suit.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:orbital_pad"
+}

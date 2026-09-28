@@ -51,6 +51,12 @@ public class FactoryBlockItem extends BlockItem {
                 }
                 case GENERATOR -> tooltip.accept(line(type == MachineType.GEOTHERMAL_GENERATOR ? "generation_per_lava" : "generation",
                         type == MachineType.GEOTHERMAL_GENERATOR ? type.baseEnergy() / 2 : type.baseEnergy()));
+                case UTILITY -> {
+                    tooltip.accept(line("power.electric"));
+                    tooltip.accept(line("energy_use", type.baseEnergy()));
+                    if (type.upgradeSlots() > 0) tooltip.accept(line("upgrade_slot_count", type.upgradeSlots()));
+                }
+                case KINETIC -> tooltip.accept(line("kinetic." + type.id()).withStyle(ChatFormatting.GOLD));
                 case STORAGE -> {
                     var tier = type.tier();
                     tooltip.accept(line("capacity", EnergyUtil.format(EnergyCellBlockEntity.capacity(tier))));

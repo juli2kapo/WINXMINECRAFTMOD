@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap",
+    "factoryascent:scrap"
+  ],
+  "result": {
+    "id": "factoryascent:scrap_box"
+  }
+}

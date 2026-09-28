@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:bronze_sword",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:bronze_ingot"
+  },
+  "time": 80,
+  "min_grade": 5
+}

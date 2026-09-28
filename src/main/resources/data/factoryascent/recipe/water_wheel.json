@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PSP",
+    "SGS",
+    "PSP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "S": "minecraft:stick",
+    "G": "#c:gears/iron"
+  },
+  "result": {
+    "id": "factoryascent:water_wheel"
+  }
+}

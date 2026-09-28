@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:gravel",
+      "count": 16
+    }
+  ],
+  "result": {
+    "id": "factoryascent:scrap"
+  },
+  "time": 40,
+  "min_grade": 5
+}

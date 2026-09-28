@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "factoryascent:block/oxygen_sealer_top",
+    "bottom": "factoryascent:block/oxygen_compressor_top",
+    "side": "factoryascent:block/oxygen_sealer_side"
+  }
+}

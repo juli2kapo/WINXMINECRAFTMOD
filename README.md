@@ -16,14 +16,21 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the full design and numbers.
   - Forge Hammer, Quern, Brick Kiln, Burner Crusher, Burner Press
   - Coke Oven and Blast Furnace multiblocks
   - Wooden and Bronze Crates, bronze tools
+  - Sieve (gravel/sand/dirt/soul sand into flint, clay, seeds, nuggets), Drying Rack (rotten flesh into leather)
+  - Water Wheel and Windmill: turn the Quern or Sieve next to them for you
+  - Bronze armour, Bronze Backpack (27 slots), Grappling Hook
 - **Electric:**
   - Electric Furnace, Crusher, Metal Press, Alloy Smelter, Assembler
   - Combustion Generator, Solar Panel, Energy Cells
   - Cables, item pipes, Electric Drill, Auto-Farmer
+  - Charger, Floodlight, Item Magnet, Night-Vision Goggles
   - **Storage Network:** controller, drives, 1k/4k cells, terminal with search, and an interface for pipes and hoppers
 - **Automation:**
   - Geothermal Generator
+  - Block Breaker, Block Placer, Vacuum Hopper, Tree Farm
   - **Ore Miner**, which digs its own chunk claim in **The Deep**, a sealed mining dimension. It never touches the world around it.
+- **Industrial:**
+  - Industrial Grinder (4 dust per raw ore), Recycler (junk into scrap, worn gear into materials), Mob Farm Controller (a captured mob's drops, no mob)
 - **Knowing what goes where:**
   - Hold Shift on an item for "Used in: …".
   - Machine GUIs outline inputs they can't use.

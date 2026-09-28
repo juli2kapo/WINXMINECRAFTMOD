@@ -44,7 +44,8 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
         super.init();
         launch = addRenderableWidget(Button.builder(Component.translatable("gui.factoryascent.pad.launch"), b -> {
             if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, LaunchControllerMenu.BUTTON_LAUNCH);
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, crew() // [space hook] Board a crew capsule
+                        ? LaunchControllerMenu.BUTTON_BOARD : LaunchControllerMenu.BUTTON_LAUNCH);
             }
         }).bounds(leftPos + imageWidth - 64, topPos + 80, 56, 16).build());
         launch.setTooltip(Tooltip.create(Component.translatable("gui.factoryascent.pad.launch_tip")));
@@ -56,6 +57,29 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
         if (messageTicks > 0) messageTicks--;
         if (launch != null) launch.active = menu.status() == LaunchControllerBlockEntity.STATUS_READY
                 || menu.status() == LaunchControllerBlockEntity.STATUS_MISSILE;
+        // [space hook] with a Crew Capsule mounted the button boards it (and warns without a suit)
+        int mode = !crew() ? 0 : unsuited() ? 2 : 1;
+        if (launch != null && mode != buttonMode) {
+            buttonMode = mode;
+            launch.setMessage(Component.translatable(mode == 0 ? "gui.factoryascent.pad.launch" : "gui.factoryascent.pad.board")
+                    .withStyle(mode == 2 ? ChatFormatting.RED : ChatFormatting.RESET));
+            launch.setTooltip(Tooltip.create(Component.translatable(mode == 0 ? "gui.factoryascent.pad.launch_tip"
+                    : mode == 1 ? "gui.factoryascent.pad.board_tip" : "gui.factoryascent.pad.board_no_suit_tip")));
+        }
+    }
+
+    private int buttonMode;
+
+    /** [space hook] A Crew Capsule is the payload. */
+    private boolean crew() {
+        return net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(menu.getSlot(0).getItem());
+    }
+
+    /** [space hook] The viewer would die in orbit as they are. */
+    private boolean unsuited() {
+        return minecraft != null && minecraft.player != null
+                && !(net.juli2kapo.factoryascent.space.SpaceRules.wearsFullSuit(minecraft.player)
+                && net.juli2kapo.factoryascent.space.SuitItems.oxygen(net.juli2kapo.factoryascent.space.SpaceRules.suitTank(minecraft.player)) > 0);
     }
 
     @Override
@@ -71,14 +95,14 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
         g.fill(gx - 1, gy - 1, gx + GAUGE_W + 1, gy + GAUGE_H + 1, OrbitalGui.EDGE_DARK);
         g.fill(gx, gy, gx + GAUGE_W, gy + GAUGE_H, OrbitalGui.INSET);
         int filled = Math.round(GAUGE_H * Math.min(1f, menu.fuel() / (float) LaunchControllerBlockEntity.FUEL_MAX));
-        int color = menu.fuel() >= LaunchControllerBlockEntity.FUEL_PER_LAUNCH ? 0xFFE08030 : 0xFFA04020;
+        int color = menu.fuel() >= menu.controller().fuelCost() ? 0xFFE08030 : 0xFFA04020;
         if (filled > 0) g.fill(gx, gy + GAUGE_H - filled, gx + GAUGE_W, gy + GAUGE_H, color);
-        int notch = gy + GAUGE_H - GAUGE_H * LaunchControllerBlockEntity.FUEL_PER_LAUNCH / LaunchControllerBlockEntity.FUEL_MAX;
+        int notch = gy + GAUGE_H - GAUGE_H * Math.min(menu.controller().fuelCost(), LaunchControllerBlockEntity.FUEL_MAX) / LaunchControllerBlockEntity.FUEL_MAX;
         g.fill(gx - 2, notch, gx + GAUGE_W + 2, notch + 1, OrbitalGui.TEXT);
         // launch progress
         if (menu.launchTick() >= 0) {
             OrbitalGui.bar(g, x + INFO_X + 11, y + 66, imageWidth - INFO_X - 22, 6,
-                    menu.launchTick() / (float) LaunchControllerBlockEntity.SEQUENCE, 0xFFE0C040);
+                    menu.launchTick() / (float) menu.controller().sequence(), 0xFFE0C040);
         }
         // player inventory slots
         for (int i = 0; i < 27; i++) slot(g, x + 8 + (i % 9) * 18, y + LaunchControllerMenu.PLAYER_INV_Y + (i / 9) * 18);
@@ -128,10 +152,13 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
             g.text(font, OrbitalGui.fit(font, detail, w), tx, ty + 10, OrbitalGui.TEXT, false);
         }
         g.text(font, OrbitalGui.fit(font, Component.translatable("gui.factoryascent.pad.fuel_amount", menu.fuel(),
-                LaunchControllerBlockEntity.FUEL_MAX, LaunchControllerBlockEntity.FUEL_PER_LAUNCH), w), tx, ty + 22, OrbitalGui.MUTED, false);
+                LaunchControllerBlockEntity.FUEL_MAX, menu.controller().fuelCost()), w), tx, ty + 22, OrbitalGui.MUTED, false);
         int status = menu.status();
         Component line = switch (status) {
-            case LaunchControllerBlockEntity.STATUS_READY -> Component.translatable("gui.factoryascent.pad.status.ready").withStyle(ChatFormatting.GREEN);
+            case LaunchControllerBlockEntity.STATUS_READY -> crew() // [space hook] boarding warnings
+                    ? (unsuited() ? Component.translatable("gui.factoryascent.pad.status.no_suit").withStyle(ChatFormatting.RED)
+                    : Component.translatable("gui.factoryascent.pad.status.board").withStyle(ChatFormatting.GREEN))
+                    : Component.translatable("gui.factoryascent.pad.status.ready").withStyle(ChatFormatting.GREEN);
             case LaunchControllerBlockEntity.STATUS_LAUNCHING -> menu.launchTick() < LaunchControllerBlockEntity.LIFTOFF
                     ? Component.translatable("gui.factoryascent.pad.status.countdown",
                     (LaunchControllerBlockEntity.LIFTOFF - menu.launchTick() + 19) / 20).withStyle(ChatFormatting.GOLD)
@@ -157,7 +184,7 @@ public class LaunchControllerScreen extends AbstractContainerScreen<LaunchContro
         if (isHovering(GAUGE_X - 1, GAUGE_Y - 1, GAUGE_W + 2, GAUGE_H + 2, mouseX, mouseY)) {
             g.setComponentTooltipForNextFrame(font, List.of(
                     Component.translatable("gui.factoryascent.pad.fuel_amount", menu.fuel(), LaunchControllerBlockEntity.FUEL_MAX,
-                            LaunchControllerBlockEntity.FUEL_PER_LAUNCH),
+                            menu.controller().fuelCost()),
                     Component.translatable("gui.factoryascent.pad.fuel_tip", new ItemStack(Items.BLAZE_POWDER).getHoverName(),
                             new ItemStack(OrbitalContent.ROCKET_FUEL.get()).getHoverName()).withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
         } else if (menu.getSlot(0).getItem().isEmpty()

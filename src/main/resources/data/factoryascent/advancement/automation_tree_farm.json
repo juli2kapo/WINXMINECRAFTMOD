@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:tree_farm"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:tree_farm"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_tree_farm.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_tree_farm.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

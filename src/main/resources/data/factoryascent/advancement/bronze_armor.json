@@ -1,0 +1,37 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:bronze_helmet",
+              "factoryascent:bronze_chestplate",
+              "factoryascent:bronze_leggings",
+              "factoryascent:bronze_boots"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:bronze_chestplate"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_armor.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_armor.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:bronze_tools"
+}

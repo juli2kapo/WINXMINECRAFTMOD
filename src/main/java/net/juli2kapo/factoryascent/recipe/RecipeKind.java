@@ -10,7 +10,13 @@ public enum RecipeKind {
     ALLOYING(2, false),
     ASSEMBLING(4, false),
     COKING(1, false),
-    BLASTING(2, false);
+    BLASTING(2, false),
+    /** Sieve: sifts gravel, sand, dirt and soul sand for bits and pieces. */
+    SIFTING(1, false),
+    /** Drying Rack: slow air-drying (rotten flesh into leather, kelp…). */
+    DRYING(1, false),
+    /** Recycler: junk into scrap, worn-out gear back into materials. */
+    RECYCLING(1, false);
 
     public static final RecipeKind[] VALUES = values();
 

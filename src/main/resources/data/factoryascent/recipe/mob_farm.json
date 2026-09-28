@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TWT",
+    "CFC",
+    "TMT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "W": "minecraft:diamond_sword",
+    "C": "factoryascent:advanced_circuit",
+    "F": "factoryascent:advanced_machine_frame",
+    "M": "factoryascent:mob_capsule"
+  },
+  "result": {
+    "id": "factoryascent:mob_farm"
+  }
+}

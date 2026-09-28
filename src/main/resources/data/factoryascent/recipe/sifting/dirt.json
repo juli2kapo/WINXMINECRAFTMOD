@@ -1,0 +1,33 @@
+{
+  "type": "factoryascent:sifting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:dirt",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:wheat_seeds"
+  },
+  "time": 60,
+  "byproduct": {
+    "item": {
+      "id": "minecraft:beetroot_seeds"
+    },
+    "chance": 0.25
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "minecraft:pumpkin_seeds"
+      },
+      "chance": 0.1
+    },
+    {
+      "item": {
+        "id": "minecraft:melon_seeds"
+      },
+      "chance": 0.1
+    }
+  ]
+}

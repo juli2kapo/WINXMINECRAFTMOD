@@ -32,13 +32,22 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
     private final List<SizedIngredient> inputs;
     private final ItemStackTemplate result;
     private final Optional<ChanceOutput> byproduct;
+    /** Further chance outputs, each rolled on its own (the Sieve, the Industrial Grinder). */
+    private final List<ChanceOutput> extras;
     private final Optional<Ingredient> mold;
     private final int time;
     private final int minGrade;
 
     public MachineRecipe(RecipeKind kind, List<SizedIngredient> inputs, ItemStackTemplate result,
                          Optional<ChanceOutput> byproduct, Optional<Ingredient> mold, int time, int minGrade) {
+        this(kind, inputs, result, byproduct, List.of(), mold, time, minGrade);
+    }
+
+    public MachineRecipe(RecipeKind kind, List<SizedIngredient> inputs, ItemStackTemplate result,
+                         Optional<ChanceOutput> byproduct, List<ChanceOutput> extras, Optional<Ingredient> mold,
+                         int time, int minGrade) {
         this.kind = kind;
+        this.extras = List.copyOf(extras);
         this.mold = mold;
         this.inputs = List.copyOf(inputs);
         this.result = result;
@@ -61,6 +70,10 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
 
     public Optional<ChanceOutput> byproduct() {
         return byproduct;
+    }
+
+    public List<ChanceOutput> extras() {
+        return extras;
     }
 
     /** For the Metal Press: the mould that must sit in the mould slot. Never consumed. */
@@ -166,10 +179,11 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
                 SizedIngredient.NESTED_CODEC.listOf(1, kind.maxInputs()).fieldOf("ingredients").forGetter(MachineRecipe::inputs),
                 ItemStackTemplate.CODEC.fieldOf("result").forGetter(MachineRecipe::result),
                 ChanceOutput.CODEC.optionalFieldOf("byproduct").forGetter(MachineRecipe::byproduct),
+                ChanceOutput.CODEC.listOf(0, 3).optionalFieldOf("extras", List.of()).forGetter(MachineRecipe::extras),
                 Ingredient.CODEC.optionalFieldOf("mold").forGetter(MachineRecipe::mold),
                 Codec.intRange(1, 72000).optionalFieldOf("time", 40).forGetter(MachineRecipe::time),
                 Codec.intRange(1, 10).optionalFieldOf("min_grade", 1).forGetter(MachineRecipe::minGrade)
-        ).apply(i, (in, res, by, mold, time, grade) -> new MachineRecipe(kind, in, res, by, mold, time, grade)));
+        ).apply(i, (in, res, by, extras, mold, time, grade) -> new MachineRecipe(kind, in, res, by, extras, mold, time, grade)));
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, MachineRecipe> streamCodec(RecipeKind kind) {
@@ -177,10 +191,11 @@ public final class MachineRecipe implements Recipe<MachineRecipeInput> {
                 SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), MachineRecipe::inputs,
                 ItemStackTemplate.STREAM_CODEC, MachineRecipe::result,
                 ByteBufCodecs.optional(ChanceOutput.STREAM_CODEC), MachineRecipe::byproduct,
+                ChanceOutput.STREAM_CODEC.apply(ByteBufCodecs.list()), MachineRecipe::extras,
                 ByteBufCodecs.optional(Ingredient.CONTENTS_STREAM_CODEC), MachineRecipe::mold,
                 ByteBufCodecs.VAR_INT, MachineRecipe::time,
                 ByteBufCodecs.VAR_INT, MachineRecipe::minGrade,
-                (in, res, by, mold, time, grade) -> new MachineRecipe(kind, new ArrayList<>(in), res, by, mold, time, grade));
+                (in, res, by, extras, mold, time, grade) -> new MachineRecipe(kind, new ArrayList<>(in), res, by, extras, mold, time, grade));
     }
 
     /** Convenience for code that only needs a plain ingredient view. */

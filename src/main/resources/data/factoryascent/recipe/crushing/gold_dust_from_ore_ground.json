@@ -1,0 +1,29 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ores/gold",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:gold_dust",
+    "count": 5
+  },
+  "time": 80,
+  "min_grade": 5,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:copper_dust"
+    },
+    "chance": 0.35
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "factoryascent:quartz_dust"
+      },
+      "chance": 0.15
+    }
+  ]
+}

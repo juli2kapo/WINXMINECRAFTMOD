@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TGT",
+    "MFM",
+    "TCT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "G": "minecraft:glass",
+    "M": "factoryascent:motor",
+    "F": "factoryascent:advanced_machine_frame",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:oxygen_compressor"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "factoryascent:bronze"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "factoryascent:bronze"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "factoryascent:bronze"
+      }
+    ]
+  }
+}

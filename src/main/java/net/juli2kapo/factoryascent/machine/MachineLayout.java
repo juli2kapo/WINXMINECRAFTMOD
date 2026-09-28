@@ -17,8 +17,18 @@ public final class MachineLayout {
         return type.power() == MachineType.Power.FUEL && type.category() == MachineType.Category.PROCESSOR;
     }
 
+    /** A 3×3 grid of slots in the middle of the machine area (Block Placer inputs, Vacuum Hopper outputs). */
+    private static Pos grid(int n) {
+        return new Pos(62 + 18 * (n % 3), 17 + 18 * (n / 3));
+    }
+
     public static Pos input(MachineType type, int n) {
         if (type.category() == MachineType.Category.FARMER) return new Pos(26, 17 + 18 * n);
+        switch (type) {
+            case BLOCK_PLACER -> { return grid(n); }
+            case BLOCK_BREAKER, MOB_FARM -> { return new Pos(30, 35); }
+            default -> { }
+        }
         if (burner(type)) {
             if (type.moldSlots() > 0 || type.inputSlots() == 2) return new Pos(35 + 18 * n, 17);
             return new Pos(44, 17);
@@ -42,6 +52,8 @@ public final class MachineLayout {
     }
 
     public static Pos output(MachineType type, int n) {
+        if (type == MachineType.VACUUM_HOPPER) return grid(n);
+        if (type.outputSlots() == 4) return new Pos(106 + 18 * (n % 2), 26 + 18 * (n / 2));
         if (type.outputSlots() > 2) {
             return new Pos(90 + 18 * (n % 3), 26 + 18 * (n / 3));
         }
@@ -53,7 +65,13 @@ public final class MachineLayout {
     }
 
     public static int arrowX(MachineType type) {
-        return 76;
+        return type == MachineType.BLOCK_BREAKER || type == MachineType.MOB_FARM ? 56 : 76;
+    }
+
+    /** Machines that show a progress arrow between their inputs and outputs. */
+    public static boolean hasArrow(MachineType type) {
+        return type.category() == MachineType.Category.PROCESSOR
+                || type == MachineType.CHARGER || type == MachineType.BLOCK_BREAKER || type == MachineType.MOB_FARM;
     }
 
     public static boolean hasFlame(MachineType type) {

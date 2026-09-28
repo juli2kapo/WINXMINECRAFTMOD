@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:diamond_chestplate",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:diamond",
+    "count": 7
+  },
+  "time": 80,
+  "min_grade": 5
+}

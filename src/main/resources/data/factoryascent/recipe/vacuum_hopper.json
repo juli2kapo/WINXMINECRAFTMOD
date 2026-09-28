@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PEP",
+    "CHC",
+    "PMP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "E": "factoryascent:ender_dust",
+    "C": "factoryascent:advanced_circuit",
+    "H": "minecraft:hopper",
+    "M": "factoryascent:motor"
+  },
+  "result": {
+    "id": "factoryascent:vacuum_hopper"
+  }
+}

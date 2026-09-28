@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "TXT",
+    "TCT"
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "T": "#c:plates/titanium",
+    "X": "factoryascent:oxygen_compressor",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:oxygen_sealer"
+  }
+}

@@ -45,7 +45,9 @@ public final class FactoryAscent {
         net.juli2kapo.factoryascent.miner.TheDeep.register(modBus);
         net.juli2kapo.factoryascent.ender.EnderContent.register(modBus);
         net.juli2kapo.factoryascent.mobs.MobContent.register(modBus);
+        net.juli2kapo.factoryascent.gear.GearContent.register(modBus);
         net.juli2kapo.factoryascent.orbital.OrbitalContent.register(modBus);
+        net.juli2kapo.factoryascent.space.SpaceContent.register(modBus, container);
         ModGameTests.register(modBus);
         net.juli2kapo.factoryascent.storagenet.StorageNetwork.register(modBus);
 

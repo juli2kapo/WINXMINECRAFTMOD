@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PAP",
+    "CFC",
+    "PSP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "A": "minecraft:iron_axe",
+    "C": "factoryascent:advanced_circuit",
+    "F": "factoryascent:advanced_machine_frame",
+    "S": "#minecraft:saplings"
+  },
+  "result": {
+    "id": "factoryascent:tree_farm"
+  }
+}

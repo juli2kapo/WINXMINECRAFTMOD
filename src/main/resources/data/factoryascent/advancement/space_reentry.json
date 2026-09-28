@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:space_orbit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:return_pod"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.space_reentry.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.space_reentry.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

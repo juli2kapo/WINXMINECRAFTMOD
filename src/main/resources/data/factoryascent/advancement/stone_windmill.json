@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:windmill"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:windmill"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.stone_windmill.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.stone_windmill.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:stone_water_wheel"
+}

@@ -95,7 +95,22 @@ public final class ModGameTests {
             new Test("ui_anchor_slot_and_switch", 40, net.juli2kapo.factoryascent.ender.EnderUiGameTests::anchorMenu),
             new Test("ui_pipe_side_config", 20, net.juli2kapo.factoryascent.ui.UiGameTests::pipeSideConfig),
             new Test("ui_drill_mode_screen", 20, net.juli2kapo.factoryascent.ui.UiGameTests::drillModeScreen),
-            new Test("ui_machine_sides_panel", 20, net.juli2kapo.factoryascent.ui.UiGameTests::machineSidesPanel)
+            new Test("ui_machine_sides_panel", 20, net.juli2kapo.factoryascent.ui.UiGameTests::machineSidesPanel),
+            new Test("sieve_sifts_gravel", 200, AgeContentTests::sieveSiftsGravel),
+            new Test("water_wheel_drives_quern", 400, AgeContentTests::waterWheelDrivesQuern),
+            new Test("windmill_needs_open_air", 100, AgeContentTests::windmillNeedsOpenAir),
+            new Test("drying_rack_makes_leather", 600, AgeContentTests::dryingRackMakesLeather),
+            new Test("backpack_keeps_contents", 20, AgeContentTests::backpackKeepsContents),
+            new Test("grappling_hook_pulls", 20, AgeContentTests::grapplingHookPulls),
+            new Test("charger_charges_items", 400, AgeContentTests::chargerChargesItems),
+            new Test("magnet_pulls_items", 20, AgeContentTests::magnetPullsItems),
+            new Test("floodlight_lights_area", 60, AgeContentTests::floodlightLightsArea),
+            new Test("breaker_and_placer", 200, AgeContentTests::breakerAndPlacer),
+            new Test("vacuum_hopper_collects", 200, AgeContentTests::vacuumHopperCollects),
+            new Test("tree_farm_fells_and_replants", 500, AgeContentTests::treeFarmFellsAndReplants),
+            new Test("industrial_grinder_quadruples", 100, AgeContentTests::industrialGrinderQuadruples),
+            new Test("recycler_salvages", 200, AgeContentTests::recyclerSalvages),
+            new Test("mob_farm_drops_loot", 400, AgeContentTests::mobFarmDropsLoot)
     );
 
     private ModGameTests() {}

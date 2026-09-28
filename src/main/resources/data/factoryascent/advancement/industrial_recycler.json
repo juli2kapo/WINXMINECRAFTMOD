@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:recycler",
+              "factoryascent:scrap_box"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:recycler"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_recycler.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_recycler.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_industrial"
+}

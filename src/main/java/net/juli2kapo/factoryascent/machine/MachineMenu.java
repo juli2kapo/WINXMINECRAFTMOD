@@ -104,7 +104,7 @@ public class MachineMenu extends AbstractContainerMenu {
             machine.toggleAutoEject();
             return true;
         }
-        if (buttonId == BUTTON_CRANK && machine instanceof ProcessingMachineBlockEntity p && machine.type() == MachineType.QUERN) {
+        if (buttonId == BUTTON_CRANK && machine instanceof ProcessingMachineBlockEntity p && machine.type().power() == MachineType.Power.MANUAL) {
             p.crank(player);
             return true;
         }

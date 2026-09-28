@@ -1,0 +1,15 @@
+{
+  "type": "factoryascent:recycling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:bronze_axe",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:bronze_ingot",
+    "count": 2
+  },
+  "time": 80,
+  "min_grade": 5
+}

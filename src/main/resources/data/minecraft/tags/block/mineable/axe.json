@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "factoryascent:wooden_crate"
+    "factoryascent:wooden_crate",
+    "factoryascent:sieve",
+    "factoryascent:drying_rack",
+    "factoryascent:water_wheel",
+    "factoryascent:windmill"
   ]
 }

@@ -29,6 +29,8 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
     public static final int FUEL_X = 17, FUEL_Y = 66;
     public static final int PLAYER_INV_Y = 108;
     public static final int BUTTON_LAUNCH = 0;
+    /** [space hook] Board the mounted Crew Capsule (and start the countdown). */
+    public static final int BUTTON_BOARD = 1;
 
     /** Synced numbers: fuel units, launch tick (-1 idle), pad status. */
     public static final int DATA_FUEL = 0, DATA_TICK = 1, DATA_STATUS = 2, DATA_COUNT = 3;
@@ -100,8 +102,11 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
     /** The Launch button: same rules as flint and steel; a refusal is sent back to the screen. */
     @Override
     public boolean clickMenuButton(Player player, int buttonId) {
-        if (buttonId != BUTTON_LAUNCH) return false;
-        Component problem = controller.tryLaunch();
+        if (buttonId != BUTTON_LAUNCH && buttonId != BUTTON_BOARD) return false;
+        Component problem = buttonId == BUTTON_BOARD && player instanceof ServerPlayer boarding
+                ? net.juli2kapo.factoryascent.space.CrewLaunch.board(boarding, controller) // [space hook]
+                : controller.tryLaunch();
+        if (problem == null && buttonId == BUTTON_BOARD) player.closeContainer();
         if (problem != null && player instanceof ServerPlayer sp) {
             if (sp.connection.hasChannel(OrbitalPayloads.PadMessage.TYPE)) {
                 PacketDistributor.sendToPlayer(sp, new OrbitalPayloads.PadMessage(problem));
