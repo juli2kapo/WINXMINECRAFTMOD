@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class EnderAnchorScreen extends AbstractContainerScreen<EnderAnchorMenu> {
     private static final int GRID_X = 50, GRID_Y = 17, GRID = 64;
-    private static final int INFO_X = 120, INFO_Y = 16, INFO_W = 104, INFO_H = 52;
+    private static final int INFO_X = 120, INFO_Y = 16, INFO_W = 104, INFO_H = 50;
 
     private @Nullable Button toggle;
 
@@ -38,7 +38,7 @@ public class EnderAnchorScreen extends AbstractContainerScreen<EnderAnchorMenu> 
             if (minecraft != null && minecraft.gameMode != null) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, EnderAnchorMenu.BUTTON_TOGGLE);
             }
-        }).bounds(leftPos + INFO_X, topPos + INFO_Y + INFO_H + 4, INFO_W, 16).build());
+        }).bounds(leftPos + INFO_X, topPos + INFO_Y + INFO_H + 2, INFO_W, 16).build());
         updateToggle();
     }
 

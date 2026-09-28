@@ -65,6 +65,12 @@ public class TeamScreen extends Screen {
         ClientPacketDistributor.sendToServer(new TeamAction(action, arg));
     }
 
+    /** Where the values after "Invites:" / "Online:" start (after the longer label, e.g. in Spanish). */
+    private int valueX() {
+        return Math.max(60, 15 + Math.max(font.width(Component.translatable("gui.factoryascent.team.invites")),
+                font.width(Component.translatable("gui.factoryascent.team.online"))));
+    }
+
     @Override
     protected void init() {
         int x = left(), y = top();
@@ -76,7 +82,7 @@ public class TeamScreen extends Screen {
                     b -> send(TeamAction.LEAVE, "")).bounds(x + W - 68, y + 9, 60, 14).build());
         }
         // pending invites
-        int ix = x + 60;
+        int ix = x + valueX();
         for (String team : view.invites().stream().limit(3).toList()) {
             addRenderableWidget(Button.builder(Component.translatable("gui.factoryascent.team.join", team),
                     b -> send(TeamAction.JOIN, team)).bounds(ix, y + 48, 68, 14).build());
@@ -99,7 +105,7 @@ public class TeamScreen extends Screen {
         invite.active = !solo();
         invite.setTooltip(Tooltip.create(Component.translatable("gui.factoryascent.team.invite_tip")));
         // online players: click to put the name in the field
-        int cx = x + 60;
+        int cx = x + valueX();
         for (String player : view.candidates()) {
             int w = Math.min(70, font.width(player) + 10);
             if (cx + w > x + W - 8) break;
@@ -146,11 +152,11 @@ public class TeamScreen extends Screen {
         g.text(font, OrbitalGui.fit(font, members, W - 18), x + 9, y + 34, OrbitalGui.MUTED, false);
         g.text(font, Component.translatable("gui.factoryascent.team.invites"), x + 9, y + 51, OrbitalGui.TEXT, false);
         if (view.invites().isEmpty()) {
-            g.text(font, Component.translatable("gui.factoryascent.team.no_invites"), x + 60, y + 51, OrbitalGui.MUTED, false);
+            g.text(font, Component.translatable("gui.factoryascent.team.no_invites"), x + valueX(), y + 51, OrbitalGui.MUTED, false);
         }
         g.text(font, Component.translatable("gui.factoryascent.team.online"), x + 9, y + 88, OrbitalGui.TEXT, false);
         if (view.candidates().isEmpty()) {
-            g.text(font, Component.translatable("gui.factoryascent.team.nobody"), x + 60, y + 88, OrbitalGui.MUTED, false);
+            g.text(font, Component.translatable("gui.factoryascent.team.nobody"), x + valueX(), y + 88, OrbitalGui.MUTED, false);
         }
         g.text(font, Component.translatable("gui.factoryascent.team.satellites", view.satellites().size()),
                 x + 9, y + LIST_Y - 12, OrbitalGui.TEXT, false);

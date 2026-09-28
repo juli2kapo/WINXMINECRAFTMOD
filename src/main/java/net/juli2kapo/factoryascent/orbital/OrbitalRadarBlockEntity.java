@@ -270,11 +270,11 @@ public class OrbitalRadarBlockEntity extends BlockEntity {
             Component age = Component.translatable("message.factoryascent.station_age", days).withStyle(ChatFormatting.DARK_GRAY);
             if (o.team().equals(team)) {
                 int state = s.id().equals(designated) ? OrbitalPayloads.CONTACT_TARGET : OrbitalPayloads.CONTACT_OWN;
-                rows.add(new Row(s.id(), Component.translatable("message.factoryascent.radar_row_own", s.type().displayName(), s.name())
+                rows.add(new Row(s.id(), Component.translatable("message.factoryascent.radar_row_own", s.type().shortName(), s.name())
                         .withStyle(ChatFormatting.DARK_GREEN).append(age), state, 0));
             } else if (locked.contains(s.id())) {
                 int state = s.id().equals(designated) ? OrbitalPayloads.CONTACT_TARGET : OrbitalPayloads.CONTACT_LOCKED;
-                rows.add(new Row(s.id(), Component.translatable("message.factoryascent.radar_row_locked", s.type().displayName(), s.name(),
+                rows.add(new Row(s.id(), Component.translatable("message.factoryascent.radar_row_locked", s.type().shortName(), s.name(),
                         teams.displayName(o.team())).withStyle(s.type().color()).append(age), state, 100));
             } else {
                 unknown++;

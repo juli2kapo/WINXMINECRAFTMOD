@@ -117,7 +117,7 @@ public class CableScreen extends NetScreen {
         FactoryGui.row(g, font, Component.translatable("gui.factoryascent.cable.in"),
                 Component.literal(fe(view.in()) + " FE/t").withStyle(ChatFormatting.DARK_GREEN), x + 8, right, ly, FactoryGui.TEXT, FactoryGui.TEXT);
         FactoryGui.row(g, font, Component.translatable("gui.factoryascent.cable.out"),
-                Component.literal(fe(view.out()) + " FE/t").withStyle(ChatFormatting.GOLD), x + 8, right, ly + 11, FactoryGui.TEXT, FactoryGui.TEXT);
+                Component.literal(fe(view.out()) + " FE/t").withColor(0xB05A00), x + 8, right, ly + 11, FactoryGui.TEXT, FactoryGui.TEXT);
         FactoryGui.row(g, font, Component.translatable("gui.factoryascent.cable.limit"),
                 Component.literal(fe(view.rate()) + " FE/t"), x + 8, right, ly + 22, FactoryGui.TEXT, FactoryGui.TEXT);
         Component extra = view.storage() > 0

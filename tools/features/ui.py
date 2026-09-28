@@ -47,7 +47,7 @@ LANG = [
     (f"{G}.beacon.rules", "Recall: %s s, cooldown %s s", "Retorno: %s s, espera %s s"),
     (f"{G}.beacon.cross_yes", "Works from other dimensions", "Funciona desde otras dimensiones"),
     (f"{G}.beacon.cross_no", "Only from this dimension", "Solo desde esta dimensión"),
-    (f"{G}.beacon.link_hint", "Sneak-use a Recall Charm here to link it", "Usa agachado un amuleto aquí para vincularlo"),
+    (f"{G}.beacon.link_hint", "Sneak-use a Recall Charm here to link it", "Vincula un amuleto: úsalo agachado aquí"),
     (f"{G}.beacon.linked_charms", "%s Recall Charm(s) on you linked here", "%s amuleto(s) tuyos vinculados aquí"),
     (f"{G}.beacon.pearl_used", "Each recall uses the pearl up", "Cada retorno gasta la perla"),
 
@@ -79,7 +79,7 @@ LANG = [
     (f"{G}.drill.desc.single", "One block, full speed", "Un bloque, a toda velocidad"),
     (f"{G}.drill.desc.area", "3×3 facing you, half speed", "3×3 de frente, a media velocidad"),
     (f"{G}.drill.desc.vein", "A whole ore vein, up to %s", "Una veta entera, hasta %s"),
-    (f"{G}.drill.tip", "Sneak + right-click a block to cycle modes", "Agáchate + clic derecho en un bloque para cambiar de modo"),
+    (f"{G}.drill.tip", "Sneak + right-click a block to cycle modes", "Agachado + clic der. en un bloque: cambia el modo"),
 
     # item pipe
     (f"{G}.face.down", "Bottom", "Abajo"),
@@ -88,7 +88,7 @@ LANG = [
     (f"{G}.face.south", "South", "Sur"),
     (f"{G}.face.west", "West", "Oeste"),
     (f"{G}.face.east", "East", "Este"),
-    (f"{G}.pipe.rate", "%s items/s per extracting face", "%s objetos/s por cara que extrae"),
+    (f"{G}.pipe.rate", "%s items/s per face", "%s objetos/s por cara"),
     (f"{G}.pipe.insert", "Insert", "Insertar"),
     (f"{G}.pipe.extract", "Extract", "Extraer"),
     (f"{G}.pipe.insert_tip", "Items from the network go into this inventory. Click to pull from it instead",
@@ -104,7 +104,7 @@ LANG = [
     (f"{G}.pipe.state_extract", "Pulls from this inventory", "Extrae de este inventario"),
     (f"{G}.pipe.state_none", "Not connected", "Sin conexión"),
     (f"{G}.pipe.click_toggle", "Click to switch insert / extract", "Clic para alternar insertar / extraer"),
-    (f"{G}.pipe.network", "Network: %s pipes, %s inventory faces", "Red: %s tuberías, %s caras a inventarios"),
+    (f"{G}.pipe.network", "Network: %s pipes, %s inventory faces", "Red: %s tuberías, %s inventarios"),
     (f"{G}.pipe.extracting", "Extracting faces: %s", "Caras que extraen: %s"),
 
     # power cable

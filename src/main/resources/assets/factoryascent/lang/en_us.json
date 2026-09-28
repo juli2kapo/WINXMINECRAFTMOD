@@ -699,7 +699,7 @@
   "gui.factoryascent.face.south": "South",
   "gui.factoryascent.face.west": "West",
   "gui.factoryascent.face.east": "East",
-  "gui.factoryascent.pipe.rate": "%s items/s per extracting face",
+  "gui.factoryascent.pipe.rate": "%s items/s per face",
   "gui.factoryascent.pipe.insert": "Insert",
   "gui.factoryascent.pipe.extract": "Extract",
   "gui.factoryascent.pipe.insert_tip": "Items from the network go into this inventory. Click to pull from it instead",

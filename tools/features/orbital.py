@@ -322,7 +322,7 @@ def lang(L):
     L(f"{SV}.waiting", "Waiting for imagery…", "Esperando imágenes…")
     L(f"{SV}.satellites", "Satellites here: %s", "Satélites aquí: %s")
     L(f"{SV}.no_satellites", "Your team has no satellites over this dimension", "Tu equipo no tiene satélites sobre esta dimensión")
-    L(f"{SV}.days", "%s days up", "%s días arriba")
+    L(f"{SV}.days", "%s days up", "%s días")
     L(f"{SV}.legend_station", "Station", "Estación")
     L(f"{SV}.legend_pad", "Launch Pad", "Plataforma")
     L(f"{SV}.legend_you", "You", "Tú")
@@ -330,7 +330,7 @@ def lang(L):
 
     PD = f"{G}.pad"
     L(f"{PD}.payload", "Payload", "Carga")
-    L(f"{PD}.fuel", "Fuel", "Combustible")
+    L(f"{PD}.fuel", "Fuel", "Tanque")
     L(f"{PD}.launch", "Launch", "Lanzar")
     L(f"{PD}.launch_tip", "Launch now. A redstone pulse or sneak-using flint and steel on the pad also launches",
       "Lanzar ahora. Un pulso de redstone o usar un mechero agachado sobre la plataforma también lanza")
@@ -338,7 +338,7 @@ def lang(L):
     L(f"{PD}.missile_unprogrammed", "No target: program it at an Orbital Radar", "Sin objetivo: prográmalo en un radar orbital")
     L(f"{PD}.missile_target", "Target: %s", "Objetivo: %s")
     L(f"{PD}.satellite_type", "%s satellite", "Satélite de %s")
-    L(f"{PD}.fuel_amount", "Fuel %s/%s (uses %s)", "Combustible %s/%s (usa %s)")
+    L(f"{PD}.fuel_amount", "Fuel %s/%s (uses %s)", "Tanque %s/%s (usa %s)")
     L(f"{PD}.fuel_tip", "%s = 1, %s = 4", "%s = 1, %s = 4")
     L(f"{PD}.payload_tip", "Put a satellite or an Anti-Satellite Missile here; take it out to get it back",
       "Pon aquí un satélite o un misil antisatélite; sácalo para recuperarlo")
