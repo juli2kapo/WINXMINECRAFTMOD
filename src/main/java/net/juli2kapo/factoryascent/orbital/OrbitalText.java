@@ -1,7 +1,6 @@
 package net.juli2kapo.factoryascent.orbital;
 
 import java.util.UUID;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -23,7 +22,12 @@ final class OrbitalText {
     /** "• Uplink Satellite 'Uplink-1' over the Overworld" */
     static MutableComponent satelliteLine(Satellite s) {
         return Component.translatable("message.factoryascent.satellite_line", s.type().displayName(), s.name(),
-                dimensionName(s.dimension())).withStyle(s.type() == SatelliteType.UPLINK ? ChatFormatting.AQUA : ChatFormatting.GREEN);
+                dimensionName(s.dimension())).withStyle(s.type().color());
+    }
+
+    /** "3 days in orbit" suffix: whole Minecraft days since the launch. */
+    static long daysInOrbit(MinecraftServer server, Satellite s) {
+        return Math.max(0, server.overworld().getGameTime() - s.launchTime()) / 24000L;
     }
 
     /** Sends a message to every online member of a team. */

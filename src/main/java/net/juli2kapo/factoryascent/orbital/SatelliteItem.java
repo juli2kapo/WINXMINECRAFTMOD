@@ -24,7 +24,7 @@ public class SatelliteItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> tooltip, TooltipFlag flag) {
-        tooltip.accept(Component.translatable("tooltip.factoryascent." + type.getSerializedName() + "_satellite")
+        tooltip.accept(Component.translatable("tooltip.factoryascent." + type.itemId())
                 .withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.satellite_launch").withStyle(ChatFormatting.DARK_AQUA));
     }

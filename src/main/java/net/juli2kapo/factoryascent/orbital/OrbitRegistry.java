@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import net.juli2kapo.factoryascent.FactoryAscent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -20,10 +22,15 @@ public final class OrbitRegistry extends SavedData {
     private static final SavedDataType<OrbitRegistry> TYPE = new SavedDataType<>(
             Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "orbit"), () -> new OrbitRegistry(Map.of()), CODEC);
 
+    /** A satellite together with the team that owns it. */
+    public record Owned(String team, Satellite satellite) {}
+
     private final Map<String, List<Satellite>> byTeam = new HashMap<>();
 
     private OrbitRegistry(Map<String, List<Satellite>> stored) {
         stored.forEach((team, list) -> byTeam.put(team, new ArrayList<>(list)));
+        // Old saves get their satellite ids on load: save them so they stay the same.
+        if (!byTeam.isEmpty()) setDirty();
     }
 
     public static OrbitRegistry get(MinecraftServer server) {
@@ -35,6 +42,31 @@ public final class OrbitRegistry extends SavedData {
         setDirty();
     }
 
+    /** Takes a satellite out of orbit; the removed satellite and its team, if it was there. */
+    public Optional<Owned> remove(UUID id) {
+        for (var entry : byTeam.entrySet()) {
+            for (var it = entry.getValue().iterator(); it.hasNext(); ) {
+                Satellite s = it.next();
+                if (s.id().equals(id)) {
+                    it.remove();
+                    setDirty();
+                    return Optional.of(new Owned(entry.getKey(), s));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** A satellite by id, with its team. */
+    public Optional<Owned> find(UUID id) {
+        for (var entry : byTeam.entrySet()) {
+            for (Satellite s : entry.getValue()) {
+                if (s.id().equals(id)) return Optional.of(new Owned(entry.getKey(), s));
+            }
+        }
+        return Optional.empty();
+    }
+
     public List<Satellite> all(String team) {
         return List.copyOf(byTeam.getOrDefault(team, List.of()));
     }
@@ -42,6 +74,21 @@ public final class OrbitRegistry extends SavedData {
     /** The team's satellites over one dimension, oldest first. */
     public List<Satellite> over(String team, ResourceKey<Level> dimension) {
         return byTeam.getOrDefault(team, List.of()).stream().filter(s -> s.dimension().equals(dimension)).toList();
+    }
+
+    /** Every team's satellites over one dimension (what a radar there sees), oldest first. */
+    public List<Owned> everyOver(ResourceKey<Level> dimension) {
+        List<Owned> out = new ArrayList<>();
+        byTeam.forEach((team, list) -> list.stream().filter(s -> s.dimension().equals(dimension))
+                .forEach(s -> out.add(new Owned(team, s))));
+        out.sort(java.util.Comparator.comparingLong(o -> o.satellite().launchTime()));
+        return out;
+    }
+
+    /** The team's oldest satellite of this type over the dimension, if any. */
+    public Optional<Satellite> first(String team, ResourceKey<Level> dimension, SatelliteType type) {
+        return byTeam.getOrDefault(team, List.of()).stream()
+                .filter(s -> s.type() == type && s.dimension().equals(dimension)).findFirst();
     }
 
     public boolean has(String team, ResourceKey<Level> dimension, SatelliteType type) {

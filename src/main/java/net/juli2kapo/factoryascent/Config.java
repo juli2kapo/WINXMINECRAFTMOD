@@ -17,6 +17,8 @@ public final class Config {
     public static final ModConfigSpec.BooleanValue RECALL_CROSS_DIMENSION;
     public static final ModConfigSpec.DoubleValue SIZE_RAY_MIN_SCALE;
     public static final ModConfigSpec.DoubleValue SIZE_RAY_MAX_SCALE;
+    public static final ModConfigSpec.BooleanValue ASAT_ENABLED;
+    public static final ModConfigSpec.IntValue RADAR_LOCK_SECONDS;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -49,6 +51,12 @@ public final class Config {
                 .defineInRange("sizeRayMinScale", 0.25, 0.0625, 1.0);
         SIZE_RAY_MAX_SCALE = b.comment("Largest size the Maximizer Ray can grow a creature to (1.0 = normal; vanilla allows up to 16).")
                 .defineInRange("sizeRayMaxScale", 4.0, 1.0, 16.0);
+        b.pop();
+        b.push("orbital");
+        ASAT_ENABLED = b.comment("Whether Anti-Satellite missiles can be launched (false for PvE-only servers; radars still track).")
+                .define("asatEnabled", true);
+        RADAR_LOCK_SECONDS = b.comment("Orbital Radar: seconds of powered tracking before a foreign satellite is locked.")
+                .defineInRange("radarLockSeconds", 8, 1, 600);
         b.pop();
         SPEC = b.build();
     }
