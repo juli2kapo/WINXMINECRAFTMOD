@@ -471,7 +471,7 @@
   "message.factoryascent.pad_no_fuel": "No hay suficiente combustible: %s/%s",
   "message.factoryascent.pad_blocked": "Algo bloquea la trayectoria del cohete",
   "message.factoryascent.pad_status_none": "sin satélite",
-  "message.factoryascent.pad_status": "Carga: %s · Combustible %s/%s",
+  "message.factoryascent.pad_status": "Carga: %s · Combustible %s/%s (%s por lanzamiento)",
   "message.factoryascent.countdown": "Lanzamiento en %s…",
   "message.factoryascent.reached_orbit": "%s «%s» alcanzó la órbita sobre %s",
   "message.factoryascent.satellite_line": "• %s «%s» sobre %s",

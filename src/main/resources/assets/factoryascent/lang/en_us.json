@@ -471,7 +471,7 @@
   "message.factoryascent.pad_no_fuel": "Not enough fuel: %s/%s",
   "message.factoryascent.pad_blocked": "Something is blocking the rocket's path",
   "message.factoryascent.pad_status_none": "no satellite",
-  "message.factoryascent.pad_status": "Payload: %s · Fuel %s/%s",
+  "message.factoryascent.pad_status": "Payload: %s · Fuel %s/%s (%s per launch)",
   "message.factoryascent.countdown": "Launch in %s…",
   "message.factoryascent.reached_orbit": "%s '%s' reached orbit over %s",
   "message.factoryascent.satellite_line": "• %s '%s' over %s",

@@ -200,7 +200,7 @@ def lang(L):
     L(f"{M}.pad_no_fuel", "Not enough fuel: %s/%s", "No hay suficiente combustible: %s/%s")
     L(f"{M}.pad_blocked", "Something is blocking the rocket's path", "Algo bloquea la trayectoria del cohete")
     L(f"{M}.pad_status_none", "no satellite", "sin satélite")
-    L(f"{M}.pad_status", "Payload: %s · Fuel %s/%s", "Carga: %s · Combustible %s/%s")
+    L(f"{M}.pad_status", "Payload: %s · Fuel %s/%s (%s per launch)", "Carga: %s · Combustible %s/%s (%s por lanzamiento)")
     L(f"{M}.countdown", "Launch in %s…", "Lanzamiento en %s…")
     L(f"{M}.reached_orbit", "%s '%s' reached orbit over %s", "%s «%s» alcanzó la órbita sobre %s")
     L(f"{M}.satellite_line", "• %s '%s' over %s", "• %s «%s» sobre %s")

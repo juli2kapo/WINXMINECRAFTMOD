@@ -112,6 +112,10 @@ public final class OrbitalContent {
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TeamCommands.register(e.getDispatcher()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> SurveyMapper.tick(e.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> SurveyMapper.clear());
+        // Team messages and screens name solo teams after their player, so learn every name on login.
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) -> {
+            if (e.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp) FactoryTeams.get(sp.level().getServer()).remember(sp);
+        });
         // Sneaking with an item normally skips the block; sneak + flint and steel must reach the pad to launch.
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e) -> {
             if (e.getEntity().isShiftKeyDown() && e.getItemStack().is(net.minecraft.world.item.Items.FLINT_AND_STEEL)) {
