@@ -184,8 +184,9 @@ public class SizeRayItem extends Item {
         Vec3 m = muzzle(user);
         if (elapsed <= CHARGE_TICKS) {
             float progress = elapsed / (float) CHARGE_TICKS;
-            server.sendParticles(new DustParticleOptions(color, 0.6f + progress), m.x, m.y, m.z,
-                    1 + (int) (progress * 3), 0.05, 0.05, 0.05, 0);
+            // Small and sparse: the muzzle sits just in front of the player's eyes, so bigger dust clouds the view.
+            if (elapsed % 2 == 0) server.sendParticles(new DustParticleOptions(color, 0.3f + 0.35f * progress), m.x, m.y, m.z,
+                    1, 0.04, 0.04, 0.04, 0);
             if (elapsed % 2 == 0) server.sendParticles(ParticleTypes.ELECTRIC_SPARK, m.x, m.y, m.z, 1, 0.08, 0.08, 0.08, 0.02);
             if (elapsed % 3 == 0) {
                 server.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.NOTE_BLOCK_BIT, SoundSource.PLAYERS,
@@ -199,7 +200,7 @@ public class SizeRayItem extends Item {
                 }
             }
         } else if (elapsed % 4 == 0) {
-            server.sendParticles(new DustParticleOptions(color, 1.2f), m.x, m.y, m.z, 1, 0.03, 0.03, 0.03, 0);
+            server.sendParticles(new DustParticleOptions(color, 0.5f), m.x, m.y, m.z, 1, 0.03, 0.03, 0.03, 0);
         }
     }
 
