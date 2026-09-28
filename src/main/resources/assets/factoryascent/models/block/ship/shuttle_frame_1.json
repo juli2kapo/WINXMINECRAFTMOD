@@ -1,0 +1,243 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "tile": "factoryascent:block/ship_tile_white",
+    "particle": "factoryascent:block/ship_tile_white"
+  },
+  "elements": [
+    {
+      "from": [
+        7.8125,
+        5.7323,
+        7.5
+      ],
+      "to": [
+        8.8125,
+        11.2677,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "south": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "east": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "west": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "up": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        },
+        "down": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.3125,
+          8.5,
+          8.0
+        ],
+        "x": 25.4077,
+        "y": -90.0,
+        "z": 0.0
+      }
+    },
+    {
+      "from": [
+        -8.8125,
+        5.7323,
+        7.5
+      ],
+      "to": [
+        -7.8125,
+        11.2677,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "south": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "east": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "west": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            5.5354
+          ]
+        },
+        "up": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        },
+        "down": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          -8.3125,
+          8.5,
+          8.0
+        ],
+        "x": 25.4077,
+        "y": 90.0,
+        "z": 0.0
+      }
+    },
+    {
+      "from": [
+        -0.5,
+        4.175,
+        7.5
+      ],
+      "to": [
+        0.5,
+        18.425,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            14.25
+          ]
+        },
+        "south": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            14.25
+          ]
+        },
+        "east": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            14.25
+          ]
+        },
+        "west": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            14.25
+          ]
+        },
+        "up": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        },
+        "down": {
+          "texture": "#tile",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          -0.0,
+          11.3,
+          8.0
+        ],
+        "x": 90.0,
+        "y": 90.0,
+        "z": 0.0
+      }
+    }
+  ]
+}

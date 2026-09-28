@@ -1,0 +1,147 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "white": "factoryascent:block/ship_white",
+    "white_light": "factoryascent:block/ship_light_white",
+    "particle": "factoryascent:block/ship_white"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        -5,
+        7
+      ],
+      "to": [
+        9,
+        21,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        21,
+        7
+      ],
+      "to": [
+        9,
+        23,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#white_light",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#white_light",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#white_light",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#white_light",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#white_light",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#white_light",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      },
+      "light_emission": 15
+    }
+  ]
+}

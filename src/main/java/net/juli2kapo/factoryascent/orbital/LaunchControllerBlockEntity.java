@@ -280,7 +280,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         Component payload = satellite.isEmpty() ? Component.translatable("message.factoryascent.pad_status_none")
                 : satellite.getHoverName();
         String key = isFormed() ? "message.factoryascent.pad_status" : "message.factoryascent.pad_incomplete";
-        return Component.translatable(key, payload, fuel, FUEL_MAX, FUEL_PER_LAUNCH);
+        return Component.translatable(key, payload, fuel, FUEL_MAX, fuelCost()); // [space hook] per-payload cost
     }
 
     // ---------------------------------------------------------------- the launch

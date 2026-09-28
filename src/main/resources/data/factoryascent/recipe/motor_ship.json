@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LCH",
+    "PMP",
+    "PXP"
+  ],
+  "key": {
+    "L": "minecraft:redstone_lamp",
+    "C": "factoryascent:basic_circuit",
+    "H": "minecraft:note_block",
+    "P": "#c:plates/steel",
+    "M": "factoryascent:motor",
+    "X": "factoryascent:bronze_cog"
+  },
+  "result": {
+    "id": "factoryascent:motor_ship"
+  }
+}

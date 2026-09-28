@@ -147,8 +147,9 @@ public final class SpaceClient {
         if (reentryTicks > 0) amp = 2.5f * reentryTicks / reentryLength;
         if (mc.player.getVehicle() instanceof net.juli2kapo.factoryascent.space.RocketSeatEntity seat) {
             var pad = mc.level.getBlockEntity(seat.pad());
-            if (pad instanceof net.juli2kapo.factoryascent.orbital.LaunchControllerBlockEntity c && c.launching()) {
-                amp = Math.max(amp, c.launchTick() >= net.juli2kapo.factoryascent.orbital.LaunchControllerBlockEntity.LIFTOFF ? 0.9f : 0.25f);
+            if (pad instanceof net.juli2kapo.factoryascent.orbital.LaunchControllerBlockEntity c) {
+                long tick = net.juli2kapo.factoryascent.space.RocketSeatEntity.elapsed(c);
+                if (tick >= 0) amp = Math.max(amp, tick >= net.juli2kapo.factoryascent.orbital.LaunchControllerBlockEntity.LIFTOFF ? 0.9f : 0.25f);
             }
         }
         if (amp <= 0) return;

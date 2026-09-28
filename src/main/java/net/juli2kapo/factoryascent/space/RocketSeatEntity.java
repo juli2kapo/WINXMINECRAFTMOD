@@ -65,6 +65,14 @@ public class RocketSeatEntity extends Entity implements SealedCabin {
         return t > 0 ? LaunchControllerBlockEntity.ACCEL * t * t : 0;
     }
 
+    /**
+     * Ticks since the countdown started, from the synced start time (works on the client, where the
+     * controller's tick counter isn't synced), or -1 when not launching.
+     */
+    public static long elapsed(LaunchControllerBlockEntity c) {
+        return c.launchStart() < 0 || c.getLevel() == null ? -1 : c.getLevel().getGameTime() - c.launchStart();
+    }
+
     /** Past liftoff: no getting out any more. */
     public boolean strappedIn() {
         LaunchControllerBlockEntity c = controller();
@@ -84,7 +92,9 @@ public class RocketSeatEntity extends Entity implements SealedCabin {
     private void place() {
         LaunchControllerBlockEntity c = controller();
         BlockPos p = pad();
-        double h = c == null ? 0 : climb(c, 0);
+        // The client ticks entities before its clock advances, and the rocket renderer draws at the
+        // advanced time: place the client's seat one tick ahead so rider and rocket stay together.
+        double h = c == null ? 0 : climb(c, level().isClientSide() ? 1f : 0f);
         setPos(p.getX() + 0.5, p.getY() + SEAT_Y + h, p.getZ() + 0.5);
     }
 

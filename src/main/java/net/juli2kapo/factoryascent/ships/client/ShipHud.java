@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 /**
  * The instruments while aboard (top left): state, speed and heading for everyone; wind and sail
  * pull on the cog, the battery on the motor ship, and the cockpit read-out on the shuttle
- * (altitude, climb rate, tank, where climbing or descending takes you). Hidden with F1 and while a
+ * (altitude, climb rate, tank, where climbing or descending takes you). Hidden while a
  * screen is open.
  */
 final class ShipHud {
@@ -30,7 +30,7 @@ final class ShipHud {
     static void render(GuiGraphicsExtractor g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         AbstractShip ship = ShipsClient.riding();
-        if (ship == null || mc.options.hideGui || mc.screen != null) return;
+        if (ship == null || mc.gui.screen() != null) return;
         Font font = mc.font;
         List<Component> lines = new ArrayList<>();
         List<float[]> bars = new ArrayList<>(); // {line index, fraction, color}
@@ -52,7 +52,7 @@ final class ShipHud {
             lines.add(Component.empty());
         } else if (ship instanceof Shuttle) {
             lines.add(ShipText.altitude((int) Math.floor(ship.getY())));
-            lines.add(ShipText.climb((ship.getY() - ship.yo) * 20));
+            lines.add(ShipText.climb(ship.verticalSpeed() * 20));
             int cap = Shuttle.TANK_ITEMS * ShipConfig.fuelPerItem();
             lines.add(ShipText.tank(ship.syncedFuel(), cap));
             bars.add(new float[] {lines.size(), ship.syncedFuel() / (float) cap, 0xFFE08030});

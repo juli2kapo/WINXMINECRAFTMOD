@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "dark": "factoryascent:block/ship_cog_dark",
+    "particle": "factoryascent:block/ship_cog_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        7.0,
+        -8.075,
+        6.35
+      ],
+      "to": [
+        9.0,
+        24.075,
+        8.9
+      ],
+      "faces": {
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            2.55,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            2.55,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            2.0,
+            2.55
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            2.0,
+            2.55
+          ]
+        },
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            2.0,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            2.0,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

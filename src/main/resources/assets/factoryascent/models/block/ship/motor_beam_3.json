@@ -1,0 +1,192 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "beam": "factoryascent:block/ship_beam",
+    "particle": "factoryascent:block/ship_beam"
+  },
+  "elements": [
+    {
+      "from": [
+        1.4684,
+        -3.8848,
+        7.9194
+      ],
+      "to": [
+        13.8413,
+        20.5807,
+        8.1194
+      ],
+      "faces": {
+        "south": {
+          "texture": "#beam",
+          "uv": [
+            0.0,
+            0,
+            12.3729,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#beam",
+          "uv": [
+            0.0,
+            0,
+            12.3729,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          7.6549,
+          8.3479,
+          8.0194
+        ],
+        "x": 101.1951,
+        "y": 0.0,
+        "z": 22.5
+      },
+      "light_emission": 15
+    },
+    {
+      "from": [
+        9.4657,
+        4.1124,
+        7.9194
+      ],
+      "to": [
+        21.8385,
+        28.5779,
+        8.1194
+      ],
+      "faces": {
+        "south": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          15.6521,
+          16.3451,
+          8.0194
+        ],
+        "x": 101.1951,
+        "y": 0.0,
+        "z": 67.5
+      },
+      "light_emission": 15
+    },
+    {
+      "from": [
+        -9.8413,
+        -3.8848,
+        7.9194
+      ],
+      "to": [
+        2.5316,
+        20.5807,
+        8.1194
+      ],
+      "faces": {
+        "south": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          -3.6549,
+          8.3479,
+          8.0194
+        ],
+        "x": 101.1951,
+        "y": -0.0,
+        "z": -22.5
+      },
+      "light_emission": 15
+    }
+  ]
+}

@@ -75,6 +75,8 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
 
     /** Client-side animation, read by the renderer (propeller angle, main thrust, lift thrust, leg retraction). */
     public float spin, spinO, thrust, thrustO, lift, liftO, legs, legsO;
+    /** Client: speeds measured from the interpolated positions, smoothed. */
+    private double clientSpeed, clientClimb, lastX = Double.NaN, lastY, lastZ;
 
     protected AbstractShip(EntityType<? extends AbstractShip> type, Level level) {
         super(type, level);
@@ -204,8 +206,14 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
 
     /** Horizontal speed in blocks per tick. */
     public double horizontalSpeed() {
-        Vec3 v = level().isClientSide() ? new Vec3(getX() - xo, 0, getZ() - zo) : getDeltaMovement();
+        if (level().isClientSide()) return clientSpeed;
+        Vec3 v = getDeltaMovement();
         return Math.sqrt(v.x * v.x + v.z * v.z);
+    }
+
+    /** Vertical speed in blocks per tick (the client measures it from the smoothed positions). */
+    public double verticalSpeed() {
+        return level().isClientSide() ? clientClimb : getDeltaMovement().y;
     }
 
     /** Unit vector of the bow. */
@@ -242,6 +250,14 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
             thrustO = thrust;
             liftO = lift;
             legsO = legs;
+            if (!Double.isNaN(lastX)) {
+                double dx = getX() - lastX, dz = getZ() - lastZ;
+                clientSpeed = clientSpeed * 0.6 + Math.sqrt(dx * dx + dz * dz) * 0.4;
+                clientClimb = clientClimb * 0.6 + (getY() - lastY) * 0.4;
+            }
+            lastX = getX();
+            lastY = getY();
+            lastZ = getZ();
             animate();
             clientEffects();
         }
@@ -304,6 +320,15 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
         Vec3[] seats = seats();
         Vec3 seat = seats[Math.min(i, seats.length - 1)];
         return seat.yRot(-getYRot() * Mth.DEG_TO_RAD);
+    }
+
+    /** Boarding faces you the way the ship points. */
+    @Override
+    protected void addPassenger(Entity passenger) {
+        super.addPassenger(passenger);
+        passenger.setYRot(getYRot());
+        passenger.setYHeadRot(getYRot());
+        passenger.setXRot(Math.min(passenger.getXRot(), 20f));
     }
 
     @Override

@@ -124,10 +124,22 @@ public final class SpaceContent {
             p -> new SuitItems.SuitPieceItem(p, ArmorType.BOOTS), p -> suit(p, ArmorType.BOOTS));
     public static final DeferredItem<JetSuitItem> JET_SUIT = ITEMS.registerItem("jet_suit",
             JetSuitItem::new, p -> suit(p, ArmorType.CHESTPLATE));
+    /**
+     * Jetpacks sit in the chest slot with the harness as their armour look (equipment asset
+     * {@code jetpack}); the pack itself is a 3D model drawn by the client's jetpack layer.
+     */
+    private static Item.Properties jetpack(Item.Properties p) {
+        return p.stacksTo(1).component(DataComponents.EQUIPPABLE, net.minecraft.world.item.equipment.Equippable.builder(EquipmentSlot.CHEST)
+                .setEquipSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON).setAsset(JETPACK_ASSET).build());
+    }
+
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> JETPACK_ASSET =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.world.item.equipment.EquipmentAssets.ROOT_ID,
+                    Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "jetpack"));
     public static final DeferredItem<JetpackItem> ELECTRIC_JETPACK = ITEMS.registerItem("electric_jetpack",
-            p -> new JetpackItem(p, Jetpack.Tier.ELECTRIC), p -> p.stacksTo(1).equippable(EquipmentSlot.CHEST));
+            p -> new JetpackItem(p, Jetpack.Tier.ELECTRIC), SpaceContent::jetpack);
     public static final DeferredItem<JetpackItem> ADVANCED_JETPACK = ITEMS.registerItem("advanced_jetpack",
-            p -> new JetpackItem(p, Jetpack.Tier.ADVANCED), p -> p.stacksTo(1).equippable(EquipmentSlot.CHEST));
+            p -> new JetpackItem(p, Jetpack.Tier.ADVANCED), SpaceContent::jetpack);
     public static final DeferredItem<CrewCapsuleItem> CREW_CAPSULE = ITEMS.registerItem("crew_capsule",
             CrewCapsuleItem::new, p -> p.stacksTo(1));
 
@@ -135,7 +147,7 @@ public final class SpaceContent {
 
     public static final DeferredHolder<EntityType<?>, EntityType<RocketSeatEntity>> ROCKET_SEAT = ENTITIES.registerEntityType(
             "rocket_seat", RocketSeatEntity::new, MobCategory.MISC,
-            b -> b.sized(0.6f, 0.6f).noSummon().noSave().fireImmune().clientTrackingRange(16).updateInterval(2));
+            b -> b.sized(0.6f, 0.6f).noSummon().fireImmune().clientTrackingRange(16).updateInterval(2));
 
     public static final Supplier<RecipeSerializer<TransmuteRecipe>> JET_SUIT_RECIPE =
             RECIPE_SERIALIZERS.register("jet_suit", () -> JetSuitRecipe.SERIALIZER);

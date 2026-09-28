@@ -1,0 +1,165 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "dark": "factoryascent:block/ship_cog_dark",
+    "particle": "factoryascent:block/ship_cog_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        7.7,
+        0.4626,
+        7.95
+      ],
+      "to": [
+        8.8,
+        15.5374,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            15.0748
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            15.0748
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            15.0748
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            15.0748
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            1.1
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            1.1
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.25,
+          8.0,
+          8.5
+        ],
+        "x": -90.0,
+        "y": -5.7106,
+        "z": 180.0
+      }
+    },
+    {
+      "from": [
+        -6.55,
+        -5.5,
+        0.45
+      ],
+      "to": [
+        -5.45,
+        21.5,
+        1.55
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            1.1
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            1.1,
+            1.1
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          -6.0,
+          8.0,
+          1.0
+        ],
+        "x": 90.0,
+        "y": 90.0,
+        "z": 0.0
+      }
+    }
+  ]
+}

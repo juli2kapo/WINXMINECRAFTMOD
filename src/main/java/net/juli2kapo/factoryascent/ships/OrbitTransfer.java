@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import net.juli2kapo.factoryascent.FactoryAscent;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -26,9 +23,8 @@ import org.jspecify.annotations.Nullable;
  * unmounted in that time is put back in its seat (and the passenger list re-sent to clients).
  */
 public final class OrbitTransfer {
-    /** The orbit dimension (added by the space content; looked up by id). */
-    public static final ResourceKey<Level> ORBIT = ResourceKey.create(Registries.DIMENSION,
-            Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "orbit"));
+    /** The orbit dimension (the space content's data pack dimension). */
+    public static final ResourceKey<Level> ORBIT = net.juli2kapo.factoryascent.space.SpaceRules.ORBIT;
 
     private record Pending(ResourceKey<Level> level, UUID ship, List<UUID> passengers, int[] ticksLeft) {}
 

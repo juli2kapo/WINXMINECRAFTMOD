@@ -116,14 +116,25 @@ def plank(a0, a1, b0, b1, th, outer, inner=None, edge=None, out_dir=None, u=0, v
 
 
 def rod(p0, p1, r, tex, emissive=False):
-    """A square rod (2r thick) from p0 to p1."""
+    """A square rod (2r thick) from p0 to p1 (a list of pieces when long: a model element may span 48 px)."""
     d = _sub(p1, p0)
     length = math.sqrt(_dot(d, d))
+    if length > 36:
+        n = math.ceil(length / 36)
+        pts = [_add(p0, _scale(d, i / n)) for i in range(n + 1)]
+        out = []
+        for a, b in zip(pts, pts[1:]):
+            out += rod(a, b, r, tex, emissive)
+        return out
     a = math.degrees(math.acos(max(-1, min(1, d[1] / length))))
     b = math.degrees(math.atan2(d[0], d[2]))
     c = _scale(_add(p0, p1), 0.5)
     e = cube([c[0] - r, c[1] - length / 2, c[2] - r], [c[0] + r, c[1] + length / 2, c[2] + r], tex, emissive=emissive)
-    return e.transformed(_mul(_rot("y", b), _rot("x", a)), c)
+    return [e.transformed(_mul(_rot("y", b), _rot("x", a)), c)]
+
+
+def _as_list(x):
+    return x if isinstance(x, list) else [x]
 
 
 def box(x0, y0, z0, x1, y1, z1, tex, u=0, v=0, emissive=False, only=None):
@@ -230,7 +241,7 @@ def rails(points, y0, y1, post_tex, rail_tex, every=8, r=0.5):
             t = i / n
             x, z = xa + (xb - xa) * t, za + (zb - za) * t
             els.append(box(x - r, y0, z - r, x + r, y1, z + r, post_tex))
-        els.append(rod([xa, y1, za], [xb, y1, zb], r * 1.1, rail_tex))
+        els += rod([xa, y1, za], [xb, y1, zb], r * 1.1, rail_tex)
     x, z = points[-1]
     els.append(box(x - r, y0, z - r, x + r, y1, z + r, post_tex))
     return els
@@ -301,9 +312,9 @@ def cog_hull():
     els.append(box(mx - 1.2, 98, mz - 1.2, mx + 1.2, 100, mz + 1.2, "bronze"))  # truck
     for side in (1, -1):
         for dz in (-6, 0, 6):
-            els.append(rod([mx + side * 1.8, 78, mz], [side * 20.2, 18, mz + dz], 0.35, "rope"))
-    els.append(rod([mx, 90, mz + 1.5], [0, 26, 50], 0.35, "rope"))  # forestay
-    els.append(rod([mx, 90, mz - 1.5], [0, 24, -41], 0.35, "rope"))  # backstay
+            els += rod([mx + side * 1.8, 78, mz], [side * 20.2, 18, mz + dz], 0.35, "rope")
+    els += rod([mx, 90, mz + 1.5], [0, 26, 50], 0.35, "rope")  # forestay
+    els += rod([mx, 90, mz - 1.5], [0, 24, -41], 0.35, "rope")  # backstay
     # cargo chest on deck (the 27-slot compartment), bands and latch
     els.append(box(-7, COG_DECK_Y, -22, 7, COG_DECK_Y + 9, -13, "planks"))
     els.append(box(-7.3, COG_DECK_Y + 9, -22.3, 7.3, COG_DECK_Y + 10.5, -12.7, "dark"))
@@ -357,7 +368,7 @@ def cog_sail(furled=False):
                              u=(i * 4) % 16, v=(j * 4) % 16, grow=0.25))
     # bolt rope along the foot and sheets down to the deck
     for side in (1, -1):
-        els.append(rod([side * half, bot, mz + 4.6], [side * 18, 20, mz - 16], 0.3, "rope"))
+        els += rod([side * half, bot, mz + 4.6], [side * 18, 20, mz - 16], 0.3, "rope")
     return els
 
 
@@ -406,7 +417,7 @@ def motor_hull():
     els += deck(MOTOR_STATIONS, MOTOR_DECK_Y, 1.2, "sdeck", z_from=-59, z_to=62)
     els.append(plank([0, -4, 64], [0, 25, 67], [0, -4, 66.5], [0, 25, 69], 1.6, "hull", out_dir=[1, 0, 0]))  # stem
     els += tiled_box(-16, -4, -61.2, 16, 18, -59.6, "hull", step=16)  # transom
-    els.append(box(-1, -6, -62, 1, -4, 60, "iron"))  # keel bar
+    els += tiled_box(-1, -6, -62, 1, -4, 60, "iron")  # keel bar
     # stern tube and skeg for the propeller shaft
     els += tube_z(0, -1.5, -59.5, -56, 2.4, 2.4, "iron", n=8, caps=True)
     # bulwark rails fore and aft
@@ -487,7 +498,10 @@ def motor_lamp(lit):
 
 def motor_beam():
     lx, ly, lz = MOTOR_LAMP
-    els = tube_z(lx, ly, lz, lz + 96, 3, 22, "beam", n=8, th=0.2, inner="beam")
+    els = []
+    for k in range(4):  # in sections: an element may span 48 px
+        z0, z1 = lz + 24 * k, lz + 24 * (k + 1)
+        els += tube_z(lx, ly, z0, z1, 3 + 19 * k / 4, 3 + 19 * (k + 1) / 4, "beam", n=8, th=0.2, inner="beam")
     for e in els:
         e.emissive = True
     return els
@@ -643,17 +657,17 @@ def shuttle_frame():
     """Canopy frame (opaque)."""
     els = []
     for z, w, top in ((-2, 10, 36), (14, 10, 37.5), (24, 9.5, 35)):
-        els.append(rod([w, 30, z], [w * 0.75, top, z], 0.5, "tile"))
-        els.append(rod([-w, 30, z], [-w * 0.75, top, z], 0.5, "tile"))
-        els.append(rod([-w * 0.75, top + 0.3, z], [w * 0.75, top + 0.3, z], 0.5, "tile"))
+        els += rod([w, 30, z], [w * 0.75, top, z], 0.5, "tile")
+        els += rod([-w, 30, z], [-w * 0.75, top, z], 0.5, "tile")
+        els += rod([-w * 0.75, top + 0.3, z], [w * 0.75, top + 0.3, z], 0.5, "tile")
     return els
 
 
 def shuttle_legs():
     els = []
     for x, z, h in ((13, -20, 7), (-13, -20, 7), (0, 34, 9)):
-        els.append(rod([x * 0.8, 7 + (h - 7), z], [x, 1.2, z + (2 if z < 0 else -2)], 0.8, "iron"))
-        els.append(rod([x * 0.8, 7 + (h - 7), z + (5 if z < 0 else -5)], [x, 1.2, z + (2 if z < 0 else -2)], 0.5, "dark"))
+        els += rod([x * 0.8, 7 + (h - 7), z], [x, 1.2, z + (2 if z < 0 else -2)], 0.8, "iron")
+        els += rod([x * 0.8, 7 + (h - 7), z + (5 if z < 0 else -5)], [x, 1.2, z + (2 if z < 0 else -2)], 0.5, "dark")
         els.append(box(x - 2.5, 0, z - 0.5, x + 2.5, 1.2, z + 4.5 if z < 0 else z + 0.5, "iron") if z < 0
                    else box(x - 2.5, 0, z - 4.5, x + 2.5, 1.2, z + 0.5, "iron"))
     return els
@@ -733,29 +747,24 @@ def _bounds(e):
 
 
 def split_cells(name, els):
-    """Groups elements into 48-px cells. Cell k (per axis) covers ship px [48k - 24, 48k + 24), drawn
-    as model px -16..32, so model px 0 sits at ship px 48k - 8. Returns {k: (elements in model px,
-    offset of model px 0 in ship px)}."""
-    cells = {}
+    """Groups elements into cells that each fit one block model (-16..32 on every axis). First fit:
+    an element joins the first cell it fits in; otherwise it opens a new cell whose model px 8
+    sits on the element's centre. Returns [(elements in model px, offset of model px 0 in ship px)]."""
+    def fits(e, off):
+        return all(-16 - 1e-6 <= e.frm[i] - off[i] and e.to[i] - off[i] <= 32 + 1e-6 for i in range(3))
+
+    cells = []
     for e in els:
-        c = [(e.frm[i] + e.to[i]) / 2 for i in range(3)]
-        key = tuple(math.floor((c[i] + 24) / CELL) for i in range(3))
-        placed = None
-        for dk in [(0, 0, 0)] + [(a, b, d) for a in (-1, 0, 1) for b in (-1, 0, 1) for d in (-1, 0, 1)]:
-            k = tuple(key[i] + dk[i] for i in range(3))
-            lo = [e.frm[i] - (CELL * k[i] - 8) for i in range(3)]
-            hi = [e.to[i] - (CELL * k[i] - 8) for i in range(3)]
-            if all(-16 - 1e-6 <= lo[i] and hi[i] <= 32 + 1e-6 for i in range(3)):
-                placed = k
+        for off, group in cells:
+            if fits(e, off):
+                group.append(e)
                 break
-        if placed is None:
-            raise ValueError(f"{name}: element does not fit any cell: {e.frm} {e.to}")
-        cells.setdefault(placed, []).append(e)
-    out = {}
-    for k, group in cells.items():
-        offset = [CELL * k[i] - 8 for i in range(3)]
-        out[k] = ([g.moved(*[-o for o in offset]) for g in group], offset)
-    return out
+        else:
+            off = [round((e.frm[i] + e.to[i]) / 2 - 8) for i in range(3)]
+            if not fits(e, off):
+                raise ValueError(f"{name}: element larger than a block model allows: {e.frm} {e.to}")
+            cells.append((off, [e]))
+    return [([g.moved(*[-o for o in off]) for g in group], off) for off, group in cells]
 
 
 def write_parts(ctx):
@@ -763,7 +772,7 @@ def write_parts(ctx):
     for name, (els, translucent) in parts().items():
         cells = split_cells(name, els)
         entries = []
-        for i, (k, (shifted, offset)) in enumerate(sorted(cells.items())):
+        for i, (shifted, offset) in enumerate(cells):
             used = {t for e in shifted for (t, _) in e.faces.values()}
             tex = {t: TEX[t] for t in used}
             particle = next(iter(sorted(used)))
@@ -894,7 +903,7 @@ def advancements(ctx):
     def riding(ship):
         return {"trigger": "minecraft:started_riding", "conditions": {"player": [{
             "condition": "minecraft:entity_properties", "entity": "this",
-            "predicate": {"vehicle": {"type": f"{MOD}:{ship}"}}}]}}
+            "predicate": {"minecraft:vehicle": {"minecraft:entity_type": f"{MOD}:{ship}"}}}]}}
 
     adv("bronze_set_sail", "age_bronze", "bronze_cog", {"sail": riding("bronze_cog")}, "Set Sail",
         "Launch a Bronze Cog on open water and climb aboard. Watch the wind!", "¡A toda vela!",
@@ -903,7 +912,8 @@ def advancements(ctx):
         "Take the helm of a Motor Ship", "Avante toda", "Toma el timón de un barco a motor", frame="goal")
     adv("orbital_shuttle_orbit", "age_orbital", "shuttle", {"orbit": {"trigger": "minecraft:location", "conditions": {
         "player": [{"condition": "minecraft:entity_properties", "entity": "this",
-                    "predicate": {"location": {"dimension": f"{MOD}:orbit"}, "vehicle": {"type": f"{MOD}:shuttle"}}}]}}},
+                    "predicate": {"minecraft:location": {"dimension": f"{MOD}:orbit"},
+                                  "minecraft:vehicle": {"minecraft:entity_type": f"{MOD}:shuttle"}}}]}}},
         "We Have Liftoff", "Fly your own Orbital Shuttle into orbit", "Tenemos despegue",
         "Lleva tu propio transbordador orbital hasta la órbita", frame="challenge")
 

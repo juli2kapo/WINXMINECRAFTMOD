@@ -3,6 +3,7 @@ package net.juli2kapo.factoryascent.ships;
 import net.juli2kapo.factoryascent.orbital.LaunchControllerBlock;
 import net.juli2kapo.factoryascent.orbital.LaunchPadBlock;
 import net.juli2kapo.factoryascent.orbital.OrbitalContent;
+import net.juli2kapo.factoryascent.space.SealedCabin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,12 +38,12 @@ import org.jspecify.annotations.Nullable;
  * build limit + {@link ShipConfig#ORBIT_MARGIN} carries it, crew and all, to
  * {@code factoryascent:orbit} above the same x/z; descending below {@link ShipConfig#ORBIT_REENTRY_Y}
  * there re-enters the Overworld (heat, shake) for the pilot to land. {@link ShipMath#decide} holds the
- * rule. The cabin is sealed: {@link #isSealed(Entity)}.
+ * rule. The cabin is sealed ({@link SealedCabin}: no suit needed aboard) and heat-shielded.
  *
  * <p>Leaving: Shift only works once landed; in flight the hatch key (K) opens the hatch on the
  * ground or, in orbit, when nearly stopped (an EVA: the space rules apply outside).
  */
-public class Shuttle extends AbstractShip {
+public class Shuttle extends AbstractShip implements SealedCabin {
     public static final int STATE_LANDED = 0, STATE_DOCKED = 1, STATE_FLYING = 2, STATE_ORBIT = 3, STATE_REENTRY = 4;
     public static final int TANK_ITEMS = 16;
     /** Fuel needed to lift off at all (a few seconds of climb). */
@@ -61,8 +62,11 @@ public class Shuttle extends AbstractShip {
         super(type, level);
     }
 
-    /** Whether an entity sits in a shuttle's sealed cabin (no oxygen needed, protected from vacuum and re-entry heat). */
-    public static boolean isSealed(Entity entity) {
+    /**
+     * Whether an entity sits in a shuttle's sealed cabin (heat-shielded; for air the space rules
+     * see the cabin through {@link SealedCabin}).
+     */
+    public static boolean carries(Entity entity) {
         return entity.getVehicle() instanceof Shuttle;
     }
 

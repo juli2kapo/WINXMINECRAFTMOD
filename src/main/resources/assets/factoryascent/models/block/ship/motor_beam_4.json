@@ -1,0 +1,131 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "beam": "factoryascent:block/ship_beam",
+    "particle": "factoryascent:block/ship_beam"
+  },
+  "elements": [
+    {
+      "from": [
+        1.4657,
+        -4.5779,
+        7.9194
+      ],
+      "to": [
+        13.8385,
+        19.8876,
+        8.1194
+      ],
+      "faces": {
+        "south": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          7.6521,
+          7.6549,
+          8.0194
+        ],
+        "x": 101.1951,
+        "y": 0.0,
+        "z": 112.5
+      },
+      "light_emission": 15
+    },
+    {
+      "from": [
+        -6.5316,
+        3.4193,
+        7.9194
+      ],
+      "to": [
+        5.8413,
+        27.8848,
+        8.1194
+      ],
+      "faces": {
+        "south": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          -0.3451,
+          15.6521,
+          8.0194
+        ],
+        "x": 101.1951,
+        "y": 0.0,
+        "z": 157.5
+      },
+      "light_emission": 15
+    }
+  ]
+}

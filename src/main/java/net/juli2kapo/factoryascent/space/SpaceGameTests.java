@@ -12,7 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +43,7 @@ public final class SpaceGameTests {
     public static void suitOxygenDrainsOnlyWhereAirless(GameTestHelper h) {
         h.assertTrue(SpaceRules.isAirless(SpaceRules.ORBIT), "orbit must be airless");
         h.assertTrue(!SpaceRules.isAirless(Level.OVERWORLD) && !SpaceRules.isAirless(h.getLevel()), "the overworld has air");
-        Pig suited = h.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(2, 2, 2));
+        Pig suited = h.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(2, 2, 2));
         wearSuit(suited, 1000);
         suited.tickCount = 20;
         h.assertTrue(SpaceEvents.tickBreathing(suited, false) == SpaceRules.Breath.AIR, "with air around, no suit air is used");
@@ -58,7 +58,7 @@ public final class SpaceGameTests {
         suited.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
         h.assertTrue(SpaceRules.breathing(suited, true) == SpaceRules.Breath.NONE, "an incomplete suit must not work");
 
-        Pig bare = h.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 2, 2));
+        Pig bare = h.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(4, 2, 2));
         bare.tickCount = 40;
         float before = bare.getHealth();
         h.assertTrue(SpaceEvents.tickBreathing(bare, true) == SpaceRules.Breath.NONE, "no suit in vacuum: no air");
@@ -66,7 +66,7 @@ public final class SpaceGameTests {
         h.assertTrue(bare.getTicksFrozen() > 0, "vacuum must freeze");
         h.assertTrue(SpaceEvents.tickBreathing(bare, false) == SpaceRules.Breath.AIR, "no suit is fine where there is air");
 
-        Pig empty = h.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(6, 2, 2));
+        Pig empty = h.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(6, 2, 2));
         wearSuit(empty, 0);
         h.assertTrue(SpaceRules.breathing(empty, true) == SpaceRules.Breath.NONE, "a suit without air must not help");
         h.succeed();
@@ -98,7 +98,7 @@ public final class SpaceGameTests {
         BlockPos pos = new BlockPos(4, 1, 4);
         h.setBlock(pos, SpaceContent.OXYGEN_SEALER.get());
         OxygenSealerBlockEntity be = h.getBlockEntity(pos, OxygenSealerBlockEntity.class);
-        Pig inside = h.spawnWithNoFreeWill(EntityType.PIG, pos.east(2).above());
+        Pig inside = h.spawnWithNoFreeWill(EntityTypes.PIG, pos.east(2).above());
         h.runAfterDelay(3, () -> {
             h.assertTrue(!be.running(), "an unpowered sealer must not run");
             h.assertTrue(SpaceRules.breathing(inside, true) == SpaceRules.Breath.NONE, "no bubble without power");
@@ -153,7 +153,8 @@ public final class SpaceGameTests {
         }
         pad.addFuel(LaunchControllerBlockEntity.FUEL_MAX - pad.fuel());
         h.assertTrue(pad.tryLaunch() != null && !pad.launching(), "a capsule must not launch without a crew");
-        h.assertTrue(CrewLaunch.board(astronaut, pad) == null, "boarding a fuelled capsule must work");
+        var boarded = CrewLaunch.board(astronaut, pad);
+        h.assertTrue(boarded == null, "boarding a fuelled capsule must work: " + (boarded == null ? "" : boarded.getString()));
         h.assertTrue(astronaut.getVehicle() instanceof RocketSeatEntity, "the astronaut rides the capsule seat");
         h.assertTrue(SpaceRules.inSealedCabin(astronaut), "the capsule seat holds air");
         h.assertTrue(pad.launching(), "boarding starts the countdown");
@@ -181,7 +182,8 @@ public final class SpaceGameTests {
         astronaut.snapTo(near.x, near.y, near.z);
         pad.mount(new ItemStack(SpaceContent.CREW_CAPSULE.get()), astronaut.getUUID());
         pad.addFuel(LaunchControllerBlockEntity.FUEL_MAX);
-        h.assertTrue(CrewLaunch.board(astronaut, pad) == null, "boarding must work");
+        var boarded = CrewLaunch.board(astronaut, pad);
+        h.assertTrue(boarded == null, "boarding must work: " + (boarded == null ? "" : boarded.getString()));
         h.runAfterDelay(LaunchControllerBlockEntity.LIFTOFF + 5, () -> {
             h.assertTrue(astronaut.getVehicle() instanceof RocketSeatEntity seat && seat.strappedIn(), "strapped in after liftoff");
             astronaut.stopRiding();

@@ -1,0 +1,164 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "rope": "factoryascent:block/ship_rope",
+    "particle": "factoryascent:block/ship_rope"
+  },
+  "elements": [
+    {
+      "from": [
+        7.65,
+        -4.6584,
+        7.5667
+      ],
+      "to": [
+        8.35,
+        21.3251,
+        8.2667
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            0.7
+          ]
+        },
+        "down": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            0.7
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.0,
+          8.3333,
+          7.9167
+        ],
+        "axis": "x",
+        "angle": 145.1886
+      }
+    },
+    {
+      "from": [
+        7.65,
+        -5.1743,
+        -10.1
+      ],
+      "to": [
+        8.35,
+        21.1743,
+        -9.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            0.7
+          ]
+        },
+        "down": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            0.7
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.0,
+          8.0,
+          -9.75
+        ],
+        "x": -33.3885,
+        "y": 0.0,
+        "z": 180.0
+      }
+    }
+  ]
+}

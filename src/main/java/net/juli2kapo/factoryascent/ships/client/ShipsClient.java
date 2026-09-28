@@ -92,7 +92,7 @@ public final class ShipsClient {
         }
         boolean pilot = ship.getFirstPassenger() == mc.player;
         int keys = 0;
-        if (pilot && mc.screen == null) {
+        if (pilot && mc.gui.screen() == null) {
             Options o = mc.options;
             if (o.keyUp.isDown()) keys |= AbstractShip.IN_FORWARD;
             if (o.keyDown.isDown()) keys |= AbstractShip.IN_BACK;

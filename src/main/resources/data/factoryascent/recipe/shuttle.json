@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TGT",
+    "AOA",
+    "HCH"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "G": "#c:glass_blocks",
+    "A": "factoryascent:advanced_circuit",
+    "O": "factoryascent:orbital_targeting_core",
+    "H": "factoryascent:heating_coil",
+    "C": "minecraft:chest"
+  },
+  "result": {
+    "id": "factoryascent:shuttle"
+  }
+}

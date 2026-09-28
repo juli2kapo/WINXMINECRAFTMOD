@@ -1,0 +1,281 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "flag": "factoryascent:block/ship_flag",
+    "particle": "factoryascent:block/ship_flag"
+  },
+  "elements": [
+    {
+      "from": [
+        7.7,
+        5.5,
+        5
+      ],
+      "to": [
+        8.3,
+        10.5,
+        11.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flag",
+          "uv": [
+            0,
+            0,
+            0.6,
+            5.0
+          ]
+        },
+        "south": {
+          "texture": "#flag",
+          "uv": [
+            0,
+            0,
+            0.6,
+            5.0
+          ]
+        },
+        "east": {
+          "texture": "#flag",
+          "uv": [
+            0,
+            0,
+            6.2,
+            5.0
+          ]
+        },
+        "west": {
+          "texture": "#flag",
+          "uv": [
+            0,
+            0,
+            6.2,
+            5.0
+          ]
+        },
+        "up": {
+          "texture": "#flag",
+          "uv": [
+            0,
+            0,
+            0.6,
+            6.2
+          ]
+        },
+        "down": {
+          "texture": "#flag",
+          "uv": [
+            0,
+            0,
+            0.6,
+            6.2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.7,
+        6.5,
+        -1
+      ],
+      "to": [
+        8.3,
+        9.5,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flag",
+          "uv": [
+            6,
+            0,
+            6.6,
+            3.0
+          ]
+        },
+        "south": {
+          "texture": "#flag",
+          "uv": [
+            6,
+            0,
+            6.6,
+            3.0
+          ]
+        },
+        "east": {
+          "texture": "#flag",
+          "uv": [
+            6,
+            0,
+            12,
+            3.0
+          ]
+        },
+        "west": {
+          "texture": "#flag",
+          "uv": [
+            6,
+            0,
+            12,
+            3.0
+          ]
+        },
+        "up": {
+          "texture": "#flag",
+          "uv": [
+            6,
+            0,
+            6.6,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#flag",
+          "uv": [
+            6,
+            0,
+            6.6,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.7,
+        8,
+        -5
+      ],
+      "to": [
+        8.3,
+        9.5,
+        -1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            1.5
+          ]
+        },
+        "south": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            1.5
+          ]
+        },
+        "east": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            6,
+            1.5
+          ]
+        },
+        "west": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            6,
+            1.5
+          ]
+        },
+        "up": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            4
+          ]
+        },
+        "down": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.7,
+        6.5,
+        -5
+      ],
+      "to": [
+        8.3,
+        8,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            1.5
+          ]
+        },
+        "south": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            1.5
+          ]
+        },
+        "east": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            4.5,
+            1.5
+          ]
+        },
+        "west": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            4.5,
+            1.5
+          ]
+        },
+        "up": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            2.5
+          ]
+        },
+        "down": {
+          "texture": "#flag",
+          "uv": [
+            2,
+            0,
+            2.6,
+            2.5
+          ]
+        }
+      }
+    }
+  ]
+}

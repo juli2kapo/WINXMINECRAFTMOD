@@ -1,0 +1,78 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "lamp": "factoryascent:block/ship_lamp",
+    "particle": "factoryascent:block/ship_lamp"
+  },
+  "elements": [
+    {
+      "from": [
+        5.1,
+        5.1,
+        7.3
+      ],
+      "to": [
+        10.9,
+        10.9,
+        7.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            5.8,
+            5.8
+          ]
+        },
+        "south": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            5.8,
+            5.8
+          ]
+        },
+        "east": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            0.5,
+            5.8
+          ]
+        },
+        "west": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            0.5,
+            5.8
+          ]
+        },
+        "up": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            5.8,
+            0.5
+          ]
+        },
+        "down": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            5.8,
+            0.5
+          ]
+        }
+      },
+      "light_emission": 15
+    }
+  ]
+}

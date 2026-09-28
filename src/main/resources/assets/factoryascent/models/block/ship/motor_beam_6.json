@@ -1,0 +1,70 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "beam": "factoryascent:block/ship_beam",
+    "particle": "factoryascent:block/ship_beam"
+  },
+  "elements": [
+    {
+      "from": [
+        2.1615,
+        -3.8876,
+        7.9194
+      ],
+      "to": [
+        14.5343,
+        20.5779,
+        8.1194
+      ],
+      "faces": {
+        "south": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#beam",
+          "uv": [
+            3.6271,
+            0,
+            16.0,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            0.2,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.3479,
+          8.3451,
+          8.0194
+        ],
+        "x": 101.1951,
+        "y": -0.0,
+        "z": -67.5
+      },
+      "light_emission": 15
+    }
+  ]
+}

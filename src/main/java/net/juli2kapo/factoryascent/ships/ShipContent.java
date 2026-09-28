@@ -126,7 +126,7 @@ public final class ShipContent {
      * covered too).
      */
     private static void onDamage(LivingIncomingDamageEvent event) {
-        if (!Shuttle.isSealed(event.getEntity())) return;
+        if (!Shuttle.carries(event.getEntity())) return;
         DamageSource source = event.getSource();
         if (source.is(DamageTypeTags.IS_FIRE) || source.is(DamageTypeTags.IS_FALL) || source.is(DamageTypeTags.IS_FREEZING)
                 || source.is(DamageTypeTags.IS_DROWNING) || source.is(DamageTypes.IN_WALL) || source.is(DamageTypes.FLY_INTO_WALL)

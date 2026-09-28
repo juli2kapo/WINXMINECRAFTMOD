@@ -32,7 +32,8 @@ final class JetpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
         getParentModel().body.translateAndRotate(pose);
         // Model space is upside down (y points down) with the back towards +z: turn the block model
         // upright and put its z = 8 plane on the back of the torso, its y = 0 at the waist.
-        pose.translate(0f, 0f, 2f / 16f);
+        // on the Jet Suit the pack sits on the suit (armour is drawn a pixel out from the body)
+        pose.translate(0f, 0f, (state.chestEquipment.getItem() instanceof net.juli2kapo.factoryascent.space.SuitItems.SuitChestItem ? 3f : 2f) / 16f);
         pose.scale(-1f, -1f, 1f);
         pose.translate(-0.5f, -12f / 16f, -0.5f);
         collector.submitBlockModel(pose, Sheets.cutoutBlockItemSheet(), List.of(model), new int[0],

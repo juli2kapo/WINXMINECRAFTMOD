@@ -164,6 +164,27 @@ def armor_legs():
     return c
 
 
+def harness():
+    """64x32 humanoid layer for a worn jetpack: only the harness (straps, chest strap, belt), the rest
+    transparent; the pack itself is the 3D model on the back."""
+    c = Big(64, 32)
+    strap, buckle = rgb("#2A2C33"), STEEL[1]
+    for y in range(20, 32):          # front (20..27) and back (32..39) faces of the body
+        for x in (21, 26, 33, 38):
+            c.put(x, y, strap)
+    for x in range(21, 27):
+        c.put(x, 25, strap)          # chest strap
+    for x in range(16, 40):
+        c.put(x, 30, strap)          # belt
+    c.put(23, 25, buckle)
+    c.put(24, 25, buckle)
+    c.put(23, 30, buckle)
+    for y in range(16, 20):          # over the shoulders (top face 20..27)
+        c.put(21, y, strap)
+        c.put(26, y, strap)
+    return c
+
+
 def earth():
     """The planet seen from orbit: oceans, continents with deserts and ice caps, swirling clouds,
     lit from one side, with a thin blue atmosphere at the rim. Transparent outside."""
@@ -601,6 +622,7 @@ BIG = {
     TEX / "entity/equipment/humanoid/astronaut.png": armor_main,
     TEX / "entity/equipment/humanoid_leggings/astronaut.png": armor_legs,
     TEX / "environment/earth.png": earth,
+    TEX / "entity/equipment/humanoid/jetpack.png": harness,
 }
 
 

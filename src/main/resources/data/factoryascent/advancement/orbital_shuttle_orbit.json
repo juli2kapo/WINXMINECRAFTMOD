@@ -1,0 +1,41 @@
+{
+  "parent": "factoryascent:age_orbital",
+  "display": {
+    "icon": {
+      "id": "factoryascent:shuttle"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_shuttle_orbit.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_shuttle_orbit.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "orbit": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "minecraft:location": {
+                "dimension": "factoryascent:orbit"
+              },
+              "minecraft:vehicle": {
+                "minecraft:entity_type": "factoryascent:shuttle"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "orbit"
+    ]
+  ]
+}

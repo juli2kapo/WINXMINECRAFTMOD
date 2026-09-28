@@ -1,0 +1,145 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "glass": "factoryascent:block/ship_glass",
+    "particle": "factoryascent:block/ship_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        2,
+        8
+      ],
+      "to": [
+        12,
+        15,
+        8.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            9,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            9,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.7,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.7,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            9,
+            0.7
+          ]
+        },
+        "down": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            9,
+            0.7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        2,
+        8
+      ],
+      "to": [
+        24,
+        15,
+        8.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            12,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            12,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.7,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.7,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            12,
+            0.7
+          ]
+        },
+        "down": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            12,
+            0.7
+          ]
+        }
+      }
+    }
+  ]
+}

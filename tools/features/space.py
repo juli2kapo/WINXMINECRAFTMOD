@@ -189,6 +189,7 @@ def items(ctx):
             "type": "minecraft:select", "property": "minecraft:display_context",
             "cases": [{"when": "gui", "model": {"type": "minecraft:model", "model": f"{MOD}:item/{name}_icon"}}],
             "fallback": {"type": "minecraft:model", "model": f"{MOD}:item/{name}_3d"}}})
+    ctx.write(A / "equipment" / "jetpack.json", {"layers": {"humanoid": [{"texture": f"{MOD}:jetpack"}]}})  # the harness
     ctx.write(A / "equipment" / "astronaut.json", {"layers": {
         "humanoid": [{"texture": f"{MOD}:astronaut"}],
         "humanoid_leggings": [{"texture": f"{MOD}:astronaut"}]}})

@@ -1,0 +1,86 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "rope": "factoryascent:block/ship_rope",
+    "particle": "factoryascent:block/ship_rope"
+  },
+  "elements": [
+    {
+      "from": [
+        7.65,
+        -5.3251,
+        7.2333
+      ],
+      "to": [
+        8.35,
+        20.6584,
+        7.9333
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            0.7
+          ]
+        },
+        "down": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            0,
+            0.7,
+            0.7
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.0,
+          7.6667,
+          7.5833
+        ],
+        "axis": "x",
+        "angle": 145.1886
+      }
+    }
+  ]
+}

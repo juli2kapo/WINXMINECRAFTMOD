@@ -41,35 +41,42 @@ final class SpaceHud {
 
         boolean airless = SpaceRules.isAirless(mc.level);
         SpaceRules.Breath breath = breath(player, airless, time);
+        // Rows from the bottom-left corner, kept clear of the hotbar (w/2 - 91) at any GUI scale;
+        // tags (hover, sealed area) go on their own row above.
+        int barX = 22, barW = Math.max(24, Math.min(62, w / 2 - 91 - 6 - barX - 32));
+        int textX = barX + barW + 4;
         int y = h - 14;
+        java.util.List<Component> tags = new java.util.ArrayList<>();
         ItemStack tank = SpaceRules.suitTank(player);
         if (!tank.isEmpty() || airless) {
             int oxygen = SuitItems.oxygen(tank);
             float f = oxygen / (float) Math.max(1, SpaceConfig.suitOxygen());
             int color = tank.isEmpty() || f < 0.2f ? 0xFFE04040 : 0xFF40C8FF;
-            g.text(font, Component.translatable("hud.factoryascent.air"), 6, y - 1, 0xFFE0F4FF, true);
-            bar(g, 26, y, 62, f, color);
+            g.text(font, Component.translatable("hud.factoryascent.air"), 4, y - 1, 0xFFE0F4FF, true);
+            bar(g, barX, y, barW, f, color);
             String label = tank.isEmpty() ? "--" : String.format("%d:%02d", oxygen / 20 / 60, oxygen / 20 % 60);
-            g.text(font, label, 92, y - 1, 0xFFE0F4FF, true);
-            Component where = switch (breath) {
-                case BUBBLE -> Component.translatable("hud.factoryascent.breath_bubble");
-                case CABIN -> Component.translatable("hud.factoryascent.breath_cabin");
-                default -> null;
-            };
-            if (where != null) g.text(font, where, 122, y - 1, 0xFF80FFB0, true);
+            g.text(font, label, textX, y - 1, 0xFFE0F4FF, true);
+            if (breath == SpaceRules.Breath.BUBBLE) tags.add(Component.translatable("hud.factoryascent.breath_bubble"));
+            if (breath == SpaceRules.Breath.CABIN) tags.add(Component.translatable("hud.factoryascent.breath_cabin"));
             y -= 12;
         }
         ItemStack pack = Jetpack.worn(player);
         if (!pack.isEmpty()) {
             Jetpack.Tier tier = Jetpack.tier(pack);
             float f = Jetpack.energy(pack) / (float) tier.capacity;
-            g.text(font, Component.translatable("hud.factoryascent.jet"), 6, y - 1, 0xFFFFF0C0, true);
-            bar(g, 26, y, 62, f, f < 0.15f ? 0xFFE04040 : 0xFFF0C040);
-            g.text(font, Math.round(f * 100) + "%", 92, y - 1, 0xFFFFF0C0, true);
-            if (Jetpack.hover(pack)) g.text(font, Component.translatable("hud.factoryascent.hover"), 122, y - 1, 0xFF80E0FF, true);
+            g.text(font, Component.translatable("hud.factoryascent.jet"), 4, y - 1, 0xFFFFF0C0, true);
+            bar(g, barX, y, barW, f, f < 0.15f ? 0xFFE04040 : 0xFFF0C040);
+            g.text(font, Math.round(f * 100) + "%", textX, y - 1, 0xFFFFF0C0, true);
+            if (Jetpack.hover(pack)) tags.add(Component.translatable("hud.factoryascent.hover"));
+            y -= 12;
+        }
+        int tx = 4;
+        for (Component tag : tags) {
+            g.text(font, tag, tx, y - 1, 0xFF80E8FF, true);
+            tx += font.width(tag) + 8;
         }
 
-        if (airless && breath == SpaceRules.Breath.NONE && !player.isCreative() && !player.isSpectator()) {
+        if (airless && breath == SpaceRules.Breath.NONE && !player.isCreative() && !player.isSpectator() && player.isAlive()) {
             float pulse = 0.55f + 0.35f * Mth.sin((time + partial) * 0.35f);
             vignette(g, w, h, 0xE01010, pulse);
             g.pose().pushMatrix();
@@ -122,10 +129,11 @@ final class SpaceHud {
     /** In a rocket: countdown, then altitude, the sky going black near the top. */
     private static void climb(GuiGraphicsExtractor g, Font font, LocalPlayer player, int w, int h, float partial) {
         if (!(player.getVehicle() instanceof RocketSeatEntity seat)) return;
-        if (!(player.level().getBlockEntity(seat.pad()) instanceof LaunchControllerBlockEntity pad) || !pad.launching()) return;
-        int tick = pad.launchTick();
+        if (!(player.level().getBlockEntity(seat.pad()) instanceof LaunchControllerBlockEntity pad)) return;
+        long tick = RocketSeatEntity.elapsed(pad);
+        if (tick < 0) return;
         if (tick < LaunchControllerBlockEntity.LIFTOFF) {
-            int seconds = (LaunchControllerBlockEntity.LIFTOFF - tick + 19) / 20;
+            int seconds = (int) ((LaunchControllerBlockEntity.LIFTOFF - tick + 19) / 20);
             g.pose().pushMatrix();
             g.pose().translate(w / 2f, 30);
             g.pose().scale(2f, 2f);
@@ -136,7 +144,8 @@ final class SpaceHud {
         }
         double height = RocketSeatEntity.climb(pad, partial);
         float dark = (float) Mth.clamp((height - 30) / 320.0, 0, 0.9);
-        if (dark > 0) g.fill(0, 0, w, h, ((int) (dark * 255) << 24));
+        // the sky goes black from the top down as the air thins
+        if (dark > 0) g.fillGradient(0, 0, w, h, (int) (dark * 255) << 24, (int) (dark * 0.35f * 255) << 24);
         g.centeredText(font, Component.translatable("hud.factoryascent.altitude", (int) height), w / 2, 20, 0xFFE0F0FF);
     }
 }

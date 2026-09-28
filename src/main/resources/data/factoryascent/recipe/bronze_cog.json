@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " W ",
+    "SCL",
+    "PBP"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "S": "#c:rods/wooden",
+    "C": "minecraft:chest",
+    "L": "minecraft:lantern",
+    "P": "#c:plates/bronze",
+    "B": "#minecraft:boats"
+  },
+  "result": {
+    "id": "factoryascent:bronze_cog"
+  }
+}
