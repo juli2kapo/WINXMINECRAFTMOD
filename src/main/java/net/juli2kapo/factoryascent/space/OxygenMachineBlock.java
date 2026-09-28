@@ -50,13 +50,12 @@ public class OxygenMachineBlock extends BaseEntityBlock implements DescribedBloc
         registerDefaultState(stateDefinition.any().setValue(LIT, false).setValue(FACING, Direction.NORTH));
     }
 
-    public static MapCodec<OxygenMachineBlock> compressorCodec() {
-        return simpleCodec(p -> new OxygenMachineBlock(p, Kind.COMPRESSOR));
-    }
+    private static final MapCodec<OxygenMachineBlock> COMPRESSOR_CODEC = simpleCodec(p -> new OxygenMachineBlock(p, Kind.COMPRESSOR));
+    private static final MapCodec<OxygenMachineBlock> SEALER_CODEC = simpleCodec(p -> new OxygenMachineBlock(p, Kind.SEALER));
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return simpleCodec(p -> new OxygenMachineBlock(p, kind));
+        return kind == Kind.COMPRESSOR ? COMPRESSOR_CODEC : SEALER_CODEC;
     }
 
     public Kind kind() {

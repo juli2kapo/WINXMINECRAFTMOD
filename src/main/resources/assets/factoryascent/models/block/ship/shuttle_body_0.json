@@ -1,14 +1,14 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "foil": "factoryascent:block/ship_gold_foil",
-    "engine": "factoryascent:block/ship_engine",
-    "stripe": "factoryascent:block/ship_stripe",
     "tile": "factoryascent:block/ship_tile_white",
-    "tile_black": "factoryascent:block/ship_tile_black",
-    "hatch": "factoryascent:block/ship_hatch",
-    "iron": "factoryascent:block/ship_iron",
     "engine_in": "factoryascent:block/ship_engine_inner",
+    "hatch": "factoryascent:block/ship_hatch",
+    "stripe": "factoryascent:block/ship_stripe",
+    "tile_black": "factoryascent:block/ship_tile_black",
+    "iron": "factoryascent:block/ship_iron",
+    "engine": "factoryascent:block/ship_engine",
+    "foil": "factoryascent:block/ship_gold_foil",
     "particle": "factoryascent:block/ship_engine"
   },
   "elements": [

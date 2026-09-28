@@ -2,8 +2,8 @@
   "ambientocclusion": false,
   "textures": {
     "tile": "factoryascent:block/ship_tile_white",
-    "tile_black": "factoryascent:block/ship_tile_black",
     "stripe": "factoryascent:block/ship_stripe",
+    "tile_black": "factoryascent:block/ship_tile_black",
     "particle": "factoryascent:block/ship_stripe"
   },
   "elements": [

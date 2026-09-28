@@ -1,9 +1,9 @@
 {
   "ambientocclusion": false,
   "textures": {
+    "dark": "factoryascent:block/ship_cog_dark",
     "iron": "factoryascent:block/ship_iron",
     "white": "factoryascent:block/ship_white",
-    "dark": "factoryascent:block/ship_cog_dark",
     "particle": "factoryascent:block/ship_cog_dark"
   },
   "elements": [

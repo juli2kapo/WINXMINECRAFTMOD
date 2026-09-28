@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "rope": "factoryascent:block/ship_rope",
     "dark": "factoryascent:block/ship_cog_dark",
+    "rope": "factoryascent:block/ship_rope",
     "particle": "factoryascent:block/ship_cog_dark"
   },
   "elements": [

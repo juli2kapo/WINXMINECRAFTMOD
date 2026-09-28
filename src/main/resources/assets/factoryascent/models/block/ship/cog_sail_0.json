@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "sail": "factoryascent:block/ship_sail",
     "dark": "factoryascent:block/ship_cog_dark",
+    "sail": "factoryascent:block/ship_sail",
     "particle": "factoryascent:block/ship_cog_dark"
   },
   "elements": [

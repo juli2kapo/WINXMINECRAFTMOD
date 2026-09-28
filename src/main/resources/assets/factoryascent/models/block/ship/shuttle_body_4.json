@@ -1,11 +1,11 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "engine": "factoryascent:block/ship_engine",
-    "stripe": "factoryascent:block/ship_stripe",
     "tile": "factoryascent:block/ship_tile_white",
-    "tile_black": "factoryascent:block/ship_tile_black",
     "engine_in": "factoryascent:block/ship_engine_inner",
+    "stripe": "factoryascent:block/ship_stripe",
+    "tile_black": "factoryascent:block/ship_tile_black",
+    "engine": "factoryascent:block/ship_engine",
     "particle": "factoryascent:block/ship_engine"
   },
   "elements": [

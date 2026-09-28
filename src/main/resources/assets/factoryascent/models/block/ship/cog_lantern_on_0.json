@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "lantern": "factoryascent:block/ship_lantern",
     "bronze": "factoryascent:block/ship_bronze",
+    "lantern": "factoryascent:block/ship_lantern",
     "particle": "factoryascent:block/ship_bronze"
   },
   "elements": [

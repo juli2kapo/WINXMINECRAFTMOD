@@ -1,10 +1,10 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "rope": "factoryascent:block/ship_rope",
     "dark": "factoryascent:block/ship_cog_dark",
-    "deck": "factoryascent:block/ship_cog_deck",
     "planks": "factoryascent:block/ship_cog_planks",
+    "deck": "factoryascent:block/ship_cog_deck",
+    "rope": "factoryascent:block/ship_rope",
     "particle": "factoryascent:block/ship_cog_dark"
   },
   "elements": [

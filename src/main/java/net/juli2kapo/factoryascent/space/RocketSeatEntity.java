@@ -105,8 +105,7 @@ public class RocketSeatEntity extends Entity implements SealedCabin {
         if (level().isClientSide()) return;
         LaunchControllerBlockEntity c = controller();
         if (c == null) {
-            release();
-            discard();
+            strand();
             return;
         }
         if (getPassengers().isEmpty()) {
@@ -115,10 +114,20 @@ public class RocketSeatEntity extends Entity implements SealedCabin {
             discard();
             return;
         }
-        if (!c.launching() && tickCount > 40) { // the launch never started or was cancelled
-            release();
-            discard();
+        if (!c.launching() && tickCount > 40) { // the launch never started, was cancelled, or a rejoin after it
+            strand();
         }
+    }
+
+    /** No rocket under the seat any more: let the riders down gently (they may be far up). */
+    private void strand() {
+        for (Entity rider : java.util.List.copyOf(getPassengers())) {
+            if (rider instanceof net.minecraft.world.entity.LivingEntity living) {
+                living.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOW_FALLING, 20 * 60));
+            }
+        }
+        release();
+        discard();
     }
 
     @Override

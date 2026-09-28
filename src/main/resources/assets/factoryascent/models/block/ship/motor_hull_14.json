@@ -2,8 +2,8 @@
   "ambientocclusion": false,
   "textures": {
     "iron": "factoryascent:block/ship_iron",
-    "white": "factoryascent:block/ship_white",
     "funnel": "factoryascent:block/ship_funnel",
+    "white": "factoryascent:block/ship_white",
     "particle": "factoryascent:block/ship_funnel"
   },
   "elements": [

@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "sdeck": "factoryascent:block/ship_steel_deck",
     "red": "factoryascent:block/ship_hull_red",
+    "sdeck": "factoryascent:block/ship_steel_deck",
     "particle": "factoryascent:block/ship_hull_red"
   },
   "elements": [
