@@ -15,7 +15,7 @@ standalone block models because one model may only span 48 px:
   lv_stage_lower      engines (five bells under a boat tail), fins, first stage tank   y   0..47.5
   lv_stage_upper      first stage top, grid fins, black interstage, second stage       y  47.5..92
   lv_adapter          payload adapter cone and plate the payload sits on               y  86..96
-  lv_fairing_{a,b}    the two fairing halves (hinged at their base, opened on the pad)  y  94..128
+  lv_fairing_{a,b}    the two fairing halves, clear window band (translucent), jettisoned y  95..130
   lv_kill_vehicle     the anti-satellite missile's kill vehicle (no fairing)           y  88..124
   lv_plume            exhaust plume (translucent, emissive) under the engines
   *_asat              gunmetal livery of the stage models (texture overrides)
@@ -261,7 +261,7 @@ def bus(kind):
     return els
 
 
-def survey_instrument():
+def survey_instrument(deployed=True):
     els = ring(8, 8, 1.5, 5, 2.4, 2.4, "dark")  # telescope barrel
     els += ring(8, 8, 0.2, 1.5, 2.9, 2.9, "gold", inner="dark")  # sun shade
     els += disc(8, 8, 1.6, 2.3, "lens", up=False)
@@ -275,7 +275,7 @@ def survey_instrument():
     return els
 
 
-def uplink_instrument():
+def uplink_instrument(deployed=True):
     els = [cube([7.5, 12, 7.5], [8.5, 14.5, 8.5], "steel")]  # mast
     dish = ring(8, 8, 14.5, 15.5, 1.2, 3.2, "back", inner="dish", th=0.4)
     dish += ring(8, 8, 15.5, 17, 3.2, 5.6, "back", inner="dish", th=0.4)
@@ -292,7 +292,7 @@ def uplink_instrument():
     return els
 
 
-def guardian_instrument():
+def guardian_instrument(deployed=True):
     els = ring(8, 8, 12.3, 13.6, 3.2, 2.8, "armor", u0=2)  # turret ring
     els += disc(8, 8, 13.6, 2.8, "dark")
     head = [cube([5.6, 13.6, 5.8], [10.4, 16.4, 10.6], {**{d: "armor" for d in DIRS}, "up": "dark"}, u=3, v=3),
@@ -301,7 +301,8 @@ def guardian_instrument():
     for x in (6.4, 8.6):  # twin barrels with red muzzles
         head.append(cube([x, 14.4, 11.8], [x + 1.0, 15.4, 17.9], "dark"))
         head.append(cube([x - 0.15, 14.25, 17.9], [x + 1.15, 15.55, 18.7], "red"))
-    els += turn(head, euler(x=-22, y=-35), [8, 14, 8])
+    # aimed up and to the side; stowed for launch with the barrels straight up
+    els += turn(head, euler(x=-22, y=-35) if deployed else euler(x=-80), [8, 14, 8])
     # interceptor pod under the bus: four tubes with red tips
     els.append(cube([5.5, 3.5, 5.5], [10.5, 5, 10.5], "armor", u=3, v=5))
     for x, z in ((6, 6), (8.3, 6), (6, 8.3), (8.3, 8.3)):
@@ -317,7 +318,7 @@ INSTRUMENT = {"survey": survey_instrument, "uplink": uplink_instrument, "guardia
 
 def satellite_elements(kind, deployed=True):
     span = {"survey": 11.5, "uplink": 12.5, "guardian": 9.5}[kind]
-    els = bus(kind) + INSTRUMENT[kind]()
+    els = bus(kind) + INSTRUMENT[kind](deployed)
     for side in (1, -1):
         els += wing(side, deployed, span=span)
     return els

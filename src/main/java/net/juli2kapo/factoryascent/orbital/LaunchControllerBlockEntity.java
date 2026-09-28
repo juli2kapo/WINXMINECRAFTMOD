@@ -192,9 +192,12 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         return launchTick;
     }
 
+    /** Blocks above the controller that must be clear: the launch vehicle stands about 8 blocks tall. */
+    private static final int CLEARANCE = 9;
+
     private boolean pathBlocked() {
         if (level == null) return false;
-        for (int y = 1; y <= 4; y++) {
+        for (int y = 1; y <= CLEARANCE; y++) {
             if (!level.getBlockState(worldPosition.above(y)).getCollisionShape(level, worldPosition.above(y)).isEmpty()) return true;
         }
         return false;

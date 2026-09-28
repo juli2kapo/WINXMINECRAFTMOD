@@ -269,9 +269,9 @@ def fairing_glass():
     img = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            a, col = 70, (205, 228, 255)
-            if (x - y) % 11 in (0, 1):
-                a, col = 120, (240, 248, 255)
+            a, col = 55, (205, 228, 255)
+            if (x - y) % 13 == 0:
+                a, col = 90, (240, 248, 255)
             img.putpixel((x, y), col + (a,))
     for x in range(16):
         img.putpixel((x, 0), WHITE[1])
