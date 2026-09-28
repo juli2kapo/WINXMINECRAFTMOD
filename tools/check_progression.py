@@ -160,7 +160,7 @@ def load_recipes(tags):
         elif t in ("minecraft:smelting", "minecraft:blasting", "minecraft:smoking", "minecraft:campfire_cooking"):
             ins = [ingredient_options(r["ingredient"], tags)]
             outs = [result_id(r["result"])]
-        elif t.startswith(f"{MOD}:"):
+        elif t.startswith(f"{MOD}:") and "result" in r:  # special recipes (no fixed result) are skipped
             kind = t.split(":", 1)[1]
             ins = [ingredient_options(i, tags) for i in r.get("ingredients", [])]
             if "mold" in r:

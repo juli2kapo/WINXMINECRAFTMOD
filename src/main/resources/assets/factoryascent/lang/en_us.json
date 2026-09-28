@@ -397,7 +397,6 @@
   "tooltip.factoryascent.mob_capsule.release": "Right-click a block to release it.",
   "tooltip.factoryascent.minimizer_ray": "Shrinks any creature: smaller mobs fit through 1-block gaps and are easier to move. Maximizer undoes it.",
   "tooltip.factoryascent.maximizer_ray": "Grows any creature, up to 4× its size. Also undoes the Minimizer.",
-  "tooltip.factoryascent.size_ray.usage": "Hold right-click for 1 s to charge, release to fire (%s FE per shot, 24 blocks).",
   "message.factoryascent.mob_capsule.capturing": "Capturing %s… %s%%",
   "message.factoryascent.mob_capsule.captured": "Captured %s!",
   "message.factoryascent.mob_capsule.released": "Released %s",
@@ -492,5 +491,9 @@
   "message.factoryascent.team.info_satellites": "Satellites in orbit: %s",
   "message.factoryascent.team.none": "No teams yet",
   "message.factoryascent.team.list_header": "%s teams:",
-  "message.factoryascent.team.list_entry": "• %s (%s): %s"
+  "message.factoryascent.team.list_entry": "• %s (%s): %s",
+  "tooltip.factoryascent.size_ray.usage": "Hold right-click for 1 s to charge, release to fire (%s FE per shot, %s blocks).",
+  "tooltip.factoryascent.size_ray.limits": "Sizes from %s%% to %s%%",
+  "tooltip.factoryascent.size_ray.scoped": "Scope: zooms while charging, reaches %s blocks",
+  "tooltip.factoryascent.size_ray.scope_hint": "Craft with a spyglass to mount a scope (alone in the grid to take it off)"
 }

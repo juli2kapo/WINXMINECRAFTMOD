@@ -397,7 +397,6 @@
   "tooltip.factoryascent.mob_capsule.release": "Clic derecho en un bloque para liberarla.",
   "tooltip.factoryascent.minimizer_ray": "Encoge a cualquier criatura: las criaturas pequeñas pasan por huecos de 1 bloque y son más fáciles de mover. El maximizador lo deshace.",
   "tooltip.factoryascent.maximizer_ray": "Agranda a cualquier criatura, hasta 4 veces su tamaño. También deshace el minimizador.",
-  "tooltip.factoryascent.size_ray.usage": "Mantén clic derecho 1 s para cargar y suelta para disparar (%s FE por disparo, 24 bloques).",
   "message.factoryascent.mob_capsule.capturing": "Capturando %s… %s%%",
   "message.factoryascent.mob_capsule.captured": "¡%s capturado!",
   "message.factoryascent.mob_capsule.released": "%s liberado",
@@ -492,5 +491,9 @@
   "message.factoryascent.team.info_satellites": "Satélites en órbita: %s",
   "message.factoryascent.team.none": "Aún no hay equipos",
   "message.factoryascent.team.list_header": "%s equipos:",
-  "message.factoryascent.team.list_entry": "• %s (%s): %s"
+  "message.factoryascent.team.list_entry": "• %s (%s): %s",
+  "tooltip.factoryascent.size_ray.usage": "Mantén clic derecho 1 s para cargar y suelta para disparar (%s FE por disparo, %s bloques).",
+  "tooltip.factoryascent.size_ray.limits": "Tamaños del %s%% al %s%%",
+  "tooltip.factoryascent.size_ray.scoped": "Mira: amplía al cargar, alcanza %s bloques",
+  "tooltip.factoryascent.size_ray.scope_hint": "Fabrícalo con un catalejo para montar una mira (solo en la cuadrícula para quitarla)"
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "factoryascent:item/minimizer_ray_scoped_icon"
+  }
+}

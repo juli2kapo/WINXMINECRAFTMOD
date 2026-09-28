@@ -34,9 +34,7 @@ LANG = [
     ("tooltip.factoryascent.maximizer_ray",
      "Grows any creature, up to 4× its size. Also undoes the Minimizer.",
      "Agranda a cualquier criatura, hasta 4 veces su tamaño. También deshace el minimizador."),
-    ("tooltip.factoryascent.size_ray.usage",
-     "Hold right-click for 1 s to charge, release to fire (%s FE per shot, 24 blocks).",
-     "Mantén clic derecho 1 s para cargar y suelta para disparar (%s FE por disparo, 24 bloques)."),
+    # size_ray.usage / limits / scoped / scope_hint live in tools/features/ray.py with the ray models.
 
     ("message.factoryascent.mob_capsule.capturing", "Capturing %s… %s%%", "Capturando %s… %s%%"),
     ("message.factoryascent.mob_capsule.captured", "Captured %s!", "¡%s capturado!"),
@@ -78,8 +76,7 @@ def models(ctx):
         "component": f"{MOD}:captured_mob",
         "on_true": {"type": "minecraft:model", "model": f"{MOD}:item/mob_capsule_full"},
         "on_false": {"type": "minecraft:model", "model": f"{MOD}:item/mob_capsule"}}})
-    ctx.flat_item("minimizer_ray", handheld=True)
-    ctx.flat_item("maximizer_ray", handheld=True)
+    # The rays' 3D models and item definitions come from tools/features/ray.py.
 
 
 def recipes(ctx):

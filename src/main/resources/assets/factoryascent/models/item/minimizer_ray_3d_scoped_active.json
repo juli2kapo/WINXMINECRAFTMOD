@@ -1,0 +1,7 @@
+{
+  "parent": "factoryascent:item/size_ray_scoped_base",
+  "textures": {
+    "energy": "factoryascent:item/minimizer_ray_energy_hot",
+    "crystal": "factoryascent:item/minimizer_ray_crystal_hot"
+  }
+}

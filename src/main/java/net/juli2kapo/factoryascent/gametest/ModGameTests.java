@@ -74,6 +74,7 @@ public final class ModGameTests {
             new Test("drill_area_breaks_3x3", 20, net.juli2kapo.factoryascent.item.drill.DrillGameTests::areaBreaksThreeByThree),
             new Test("drill_area_skips_bedrock", 20, net.juli2kapo.factoryascent.item.drill.DrillGameTests::areaSkipsBedrock),
             new Test("drill_vein_mines_cluster", 20, net.juli2kapo.factoryascent.item.drill.DrillGameTests::veinMinesCluster),
+            new Test("size_ray_scope_round_trip", 20, net.juli2kapo.factoryascent.mobs.SizeRayRecipeTests::scopeRoundTrip),
             new Test("team_create_invite_join", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::teamCreateInviteJoin),
             new Test("launch_registers_satellite", 200, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::launchRegistersSatellite),
             new Test("coverage_follows_team", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::coverageFollowsTeam),

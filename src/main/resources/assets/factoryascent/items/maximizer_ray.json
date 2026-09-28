@@ -1,6 +1,53 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "factoryascent:item/maximizer_ray"
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": "gui",
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:has_component",
+          "component": "factoryascent:scoped",
+          "on_true": {
+            "type": "minecraft:model",
+            "model": "factoryascent:item/maximizer_ray_scoped_icon"
+          },
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "factoryascent:item/maximizer_ray_icon"
+          }
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:has_component",
+      "component": "factoryascent:scoped",
+      "on_true": {
+        "type": "minecraft:condition",
+        "property": "minecraft:using_item",
+        "on_true": {
+          "type": "minecraft:model",
+          "model": "factoryascent:item/maximizer_ray_3d_scoped_active"
+        },
+        "on_false": {
+          "type": "minecraft:model",
+          "model": "factoryascent:item/maximizer_ray_3d_scoped"
+        }
+      },
+      "on_false": {
+        "type": "minecraft:condition",
+        "property": "minecraft:using_item",
+        "on_true": {
+          "type": "minecraft:model",
+          "model": "factoryascent:item/maximizer_ray_3d_active"
+        },
+        "on_false": {
+          "type": "minecraft:model",
+          "model": "factoryascent:item/maximizer_ray_3d"
+        }
+      }
+    }
   }
 }

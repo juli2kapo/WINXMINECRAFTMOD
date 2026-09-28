@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_transmute",
+  "category": "equipment",
+  "group": "size_ray_scope",
+  "input": "factoryascent:minimizer_ray",
+  "material": "minecraft:spyglass",
+  "result": {
+    "id": "factoryascent:minimizer_ray",
+    "components": {
+      "factoryascent:scoped": {}
+    }
+  }
+}
