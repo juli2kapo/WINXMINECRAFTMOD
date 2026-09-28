@@ -165,7 +165,9 @@ public class Shuttle extends AbstractShip implements SealedCabin {
                 az = fwd.z * f;
                 ay = up ? 0.022 : down ? -0.022 : 0;
             }
-            v = v.add(ax, ay, az).scale(0.996); // drifting momentum, a whisper of drag
+            // drifting momentum; with the pilot off the thrusters the RCS slowly holds station
+            boolean coasting = !(ahead || back || up || down);
+            v = v.add(ax, ay, az).scale(coasting && powered && pilot() != null ? 0.988 : 0.996);
             if (v.length() > 1.6) v = v.normalize().scale(1.6);
             reentryTicks = 0;
             setState(STATE_ORBIT);

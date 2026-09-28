@@ -774,7 +774,7 @@ def write_parts(ctx):
         entries = []
         for i, (shifted, offset) in enumerate(cells):
             used = {t for e in shifted for (t, _) in e.faces.values()}
-            tex = {t: TEX[t] for t in used}
+            tex = {t: TEX[t] for t in sorted(used)}
             particle = next(iter(sorted(used)))
             ctx.block_model(f"ship/{name}_{i}", {"ambientocclusion": False, "textures": {**tex, "particle": TEX[particle]},
                                                  "elements": [e.json() for e in shifted]})

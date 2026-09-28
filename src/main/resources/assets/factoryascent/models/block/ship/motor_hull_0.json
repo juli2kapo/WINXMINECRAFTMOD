@@ -2,13 +2,13 @@
   "ambientocclusion": false,
   "textures": {
     "boot": "factoryascent:block/ship_boot_top",
+    "funnel": "factoryascent:block/ship_funnel",
     "glass": "factoryascent:block/ship_glass",
     "hull": "factoryascent:block/ship_hull_steel",
-    "funnel": "factoryascent:block/ship_funnel",
-    "white": "factoryascent:block/ship_white",
-    "red": "factoryascent:block/ship_hull_red",
     "iron": "factoryascent:block/ship_iron",
+    "red": "factoryascent:block/ship_hull_red",
     "sdeck": "factoryascent:block/ship_steel_deck",
+    "white": "factoryascent:block/ship_white",
     "particle": "factoryascent:block/ship_boot_top"
   },
   "elements": [

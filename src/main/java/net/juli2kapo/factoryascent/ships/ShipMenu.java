@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
  * altitude, state), synced as {@link ContainerData}. Buttons: horn and lights.
  */
 public class ShipMenu extends AbstractContainerMenu {
-    public static final int PANEL_W = 96;
+    public static final int PANEL_W = 124;
     public static final int GRID_X = 8, GRID_Y = 18;
     public static final int BUTTON_HORN = 0, BUTTON_LIGHTS = 1;
 

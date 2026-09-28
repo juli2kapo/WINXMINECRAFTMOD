@@ -147,7 +147,7 @@ public class ShipRenderer extends EntityRenderer<AbstractShip, ShipRenderer.Stat
         ShipModels.draw(pose, c, s.lights ? "cog_lantern_on" : "cog_lantern_off", light);
         pose.pushPose();
         about(pose, COG_MAST, () -> {
-            pose.mulPose(Axis.YP.rotationDegrees(-s.yard));
+            pose.mulPose(Axis.YP.rotationDegrees(s.yard)); // braced square to the wind, sail to leeward
             // a full sail bellies forward; a luffing one hangs slack and shivers
             float fill = s.sailing ? 1f : 0.45f + 0.08f * Mth.sin(s.ageInTicks * 0.9f);
             pose.scale(1f, 1f, fill);

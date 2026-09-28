@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "planks": "factoryascent:block/ship_cog_planks",
     "iron": "factoryascent:block/ship_iron",
+    "planks": "factoryascent:block/ship_cog_planks",
     "sdeck": "factoryascent:block/ship_steel_deck",
     "white": "factoryascent:block/ship_white",
     "particle": "factoryascent:block/ship_iron"

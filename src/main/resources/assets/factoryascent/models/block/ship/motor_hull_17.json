@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "white": "factoryascent:block/ship_white",
     "stripe": "factoryascent:block/ship_stripe",
+    "white": "factoryascent:block/ship_white",
     "windows": "factoryascent:block/ship_windows",
     "particle": "factoryascent:block/ship_stripe"
   },

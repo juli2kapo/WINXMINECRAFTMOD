@@ -3,11 +3,11 @@
   "textures": {
     "boot": "factoryascent:block/ship_boot_top",
     "hull": "factoryascent:block/ship_hull_steel",
-    "white": "factoryascent:block/ship_white",
-    "red": "factoryascent:block/ship_hull_red",
     "iron": "factoryascent:block/ship_iron",
     "planks": "factoryascent:block/ship_cog_planks",
+    "red": "factoryascent:block/ship_hull_red",
     "sdeck": "factoryascent:block/ship_steel_deck",
+    "white": "factoryascent:block/ship_white",
     "particle": "factoryascent:block/ship_boot_top"
   },
   "elements": [

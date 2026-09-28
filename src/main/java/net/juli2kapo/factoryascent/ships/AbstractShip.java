@@ -353,8 +353,11 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
         Vec3 side = new Vec3(fwd.z, 0, -fwd.x);
         for (Vec3 dir : new Vec3[] {side, side.scale(-1), fwd, fwd.scale(-1)}) {
             Vec3 at = position().add(dir.scale(reach));
-            net.minecraft.core.BlockPos pos = net.minecraft.core.BlockPos.containing(at.x, getBoundingBox().maxY, at.z);
-            for (net.minecraft.core.BlockPos p : new net.minecraft.core.BlockPos[] {pos, pos.below(), pos.above()}) {
+            // from just above the hull down to below the keel: the first floor a passenger fits on
+            net.minecraft.core.BlockPos top = net.minecraft.core.BlockPos.containing(at.x, getBoundingBox().maxY + 1, at.z);
+            int depth = (int) Math.ceil(getBoundingBox().getYsize()) + 4;
+            for (int dy = 0; dy <= depth; dy++) {
+                net.minecraft.core.BlockPos p = top.below(dy);
                 if (level().isWaterAt(p.below()) && level().isWaterAt(p)) continue;
                 double floor = level().getBlockFloorHeight(p);
                 if (!DismountHelper.isBlockFloorValid(floor)) continue;

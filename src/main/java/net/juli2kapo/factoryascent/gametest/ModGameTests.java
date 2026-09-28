@@ -118,7 +118,13 @@ public final class ModGameTests {
             new Test("tree_farm_fells_and_replants", 500, AgeContentTests::treeFarmFellsAndReplants),
             new Test("industrial_grinder_quadruples", 100, AgeContentTests::industrialGrinderQuadruples),
             new Test("recycler_salvages", 200, AgeContentTests::recyclerSalvages),
-            new Test("mob_farm_drops_loot", 400, AgeContentTests::mobFarmDropsLoot)
+            new Test("mob_farm_drops_loot", 400, AgeContentTests::mobFarmDropsLoot),
+            new Test("ship_sail_rules", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::sailRules),
+            new Test("ship_cog_sails_on_water", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::cogSails),
+            new Test("ship_motor_uses_power", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::motorUsesPower),
+            new Test("ship_cargo_persists", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::cargoPersists),
+            new Test("ship_shuttle_climbs_on_fuel", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::shuttleClimbs),
+            new Test("ship_orbit_transfer_thresholds", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::transferThresholds)
     );
 
     private ModGameTests() {}

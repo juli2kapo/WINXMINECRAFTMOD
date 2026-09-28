@@ -1,11 +1,11 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "red_light": "factoryascent:block/ship_light_red",
     "green_light": "factoryascent:block/ship_light_green",
-    "white": "factoryascent:block/ship_white",
-    "iron": "factoryascent:block/ship_iron",
     "hull": "factoryascent:block/ship_hull_steel",
+    "iron": "factoryascent:block/ship_iron",
+    "red_light": "factoryascent:block/ship_light_red",
+    "white": "factoryascent:block/ship_white",
     "particle": "factoryascent:block/ship_light_green"
   },
   "elements": [
