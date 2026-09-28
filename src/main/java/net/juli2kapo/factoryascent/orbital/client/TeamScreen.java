@@ -68,6 +68,9 @@ public class TeamScreen extends Screen {
     @Override
     protected void init() {
         int x = left(), y = top();
+        Button map = addRenderableWidget(Button.builder(Component.translatable("gui.factoryascent.team.map"),
+                b -> send(TeamAction.MAP, "")).bounds(x + W - 126, y + 9, 56, 14).build());
+        map.setTooltip(Tooltip.create(Component.translatable("gui.factoryascent.team.map_tip")));
         if (!solo()) {
             addRenderableWidget(Button.builder(Component.translatable("gui.factoryascent.team.leave"),
                     b -> send(TeamAction.LEAVE, "")).bounds(x + W - 68, y + 9, 60, 14).build());

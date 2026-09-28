@@ -127,6 +127,23 @@ public class MachineBlock extends BaseEntityBlock {
         return level.getBlockEntity(pos) instanceof AbstractMachineBlockEntity be ? be.comparatorSignal() : 0;
     }
 
+    /**
+     * Turns a machine to face {@code facing} (horizontal only): the Wrench and the machine screen's
+     * Sides panel. For an Energy Cell the facing is its output face. Returns false if the block
+     * can not face that way.
+     */
+    public static boolean setFacing(Level level, BlockPos pos, Direction facing) {
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof MachineBlock machine) || !machine.type().hasFacing() || !facing.getAxis().isHorizontal()) {
+            return false;
+        }
+        if (state.getValue(FACING) != facing) {
+            level.setBlock(pos, state.setValue(FACING, facing), Block.UPDATE_ALL);
+            level.invalidateCapabilities(pos);
+        }
+        return true;
+    }
+
     public static boolean isActive(BlockState state) {
         return state.hasProperty(ACTIVE) && state.getValue(ACTIVE);
     }

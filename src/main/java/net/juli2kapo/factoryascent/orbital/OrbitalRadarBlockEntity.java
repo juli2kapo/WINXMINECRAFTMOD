@@ -41,6 +41,10 @@ import org.jspecify.annotations.Nullable;
  * locks it: its type, name and team are revealed, its owners are warned, and it can be picked as
  * the target of an {@link AsatMissileItem}.
  *
+ * <p>The team's own satellites need no lock: they are listed by name and can be picked as the
+ * target straight away, so a team can shoot down its own satellites (its own Guardians don't
+ * intercept its own missiles).
+ *
  * <p>The radar belongs to the team of whoever placed it ({@link #owner}): only that team's members
  * can use it. Locks last until the satellite leaves orbit or the radar is broken.
  */
@@ -157,12 +161,26 @@ public class OrbitalRadarBlockEntity extends BlockEntity {
         changed();
     }
 
-    /** Picks a locked contact as the target missiles are programmed with; null on success, else why not. */
+    /**
+     * Picks the target missiles are programmed with: a locked foreign contact, or one of the owner
+     * team's own satellites over this dimension (no lock needed). Null on success, else why not.
+     */
     public @Nullable Component designate(UUID satellite) {
-        if (!locked.contains(satellite)) return Component.translatable("message.factoryascent.radar_not_locked").withStyle(ChatFormatting.RED);
+        if (!locked.contains(satellite) && !isOwn(satellite)) {
+            return Component.translatable("message.factoryascent.radar_not_locked").withStyle(ChatFormatting.RED);
+        }
         designated = satellite;
         changed();
         return null;
+    }
+
+    /** True if the satellite belongs to the radar owner's team and is over this radar's dimension. */
+    public boolean isOwn(UUID satellite) {
+        if (!(level instanceof ServerLevel server)) return false;
+        String team = ownerTeam(server.getServer());
+        var found = OrbitRegistry.get(server.getServer()).find(satellite);
+        return team != null && found.isPresent() && found.get().team().equals(team)
+                && found.get().satellite().dimension().equals(server.dimension());
     }
 
     /** Locks a contact at once, skipping the tracking time (creative/testing helper). */
@@ -196,7 +214,7 @@ public class OrbitalRadarBlockEntity extends BlockEntity {
         String team = ownerTeam(server);
         OrbitRegistry orbit = OrbitRegistry.get(server);
         boolean changed = locked.removeIf(id -> !isForeignContact(orbit, team, level, id));
-        if (designated != null && !locked.contains(designated)) {
+        if (designated != null && !locked.contains(designated) && !isOwn(designated)) {
             designated = null;
             changed = true;
         }
@@ -251,8 +269,9 @@ public class OrbitalRadarBlockEntity extends BlockEntity {
             long days = OrbitalText.daysInOrbit(server, s);
             Component age = Component.translatable("message.factoryascent.station_age", days).withStyle(ChatFormatting.DARK_GRAY);
             if (o.team().equals(team)) {
+                int state = s.id().equals(designated) ? OrbitalPayloads.CONTACT_TARGET : OrbitalPayloads.CONTACT_OWN;
                 rows.add(new Row(s.id(), Component.translatable("message.factoryascent.radar_row_own", s.type().displayName(), s.name())
-                        .withStyle(ChatFormatting.DARK_GREEN).append(age), OrbitalPayloads.CONTACT_OWN, 0));
+                        .withStyle(ChatFormatting.DARK_GREEN).append(age), state, 0));
             } else if (locked.contains(s.id())) {
                 int state = s.id().equals(designated) ? OrbitalPayloads.CONTACT_TARGET : OrbitalPayloads.CONTACT_LOCKED;
                 rows.add(new Row(s.id(), Component.translatable("message.factoryascent.radar_row_locked", s.type().displayName(), s.name(),

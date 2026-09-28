@@ -37,6 +37,8 @@ public final class EnderContent {
     /** Bubbles rising inside an Ender Anchor (see StasisBubbleParticle). */
     public static final Supplier<net.minecraft.core.particles.SimpleParticleType> STASIS_BUBBLE =
             PARTICLES.register("stasis_bubble", () -> new net.minecraft.core.particles.SimpleParticleType(false));
+    private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS =
+            DeferredRegister.create(Registries.MENU, FactoryAscent.MOD_ID);
     private static final DeferredRegister.DataComponents COMPONENTS =
             DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FactoryAscent.MOD_ID);
 
@@ -66,6 +68,16 @@ public final class EnderContent {
     public static final Supplier<BlockEntityType<EnderBeaconBlockEntity>> ENDER_BEACON_BE = BLOCK_ENTITIES.register(
             "ender_beacon", () -> new BlockEntityType<>(EnderBeaconBlockEntity::new, ENDER_BEACON.get()));
 
+    public static final Supplier<net.minecraft.world.inventory.MenuType<EnderAnchorMenu>> ENDER_ANCHOR_MENU = MENUS.register(
+            "ender_anchor", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(EnderAnchorMenu::fromNetwork));
+    public static final Supplier<net.minecraft.world.inventory.MenuType<EnderBeaconMenu>> ENDER_BEACON_MENU = MENUS.register(
+            "ender_beacon", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(EnderBeaconMenu::fromNetwork));
+
+    /** The name of the linked Ender Beacon, remembered by the charm (refreshed whenever the beacon is looked up). */
+    public static final Supplier<DataComponentType<String>> LINKED_BEACON_NAME = COMPONENTS.registerComponentType(
+            "linked_beacon_name", b -> b.persistent(com.mojang.serialization.Codec.string(0, EnderBeaconBlockEntity.MAX_NAME))
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.stringUtf8(EnderBeaconBlockEntity.MAX_NAME * 4)));
+
     /** The Ender Beacon a Recall Charm takes you to. */
     public static final Supplier<DataComponentType<GlobalPos>> LINKED_BEACON = COMPONENTS.registerComponentType(
             "linked_beacon", b -> b.persistent(GlobalPos.CODEC).networkSynchronized(GlobalPos.STREAM_CODEC));
@@ -92,6 +104,7 @@ public final class EnderContent {
         BLOCK_ENTITIES.register(modBus);
         COMPONENTS.register(modBus);
         PARTICLES.register(modBus);
+        MENUS.register(modBus);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RecallCharmItem::onDamaged);
         modBus.addListener((RegisterTicketControllersEvent e) -> e.register(ANCHOR_TICKETS));
     }

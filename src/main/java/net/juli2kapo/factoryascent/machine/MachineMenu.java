@@ -18,6 +18,8 @@ import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_TOGGLE_EJECT = 0;
     public static final int BUTTON_CRANK = 1;
+    /** Buttons 10..13: face the machine (an Energy Cell: its output) south, west, north, east (2D data value). */
+    public static final int BUTTON_FACE = 10;
 
     private final AbstractMachineBlockEntity machine;
     private final MachineData data;
@@ -104,6 +106,16 @@ public class MachineMenu extends AbstractContainerMenu {
         }
         if (buttonId == BUTTON_CRANK && machine instanceof ProcessingMachineBlockEntity p && machine.type() == MachineType.QUERN) {
             p.crank(player);
+            return true;
+        }
+        if (buttonId >= BUTTON_FACE && buttonId < BUTTON_FACE + 4 && machine.getLevel() != null) {
+            net.minecraft.core.Direction face = net.minecraft.core.Direction.from2DDataValue(buttonId - BUTTON_FACE);
+            boolean turned = machine.getBlockState().getValue(MachineBlock.FACING) != face;
+            if (!MachineBlock.setFacing(machine.getLevel(), machine.getBlockPos(), face)) return false;
+            if (turned) {
+                machine.getLevel().playSound(null, machine.getBlockPos(), net.minecraft.sounds.SoundEvents.ITEM_FRAME_ROTATE_ITEM,
+                        net.minecraft.sounds.SoundSource.BLOCKS, 0.8f, 1.3f);
+            }
             return true;
         }
         return false;

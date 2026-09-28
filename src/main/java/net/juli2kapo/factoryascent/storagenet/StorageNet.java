@@ -62,6 +62,11 @@ public final class StorageNet {
         return drives;
     }
 
+    /** The network's controller, or null when it has none or more than one. */
+    public @org.jspecify.annotations.Nullable StorageControllerBlockEntity controller() {
+        return controllers.size() == 1 ? controllers.get(0) : null;
+    }
+
     public int controllerCount() {
         return controllers.size();
     }

@@ -1,0 +1,8 @@
+{
+  "parent": "factoryascent:block/lv_stage_lower",
+  "textures": {
+    "hull": "factoryascent:block/lv_hull_asat",
+    "flag": "factoryascent:block/lv_hull_asat",
+    "fin": "factoryascent:block/sat_dark"
+  }
+}

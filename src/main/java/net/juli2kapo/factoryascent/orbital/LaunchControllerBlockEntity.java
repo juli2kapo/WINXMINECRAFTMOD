@@ -64,6 +64,8 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     private int launchTick = -1;
     /** Game time the sequence started (synced for the renderer), or -1. */
     private long launchStart = -1;
+    /** The pad is on the survey map's list of sites (not saved: re-added once per load). */
+    private boolean siteKnown;
 
     public LaunchControllerBlockEntity(BlockPos pos, BlockState state) {
         super(OrbitalContent.LAUNCH_CONTROLLER_BE.get(), pos, state);
@@ -95,6 +97,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
     public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
+        siteKnown = false;
         setChanged();
     }
 
@@ -155,6 +158,48 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         return null;
     }
 
+    /**
+     * Mounts a payload put in the controller screen's payload slot (same rules as by hand; the
+     * slot only accepts it when {@link #mountProblem()} is null).
+     */
+    void mountFromMenu(ItemStack stack, UUID player) {
+        if (stack.isEmpty()) {
+            dismount();
+        } else if (isPayload(stack) && (satellite.isEmpty() || !launching())) {
+            satellite = stack.copyWithCount(1);
+            launcher = player;
+            if (owner == null) owner = player;
+            changed();
+        }
+    }
+
+    /** Readiness of the pad, as shown on the controller screen (one of the {@code STATUS_*} constants). */
+    public int status() {
+        if (launching()) return STATUS_LAUNCHING;
+        if (!isFormed()) return STATUS_INCOMPLETE;
+        if (satellite.isEmpty()) return STATUS_NO_PAYLOAD;
+        if (fuel < FUEL_PER_LAUNCH) return STATUS_NO_FUEL;
+        if (pathBlocked()) return STATUS_BLOCKED;
+        if (hasMissile() && level instanceof ServerLevel server && missileProblem(server) != null) return STATUS_MISSILE;
+        return STATUS_READY;
+    }
+
+    public static final int STATUS_READY = 0, STATUS_LAUNCHING = 1, STATUS_INCOMPLETE = 2, STATUS_NO_PAYLOAD = 3,
+            STATUS_NO_FUEL = 4, STATUS_BLOCKED = 5, STATUS_MISSILE = 6;
+
+    /** Ticks into the launch sequence, or -1 when idle. */
+    public int launchTick() {
+        return launchTick;
+    }
+
+    private boolean pathBlocked() {
+        if (level == null) return false;
+        for (int y = 1; y <= 4; y++) {
+            if (!level.getBlockState(worldPosition.above(y)).getCollisionShape(level, worldPosition.above(y)).isEmpty()) return true;
+        }
+        return false;
+    }
+
     /** Takes the satellite back off the pad (not during a launch). */
     public ItemStack dismount() {
         if (launching() || satellite.isEmpty()) return ItemStack.EMPTY;
@@ -186,11 +231,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
             Component problem = missileProblem((ServerLevel) level);
             if (problem != null) return problem;
         }
-        for (int y = 1; y <= 4; y++) {
-            if (!level.getBlockState(worldPosition.above(y)).getCollisionShape(level, worldPosition.above(y)).isEmpty()) {
-                return Component.translatable("message.factoryascent.pad_blocked").withStyle(ChatFormatting.RED);
-            }
-        }
+        if (pathBlocked()) return Component.translatable("message.factoryascent.pad_blocked").withStyle(ChatFormatting.RED);
         fuel -= FUEL_PER_LAUNCH;
         launchTick = 0;
         launchStart = level.getGameTime();
@@ -217,6 +258,10 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     // ---------------------------------------------------------------- the launch
 
     public void serverTick(ServerLevel level) {
+        if (!siteKnown && owner != null) {
+            SurveySites.get(level.getServer()).put(level.dimension(), worldPosition, SurveySites.PAD, owner);
+            siteKnown = true;
+        }
         if (launchTick < 0) return;
         if (satellite.isEmpty()) { // e.g. the data was edited; abort quietly
             launchTick = -1;
@@ -261,8 +306,9 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
     /**
      * Null if the mounted missile may fly now, else why not: missiles must be allowed on the
-     * server, programmed by a radar of the launcher's team in this dimension that still holds its
-     * lock, and aimed at a satellite of another team that is still over this dimension.
+     * server, programmed by a radar of the launcher's team in this dimension, and aimed at a
+     * satellite still over this dimension: another team's (the radar must still hold its lock) or
+     * the launcher's own team's (no lock needed: teams may shoot down their own satellites).
      */
     public @Nullable Component missileProblem(ServerLevel level) {
         if (!Config.ASAT_ENABLED.get()) return Component.translatable("message.factoryascent.asat_disabled").withStyle(ChatFormatting.RED);
@@ -275,11 +321,11 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         if (found.isEmpty() || !found.get().satellite().dimension().equals(level.dimension())) {
             return Component.translatable("message.factoryascent.asat_target_gone").withStyle(ChatFormatting.RED);
         }
-        if (found.get().team().equals(team)) return Component.translatable("message.factoryascent.asat_own_team").withStyle(ChatFormatting.RED);
+        boolean own = found.get().team().equals(team);
         BlockPos radarPos = target.radar().pos();
         if (!target.radar().dimension().equals(level.dimension()) || !level.isLoaded(radarPos)
                 || !(level.getBlockEntity(radarPos) instanceof OrbitalRadarBlockEntity radar)
-                || !radar.isLocked(target.satellite())) {
+                || !(own || radar.isLocked(target.satellite()))) {
             return Component.translatable("message.factoryascent.asat_no_lock").withStyle(ChatFormatting.RED);
         }
         if (radar.owner() == null || !teams.teamOf(radar.owner()).equals(team)) {
@@ -318,6 +364,8 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     /**
      * The missile reaches its target. A Guardian Satellite of the target's team over this
      * dimension intercepts it and is used up; otherwise the target is destroyed. Both teams are told.
+     * A missile aimed at the launcher's own team's satellite is never intercepted by that team's
+     * Guardians: it destroys the target and the team is told it shot down its own satellite.
      */
     private void strike(ServerLevel level, UUID who) {
         MinecraftServer server = level.getServer();
@@ -326,12 +374,18 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         String team = teams.teamOf(who);
         AsatMissileItem.Target target = AsatMissileItem.target(satellite);
         var found = target == null ? java.util.Optional.<OrbitRegistry.Owned>empty() : orbit.find(target.satellite());
-        if (found.isEmpty() || found.get().team().equals(team) || !found.get().satellite().dimension().equals(level.dimension())) {
+        if (found.isEmpty() || !found.get().satellite().dimension().equals(level.dimension())) {
             OrbitalText.tellTeam(server, team, Component.translatable("message.factoryascent.asat_missed").withStyle(ChatFormatting.GRAY));
             return;
         }
         String victims = found.get().team();
         Satellite victim = found.get().satellite();
+        if (victims.equals(team)) {
+            orbit.remove(victim.id());
+            OrbitalText.tellTeam(server, team, Component.translatable("message.factoryascent.asat_destroyed_own",
+                    teams.playerName(who), victim.type().displayName(), victim.name()).withStyle(ChatFormatting.YELLOW));
+            return;
+        }
         String shooter = teams.displayName(team), shooterPlayer = teams.playerName(who);
         var guardian = orbit.first(victims, level.dimension(), SatelliteType.DEFENSE);
         if (guardian.isPresent()) {
@@ -447,10 +501,15 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         }
     }
 
-    /** Drops the mounted satellite (and nothing else: fuel burns away) when the controller is broken. */
+    /**
+     * Drops the mounted payload (and nothing else: fuel burns away) when the controller is broken.
+     * Breaking it during the countdown or the climb aborts the launch and the payload still drops.
+     */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        if (level != null && !satellite.isEmpty() && !launching()) Block.popResource(level, pos, satellite.copy());
+        if (level != null && !satellite.isEmpty()) Block.popResource(level, pos, satellite.copy());
+        satellite = ItemStack.EMPTY;
+        if (level instanceof ServerLevel server) SurveySites.get(server.getServer()).remove(server.dimension(), pos);
     }
 
     @Override

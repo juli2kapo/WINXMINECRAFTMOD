@@ -18,7 +18,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Rotates machines and switches item-pipe faces between delivering and extracting. */
@@ -54,10 +53,7 @@ public class WrenchItem extends Item {
                 && context.getClickedFace().getAxis().isHorizontal()) {
             if (level.isClientSide()) return InteractionResult.SUCCESS;
             Direction face = context.getClickedFace();
-            if (state.getValue(MachineBlock.FACING) != face) {
-                level.setBlock(pos, state.setValue(MachineBlock.FACING, face), Block.UPDATE_ALL);
-                level.invalidateCapabilities(pos);
-            }
+            MachineBlock.setFacing(level, pos, face);
             if (context.getPlayer() != null) {
                 context.getPlayer().sendOverlayMessage(Component.translatable("message.factoryascent.cell_output",
                         Component.translatable("direction.factoryascent." + face.getName())));
@@ -68,9 +64,7 @@ public class WrenchItem extends Item {
 
         if (state.getBlock() instanceof MachineBlock machine && machine.type().hasFacing()) {
             if (level.isClientSide()) return InteractionResult.SUCCESS;
-            Direction facing = state.getValue(MachineBlock.FACING);
-            level.setBlock(pos, state.setValue(MachineBlock.FACING, facing.getClockWise()), Block.UPDATE_ALL);
-            level.invalidateCapabilities(pos);
+            MachineBlock.setFacing(level, pos, state.getValue(MachineBlock.FACING).getClockWise());
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8f, 1f);
             return InteractionResult.SUCCESS;
         }

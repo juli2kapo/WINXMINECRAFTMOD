@@ -143,8 +143,10 @@ public class EnderAnchorBlock extends BaseEntityBlock implements DescribedBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(lowerPos(state, pos)) instanceof EnderAnchorBlockEntity anchor) {
-            player.sendOverlayMessage(anchor.statusLine());
+        BlockPos lower = lowerPos(state, pos);
+        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer sp
+                && level.getBlockEntity(lower) instanceof EnderAnchorBlockEntity anchor) {
+            EnderAnchorMenu.open(sp, anchor);
         }
         return InteractionResult.SUCCESS;
     }

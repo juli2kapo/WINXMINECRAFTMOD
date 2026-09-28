@@ -43,6 +43,11 @@ public final class ItemNetwork {
         return pipes;
     }
 
+    /** How many pipe faces deliver into an inventory. */
+    public int destinationCount() {
+        return destinations.size();
+    }
+
     /**
      * Delivers up to {@code amount} of the resource to the network's inventories, round-robin,
      * never back into {@code source}. Returns how many were accepted (inside the transaction).

@@ -30,6 +30,10 @@ public final class EnergyNetwork {
     private final long capacity;
     private int roundRobin;
     private final Journal journal = new Journal();
+    /** Buffer level right after the previous tick's delivery (-1 before the first tick). */
+    private long afterTick = -1;
+    /** Smoothed flows for the cable screen, FE/t. */
+    private double avgIn, avgOut;
 
     EnergyNetwork(ServerLevel level, Set<BlockPos> cables, long energy, long rate, long capacity) {
         this.level = level;
@@ -86,17 +90,51 @@ public final class EnergyNetwork {
         endpointsDirty = false;
     }
 
+    /** Average FE/t arriving from generators and cells (smoothed over about a second). */
+    public long averageIn() {
+        return Math.round(avgIn);
+    }
+
+    /** Average FE/t handed out to machines and cells (smoothed over about a second). */
+    public long averageOut() {
+        return Math.round(avgOut);
+    }
+
+    /** Where the network's endpoints are: every block touching a cable that is not a cable. */
+    public java.util.Set<BlockPos> endpointPositions() {
+        java.util.Set<BlockPos> out = new java.util.LinkedHashSet<>();
+        for (BlockPos cable : cables) {
+            for (Direction dir : Direction.values()) {
+                BlockPos other = cable.relative(dir);
+                if (cables.contains(other) || !level.isLoaded(other)
+                        || level.getBlockState(other).getBlock() instanceof PowerCableBlock) continue;
+                if (level.getCapability(Capabilities.Energy.BLOCK, other, dir.getOpposite()) != null) out.add(other);
+            }
+        }
+        return out;
+    }
+
     void tick() {
+        long received = afterTick < 0 ? 0 : Math.max(0, energy - afterTick);
+        long delivered = deliver();
+        afterTick = energy;
+        avgIn += (received - avgIn) * 0.1;
+        avgOut += (delivered - avgOut) * 0.1;
+    }
+
+    /** Hands the buffer out to the endpoints; returns how much they took. */
+    private long deliver() {
         if (endpointsDirty) rebuildEndpoints();
-        if (energy <= 0 || endpoints.isEmpty()) return;
+        if (energy <= 0 || endpoints.isEmpty()) return 0;
 
         List<EnergyHandler> targets = new ArrayList<>(endpoints.size());
         for (var cache : endpoints) {
             EnergyHandler h = cache.getCapability();
             if (h != null) targets.add(h);
         }
-        if (targets.isEmpty()) return;
+        if (targets.isEmpty()) return 0;
 
+        long delivered = 0;
         // Pass 1: equal shares. Pass 2: hand what is left to whoever still has room.
         int n = targets.size();
         roundRobin = (roundRobin + 1) % n;
@@ -111,9 +149,11 @@ public final class EnergyNetwork {
                     tx.commit();
                     energy -= accepted;
                     budget -= accepted;
+                    delivered += accepted;
                 }
             }
         }
+        return delivered;
     }
 
     private final class Journal extends SnapshotJournal<Long> {

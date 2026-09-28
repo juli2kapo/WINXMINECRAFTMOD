@@ -163,12 +163,37 @@ public class ItemPipeBlock extends BaseEntityBlock {
 
     /** Wrench action: flip the arm between delivering and extracting. Returns true if it changed. */
     public boolean toggleExtract(Level level, BlockPos pos, BlockState state, Direction dir) {
+        return setExtract(level, pos, state, dir, state.getValue(PROPERTIES.get(dir)) != PipeConnection.EXTRACT);
+    }
+
+    /** Whether the arm towards {@code dir} touches an inventory and can switch between delivering and extracting. */
+    public static boolean configurable(Level level, BlockPos pos, BlockState state, Direction dir) {
+        return state.getValue(PROPERTIES.get(dir)) != PipeConnection.NONE
+                && !(level.getBlockState(pos.relative(dir)).getBlock() instanceof ItemPipeBlock);
+    }
+
+    /**
+     * Sets the arm towards {@code dir} to extracting or delivering (the Wrench and the pipe screen).
+     * Returns false if that arm does not touch an inventory; true otherwise (also when it already was).
+     */
+    public boolean setExtract(Level level, BlockPos pos, BlockState state, Direction dir, boolean extract) {
+        if (!configurable(level, pos, state, dir)) return false;
         var prop = PROPERTIES.get(dir);
-        PipeConnection now = state.getValue(prop);
-        if (now == PipeConnection.NONE || level.getBlockState(pos.relative(dir)).getBlock() instanceof ItemPipeBlock) return false;
-        level.setBlock(pos, state.setValue(prop, now == PipeConnection.EXTRACT ? PipeConnection.CONNECTED : PipeConnection.EXTRACT), Block.UPDATE_ALL);
+        PipeConnection wanted = extract ? PipeConnection.EXTRACT : PipeConnection.CONNECTED;
+        if (state.getValue(prop) == wanted) return true;
+        level.setBlock(pos, state.setValue(prop, wanted), Block.UPDATE_ALL);
         if (level instanceof ServerLevel server) ItemNetworkManager.get(server).invalidateAt(pos);
         return true;
+    }
+
+    /** Empty-handed right-click opens the pipe screen; holding anything leaves the click to the item. */
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                                                   net.minecraft.world.entity.player.Player player,
+                                                                   net.minecraft.world.phys.BlockHitResult hit) {
+        if (!player.getMainHandItem().isEmpty()) return net.minecraft.world.InteractionResult.PASS;
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) net.juli2kapo.factoryascent.ui.NetworkScreens.open(sp, pos);
+        return net.minecraft.world.InteractionResult.SUCCESS;
     }
 
     @Override

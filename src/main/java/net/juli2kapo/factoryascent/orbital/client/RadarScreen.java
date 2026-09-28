@@ -14,9 +14,10 @@ import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
- * An Orbital Radar's screen: every satellite over the dimension. Own satellites are listed plainly;
- * foreign ones are unidentified contacts with a Track button until the radar locks them, then a
- * Target button picks the one Anti-Satellite missiles get programmed with. The server sends the
+ * An Orbital Radar's screen: every satellite over the dimension. Own satellites are listed by name
+ * with a Target button right away (a team may shoot down its own satellites); foreign ones are
+ * unidentified contacts with a Track button until the radar locks them, then a Target button
+ * picks the one Anti-Satellite missiles get programmed with. The server sends the
  * list ({@link RadarView}); the screen asks for a fresh one twice a second.
  */
 public class RadarScreen extends Screen {
@@ -81,6 +82,12 @@ public class RadarScreen extends Screen {
                 case OrbitalPayloads.CONTACT_TRACKING -> addRenderableWidget(Button.builder(
                         Component.translatable("gui.factoryascent.radar.stop"),
                         btn -> send(RadarAction.STOP, row.id())).bounds(x + W - 62, by, 54, 12).build());
+                case OrbitalPayloads.CONTACT_OWN -> {
+                    Button b = Button.builder(Component.translatable("gui.factoryascent.radar.target"),
+                            btn -> send(RadarAction.DESIGNATE, row.id())).bounds(x + W - 62, by, 54, 12).build();
+                    b.setTooltip(Tooltip.create(Component.translatable("gui.factoryascent.radar.target_own_tip")));
+                    addRenderableWidget(b);
+                }
                 case OrbitalPayloads.CONTACT_LOCKED -> {
                     Button b = Button.builder(Component.translatable("gui.factoryascent.radar.target"),
                             btn -> send(RadarAction.DESIGNATE, row.id())).bounds(x + W - 62, by, 54, 12).build();
@@ -119,7 +126,7 @@ public class RadarScreen extends Screen {
         for (int i = 0; i < ROWS && scroll + i < view.contacts().size(); i++) {
             Row row = view.contacts().get(scroll + i);
             int ry = y + LIST_Y + 3 + i * ROW_H;
-            boolean hasButton = row.state() != OrbitalPayloads.CONTACT_OWN && row.state() != OrbitalPayloads.CONTACT_TARGET;
+            boolean hasButton = row.state() != OrbitalPayloads.CONTACT_TARGET;
             int textW = W - (hasButton ? 76 : 24) - (row.state() == OrbitalPayloads.CONTACT_TRACKING ? 44 : 0)
                     - (row.state() == OrbitalPayloads.CONTACT_TARGET ? 44 : 0);
             g.text(font, OrbitalGui.fit(font, row.line(), textW), x + 10, ry, OrbitalGui.TEXT, false);

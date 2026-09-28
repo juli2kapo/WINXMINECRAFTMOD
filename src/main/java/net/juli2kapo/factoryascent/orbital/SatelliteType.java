@@ -8,7 +8,7 @@ import net.minecraft.util.StringRepresentable;
 
 /** What a satellite does once in orbit over a dimension. */
 public enum SatelliteType implements StringRepresentable {
-    /** Maps: the Ground Station turns empty maps into filled maps of its surroundings. */
+    /** Survey: the team's Ground Stations image the land around them for the survey map ({@link SurveyService}). */
     SURVEY("survey_satellite", ChatFormatting.GREEN),
     /** Signal: the team has coverage in the whole dimension (wireless terminal, future phone apps). */
     UPLINK("uplink_satellite", ChatFormatting.AQUA),

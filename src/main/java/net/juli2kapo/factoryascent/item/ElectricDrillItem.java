@@ -122,19 +122,52 @@ public class ElectricDrillItem extends Item {
         }
     }
 
+    /**
+     * Sneak + right-click: looking at a block, cycles the mode (quick switch, as before); in the air,
+     * opens the drill screen to pick one.
+     */
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!player.isSecondaryUseActive()) return InteractionResult.PASS;
         ItemStack stack = player.getItemInHand(hand);
+        boolean atBlock = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE).getType() == HitResult.Type.BLOCK;
+        if (!atBlock) {
+            if (player instanceof ServerPlayer sp) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(sp,
+                        new net.juli2kapo.factoryascent.ui.ScreenPayloads.OpenDrill(hand.ordinal()));
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!level.isClientSide()) {
             DrillMode next = mode(stack).next();
             setMode(stack, next);
             player.sendOverlayMessage(Component.translatable("message.factoryascent.electric_drill.mode",
                     next.displayName()));
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK,
-                    SoundSource.PLAYERS, 0.4f, 0.8f + 0.2f * next.ordinal());
+            playModeSound(player, next);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    private static void playModeSound(Player player, DrillMode mode) {
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK,
+                SoundSource.PLAYERS, 0.4f, 0.8f + 0.2f * mode.ordinal());
+    }
+
+    /**
+     * The drill screen picked a mode for the drill in {@code hand}. Only acts on an Electric Drill
+     * actually held there. Returns whether the mode was set (for GameTests).
+     */
+    public static boolean handleModeAction(ServerPlayer player, int handIndex, int modeIndex) {
+        InteractionHand hand = net.juli2kapo.factoryascent.ui.ScreenPayloads.hand(handIndex);
+        if (hand == null || modeIndex < 0 || modeIndex >= DrillMode.values().length) return false;
+        ItemStack stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof ElectricDrillItem)) return false;
+        DrillMode mode = DrillMode.values()[modeIndex];
+        if (mode(stack) != mode) {
+            setMode(stack, mode);
+            playModeSound(player, mode);
+        }
+        return true;
     }
 
     @Override

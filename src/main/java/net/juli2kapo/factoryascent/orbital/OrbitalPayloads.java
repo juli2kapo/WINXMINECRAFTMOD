@@ -17,7 +17,8 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * The Orbital age's packets: the Team screen and the Orbital Radar screen. Screens only show what
+ * The Orbital age's packets: the Team screen, the Orbital Radar screen, the Launch Controller
+ * screen's messages and the survey map. Screens only show what
  * the server sends ({@link TeamView}, {@link RadarView}) and send back what was clicked
  * ({@link TeamAction}, {@link RadarAction}); the server checks everything again.
  */
@@ -79,7 +80,7 @@ public final class OrbitalPayloads {
 
     /** Client → server: a Team screen button. {@code arg} is a name, or a satellite id for deorbit. */
     public record TeamAction(int action, String arg) implements CustomPacketPayload {
-        public static final int REFRESH = 0, CREATE = 1, INVITE = 2, JOIN = 3, LEAVE = 4, DEORBIT = 5;
+        public static final int REFRESH = 0, CREATE = 1, INVITE = 2, JOIN = 3, LEAVE = 4, DEORBIT = 5, MAP = 6;
         public static final Type<TeamAction> TYPE = typeOf("team_action");
         public static final StreamCodec<RegistryFriendlyByteBuf, TeamAction> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, TeamAction::action,
@@ -138,11 +139,136 @@ public final class OrbitalPayloads {
         }
     }
 
+    // ---------------------------------------------------------------- launch controller screen
+
+    /** Server → client: why the Launch button didn't launch (shown on the controller screen). */
+    public record PadMessage(Component message) implements CustomPacketPayload {
+        public static final Type<PadMessage> TYPE = typeOf("pad_message");
+        public static final StreamCodec<RegistryFriendlyByteBuf, PadMessage> STREAM_CODEC = StreamCodec.composite(
+                ComponentSerialization.STREAM_CODEC, PadMessage::message, PadMessage::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    // ---------------------------------------------------------------- survey map
+
+    /** A point on the survey map. */
+    public record Marker(int kind, String name, int x, int z) {
+        public static final int THIS_STATION = 0, STATION = 1, PAD = 2, MEMBER = 3;
+        public static final StreamCodec<RegistryFriendlyByteBuf, Marker> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, Marker::kind,
+                ByteBufCodecs.stringUtf8(64), Marker::name,
+                ByteBufCodecs.VAR_INT, Marker::x,
+                ByteBufCodecs.VAR_INT, Marker::z,
+                Marker::new);
+    }
+
+    /**
+     * The survey map's fixed facts: the dimension, where the map is centred (the station, or the
+     * player for a remote view), whether a Survey Satellite is up, the survey radius in chunks, and
+     * the chunks imaged so far within that radius out of the total.
+     */
+    public record SurveyHeader(Identifier dimension, BlockPos origin, boolean atStation, boolean surveying, int radius,
+                               int imaged, int total) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SurveyHeader> STREAM_CODEC = StreamCodec.composite(
+                Identifier.STREAM_CODEC, SurveyHeader::dimension,
+                BlockPos.STREAM_CODEC, SurveyHeader::origin,
+                ByteBufCodecs.BOOL, SurveyHeader::atStation,
+                ByteBufCodecs.BOOL, SurveyHeader::surveying,
+                ByteBufCodecs.VAR_INT, SurveyHeader::radius,
+                ByteBufCodecs.VAR_INT, SurveyHeader::imaged,
+                ByteBufCodecs.VAR_INT, SurveyHeader::total,
+                SurveyHeader::new);
+    }
+
+    /**
+     * Server → client: the survey map's status, the team's satellites over the dimension (with
+     * Deorbit buttons) and the markers. {@code open} opens the screen (and resets its imagery);
+     * otherwise it refreshes an open one. Sent about once a second while the map is open.
+     */
+    public record SurveyView(boolean open, SurveyHeader header, Component status, List<Row> satellites, List<Marker> markers,
+                             Component message) implements CustomPacketPayload {
+        public static final Type<SurveyView> TYPE = typeOf("survey_view");
+        public static final StreamCodec<RegistryFriendlyByteBuf, SurveyView> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL, SurveyView::open,
+                SurveyHeader.STREAM_CODEC, SurveyView::header,
+                ComponentSerialization.STREAM_CODEC, SurveyView::status,
+                Row.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_ROWS)), SurveyView::satellites,
+                Marker.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_ROWS)), SurveyView::markers,
+                ComponentSerialization.STREAM_CODEC, SurveyView::message,
+                SurveyView::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /**
+     * Server → client: a batch of imaged chunks. {@code data} is deflated: per chunk, its 256 packed
+     * map colours then a big-endian short index into {@code biomes} (-1 = unknown).
+     */
+    public record SurveyTiles(long[] chunks, byte[] data, List<String> biomes) implements CustomPacketPayload {
+        /** Chunks per packet: at most ~66 KB before compression. */
+        public static final int MAX_CHUNKS = 256;
+        public static final Type<SurveyTiles> TYPE = typeOf("survey_tiles");
+        public static final StreamCodec<RegistryFriendlyByteBuf, SurveyTiles> STREAM_CODEC = StreamCodec.of(
+                (buf, t) -> {
+                    buf.writeVarInt(t.chunks().length);
+                    for (long c : t.chunks()) buf.writeLong(c);
+                    buf.writeByteArray(t.data());
+                    buf.writeVarInt(t.biomes().size());
+                    for (String b : t.biomes()) buf.writeUtf(b, 256);
+                },
+                buf -> {
+                    int count = buf.readVarInt();
+                    if (count < 0 || count > MAX_CHUNKS) throw new io.netty.handler.codec.DecoderException("Too many survey chunks: " + count);
+                    long[] chunks = new long[count];
+                    for (int i = 0; i < count; i++) chunks[i] = buf.readLong();
+                    byte[] data = buf.readByteArray(MAX_CHUNKS * 258 + 1024);
+                    int n = Math.min(buf.readVarInt(), MAX_CHUNKS);
+                    List<String> biomes = new java.util.ArrayList<>(n);
+                    for (int i = 0; i < n; i++) biomes.add(buf.readUtf(256));
+                    return new SurveyTiles(chunks, data, biomes);
+                });
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /** Client → server: the survey map was closed, or a satellite's Deorbit button was confirmed. */
+    public record SurveyAction(int action, UUID id) implements CustomPacketPayload {
+        public static final int CLOSE = 0, DEORBIT = 1;
+        public static final Type<SurveyAction> TYPE = typeOf("survey_action");
+        public static final StreamCodec<RegistryFriendlyByteBuf, SurveyAction> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, SurveyAction::action,
+                UUIDUtil.STREAM_CODEC, SurveyAction::id,
+                SurveyAction::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+
+        static void handle(SurveyAction payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) SurveyService.handle(player, payload);
+        }
+    }
+
     static void register(RegisterPayloadHandlersEvent event) {
         event.registrar("1")
                 .playToClient(TeamView.TYPE, TeamView.STREAM_CODEC)
                 .playToClient(RadarView.TYPE, RadarView.STREAM_CODEC)
                 .playToServer(TeamAction.TYPE, TeamAction.STREAM_CODEC, TeamAction::handle)
-                .playToServer(RadarAction.TYPE, RadarAction.STREAM_CODEC, RadarAction::handle);
+                .playToServer(RadarAction.TYPE, RadarAction.STREAM_CODEC, RadarAction::handle)
+                .playToClient(PadMessage.TYPE, PadMessage.STREAM_CODEC)
+                .playToClient(SurveyView.TYPE, SurveyView.STREAM_CODEC)
+                .playToClient(SurveyTiles.TYPE, SurveyTiles.STREAM_CODEC)
+                .playToServer(SurveyAction.TYPE, SurveyAction.STREAM_CODEC, SurveyAction::handle);
     }
 }

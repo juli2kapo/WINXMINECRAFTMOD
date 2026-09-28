@@ -45,6 +45,8 @@ public final class OrbitalContent {
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, FactoryAscent.MOD_ID);
     private static final DeferredRegister.DataComponents COMPONENTS =
             DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FactoryAscent.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS =
+            DeferredRegister.create(Registries.MENU, FactoryAscent.MOD_ID);
 
     private static BlockBehaviour.Properties metal() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(4.0f, 8f)
@@ -87,6 +89,10 @@ public final class OrbitalContent {
     public static final Supplier<BlockEntityType<OrbitalRadarBlockEntity>> ORBITAL_RADAR_BE = BLOCK_ENTITIES.register(
             "orbital_radar", () -> new BlockEntityType<>(OrbitalRadarBlockEntity::new, ORBITAL_RADAR.get()));
 
+    /** The Launch Controller's screen (payload + fuel slots, Launch button). */
+    public static final Supplier<net.minecraft.world.inventory.MenuType<LaunchControllerMenu>> LAUNCH_CONTROLLER_MENU = MENUS.register(
+            "launch_controller", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(LaunchControllerMenu::fromNetwork));
+
     /** The Storage Terminal a Wireless Terminal opens. */
     public static final Supplier<DataComponentType<GlobalPos>> LINKED_TERMINAL = COMPONENTS.registerComponentType(
             "linked_terminal", b -> b.persistent(GlobalPos.CODEC).networkSynchronized(GlobalPos.STREAM_CODEC));
@@ -102,6 +108,7 @@ public final class OrbitalContent {
         ITEMS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         COMPONENTS.register(modBus);
+        MENUS.register(modBus);
         modBus.addListener(OrbitalPayloads::register);
         modBus.addListener((RegisterCapabilitiesEvent e) -> {
             e.registerBlockEntity(Capabilities.Item.BLOCK, LAUNCH_CONTROLLER_BE.get(), (be, side) -> be.itemHandler());
@@ -110,8 +117,17 @@ public final class OrbitalContent {
         // The one hook into the storage network: remote terminal sessions stay open over the uplink.
         TerminalMenu.remoteAccess = WirelessTerminalItem::allowsRemote;
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TeamCommands.register(e.getDispatcher()));
-        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> SurveyMapper.tick(e.getServer()));
-        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> SurveyMapper.clear());
+        // Survey: store chunks imaged off-thread, stream imagery to open survey maps.
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> {
+            SurveyScanner.drain(e.getServer());
+            SurveyService.tick(e.getServer());
+        });
+        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> {
+            SurveyScanner.clear();
+            SurveyService.clear();
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) ->
+                SurveyService.forget(e.getEntity().getUUID()));
         // Team messages and screens name solo teams after their player, so learn every name on login.
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) -> {
             if (e.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp) FactoryTeams.get(sp.level().getServer()).remember(sp);

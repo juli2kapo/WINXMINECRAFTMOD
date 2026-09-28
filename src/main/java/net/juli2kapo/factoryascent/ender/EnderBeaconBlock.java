@@ -79,8 +79,9 @@ public class EnderBeaconBlock extends BaseEntityBlock implements DescribedBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof EnderBeaconBlockEntity beacon) {
-            player.sendOverlayMessage(beacon.statusLine());
+        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer sp
+                && level.getBlockEntity(pos) instanceof EnderBeaconBlockEntity beacon) {
+            EnderBeaconMenu.open(sp, beacon);
         }
         return InteractionResult.SUCCESS;
     }

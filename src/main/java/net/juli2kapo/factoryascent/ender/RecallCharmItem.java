@@ -53,6 +53,7 @@ public class RecallCharmItem extends Item {
                 return InteractionResult.FAIL;
             }
             context.getItemInHand().set(EnderContent.LINKED_BEACON.get(), GlobalPos.of(level.dimension(), context.getClickedPos()));
+            refreshName(context.getItemInHand(), level.dimension(), context.getClickedPos(), beacon);
             player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_linked").withStyle(ChatFormatting.LIGHT_PURPLE));
             level.playSound(null, context.getClickedPos(), SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.PLAYERS, 1f, 1.4f);
         }
@@ -62,6 +63,13 @@ public class RecallCharmItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        // Sneak-use (in the air): the charm's screen instead of a recall.
+        if (player.isSecondaryUseActive()) {
+            if (player instanceof ServerPlayer sp) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(sp, view(sp, hand, true));
+            }
+            return InteractionResult.SUCCESS;
+        }
         GlobalPos target = stack.get(EnderContent.LINKED_BEACON.get());
         if (target == null) {
             if (!level.isClientSide()) {
@@ -150,6 +158,7 @@ public class RecallCharmItem extends Item {
             return;
         }
         beacon.triggerPearl();
+        refreshName(stack, target.dimension(), pos, beacon);
         ServerLevel from = player.level();
         from.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.9, 0.4, 0.2);
         from.playSound(null, player.blockPosition(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1f, 1f);
@@ -169,11 +178,83 @@ public class RecallCharmItem extends Item {
             tooltip.accept(Component.translatable("tooltip.factoryascent.charm_unlinked").withStyle(ChatFormatting.GRAY));
         } else {
             BlockPos p = target.pos();
+            String name = stack.get(EnderContent.LINKED_BEACON_NAME.get());
+            if (name != null && !name.isEmpty()) {
+                tooltip.accept(Component.translatable("tooltip.factoryascent.charm_linked_name", name).withStyle(ChatFormatting.LIGHT_PURPLE));
+            }
             tooltip.accept(Component.translatable("tooltip.factoryascent.charm_linked", p.getX(), p.getY(), p.getZ(),
                     target.dimension().identifier().getPath()).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
+        tooltip.accept(Component.translatable("tooltip.factoryascent.charm_screen").withStyle(ChatFormatting.DARK_GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.charm_howto", Config.RECALL_SECONDS.get())
                 .withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    // ---------------------------------------------------------------- screen
+
+    /** Copies the beacon's current name onto a charm linked to it (other stacks are left alone). */
+    public static void refreshName(ItemStack stack, net.minecraft.resources.ResourceKey<Level> dimension, BlockPos pos,
+                                   EnderBeaconBlockEntity beacon) {
+        GlobalPos target = stack.get(EnderContent.LINKED_BEACON.get());
+        if (!(stack.getItem() instanceof RecallCharmItem) || target == null
+                || !target.dimension().equals(dimension) || !target.pos().equals(pos)) return;
+        if (beacon.name().isEmpty()) stack.remove(EnderContent.LINKED_BEACON_NAME.get());
+        else stack.set(EnderContent.LINKED_BEACON_NAME.get(), beacon.name());
+    }
+
+    /** What the charm screen shows for the charm in {@code hand}; looks the beacon up (loading its chunk). */
+    public static net.juli2kapo.factoryascent.ui.ScreenPayloads.CharmView view(ServerPlayer player, InteractionHand hand, boolean open) {
+        ItemStack stack = player.getItemInHand(hand);
+        GlobalPos target = stack.get(EnderContent.LINKED_BEACON.get());
+        int recall = Config.RECALL_SECONDS.get(), cooldown = Config.RECALL_COOLDOWN_SECONDS.get();
+        boolean cross = Config.RECALL_CROSS_DIMENSION.get();
+        if (target == null) {
+            return new net.juli2kapo.factoryascent.ui.ScreenPayloads.CharmView(open, hand.ordinal(), false, "", BlockPos.ZERO, "",
+                    true, net.juli2kapo.factoryascent.ui.ScreenPayloads.BEACON_UNKNOWN, recall, cooldown, cross);
+        }
+        int state;
+        String name = stack.getOrDefault(EnderContent.LINKED_BEACON_NAME.get(), "");
+        ServerLevel destination = player.level().getServer().getLevel(target.dimension());
+        if (destination == null) {
+            state = net.juli2kapo.factoryascent.ui.ScreenPayloads.BEACON_UNKNOWN;
+        } else {
+            destination.getChunk(target.pos()); // like a recall: load it to look
+            if (destination.getBlockEntity(target.pos()) instanceof EnderBeaconBlockEntity beacon) {
+                refreshName(stack, target.dimension(), target.pos(), beacon);
+                name = beacon.name();
+                state = beacon.hasPearl() ? net.juli2kapo.factoryascent.ui.ScreenPayloads.BEACON_READY
+                        : net.juli2kapo.factoryascent.ui.ScreenPayloads.BEACON_NO_PEARL;
+            } else {
+                state = net.juli2kapo.factoryascent.ui.ScreenPayloads.BEACON_GONE;
+            }
+        }
+        return new net.juli2kapo.factoryascent.ui.ScreenPayloads.CharmView(open, hand.ordinal(), true, name, target.pos(),
+                target.dimension().identifier().toString(), target.dimension().equals(player.level().dimension()), state,
+                recall, cooldown, cross);
+    }
+
+    /**
+     * A charm screen button: refresh, or unlink the charm in {@code hand}. Only acts on a Recall
+     * Charm actually held there. Returns whether it did anything (for GameTests).
+     */
+    public static boolean handleAction(ServerPlayer player, int handIndex, int action) {
+        InteractionHand hand = net.juli2kapo.factoryascent.ui.ScreenPayloads.hand(handIndex);
+        if (hand == null) return false;
+        ItemStack stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof RecallCharmItem)) return false;
+        boolean done = true;
+        if (action == net.juli2kapo.factoryascent.ui.ScreenPayloads.CharmAction.UNLINK) {
+            done = stack.has(EnderContent.LINKED_BEACON.get());
+            stack.remove(EnderContent.LINKED_BEACON.get());
+            stack.remove(EnderContent.LINKED_BEACON_NAME.get());
+            if (done) {
+                player.level().playSound(null, player.blockPosition(), SoundEvents.ENDER_EYE_DEATH, SoundSource.PLAYERS, 0.6f, 1.4f);
+            }
+        } else if (action != net.juli2kapo.factoryascent.ui.ScreenPayloads.CharmAction.REFRESH) {
+            return false;
+        }
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, view(player, hand, false));
+        return done;
     }
 
     @Override

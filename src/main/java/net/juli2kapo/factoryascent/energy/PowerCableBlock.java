@@ -104,6 +104,16 @@ public class PowerCableBlock extends PipeBlock implements EntityBlock {
         EnergyNetworkManager.get(level).onCableRemoved(pos);
     }
 
+    /** Empty-handed right-click opens the network screen; holding anything leaves the click to the item. */
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                                                   net.minecraft.world.entity.player.Player player,
+                                                                   net.minecraft.world.phys.BlockHitResult hit) {
+        if (!player.getMainHandItem().isEmpty()) return net.minecraft.world.InteractionResult.PASS;
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) net.juli2kapo.factoryascent.ui.NetworkScreens.open(sp, pos);
+        return net.minecraft.world.InteractionResult.SUCCESS;
+    }
+
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new PowerCableBlockEntity(pos, state);

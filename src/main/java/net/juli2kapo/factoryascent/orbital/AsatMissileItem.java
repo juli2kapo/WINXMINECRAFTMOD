@@ -20,11 +20,12 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Anti-Satellite missile: flies from a Launch Pad like a satellite, but on arrival destroys a
- * foreign satellite instead of joining the orbit.
+ * satellite instead of joining the orbit.
  *
- * <p>It must be programmed first: lock a foreign satellite on an {@link OrbitalRadarBlock}, pick
- * it as the target in the radar's screen, then right-click the radar with the missile. The radar
- * must still hold the lock when the missile launches (see {@link LaunchControllerBlockEntity}).
+ * <p>It must be programmed first: pick the target in an {@link OrbitalRadarBlock}'s screen (a
+ * foreign satellite once the radar has locked it, or one of your own team's satellites right
+ * away), then right-click the radar with the missile. For a foreign target the radar must still
+ * hold the lock when the missile launches (see {@link LaunchControllerBlockEntity}).
  */
 public class AsatMissileItem extends Item {
     /**

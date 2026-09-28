@@ -21,6 +21,7 @@ public final class FactoryAscentClient {
         net.juli2kapo.factoryascent.ender.EnderContentClient.register(modBus);
         net.juli2kapo.factoryascent.mobs.MobContentClient.register(modBus);
         net.juli2kapo.factoryascent.orbital.OrbitalContentClient.register(modBus);
+        net.juli2kapo.factoryascent.orbital.client.OrbitalUiClient.register(modBus);
         // Before JEI reads the recipes on the same event.
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ClientRecipes::onRecipesReceived);
     }

@@ -33,10 +33,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The centre of the 3×3 Launch Pad: holds the rocket, its payload and its fuel. Right-click
- * with a satellite or an Anti-Satellite missile to mount it, with Blaze Powder or Rocket Fuel to
- * fuel it (hoppers and pipes can do both); launch with a redstone pulse or by sneak-using flint
- * and steel. Sneak with an empty hand to take the payload back off.
+ * The centre of the 3×3 Launch Pad: holds the rocket, its payload and its fuel. Right-click it
+ * (or any plate of the pad) with an empty hand to open its screen ({@link LaunchControllerMenu}):
+ * payload and fuel slots, the pad's status and a Launch button. Shortcuts: right-click with a
+ * satellite or an Anti-Satellite missile to mount it, with Blaze Powder or Rocket Fuel to fuel it
+ * (hoppers and pipes can do both); launch with a redstone pulse or by sneak-using flint and steel;
+ * sneak-use with an empty hand to take the payload back (not during a launch). Breaking the
+ * controller drops the payload (the fuel is lost).
  */
 public class LaunchControllerBlock extends BaseEntityBlock implements DescribedBlock {
     public static final MapCodec<LaunchControllerBlock> CODEC = simpleCodec(LaunchControllerBlock::new);
@@ -73,6 +76,8 @@ public class LaunchControllerBlock extends BaseEntityBlock implements DescribedB
         tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_how",
                 LaunchControllerBlockEntity.FUEL_PER_LAUNCH).withStyle(ChatFormatting.DARK_AQUA));
         tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_multiblock").withStyle(ChatFormatting.GOLD));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_screen").withStyle(ChatFormatting.DARK_GREEN));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_takeback").withStyle(ChatFormatting.DARK_GREEN));
         tooltip.accept(Component.translatable("tooltip.factoryascent.launch_controller_automation").withStyle(ChatFormatting.DARK_GRAY));
     }
 
@@ -138,14 +143,37 @@ public class LaunchControllerBlock extends BaseEntityBlock implements DescribedB
         if (!stack.isEmpty()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             if (player.isShiftKeyDown()) {
-                ItemStack back = controller.dismount();
-                if (!back.isEmpty()) {
-                    if (!player.getInventory().add(back)) player.drop(back, false);
-                }
+                player.sendOverlayMessage(takeBack(controller, player));
+            } else if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+                openScreen(controller, sp);
             }
-            player.sendOverlayMessage(controller.statusLine());
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** Opens the controller's screen. */
+    static void openScreen(LaunchControllerBlockEntity controller, net.minecraft.server.level.ServerPlayer player) {
+        BlockPos pos = controller.getBlockPos();
+        player.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                (id, inventory, p) -> new LaunchControllerMenu(id, inventory, controller),
+                Component.translatable("block.factoryascent.launch_controller")), buf -> buf.writeBlockPos(pos));
+    }
+
+    /**
+     * Sneak-use with an empty hand: the mounted payload goes back to the player (not during a
+     * launch). Returns what to tell them.
+     */
+    static Component takeBack(LaunchControllerBlockEntity controller, Player player) {
+        if (controller.satellite().isEmpty()) {
+            return Component.translatable("message.factoryascent.pad_nothing_to_take").withStyle(ChatFormatting.GRAY);
+        }
+        if (controller.launching()) {
+            return Component.translatable("message.factoryascent.pad_take_busy").withStyle(ChatFormatting.RED);
+        }
+        ItemStack back = controller.dismount();
+        Component name = back.getHoverName();
+        if (!player.getInventory().add(back)) player.drop(back, false);
+        return Component.translatable("message.factoryascent.pad_taken", name).withStyle(ChatFormatting.GREEN);
     }
 
     /** A rising redstone edge launches. */

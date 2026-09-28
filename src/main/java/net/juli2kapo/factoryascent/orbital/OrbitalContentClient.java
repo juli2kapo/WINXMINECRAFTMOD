@@ -32,10 +32,20 @@ import org.jspecify.annotations.Nullable;
  * the Orbital Radar's spinning antenna, and the Team and Radar screens opened by server packets.
  */
 public final class OrbitalContentClient {
-    static final StandaloneModelKey<BlockStateModelPart> ROCKET_SURVEY = key("orbital_rocket_survey");
-    static final StandaloneModelKey<BlockStateModelPart> ROCKET_UPLINK = key("orbital_rocket_uplink");
-    static final StandaloneModelKey<BlockStateModelPart> ROCKET_GUARDIAN = key("orbital_rocket_guardian");
-    static final StandaloneModelKey<BlockStateModelPart> ROCKET_ASAT = key("orbital_rocket_asat");
+    // The launch vehicle (tools/features/satellites.py): stages, payload adapter, fairing halves,
+    // the anti-satellite kill vehicle, the exhaust plume and the satellites with folded wings.
+    static final StandaloneModelKey<BlockStateModelPart> LV_LOWER = key("lv_stage_lower");
+    static final StandaloneModelKey<BlockStateModelPart> LV_UPPER = key("lv_stage_upper");
+    static final StandaloneModelKey<BlockStateModelPart> LV_LOWER_ASAT = key("lv_stage_lower_asat");
+    static final StandaloneModelKey<BlockStateModelPart> LV_UPPER_ASAT = key("lv_stage_upper_asat");
+    static final StandaloneModelKey<BlockStateModelPart> LV_ADAPTER = key("lv_adapter");
+    static final StandaloneModelKey<BlockStateModelPart> LV_FAIRING_A = key("lv_fairing_a");
+    static final StandaloneModelKey<BlockStateModelPart> LV_FAIRING_B = key("lv_fairing_b");
+    static final StandaloneModelKey<BlockStateModelPart> LV_KILL_VEHICLE = key("lv_kill_vehicle");
+    static final StandaloneModelKey<BlockStateModelPart> LV_PLUME = key("lv_plume");
+    static final StandaloneModelKey<BlockStateModelPart> PAYLOAD_SURVEY = key("satellite_survey_stowed");
+    static final StandaloneModelKey<BlockStateModelPart> PAYLOAD_UPLINK = key("satellite_uplink_stowed");
+    static final StandaloneModelKey<BlockStateModelPart> PAYLOAD_GUARDIAN = key("satellite_guardian_stowed");
     static final StandaloneModelKey<BlockStateModelPart> DISH = key("ground_station_dish");
     static final StandaloneModelKey<BlockStateModelPart> RADAR_ANTENNA = key("orbital_radar_antenna");
 
@@ -48,10 +58,18 @@ public final class OrbitalContentClient {
     public static void register(IEventBus modBus) {
         modBus.addListener((ModelEvent.RegisterStandalone e) -> {
             for (var entry : List.of(
-                    java.util.Map.entry(ROCKET_SURVEY, "orbital_rocket_survey"),
-                    java.util.Map.entry(ROCKET_UPLINK, "orbital_rocket_uplink"),
-                    java.util.Map.entry(ROCKET_GUARDIAN, "orbital_rocket_guardian"),
-                    java.util.Map.entry(ROCKET_ASAT, "orbital_rocket_asat"),
+                    java.util.Map.entry(LV_LOWER, "lv_stage_lower"),
+                    java.util.Map.entry(LV_UPPER, "lv_stage_upper"),
+                    java.util.Map.entry(LV_LOWER_ASAT, "lv_stage_lower_asat"),
+                    java.util.Map.entry(LV_UPPER_ASAT, "lv_stage_upper_asat"),
+                    java.util.Map.entry(LV_ADAPTER, "lv_adapter"),
+                    java.util.Map.entry(LV_FAIRING_A, "lv_fairing_a"),
+                    java.util.Map.entry(LV_FAIRING_B, "lv_fairing_b"),
+                    java.util.Map.entry(LV_KILL_VEHICLE, "lv_kill_vehicle"),
+                    java.util.Map.entry(LV_PLUME, "lv_plume"),
+                    java.util.Map.entry(PAYLOAD_SURVEY, "satellite_survey_stowed"),
+                    java.util.Map.entry(PAYLOAD_UPLINK, "satellite_uplink_stowed"),
+                    java.util.Map.entry(PAYLOAD_GUARDIAN, "satellite_guardian_stowed"),
                     java.util.Map.entry(DISH, "ground_station_dish"),
                     java.util.Map.entry(RADAR_ANTENNA, "orbital_radar_antenna"))) {
                 e.register(entry.getKey(), SimpleUnbakedStandaloneModel.simpleModelWrapper(
@@ -86,20 +104,39 @@ public final class OrbitalContentClient {
     // ---------------------------------------------------------------- rocket
 
     static final class RocketState extends BlockEntityRenderState {
-        /** The rocket for the mounted payload, or null when the pad is empty. */
-        @Nullable StandaloneModelKey<BlockStateModelPart> model;
+        /** Whether a payload is mounted (no rocket otherwise). */
+        boolean present;
+        /** The satellite inside the fairing, or null for the anti-satellite missile. */
+        @Nullable StandaloneModelKey<BlockStateModelPart> payload;
+        boolean missile;
         /** Blocks above the pad. */
         float height;
         /** Pre-launch rumble offset. */
         float shakeX, shakeZ;
+        /** Fairing halves: opening angle (degrees) and, once jettisoned, their drift from the rocket. */
+        float fairingAngle, fairingOut, fairingDrop;
+        /** Exhaust plume length (0: off) and flicker. */
+        float plume;
     }
 
     /**
-     * The rocket standing on the pad while a satellite is mounted. During a launch it rumbles, then
-     * climbs at {@link LaunchControllerBlockEntity#ACCEL}·t² blocks, the same curve the server's
-     * exhaust trail follows.
+     * The launch vehicle standing on the pad while a payload is mounted: two stages, a black
+     * interstage, grid fins and five engine bells, with the satellite (wings folded) inside a
+     * fairing whose halves stand open on the pad so everyone can see what is going up; the
+     * anti-satellite missile rides bare as a dark kill vehicle. When the countdown starts the
+     * fairing closes; the rocket rumbles, then climbs at {@link LaunchControllerBlockEntity#ACCEL}·t²
+     * blocks (the same curve the server's exhaust trail follows) on a flickering plume, and
+     * jettisons the fairing halves once {@link #FAIRING_SEPARATION} blocks up.
      */
     static final class RocketRenderer implements BlockEntityRenderer<LaunchControllerBlockEntity, RocketState> {
+        // Mirrors SEGMENT_BASE / FAIRING_BASE / PAYLOAD_BASE / PAYLOAD_SCALE / RF in tools/features/satellites.py (rocket pixels).
+        private static final float LOWER_BASE = 15.5f, UPPER_BASE = 63.5f, ADAPTER_BASE = 80f, FAIRING_MODEL_BASE = 110f,
+                KV_BASE = 102f, PLUME_BASE = -30.5f, FAIRING_HINGE = 94f, PAYLOAD_BASE = 95f, PAYLOAD_SCALE = 1.3f, FAIRING_RADIUS = 8.5f;
+        private static final float OPEN_ANGLE = 45f;
+        /** Ticks the fairing takes to close when the countdown starts. */
+        private static final float CLOSE_TICKS = 20f;
+        static final float FAIRING_SEPARATION = 30f;
+
         RocketRenderer(BlockEntityRendererProvider.Context context) {}
 
         @Override
@@ -112,20 +149,41 @@ public final class OrbitalContentClient {
                                        ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
             BlockEntityRenderer.super.extractRenderState(pad, state, partialTicks, camera, breakProgress);
             SatelliteType type = pad.satelliteType();
-            state.model = pad.hasMissile() ? ROCKET_ASAT : type == null ? null : switch (type) {
-                case SURVEY -> ROCKET_SURVEY;
-                case UPLINK -> ROCKET_UPLINK;
-                case DEFENSE -> ROCKET_GUARDIAN;
+            state.missile = pad.hasMissile();
+            state.present = state.missile || type != null;
+            state.payload = type == null ? null : switch (type) {
+                case SURVEY -> PAYLOAD_SURVEY;
+                case UPLINK -> PAYLOAD_UPLINK;
+                case DEFENSE -> PAYLOAD_GUARDIAN;
             };
             state.height = 0;
             state.shakeX = state.shakeZ = 0;
+            state.fairingAngle = OPEN_ANGLE;
+            state.fairingOut = state.fairingDrop = 0;
+            state.plume = 0;
             if (pad.launchStart() >= 0 && pad.getLevel() != null) {
                 float t = pad.getLevel().getGameTime() - pad.launchStart() + partialTicks;
-                if (t > LaunchControllerBlockEntity.LIFTOFF) {
-                    float dt = t - LaunchControllerBlockEntity.LIFTOFF;
-                    state.height = LaunchControllerBlockEntity.ACCEL * dt * dt;
-                } else if (t > LaunchControllerBlockEntity.LIFTOFF / 2f) {
-                    float amp = 0.02f * (t / LaunchControllerBlockEntity.LIFTOFF);
+                float liftoff = LaunchControllerBlockEntity.LIFTOFF;
+                float accel = LaunchControllerBlockEntity.ACCEL;
+                state.fairingAngle = OPEN_ANGLE * Math.max(0f, 1f - t / CLOSE_TICKS);
+                float flicker = 0.85f + 0.15f * (float) Math.sin(t * 2.7) * (float) Math.cos(t * 1.3);
+                if (t > liftoff) {
+                    float dt = t - liftoff;
+                    state.height = accel * dt * dt;
+                    state.plume = Math.min(1.4f, 0.8f + dt * 0.03f) * flicker;
+                    float sep = (float) Math.sqrt(FAIRING_SEPARATION / accel);
+                    if (dt > sep) {
+                        // Jettisoned: the halves swing open, drift apart and fall behind the rocket.
+                        float tau = dt - sep;
+                        state.fairingAngle = Math.min(160f, 12f + tau * 9f);
+                        state.fairingOut = 0.25f * tau;
+                        state.fairingDrop = (accel + 0.04f) * tau * tau;
+                    }
+                } else if (t > liftoff - 10) {
+                    state.plume = 0.35f * flicker; // ignition
+                }
+                if (t > liftoff / 2f && t <= liftoff) {
+                    float amp = 0.02f * (t / liftoff);
                     state.shakeX = (float) Math.sin(t * 7.3) * amp;
                     state.shakeZ = (float) Math.cos(t * 9.1) * amp;
                 }
@@ -133,17 +191,64 @@ public final class OrbitalContentClient {
             }
         }
 
+        private static void part(PoseStack pose, SubmitNodeCollector collector, StandaloneModelKey<BlockStateModelPart> key,
+                                 float basePx, int light) {
+            BlockStateModelPart model = Minecraft.getInstance().getModelManager().getStandaloneModel(key);
+            if (model == null) return;
+            pose.pushPose();
+            pose.translate(-0.5f, basePx / 16f, -0.5f);
+            collector.submitBlockModel(pose, Sheets.cutoutBlockItemSheet(), List.of(model), new int[0],
+                    light, OverlayTexture.NO_OVERLAY, 0);
+            pose.popPose();
+        }
+
         @Override
         public void submit(RocketState state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
-            if (state.model == null) return;
-            BlockStateModelPart rocket = Minecraft.getInstance().getModelManager().getStandaloneModel(state.model);
-            if (rocket == null) return;
+            if (!state.present) return;
+            int light = state.lightCoords;
             pose.pushPose();
             pose.translate(0.5f + state.shakeX, 0.25f + state.height, 0.5f + state.shakeZ);
-            pose.scale(1.5f, 1.5f, 1.5f);
-            pose.translate(-0.5f, 0f, -0.5f);
-            collector.submitBlockModel(pose, Sheets.cutoutBlockItemSheet(), List.of(rocket), new int[0],
-                    state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+            part(pose, collector, state.missile ? LV_LOWER_ASAT : LV_LOWER, LOWER_BASE, light);
+            part(pose, collector, state.missile ? LV_UPPER_ASAT : LV_UPPER, UPPER_BASE, light);
+            if (state.missile) {
+                part(pose, collector, LV_KILL_VEHICLE, KV_BASE, light);
+            } else {
+                part(pose, collector, LV_ADAPTER, ADAPTER_BASE, light);
+                if (state.payload != null) {
+                    BlockStateModelPart sat = Minecraft.getInstance().getModelManager().getStandaloneModel(state.payload);
+                    if (sat != null) {
+                        pose.pushPose();
+                        pose.translate(0f, PAYLOAD_BASE / 16f, 0f);
+                        pose.scale(PAYLOAD_SCALE, PAYLOAD_SCALE, PAYLOAD_SCALE);
+                        pose.translate(-0.5f, 0f, -0.5f);
+                        collector.submitBlockModel(pose, Sheets.cutoutBlockItemSheet(), List.of(sat), new int[0],
+                                light, OverlayTexture.NO_OVERLAY, 0);
+                        pose.popPose();
+                    }
+                }
+                for (int side : new int[] {1, -1}) {
+                    float hinge = side * FAIRING_RADIUS / 16f;
+                    pose.pushPose();
+                    pose.translate(side * state.fairingOut, -state.fairingDrop, 0f);
+                    pose.translate(hinge, FAIRING_HINGE / 16f, 0f);
+                    pose.mulPose(Axis.ZP.rotationDegrees(-side * state.fairingAngle));
+                    pose.translate(-hinge, -FAIRING_HINGE / 16f, 0f);
+                    part(pose, collector, side > 0 ? LV_FAIRING_A : LV_FAIRING_B, FAIRING_MODEL_BASE, light);
+                    pose.popPose();
+                }
+            }
+            if (state.plume > 0) {
+                BlockStateModelPart plume = Minecraft.getInstance().getModelManager().getStandaloneModel(LV_PLUME);
+                if (plume != null) {
+                    pose.pushPose();
+                    pose.translate(0f, 0.5f / 16f, 0f); // the bells' lip
+                    pose.scale(1f, state.plume, 1f);
+                    pose.translate(-0.5f, (PLUME_BASE - 0.5f) / 16f, -0.5f);
+                    collector.submitBlockModel(pose, Sheets.translucentBlockItemSheet(), List.of(plume), new int[0],
+                            0xF000F0, OverlayTexture.NO_OVERLAY, 0);
+                    pose.popPose();
+                }
+            }
             pose.popPose();
         }
 

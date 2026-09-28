@@ -38,6 +38,10 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     /** Remembered while the game runs, like the recipe book. */
     private static boolean acceptsOpen = true;
+    private static boolean sidesOpen = false;
+    /** The Sides tab on the right edge, and the panel it opens (relative to leftPos/topPos). */
+    private static final int TAB_W = 16, TAB_H = 22, TAB_Y = 8;
+    private static final int SIDES_W = 78, SIDES_H = 104;
     private @org.jspecify.annotations.Nullable AcceptsPanel accepts;
     private @org.jspecify.annotations.Nullable Object hoveredCell;
 
@@ -61,10 +65,158 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         return accepts;
     }
 
-    /** Centres machine GUI + panel together, like the recipe book does. */
+    /** Centres machine GUI + panels together, like the recipe book does. */
     private void placeForPanel() {
         int panel = panelShown() ? AcceptsPanel.WIDTH + 2 : 0;
-        leftPos = (width - imageWidth + panel) / 2;
+        int right = !hasSides() ? 0 : sidesOpen ? SIDES_W + 2 : TAB_W;
+        leftPos = (width - imageWidth + panel - right) / 2;
+    }
+
+    // ---------------------------------------------------------------- sides panel
+
+    /** Machines that can be turned: the facing is the front (an Energy Cell: its output face). */
+    private boolean hasSides() {
+        return type().hasFacing();
+    }
+
+    private boolean isCell() {
+        return type().category() == MachineType.Category.STORAGE;
+    }
+
+    private net.minecraft.core.Direction facing() {
+        var state = menu.machine().getBlockState();
+        return state.hasProperty(net.juli2kapo.factoryascent.machine.MachineBlock.FACING)
+                ? state.getValue(net.juli2kapo.factoryascent.machine.MachineBlock.FACING) : net.minecraft.core.Direction.NORTH;
+    }
+
+    private int sidesX() {
+        return imageWidth + 2;
+    }
+
+    /** Where the button for one compass face sits in the sides panel (relative). */
+    private int[] faceButton(net.minecraft.core.Direction dir) {
+        int cx = sidesX() + SIDES_W / 2, cy = SIDES_Y_CENTER;
+        return switch (dir) {
+            case NORTH -> new int[] {cx - 9, cy - 32};
+            case SOUTH -> new int[] {cx - 9, cy + 14};
+            case WEST -> new int[] {cx - 32, cy - 9};
+            default -> new int[] {cx + 14, cy - 9};
+        };
+    }
+
+    private static final int SIDES_Y_CENTER = 52;
+    private static final net.minecraft.core.Direction[] COMPASS = {
+            net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.EAST,
+            net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST};
+
+    private boolean overSides(double mx, double my) {
+        if (!hasSides()) return false;
+        if (sidesOpen) return FactoryGui.inside(mx, my, leftPos + sidesX(), topPos, SIDES_W, SIDES_H);
+        return FactoryGui.inside(mx, my, leftPos + imageWidth - 1, topPos + TAB_Y, TAB_W, TAB_H);
+    }
+
+    private void drawSides(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+        int x = leftPos, y = topPos;
+        if (!sidesOpen) {
+            int tx = x + imageWidth - 1, ty = y + TAB_Y;
+            boolean hover = FactoryGui.inside(mouseX, mouseY, tx, ty, TAB_W, TAB_H);
+            g.fill(tx, ty, tx + TAB_W, ty + TAB_H, OUTLINE);
+            g.fill(tx, ty + 1, tx + TAB_W - 1, ty + TAB_H - 1, hover ? 0xFFD6D6D6 : BG);
+            g.fill(tx + TAB_W - 3, ty + 1, tx + TAB_W - 1, ty + TAB_H - 1, SHADOW);
+            // a little cube with a highlighted face
+            g.fill(tx + 3, ty + 6, tx + 11, ty + 14, 0xFF6A6A6A);
+            g.fill(tx + 3, ty + 6, tx + 11, ty + 8, accent());
+            g.fill(tx + 5, ty + 16, tx + 9, ty + 17, SHADOW);
+            return;
+        }
+        int px = x + sidesX(), py = y;
+        FactoryGui.panel(g, px, py, SIDES_W, SIDES_H, accent());
+        int cx = px + SIDES_W / 2, cy = py + SIDES_Y_CENTER;
+        // the machine seen from above
+        g.fill(cx - 12, cy - 12, cx + 12, cy + 12, OUTLINE);
+        g.fill(cx - 11, cy - 11, cx + 11, cy + 11, 0xFF7A7A7A);
+        g.fill(cx - 9, cy - 9, cx + 9, cy + 9, 0xFF8E8E8E);
+        net.minecraft.core.Direction facing = facing();
+        int ax = facing.getStepX(), az = facing.getStepZ();
+        // mark the front / output edge of the square
+        if (ax != 0) g.fill(cx + (ax > 0 ? 9 : -11), cy - 11, cx + (ax > 0 ? 11 : -9), cy + 11, accent());
+        else g.fill(cx - 11, cy + (az > 0 ? 9 : -11), cx + 11, cy + (az > 0 ? 11 : -9), accent());
+        if (isCell()) FactoryGui.bolt(g, cx - 4, cy - 7, 0xFFFFD23F);
+        for (net.minecraft.core.Direction dir : COMPASS) {
+            int[] b = faceButton(dir);
+            int bx = x + b[0], by = y + b[1];
+            FactoryGui.button(g, bx, by, 18, 18, FactoryGui.inside(mouseX, mouseY, bx, by, 18, 18), dir == facing, accent());
+        }
+    }
+
+    private void drawSidesLabels(GuiGraphicsExtractor g) {
+        if (!hasSides() || !sidesOpen) return;
+        int px = sidesX();
+        Component head = Component.translatable(isCell() ? "gui.factoryascent.sides.output" : "gui.factoryascent.sides.front");
+        g.text(font, FactoryGui.fit(font, head, SIDES_W - 20), px + 6, 8, TEXT, false);
+        g.text(font, "×", px + SIDES_W - 11, 7, 0xFF606060, false);
+        net.minecraft.core.Direction facing = facing();
+        for (net.minecraft.core.Direction dir : COMPASS) {
+            int[] b = faceButton(dir);
+            String letter = Component.translatable("gui.factoryascent.sides.letter." + dir.getName()).getString();
+            g.text(font, letter, b[0] + 9 - font.width(letter) / 2, b[1] + 5, dir == facing ? 0xFFFFFFFF : 0xFF303030, false);
+        }
+        if (minecraft != null && minecraft.player != null) {
+            Component you = Component.translatable("gui.factoryascent.sides.you",
+                    Component.translatable("direction.factoryascent." + minecraft.player.getDirection().getName()));
+            g.text(font, FactoryGui.fit(font, you, SIDES_W - 12), px + 6, SIDES_H - 14, 0xFF606060, false);
+        }
+    }
+
+    private @org.jspecify.annotations.Nullable List<Component> sidesTooltip(int mouseX, int mouseY) {
+        if (!hasSides()) return null;
+        if (!sidesOpen) {
+            if (!overSides(mouseX, mouseY)) return null;
+            return List.of(Component.translatable("gui.factoryascent.sides.tab"),
+                    Component.translatable(isCell() ? "gui.factoryascent.sides.tab_cell" : "gui.factoryascent.sides.tab_machine")
+                            .withStyle(ChatFormatting.GRAY));
+        }
+        for (net.minecraft.core.Direction dir : COMPASS) {
+            int[] b = faceButton(dir);
+            if (!FactoryGui.inside(mouseX, mouseY, leftPos + b[0], topPos + b[1], 18, 18)) continue;
+            Component face = Component.translatable("direction.factoryascent." + dir.getName());
+            List<Component> lines = new ArrayList<>();
+            if (isCell()) {
+                lines.add(Component.translatable(dir == facing() ? "gui.factoryascent.sides.is_output" : "gui.factoryascent.sides.is_input", face));
+                if (dir != facing()) lines.add(Component.translatable("gui.factoryascent.sides.make_output").withStyle(ChatFormatting.GRAY));
+            } else {
+                lines.add(Component.translatable(dir == facing() ? "gui.factoryascent.sides.is_front" : "gui.factoryascent.sides.face", face));
+                if (dir != facing()) lines.add(Component.translatable("gui.factoryascent.sides.make_front").withStyle(ChatFormatting.GRAY));
+                if (type().isMultiblock()) lines.add(Component.translatable("gui.factoryascent.sides.multiblock").withStyle(ChatFormatting.GOLD));
+            }
+            return lines;
+        }
+        return null;
+    }
+
+    private boolean clickSides(double mx, double my) {
+        if (!hasSides() || minecraft == null || minecraft.gameMode == null) return false;
+        if (!sidesOpen) {
+            if (!overSides(mx, my)) return false;
+            sidesOpen = true;
+            placeForPanel();
+            return true;
+        }
+        for (net.minecraft.core.Direction dir : COMPASS) {
+            int[] b = faceButton(dir);
+            if (FactoryGui.inside(mx, my, leftPos + b[0], topPos + b[1], 18, 18)) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId,
+                        net.juli2kapo.factoryascent.machine.MachineMenu.BUTTON_FACE + dir.get2DDataValue());
+                return true;
+            }
+        }
+        // the panel's title strip closes it again
+        if (FactoryGui.inside(mx, my, leftPos + sidesX(), topPos, SIDES_W, 18)) {
+            sidesOpen = false;
+            placeForPanel();
+            return true;
+        }
+        return overSides(mx, my);
     }
 
     private int panelX() {
@@ -163,6 +315,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         hoveredCell = panelShown()
                 ? accepts().render(g, font, panelX(), y, imageHeight, accent(), mouseX, mouseY, gameTick())
                 : null;
+        if (hasSides()) drawSides(g, mouseX, mouseY);
     }
 
     private void button(GuiGraphicsExtractor g, int bx, int by, int w, int h, int mouseX, int mouseY) {
@@ -263,6 +416,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             g.text(font, Component.translatable("gui.factoryascent.crank"), CRANK_X + 2, CRANK_Y + 2, 0xFFFFFFFF, false);
         }
         if (hasRecipeButton()) g.text(font, "?", recipeX() + 5, BTN_Y + 2, 0xFFFFFFFF, false);
+        drawSidesLabels(g);
     }
 
     private Component statusLine() {
@@ -309,7 +463,10 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     protected void extractTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         super.extractTooltip(g, mouseX, mouseY);
         MachineType type = type();
-        if (hoveredCell != null) {
+        List<Component> sides = sidesTooltip(mouseX, mouseY);
+        if (sides != null) {
+            g.setComponentTooltipForNextFrame(font, sides, mouseX, mouseY);
+        } else if (hoveredCell != null) {
             g.setComponentTooltipForNextFrame(font, accepts().tooltip(hoveredCell, gameTick()), mouseX, mouseY);
         } else if (type.usesEnergy() && isHovering(ENERGY_X, ENERGY_Y, ENERGY_W, ENERGY_H, mouseX, mouseY)) {
             g.setComponentTooltipForNextFrame(font, energyTooltip(), mouseX, mouseY);
@@ -367,6 +524,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0 && clickSides(event.x(), event.y())) return true;
         if (event.button() == 0 && minecraft != null && minecraft.gameMode != null) {
             if (hasEjectButton() && isHovering(ejectX(), BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, MachineMenu.BUTTON_TOGGLE_EJECT);
@@ -396,6 +554,6 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     @Override
     protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
-        return super.hasClickedOutside(mx, my, xo, yo) && !overPanel(mx, my);
+        return super.hasClickedOutside(mx, my, xo, yo) && !overPanel(mx, my) && !overSides(mx, my);
     }
 }

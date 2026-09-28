@@ -186,13 +186,13 @@ def generate(ctx):
     T = f"tooltip.{MOD}"
     L(f"{T}.ender_anchor", "A stasis chamber: keeps a %s×%s area of chunks loaded",
       "Una cámara de estasis: mantiene cargada un área de %s×%s chunks")
-    L(f"{T}.ender_anchor_pearl", "Right-click with an ender pearl to start it. It runs until broken; breaking it loses the pearl",
-      "Clic derecho con una perla de ender para activarla. Funciona hasta que se rompe; al romperla se pierde la perla")
+    L(f"{T}.ender_anchor_pearl", "Right-click with an ender pearl (or put one in its slot) to start it; right-click to open it. Breaking it loses the pearl",
+      "Clic derecho con una perla de ender (o ponla en su ranura) para activarla; clic derecho para abrirla. Al romperla se pierde la perla")
     L(f"{T}.two_tall", "Two blocks tall", "Ocupa dos bloques de alto")
     L(f"{T}.ender_beacon", "A stasis chamber your Recall Charm can trigger from anywhere. Sneak-use a charm on it to link",
       "Una cámara de estasis que tu amuleto de retorno puede activar desde cualquier lugar. Agáchate y usa un amuleto sobre ella")
-    L(f"{T}.ender_beacon_pearl", "Right-click with an ender pearl to load it. Each recall uses the pearl up",
-      "Clic derecho con una perla de ender para cargarla. Cada retorno gasta la perla")
+    L(f"{T}.ender_beacon_pearl", "Right-click with an ender pearl to load it; right-click to open it and name it. Each recall uses the pearl up",
+      "Clic derecho con una perla de ender para cargarla; clic derecho para abrirla y ponerle nombre. Cada retorno gasta la perla")
     L(f"{T}.charm_unlinked", "Not linked: sneak-use it on an Ender Beacon",
       "Sin vincular: agáchate y úsalo sobre una baliza de ender")
     L(f"{T}.charm_linked", "Home: %s, %s, %s (%s)", "Hogar: %s, %s, %s (%s)")

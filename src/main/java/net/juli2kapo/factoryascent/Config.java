@@ -19,6 +19,9 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue SIZE_RAY_MAX_SCALE;
     public static final ModConfigSpec.BooleanValue ASAT_ENABLED;
     public static final ModConfigSpec.IntValue RADAR_LOCK_SECONDS;
+    public static final ModConfigSpec.IntValue SURVEY_RADIUS_CHUNKS;
+    public static final ModConfigSpec.IntValue SURVEY_CHUNKS_PER_TICK;
+    public static final ModConfigSpec.BooleanValue SURVEY_FROM_DISK;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -57,6 +60,13 @@ public final class Config {
                 .define("asatEnabled", true);
         RADAR_LOCK_SECONDS = b.comment("Orbital Radar: seconds of powered tracking before a foreign satellite is locked.")
                 .defineInRange("radarLockSeconds", 8, 1, 600);
+        SURVEY_RADIUS_CHUNKS = b.comment("Ground Station survey: how far (in chunks) each station images the terrain around itself.")
+                .defineInRange("surveyRadiusChunks", 48, 2, 256);
+        SURVEY_CHUNKS_PER_TICK = b.comment("Ground Station survey: chunks each station may image per tick (loaded chunks or reads from disk).")
+                .defineInRange("surveyChunksPerTick", 2, 1, 64);
+        SURVEY_FROM_DISK = b.comment("Ground Station survey: also image already-generated chunks that aren't loaded by reading them from",
+                        "the save (asynchronously; never generates or loads chunks into the world). If false, only loaded chunks are imaged.")
+                .define("surveyFromDisk", true);
         b.pop();
         SPEC = b.build();
     }

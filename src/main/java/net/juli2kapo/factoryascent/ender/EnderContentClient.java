@@ -27,10 +27,14 @@ public final class EnderContentClient {
         modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> {
             // Anchor: two blocks of water, the pearl rides up to near the top of the upper half.
             e.registerBlockEntityRenderer(EnderContent.ENDER_ANCHOR_BE.get(), ctx -> new AnchorRenderer<EnderAnchorBlockEntity>(
-                    ctx, EnderAnchorBlockEntity::hasPearl, 1.72f, 0.95f));
+                    ctx, EnderAnchorBlockEntity::hasPearl, EnderAnchorBlockEntity::isRunning, 1.72f, 0.95f));
             // Beacon: one block of water under a trapdoor lid.
             e.registerBlockEntityRenderer(EnderContent.ENDER_BEACON_BE.get(), ctx -> new AnchorRenderer<EnderBeaconBlockEntity>(
-                    ctx, EnderBeaconBlockEntity::hasPearl, 0.68f, 0.22f));
+                    ctx, EnderBeaconBlockEntity::hasPearl, EnderBeaconBlockEntity::hasPearl, 0.68f, 0.22f));
+        });
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) -> {
+            e.register(EnderContent.ENDER_ANCHOR_MENU.get(), net.juli2kapo.factoryascent.ender.client.EnderAnchorScreen::new);
+            e.register(EnderContent.ENDER_BEACON_MENU.get(), net.juli2kapo.factoryascent.ender.client.EnderBeaconScreen::new);
         });
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent e) ->
                 e.registerSpriteSet(EnderContent.STASIS_BUBBLE.get(), StasisBubbleParticle.Provider::new));
@@ -53,6 +57,8 @@ public final class EnderContentClient {
             implements BlockEntityRenderer<T, AnchorState> {
         private final ItemModelResolver items;
         private final java.util.function.Predicate<T> hasPearl;
+        /** Whether the pearl rides the bubble column (a switched-off anchor lets it sink). */
+        private final java.util.function.Predicate<T> active;
         /** Highest point of the pearl's ride and how far it dips below it, in blocks. */
         private final float top;
         private final float dip;
@@ -62,9 +68,11 @@ public final class EnderContentClient {
          */
         private @Nullable ItemStack pearl;
 
-        AnchorRenderer(BlockEntityRendererProvider.Context context, java.util.function.Predicate<T> hasPearl, float top, float dip) {
+        AnchorRenderer(BlockEntityRendererProvider.Context context, java.util.function.Predicate<T> hasPearl,
+                       java.util.function.Predicate<T> active, float top, float dip) {
             this.items = context.itemModelResolver();
             this.hasPearl = hasPearl;
+            this.active = active;
             this.top = top;
             this.dip = dip;
         }
@@ -79,7 +87,7 @@ public final class EnderContentClient {
                                        Vec3 camera, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
             BlockEntityRenderer.super.extractRenderState(anchor, state, partialTicks, camera, breakProgress);
             state.hasPearl = hasPearl.test(anchor);
-            state.active = state.hasPearl;
+            state.active = state.hasPearl && active.test(anchor);
             state.time = anchor.getLevel() == null ? 0 : (anchor.getLevel().getGameTime() % 72000L) + partialTicks;
             state.phase = (anchor.getBlockPos().hashCode() & 0xFF) / 40f;
             if (pearl == null) pearl = new ItemStack(Items.ENDER_PEARL);

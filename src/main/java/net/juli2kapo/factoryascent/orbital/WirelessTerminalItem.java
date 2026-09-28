@@ -29,6 +29,10 @@ import org.jspecify.annotations.Nullable;
  * ({@link OrbitalSignal}) and the terminal's chunk is loaded (an Ender Anchor can keep it loaded).
  * The session stays open while you hold the linked terminal and keep the signal. Sneak-use it in
  * the air to open the Team screen ({@link OrbitalConsole}).
+ *
+ * <p>Survey map: using an unlinked terminal (or the Team screen's Map button while carrying any
+ * Wireless Terminal) opens your team's survey map of this dimension centred on you, over the uplink
+ * ({@link SurveyService#openRemote}).
  */
 public class WirelessTerminalItem extends Item {
     public WirelessTerminalItem(Properties properties) {
@@ -57,6 +61,14 @@ public class WirelessTerminalItem extends Item {
         if (!(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
         if (sp.isShiftKeyDown()) {
             OrbitalConsole.open(sp);
+            return InteractionResult.SUCCESS;
+        }
+        if (stack.get(OrbitalContent.LINKED_TERMINAL.get()) == null) {
+            Component problem = SurveyService.openRemote(sp);
+            if (problem != null) {
+                sp.sendOverlayMessage(problem.copy().withStyle(ChatFormatting.RED));
+                return InteractionResult.FAIL;
+            }
             return InteractionResult.SUCCESS;
         }
         Component problem = open(sp, stack);
@@ -127,6 +139,7 @@ public class WirelessTerminalItem extends Item {
                     OrbitalText.dimensionName(link.dimension())).withStyle(ChatFormatting.GRAY));
         }
         tooltip.accept(Component.translatable("tooltip.factoryascent.wireless_needs_uplink").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.wireless_map").withStyle(ChatFormatting.DARK_GREEN));
         tooltip.accept(Component.translatable("tooltip.factoryascent.wireless_console").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

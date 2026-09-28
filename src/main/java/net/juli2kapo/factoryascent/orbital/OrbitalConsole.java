@@ -60,6 +60,12 @@ public final class OrbitalConsole {
 
     /** A Team screen button: act, then refresh the screen with the outcome. */
     static void handle(ServerPlayer player, TeamAction action) {
+        if (action.action() == TeamAction.MAP) {
+            Component problem = openMap(player);
+            // on success the survey map replaces the Team screen
+            if (problem != null) PacketDistributor.sendToPlayer(player, view(player, false, problem));
+            return;
+        }
         Component message = switch (action.action()) {
             case TeamAction.CREATE -> create(player, action.arg());
             case TeamAction.INVITE -> invite(player, action.arg());
@@ -69,6 +75,20 @@ public final class OrbitalConsole {
             default -> Component.empty();
         };
         PacketDistributor.sendToPlayer(player, view(player, false, message));
+    }
+
+    /** The Team screen's Map button: the survey map over the uplink, for players carrying a Wireless Terminal. */
+    private static @Nullable Component openMap(ServerPlayer player) {
+        boolean carrying = false;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (player.getInventory().getItem(i).getItem() instanceof WirelessTerminalItem) {
+                carrying = true;
+                break;
+            }
+        }
+        if (!carrying) return Component.translatable("message.factoryascent.survey_needs_terminal").withStyle(ChatFormatting.RED);
+        Component problem = SurveyService.openRemote(player);
+        return problem == null ? null : problem.copy().withStyle(ChatFormatting.RED);
     }
 
     private static Component outcome(FactoryTeams.Result result, Component success) {

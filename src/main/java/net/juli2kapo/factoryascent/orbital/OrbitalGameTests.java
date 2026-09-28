@@ -8,8 +8,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.saveddata.maps.MapId;
-import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 /** Game test bodies for the Orbital age, listed in {@code ModGameTests.TESTS}. */
 public final class OrbitalGameTests {
@@ -102,29 +100,140 @@ public final class OrbitalGameTests {
         h.succeed();
     }
 
-    /** With a Survey Satellite over the dimension, the Ground Station turns an empty map into a filled one. */
-    public static void groundStationFillsMap(GameTestHelper h) {
-        BlockPos pos = new BlockPos(4, 1, 4);
+    /** A Ground Station owned by the player, and the player's team key. */
+    private static GroundStationBlockEntity station(GameTestHelper h, BlockPos pos, ServerPlayer owner) {
         h.setBlock(pos, OrbitalContent.GROUND_STATION.get());
-        BlockPos abs = h.absolutePos(pos);
-        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        GroundStationBlockEntity station = h.getBlockEntity(pos, GroundStationBlockEntity.class);
+        station.setOwner(owner.getUUID());
+        return station;
+    }
+
+    /**
+     * A station images nothing while its team has no Survey Satellite over the dimension; once one
+     * is up it images its own (loaded) chunk into the team's survey with real map colours.
+     */
+    public static void surveyNeedsSatellite(GameTestHelper h) {
         MinecraftServer server = h.getLevel().getServer();
-        h.assertTrue(GroundStationBlock.makeMap(h.getLevel(), abs, player).isEmpty(), "no map without a survey satellite");
-        OrbitRegistry.get(server).add(FactoryTeams.get(server).teamOf(player.getUUID()),
-                new Satellite(SatelliteType.SURVEY, h.getLevel().dimension(), 0L, "Eye", player.getUUID()));
-        ItemStack map = GroundStationBlock.makeMap(h.getLevel(), abs, player);
-        h.assertTrue(map.is(Items.FILLED_MAP), "the station must hand out a filled map, got " + map);
-        MapId id = map.get(DataComponents.MAP_ID);
-        MapItemSavedData data = h.getLevel().getMapData(id);
-        h.assertTrue(data != null, "the map must have data");
-        h.assertTrue(data.centerX == abs.getX() && data.centerZ == abs.getZ(), "the map must be centred on the station");
-        h.assertTrue(data.scale == SurveyMapper.SCALE, "the map must be at the survey scale");
+        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        String team = FactoryTeams.get(server).teamOf(player.getUUID());
+        var dim = h.getLevel().dimension();
+        BlockPos pos = new BlockPos(4, 1, 4);
+        station(h, pos, player);
+        long here = net.minecraft.world.level.ChunkPos.pack(h.absolutePos(pos));
+        h.startSequence()
+                .thenExecuteAfter(40, () -> {
+                    h.assertTrue(SurveyData.get(server, team, dim).count() == 0, "nothing may be imaged without a survey satellite");
+                    OrbitRegistry.get(server).add(team, new Satellite(SatelliteType.SURVEY, dim, 0L, "Eye", player.getUUID()));
+                })
+                .thenWaitUntil(() -> {
+                    SurveyData data = SurveyData.get(server, team, dim);
+                    h.assertTrue(data.has(here), "the station's own chunk must be imaged");
+                    h.assertTrue(data.count() >= 1, "chunks must be imaged, got " + data.count());
+                    byte[] px = data.colors(here);
+                    int coloured = 0;
+                    for (byte b : px) if ((b & 0xFF) >= 4) coloured++;
+                    h.assertTrue(coloured > 128, "the imaged chunk must have map colours, only " + coloured + " pixels do");
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * The off-thread path that images chunks read from the save gives the same pixels as imaging
+     * the loaded chunk (checked on a copy of the test's chunk serialised like the game saves it).
+     */
+    public static void surveyDiskImageMatchesLive(GameTestHelper h) {
+        var level = h.getLevel();
+        BlockPos abs = h.absolutePos(new BlockPos(4, 1, 4));
+        h.setBlock(new BlockPos(4, 1, 4), net.minecraft.world.level.block.Blocks.GOLD_BLOCK);
+        h.setBlock(new BlockPos(5, 1, 4), net.minecraft.world.level.block.Blocks.WATER);
+        var chunk = level.getChunkAt(abs);
+        SurveyData empty = SurveyData.get(level.getServer(), "test:disk_image", level.dimension());
+        SurveyScanner.Image live = SurveyScanner.image(level, chunk, empty);
+        var tag = net.minecraft.world.level.chunk.storage.SerializableChunkData.copyOf(level, chunk).write();
+        SurveyScanner.Image saved = SurveyScanner.imageSaved(level, java.util.Optional.of(tag), null);
+        h.assertTrue(saved != null, "a saved full chunk must be imaged");
+        h.assertTrue(java.util.Arrays.equals(live.pixels(), saved.pixels()), "saved and live imaging must give the same pixels");
+        h.assertTrue(java.util.Arrays.equals(live.south(), saved.south()), "and the same heights");
+        h.assertTrue(java.util.Objects.equals(live.biome(), saved.biome()), "and the same biome: " + live.biome() + " vs " + saved.biome());
+        var partial = tag.copy();
+        partial.putString("Status", "minecraft:features");
+        h.assertTrue(SurveyScanner.imageSaved(level, java.util.Optional.of(partial), null) == null, "chunks that aren't fully generated are skipped");
+        h.succeed();
+    }
+
+    /** Survey imagery belongs to the station owner's team: another team (even with its own satellite up) doesn't get it. */
+    public static void surveyIsPerTeam(GameTestHelper h) {
+        MinecraftServer server = h.getLevel().getServer();
+        ServerPlayer mapper = h.makeMockServerPlayerInLevel();
+        ServerPlayer other = h.makeMockServerPlayerInLevel();
+        FactoryTeams teams = FactoryTeams.get(server);
+        String mine = teams.teamOf(mapper.getUUID()), theirs = teams.teamOf(other.getUUID());
+        var dim = h.getLevel().dimension();
+        OrbitRegistry.get(server).add(mine, new Satellite(SatelliteType.SURVEY, dim, 0L, "Mine", mapper.getUUID()));
+        OrbitRegistry.get(server).add(theirs, new Satellite(SatelliteType.SURVEY, dim, 0L, "Theirs", other.getUUID()));
+        BlockPos pos = new BlockPos(4, 1, 4);
+        station(h, pos, mapper);
+        long here = net.minecraft.world.level.ChunkPos.pack(h.absolutePos(pos));
         h.succeedWhen(() -> {
-            h.assertTrue(!SurveyMapper.isPainting(id), "still painting");
-            int filled = 0;
-            for (byte b : data.colors) if (b != 0) filled++;
-            h.assertTrue(filled > 128 * 128 * 9 / 10, "the whole map must be filled in, only " + filled + " pixels are");
+            h.assertTrue(SurveyData.get(server, mine, dim).has(here), "the owner's team must get the imagery");
+            h.assertTrue(SurveyData.get(server, theirs, dim).count() == 0, "another team must not get it");
+            h.assertTrue(!SurveyData.get(server, mine, dim).equals(SurveyData.get(server, theirs, dim)), "separate data per team");
         });
+    }
+
+    /** Sneak-using the controller with an empty hand gives the payload back; during a launch it stays. */
+    public static void sneakUseReturnsPayload(GameTestHelper h) {
+        LaunchControllerBlockEntity pad = pad(h, new BlockPos(4, 1, 4));
+        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        player.getInventory().clearContent();
+        player.setShiftKeyDown(true);
+        h.assertTrue(pad.mount(new ItemStack(OrbitalContent.SURVEY_SATELLITE.get()), player.getUUID()) == null, "mount");
+        LaunchControllerBlock.interact(pad, ItemStack.EMPTY, h.getLevel(), player, net.minecraft.world.InteractionHand.MAIN_HAND);
+        h.assertTrue(pad.satellite().isEmpty(), "the payload must come off the pad");
+        h.assertTrue(player.getInventory().countItem(OrbitalContent.SURVEY_SATELLITE.get()) == 1, "the player must get the satellite back");
+        // during a launch it can't be taken back
+        h.assertTrue(pad.mount(new ItemStack(OrbitalContent.UPLINK_SATELLITE.get()), player.getUUID()) == null, "mount again");
+        h.assertTrue(pad.addFuel(LaunchControllerBlockEntity.FUEL_PER_LAUNCH), "fuel");
+        h.assertTrue(pad.tryLaunch() == null, "launch");
+        h.assertTrue(key(LaunchControllerBlock.takeBack(pad, player)).equals("message.factoryascent.pad_take_busy"), "busy during a launch");
+        h.assertTrue(pad.satellite().is(OrbitalContent.UPLINK_SATELLITE.get()), "the payload stays during a launch");
+        h.succeed();
+    }
+
+    /** Breaking the controller drops its payload, also in the middle of a launch (which is aborted). */
+    public static void breakingControllerDropsPayload(GameTestHelper h) {
+        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        BlockPos idle = new BlockPos(2, 1, 2), busy = new BlockPos(6, 1, 6);
+        LaunchControllerBlockEntity a = pad(h, idle);
+        LaunchControllerBlockEntity b = pad(h, busy);
+        h.assertTrue(a.mount(new ItemStack(OrbitalContent.SURVEY_SATELLITE.get()), player.getUUID()) == null, "mount a");
+        h.assertTrue(b.mount(new ItemStack(OrbitalContent.GUARDIAN_SATELLITE.get()), player.getUUID()) == null, "mount b");
+        h.assertTrue(b.addFuel(LaunchControllerBlockEntity.FUEL_PER_LAUNCH) && b.tryLaunch() == null, "launch b");
+        h.destroyBlock(idle);
+        h.destroyBlock(busy);
+        h.assertItemEntityPresent(OrbitalContent.SURVEY_SATELLITE.get(), idle, 2.0);
+        h.assertItemEntityPresent(OrbitalContent.GUARDIAN_SATELLITE.get(), busy, 2.0);
+        h.succeed();
+    }
+
+    /** The controller screen's Launch button follows the launch rules; its fuel slot pours fuel into the tank. */
+    public static void launchButtonLaunches(GameTestHelper h) {
+        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        LaunchControllerBlockEntity pad = pad(h, new BlockPos(4, 1, 4));
+        LaunchControllerMenu menu = new LaunchControllerMenu(1, player.getInventory(), pad);
+        h.assertTrue(menu.clickMenuButton(player, LaunchControllerMenu.BUTTON_LAUNCH), "the button must be handled");
+        h.assertTrue(!pad.launching(), "an empty pad must not launch");
+        menu.getSlot(0).set(new ItemStack(OrbitalContent.UPLINK_SATELLITE.get()));
+        h.assertTrue(pad.satellite().is(OrbitalContent.UPLINK_SATELLITE.get()), "the payload slot must mount the satellite");
+        h.assertTrue(player.getUUID().equals(pad.owner()), "mounting from the screen makes the player the launcher");
+        menu.getSlot(1).set(new ItemStack(OrbitalContent.ROCKET_FUEL.get(), 3));
+        h.assertTrue(pad.fuel() == LaunchControllerBlockEntity.FUEL_MAX, "the fuel slot must fill the tank, fuel " + pad.fuel());
+        h.assertTrue(menu.getSlot(1).getItem().isEmpty(), "the fuel slot stays empty");
+        h.assertTrue(pad.status() == LaunchControllerBlockEntity.STATUS_READY, "the pad must report ready, got " + pad.status());
+        h.assertTrue(menu.clickMenuButton(player, LaunchControllerMenu.BUTTON_LAUNCH), "the button must be handled");
+        h.assertTrue(pad.launching(), "a ready pad must launch from the button");
+        h.assertTrue(!menu.getSlot(0).mayPickup(player), "the payload can't be taken out during the launch");
+        h.succeed();
     }
 
     // ---------------------------------------------------------------- deorbit, radar, missiles, automation
@@ -218,28 +327,31 @@ public final class OrbitalGameTests {
                 .thenSucceed();
     }
 
-    /** Your own team's satellites can't be tracked, and a missile aimed at one won't launch. */
-    public static void asatRefusesOwnTeam(GameTestHelper h) {
+    /**
+     * A team may shoot down its own satellite: it can be targeted on the radar straight away (no
+     * lock), the missile launches, the satellite is destroyed, and the team's own Guardian doesn't
+     * intercept it.
+     */
+    public static void asatDestroysOwnSatellite(GameTestHelper h) {
         MinecraftServer server = h.getLevel().getServer();
         ServerPlayer shooter = h.makeMockServerPlayerInLevel();
         LaunchControllerBlockEntity pad = pad(h, new BlockPos(4, 1, 4));
         OrbitalRadarBlockEntity radar = radar(h, new BlockPos(1, 1, 1), shooter);
-        Satellite own = new Satellite(SatelliteType.SURVEY, h.getLevel().dimension(), 0L, "Ours", shooter.getUUID());
-        OrbitRegistry.get(server).add(FactoryTeams.get(server).teamOf(shooter.getUUID()), own);
-        h.assertTrue(key(radar.startTracking(own.id())).equals("message.factoryascent.radar_own"), "own satellites can't be tracked");
-        h.assertTrue(radar.tracking() == null, "nothing must be tracked");
-        h.assertTrue(radar.designate(own.id()) != null, "an own satellite can't be picked as target");
-        // Even a hand-made missile aimed at it must not fly.
-        ItemStack missile = new ItemStack(OrbitalContent.ASAT_MISSILE.get());
-        missile.set(OrbitalContent.ASAT_TARGET.get(), new AsatMissileItem.Target(own.id(),
-                net.minecraft.core.GlobalPos.of(h.getLevel().dimension(), radar.getBlockPos()), "Ours"));
-        h.assertTrue(pad.mount(missile, shooter.getUUID()) == null, "mount");
-        h.assertTrue(pad.addFuel(LaunchControllerBlockEntity.FUEL_PER_LAUNCH), "fuel");
-        var problem = pad.tryLaunch();
-        h.assertTrue(key(problem).equals("message.factoryascent.asat_own_team"), "launching at your own team must be refused, got " + key(problem));
-        h.assertTrue(!pad.launching(), "the pad must not launch");
-        h.assertTrue(OrbitRegistry.get(server).find(own.id()).isPresent(), "the satellite must stay");
-        h.succeed();
+        String team = FactoryTeams.get(server).teamOf(shooter.getUUID());
+        Satellite own = new Satellite(SatelliteType.SURVEY, h.getLevel().dimension(), 0L, "Junk", shooter.getUUID());
+        Satellite guardian = new Satellite(SatelliteType.DEFENSE, h.getLevel().dimension(), 0L, "OwnAegis", shooter.getUUID());
+        OrbitRegistry orbit = OrbitRegistry.get(server);
+        orbit.add(team, own);
+        orbit.add(team, guardian);
+        h.assertTrue(!radar.isLocked(own.id()), "own satellites are not locked");
+        h.assertTrue(radar.designate(own.id()) == null, "an own satellite can be targeted without a lock");
+        var problem = armAndLaunch(h, pad, radar, shooter);
+        h.assertTrue(problem == null, "the missile at an own satellite must launch, got " + key(problem));
+        h.succeedWhen(() -> {
+            h.assertTrue(!pad.launching(), "still flying");
+            h.assertTrue(orbit.find(own.id()).isEmpty(), "the own satellite must be destroyed");
+            h.assertTrue(orbit.find(guardian.id()).isPresent(), "the team's own guardian must not intercept");
+        });
     }
 
     /** A Guardian Satellite of the target's team intercepts the missile and is used up; the target survives. */

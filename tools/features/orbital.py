@@ -1,5 +1,5 @@
-"""Orbital age resources: Launch Pad (3x3 of launch_pad around a launch_controller), rocket models
-drawn on the pad, Ground Station (dish drawn by a renderer), Orbital Radar (antenna drawn by a
+"""Orbital age resources: Launch Pad (3x3 of launch_pad around a launch_controller; the rocket drawn
+on it and the 3D satellite models are in satellites.py), Ground Station (dish drawn by a renderer), Orbital Radar (antenna drawn by a
 renderer), satellites (survey, uplink, guardian), the Anti-Satellite missile, rocket fuel, the
 Wireless Terminal; the Team and Radar screens' text; recipes, advancements and lang (English +
 Spanish)."""
@@ -48,29 +48,6 @@ PLATE_DISPLAY = {
     "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375]},
     "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4]},
 }
-
-
-def rocket_model(kind, body="rocket_body", fin="rocket_fin"):
-    """The rocket standing on the pad, modelled in a 32 px tall box; the renderer scales it 1.5x
-    (about 3 blocks tall). Engine bell, hull with a coloured band, three-step nose, four fins.
-    The anti-satellite missile is the same airframe in gunmetal with a red warhead."""
-    tex = {"body": t(body), "nose": t(f"rocket_nose_{kind}"), "fin": t(fin),
-           "engine": t("rocket_engine"), "particle": t(body)}
-    hull = {"up": "#engine", "down": "#engine", **{s: "#body" for s in SIDES}}
-    els = [
-        box([6, 0, 6], [10, 2, 10], {"down": "#engine", "up": "#engine", **{s: "#engine" for s in SIDES}},
-            uv={"down": [4, 4, 12, 12], "up": [4, 4, 12, 12], **{s: [0, 0, 16, 4] for s in SIDES}}),
-        box([5, 2, 5], [11, 18, 11], hull, uv={"up": [5, 5, 11, 11], "down": [4, 4, 12, 12], **{s: [5, 0, 11, 16] for s in SIDES}}),
-        box([5, 18, 5], [11, 22, 11], {**{s: "#body" for s in SIDES}, "up": "#body", "down": "#body"},
-            uv={s: [5, 8, 11, 12] for s in SIDES + ("up", "down")}),
-        box([5.5, 22, 5.5], [10.5, 25, 10.5], "#nose", uv={s: [3, 0, 13, 6] for s in SIDES + ("up", "down")}),
-        box([6.5, 25, 6.5], [9.5, 28, 9.5], "#nose", uv={s: [4, 6, 12, 12] for s in SIDES + ("up", "down")}),
-        box([7.5, 28, 7.5], [8.5, 31, 8.5], "#nose", uv={s: [7, 10, 9, 16] for s in SIDES + ("up", "down")}),
-    ]
-    for frm, to in [([2, 0, 7.5], [5, 8, 8.5]), ([11, 0, 7.5], [14, 8, 8.5]),
-                    ([7.5, 0, 2], [8.5, 8, 5]), ([7.5, 0, 11], [8.5, 8, 14])]:
-        els.append(box(frm, to, "#fin", uv={s: [0, 0, 6, 16] for s in SIDES + ("up", "down")}))
-    return {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": tex, "elements": els}
 
 
 def station_base_elements():
@@ -133,7 +110,6 @@ def lang(L):
     L(f"{I}.asat_missile", "Anti-Satellite Missile", "Misil antisatélite")
     L(f"{O}.type.defense", "Guardian", "Guardián")
     L(f"{I}.wireless_terminal", "Wireless Terminal", "Terminal inalámbrica")
-    L(f"{O}.survey_map", "Survey Map", "Mapa de reconocimiento")
     L(f"{O}.type.survey", "Survey", "Reconocimiento")
     L(f"{O}.type.uplink", "Uplink", "Enlace")
     L(f"{O}.dimension.minecraft.overworld", "the Overworld", "el Mundo Superior")
@@ -150,12 +126,12 @@ def lang(L):
       "Necesita %s de combustible por lanzamiento (polvo de blaze 1, combustible de cohete 4). Lanza con redstone o agachado con mechero")
     L(f"{T}.launch_controller_multiblock", "Multiblock: surround it with 8 Launch Pad blocks",
       "Multibloque: rodéalo con 8 bloques de plataforma de lanzamiento")
-    L(f"{T}.ground_station", "Right-click to list your team's satellites over this dimension",
-      "Clic derecho para ver los satélites de tu equipo sobre esta dimensión")
-    L(f"{T}.ground_station_map", "With a Survey Satellite up: right-click with an empty map to map the area",
-      "Con un satélite de reconocimiento en órbita: clic derecho con un mapa vacío para cartografiar la zona")
-    L(f"{T}.survey_satellite", "In orbit: Ground Stations in this dimension make filled maps of their area",
-      "En órbita: las estaciones terrenas de esta dimensión crean mapas completos de su zona")
+    L(f"{T}.ground_station", "Right-click: survey map screen (drag to pan, scroll to zoom) and your team's satellites here",
+      "Clic derecho: pantalla del mapa de reconocimiento (arrastra para mover, rueda para zoom) y los satélites de tu equipo aquí")
+    L(f"{T}.ground_station_map", "With your team's Survey Satellite up, it images the land up to %s chunks around itself",
+      "Con el satélite de reconocimiento de tu equipo en órbita, fotografía el terreno hasta %s chunks a su alrededor")
+    L(f"{T}.survey_satellite", "In orbit: your team's Ground Stations in this dimension image the land around them (survey map)",
+      "En órbita: las estaciones terrenas de tu equipo en esta dimensión fotografían el terreno a su alrededor (mapa de reconocimiento)")
     L(f"{T}.uplink_satellite", "In orbit: your team has signal everywhere in this dimension (Wireless Terminal)",
       "En órbita: tu equipo tiene señal en toda esta dimensión (terminal inalámbrica)")
     L(f"{T}.satellite_launch", "Mount it on a Launch Pad. It covers the dimension it is launched from. Rename it in an anvil to name it",
@@ -163,6 +139,10 @@ def lang(L):
     L(f"{T}.guardian_satellite",
       "In orbit: intercepts the next Anti-Satellite missile fired at your team's satellites in this dimension (used up doing so)",
       "En órbita: intercepta el próximo misil antisatélite disparado contra los satélites de tu equipo en esta dimensión (se consume al hacerlo)")
+    L(f"{T}.launch_controller_screen", "Right-click it or any plate with an empty hand: launch screen (payload, fuel, Launch button)",
+      "Clic derecho en él o en cualquier placa con la mano vacía: pantalla de lanzamiento (carga, combustible, botón de lanzar)")
+    L(f"{T}.launch_controller_takeback", "Sneak-use with an empty hand to take the payload back. Breaking it drops the payload",
+      "Agachado con la mano vacía recuperas la carga. Al romperlo suelta la carga")
     L(f"{T}.launch_controller_automation", "Hoppers and pipes can insert payloads and fuel; they launch for whoever placed the controller",
       "Tolvas y tuberías pueden insertar cargas y combustible; se lanzan para quien colocó el controlador")
     L(f"{T}.ground_station_console", "Sneak-use with an empty hand: Team screen (teams, deorbit)",
@@ -173,19 +153,21 @@ def lang(L):
       "Muestra todos los satélites sobre esta dimensión: los tuyos y los de otros equipos")
     L(f"{T}.orbital_radar_lock", "Track a foreign contact to lock it (uses %s FE/t while tracking). Its owners are warned",
       "Rastrea un contacto extranjero para fijarlo (usa %s FE/t mientras rastrea). Sus dueños reciben un aviso")
-    L(f"{T}.orbital_radar_asat", "Pick a locked contact as target, then right-click the radar with an Anti-Satellite Missile",
-      "Elige un contacto fijado como objetivo y luego haz clic derecho en el radar con un misil antisatélite")
-    L(f"{T}.asat_missile", "Destroys a foreign satellite over the dimension it is launched from",
-      "Destruye un satélite extranjero sobre la dimensión desde la que se lanza")
-    L(f"{T}.asat_unprogrammed", "Unprogrammed: lock a target on an Orbital Radar, pick it, then right-click the radar with this",
-      "Sin programar: fija un objetivo en un radar orbital, elígelo y luego haz clic derecho en el radar con esto")
+    L(f"{T}.orbital_radar_asat", "Target a locked contact or one of your own satellites, then right-click the radar with an Anti-Satellite Missile",
+      "Apunta a un contacto fijado o a uno de tus propios satélites y luego haz clic derecho en el radar con un misil antisatélite")
+    L(f"{T}.asat_missile", "Destroys a satellite over the dimension it is launched from: another team's, or one of your own",
+      "Destruye un satélite sobre la dimensión desde la que se lanza: de otro equipo o uno propio")
+    L(f"{T}.asat_unprogrammed", "Unprogrammed: pick a target on an Orbital Radar's screen, then right-click the radar with this",
+      "Sin programar: elige un objetivo en la pantalla de un radar orbital y luego haz clic derecho en el radar con esto")
     L(f"{T}.asat_target", "Target: %s", "Objetivo: %s")
     L(f"{T}.asat_radar", "Locked by the radar at %s, %s, %s (%s)", "Fijado por el radar en %s, %s, %s (%s)")
-    L(f"{T}.asat_launch", "Mount it on a Launch Pad like a satellite (%s fuel). The radar must still hold the lock",
-      "Móntalo en una plataforma de lanzamiento como un satélite (%s de combustible). El radar debe mantener la fijación")
+    L(f"{T}.asat_launch", "Mount it on a Launch Pad like a satellite (%s fuel). For another team's satellite the radar must still hold the lock",
+      "Móntalo en una plataforma de lanzamiento como un satélite (%s de combustible). Contra otro equipo el radar debe mantener la fijación")
     L(f"{T}.wireless_unlinked", "Not linked: sneak-use it on a Storage Terminal",
       "Sin vincular: agáchate y úsala sobre una terminal de almacenamiento")
     L(f"{T}.wireless_linked", "Linked to the terminal at %s, %s, %s (%s)", "Vinculada a la terminal en %s, %s, %s (%s)")
+    L(f"{T}.wireless_map", "Unlinked, or via the Team screen's Map button: your team's survey map, centred on you (needs uplink)",
+      "Sin vincular, o con el botón Mapa de la pantalla de equipo: el mapa de reconocimiento de tu equipo centrado en ti (necesita enlace)")
     L(f"{T}.wireless_needs_uplink",
       "Works anywhere in the same dimension with uplink coverage, while the terminal's chunk is loaded",
       "Funciona en cualquier lugar de la misma dimensión con cobertura de enlace, si el chunk de la terminal está cargado")
@@ -200,23 +182,14 @@ def lang(L):
     L(f"{M}.pad_no_fuel", "Not enough fuel: %s/%s", "No hay suficiente combustible: %s/%s")
     L(f"{M}.pad_blocked", "Something is blocking the rocket's path", "Algo bloquea la trayectoria del cohete")
     L(f"{M}.pad_status_none", "no satellite", "sin satélite")
+    L(f"{M}.pad_nothing_to_take", "Nothing is mounted on the pad", "No hay nada montado en la plataforma")
+    L(f"{M}.pad_take_busy", "It can't be taken back during a launch", "No se puede recuperar durante un lanzamiento")
+    L(f"{M}.pad_taken", "Took %s back off the pad", "Recuperaste %s de la plataforma")
     L(f"{M}.pad_status", "Payload: %s · Fuel %s/%s (%s per launch)", "Carga: %s · Combustible %s/%s (%s por lanzamiento)")
     L(f"{M}.countdown", "Launch in %s…", "Lanzamiento en %s…")
     L(f"{M}.reached_orbit", "%s '%s' reached orbit over %s", "%s «%s» alcanzó la órbita sobre %s")
     L(f"{M}.satellite_line", "• %s '%s' over %s", "• %s «%s» sobre %s")
-    L(f"{M}.station_header", "Satellites over %s (team %s): %s", "Satélites sobre %s (equipo %s): %s")
-    L(f"{M}.station_empty", "None yet. Launch one from a Launch Pad", "Ninguno aún. Lanza uno desde una plataforma de lanzamiento")
     L(f"{M}.station_age", " (%s days in orbit)", " (%s días en órbita)")
-    L(f"{M}.station_signal_on", "Uplink signal: online", "Señal de enlace: en línea")
-    L(f"{M}.station_signal_off", "Uplink signal: none (launch an Uplink Satellite)",
-      "Señal de enlace: ninguna (lanza un satélite de enlace)")
-    L(f"{M}.station_survey_on", "Survey: online. Use an empty map on the station",
-      "Reconocimiento: en línea. Usa un mapa vacío en la estación")
-    L(f"{M}.station_survey_off", "Survey: none (launch a Survey Satellite)",
-      "Reconocimiento: ninguno (lanza un satélite de reconocimiento)")
-    L(f"{M}.station_no_survey", "Your team has no Survey Satellite over this dimension",
-      "Tu equipo no tiene un satélite de reconocimiento sobre esta dimensión")
-    L(f"{M}.station_mapping", "Downloading survey imagery…", "Descargando imágenes de reconocimiento…")
     L(f"{M}.wireless_linked", "Wireless Terminal linked", "Terminal inalámbrica vinculada")
     L(f"{M}.wireless_unlinked", "Link it first: sneak-use it on a Storage Terminal",
       "Primero vincúlala: agáchate y úsala sobre una terminal de almacenamiento")
@@ -228,8 +201,16 @@ def lang(L):
       "El chunk de la terminal vinculada no está cargado (un ancla de ender puede mantenerlo cargado)")
     L(f"{M}.wireless_gone", "The linked Storage Terminal is gone", "La terminal de almacenamiento vinculada ya no existe")
 
-    L(f"{M}.station_console_hint", "Sneak-use the station with an empty hand for the Team screen (teams, deorbit)",
-      "Usa la estación agachado con la mano vacía para la pantalla de equipo (equipos, desorbitar)")
+    L(f"{M}.survey_none", "No Survey Satellite over this dimension", "No hay satélite de reconocimiento sobre esta dimensión")
+    L(f"{M}.survey_status", "%s · %s", "%s · %s")
+    L(f"{M}.survey_scanning", "imaging ring %s of %s", "fotografiando el anillo %s de %s")
+    L(f"{M}.survey_refreshing", "refreshing ring %s of %s", "actualizando el anillo %s de %s")
+    L(f"{M}.survey_complete", "survey complete, watching for changes", "reconocimiento completo, vigilando cambios")
+    L(f"{M}.survey_remote", "remote view over the uplink", "vista remota por enlace")
+    L(f"{M}.survey_signal_lost", "Uplink signal lost", "Señal de enlace perdida")
+    L(f"{M}.survey_satellite_row", "%s '%s'", "%s «%s»")
+    L(f"{M}.survey_needs_terminal", "Carry a Wireless Terminal to open the survey map from here (or use a Ground Station)",
+      "Lleva una terminal inalámbrica para abrir el mapa desde aquí (o usa una estación terrena)")
     L(f"{M}.deorbit_done", "Deorbit command sent", "Orden de desorbitar enviada")
     L(f"{M}.deorbit_gone", "That satellite is no longer in orbit", "Ese satélite ya no está en órbita")
     L(f"{M}.deorbit_not_yours", "That satellite doesn't belong to your team", "Ese satélite no pertenece a tu equipo")
@@ -239,7 +220,8 @@ def lang(L):
       "Este radar no tiene dueño: rómpelo y colócalo de nuevo")
     L(f"{M}.radar_foreign", "This radar belongs to team %s", "Este radar pertenece al equipo %s")
     L(f"{M}.radar_contact_gone", "That contact is gone", "Ese contacto ya no está")
-    L(f"{M}.radar_own", "That satellite is your team's own", "Ese satélite es de tu propio equipo")
+    L(f"{M}.radar_own", "That satellite is your team's own: no tracking needed, target it directly",
+      "Ese satélite es de tu propio equipo: no hace falta rastrearlo, apúntale directamente")
     L(f"{M}.radar_already_locked", "Already locked", "Ya está fijado")
     L(f"{M}.radar_not_locked", "Lock the contact first", "Primero fija el contacto")
     L(f"{M}.radar_label", "%s (team %s)", "%s (equipo %s)")
@@ -251,15 +233,14 @@ def lang(L):
     L(f"{M}.radar_row_locked", "%s '%s' · %s", "%s «%s» · %s")
     L(f"{M}.radar_row_unknown", "Unidentified contact #%s", "Contacto no identificado n.º %s")
     L(f"{M}.asat_programmed", "Missile programmed: %s", "Misil programado: %s")
-    L(f"{M}.asat_no_designation", "Pick a locked target on this radar's screen first",
-      "Primero elige un objetivo fijado en la pantalla de este radar")
+    L(f"{M}.asat_no_designation", "Pick a target on this radar's screen first",
+      "Primero elige un objetivo en la pantalla de este radar")
     L(f"{M}.asat_disabled", "Anti-Satellite missiles are disabled on this server",
       "Los misiles antisatélite están desactivados en este servidor")
     L(f"{M}.asat_unprogrammed", "The missile has no target: program it at an Orbital Radar",
       "El misil no tiene objetivo: prográmalo en un radar orbital")
     L(f"{M}.asat_target_gone", "The target is no longer in orbit over this dimension",
       "El objetivo ya no está en órbita sobre esta dimensión")
-    L(f"{M}.asat_own_team", "You can't fire at your own team's satellites", "No puedes disparar a los satélites de tu propio equipo")
     L(f"{M}.asat_no_lock", "No radar lock: the radar that programmed the missile must be loaded, here, and still locked on",
       "Sin fijación de radar: el radar que programó el misil debe estar cargado, aquí, y mantener la fijación")
     L(f"{M}.asat_foreign_radar", "The missile was programmed at another team's radar",
@@ -272,6 +253,7 @@ def lang(L):
       "Tu misil fue interceptado por un satélite guardián: «%s» del equipo %s sobrevivió")
     L(f"{M}.asat_destroyed_owner", "Your %s '%s' was shot down by team %s (%s)",
       "Tu %s «%s» fue derribado por el equipo %s (%s)")
+    L(f"{M}.asat_destroyed_own", "%s shot down your own %s '%s'", "%s derribó tu propio %s «%s»")
     L(f"{M}.asat_destroyed_shooter", "Target destroyed: %s '%s' of team %s", "Objetivo destruido: %s «%s» del equipo %s")
 
     G = f"gui.{MOD}"
@@ -293,6 +275,9 @@ def lang(L):
     L(f"{G}.team.invite_tip", "Invite the online player with this name", "Invita al jugador conectado con este nombre")
     L(f"{G}.team.online", "Online:", "Conectados:")
     L(f"{G}.team.nobody", "nobody else", "nadie más")
+    L(f"{G}.team.map", "Map", "Mapa")
+    L(f"{G}.team.map_tip", "Open your team's survey map here over the uplink (needs a Wireless Terminal with you)",
+      "Abre aquí el mapa de reconocimiento de tu equipo por enlace (necesitas llevar una terminal inalámbrica)")
     L(f"{G}.team.satellites", "Satellites in orbit: %s", "Satélites en órbita: %s")
     L(f"{G}.team.no_satellites", "None yet", "Ninguno aún")
     L(f"{G}.team.deorbit", "Deorbit", "Desorbitar")
@@ -308,9 +293,66 @@ def lang(L):
     L(f"{G}.radar.target", "Target", "Apuntar")
     L(f"{G}.radar.target_tip", "Pick it as the target for Anti-Satellite missiles programmed at this radar",
       "Elígelo como objetivo de los misiles antisatélite programados en este radar")
+    L(f"{G}.radar.target_own_tip", "Pick your own satellite as the missile target (no lock needed; your Guardians won't intercept)",
+      "Elige tu propio satélite como objetivo del misil (sin fijación; tus guardianes no interceptarán)")
     L(f"{G}.radar.targeted", "TARGET", "OBJETIVO")
     L(f"{G}.radar.hint", "Right-click the radar with an Anti-Satellite Missile to program it with the target, then launch it from a Launch Pad",
       "Haz clic derecho en el radar con un misil antisatélite para programarle el objetivo y lánzalo desde una plataforma")
+
+    SV = f"{G}.survey"
+    L(f"{SV}.title", "Survey Map", "Mapa de reconocimiento")
+    L(f"{SV}.at_station", "Ground Station · %s", "Estación terrena · %s")
+    L(f"{SV}.remote", "Wireless Terminal · %s", "Terminal inalámbrica · %s")
+    L(f"{SV}.zoom_in", "Zoom in (or scroll)", "Acercar (o rueda)")
+    L(f"{SV}.zoom_out", "Zoom out (or scroll)", "Alejar (o rueda)")
+    L(f"{SV}.centre", "Centre", "Centrar")
+    L(f"{SV}.centre_tip", "Back to the middle of the map", "Volver al centro del mapa")
+    L(f"{SV}.progress", "%s/%s chunks (%s%%)", "%s/%s chunks (%s%%)")
+    L(f"{SV}.cursor", "X %s, Z %s · %s", "X %s, Z %s · %s")
+    L(f"{SV}.cursor_unknown", "X %s, Z %s · not imaged", "X %s, Z %s · sin imagen")
+    L(f"{SV}.hint", "Drag to pan, scroll to zoom", "Arrastra para mover, rueda para zoom")
+    L(f"{SV}.you", "You", "Tú")
+    L(f"{SV}.this_station", "This Ground Station", "Esta estación terrena")
+    L(f"{SV}.station", "Ground Station (%s) at %s, %s", "Estación terrena (%s) en %s, %s")
+    L(f"{SV}.pad", "Launch Pad (%s) at %s, %s", "Plataforma de lanzamiento (%s) en %s, %s")
+    L(f"{SV}.member", "%s at %s, %s", "%s en %s, %s")
+    L(f"{SV}.no_satellite", "No survey satellite over this dimension", "No hay satélite de reconocimiento sobre esta dimensión")
+    L(f"{SV}.how", "Build a Survey Satellite, mount it on a Launch Pad in this dimension and launch it. Your team's Ground Stations then image the land around them and it appears here.",
+      "Construye un satélite de reconocimiento, móntalo en una plataforma de lanzamiento de esta dimensión y lánzalo. Las estaciones terrenas de tu equipo fotografiarán el terreno a su alrededor y aparecerá aquí.")
+    L(f"{SV}.waiting", "Waiting for imagery…", "Esperando imágenes…")
+    L(f"{SV}.satellites", "Satellites here: %s", "Satélites aquí: %s")
+    L(f"{SV}.no_satellites", "Your team has no satellites over this dimension", "Tu equipo no tiene satélites sobre esta dimensión")
+    L(f"{SV}.days", "%s days in orbit", "%s días en órbita")
+    L(f"{SV}.legend_station", "Station", "Estación")
+    L(f"{SV}.legend_pad", "Launch Pad", "Plataforma")
+    L(f"{SV}.legend_you", "You", "Tú")
+    L(f"{SV}.legend_team", "Team", "Equipo")
+
+    PD = f"{G}.pad"
+    L(f"{PD}.payload", "Payload", "Carga")
+    L(f"{PD}.fuel", "Fuel", "Combustible")
+    L(f"{PD}.launch", "Launch", "Lanzar")
+    L(f"{PD}.launch_tip", "Launch now (same rules as flint and steel or a redstone pulse)",
+      "Lanzar ahora (mismas reglas que el mechero o un pulso de redstone)")
+    L(f"{PD}.no_payload", "No payload", "Sin carga")
+    L(f"{PD}.missile_unprogrammed", "No target: program it at an Orbital Radar", "Sin objetivo: prográmalo en un radar orbital")
+    L(f"{PD}.missile_target", "Target: %s", "Objetivo: %s")
+    L(f"{PD}.satellite_type", "%s satellite", "Satélite de %s")
+    L(f"{PD}.fuel_amount", "Fuel %s/%s (%s per launch)", "Combustible %s/%s (%s por lanzamiento)")
+    L(f"{PD}.fuel_tip", "%s = 1, %s = 4", "%s = 1, %s = 4")
+    L(f"{PD}.payload_tip", "Put a satellite or an Anti-Satellite Missile here; take it out to get it back",
+      "Pon aquí un satélite o un misil antisatélite; sácalo para recuperarlo")
+    L(f"{PD}.fuel_slot_tip", "Put Blaze Powder or Rocket Fuel here: it goes straight into the tank",
+      "Pon aquí polvo de blaze o combustible de cohete: va directo al tanque")
+    L(f"{PD}.hint", "Or: redstone pulse, sneak + flint and steel", "O: pulso de redstone, agachado + mechero")
+    L(f"{PD}.status.ready", "Ready for launch", "Listo para lanzar")
+    L(f"{PD}.status.countdown", "Launch in %s…", "Lanzamiento en %s…")
+    L(f"{PD}.status.climbing", "Liftoff! Climbing to orbit", "¡Despegue! Subiendo a la órbita")
+    L(f"{PD}.status.incomplete", "Pad incomplete: 8 Launch Pad blocks around", "Plataforma incompleta: 8 bloques alrededor")
+    L(f"{PD}.status.no_payload", "Mount a payload", "Monta una carga")
+    L(f"{PD}.status.no_fuel", "Needs more fuel", "Necesita más combustible")
+    L(f"{PD}.status.blocked", "Something blocks the rocket's path", "Algo bloquea la trayectoria")
+    L(f"{PD}.status.missile", "Missile not ready: press Launch to see why", "Misil no listo: pulsa Lanzar para ver por qué")
 
     TM = f"{M}.team"
     L(f"{TM}.ok", "Done", "Hecho")
@@ -369,9 +411,7 @@ def generate(ctx):
         model["display"] = PLATE_DISPLAY
         ctx.write(A / "models" / "item" / f"{name}.json", model)
         ctx.item_def(name, f"item/{name}")
-    for kind in ("survey", "uplink", "guardian"):
-        ctx.block_model(f"orbital_rocket_{kind}", rocket_model(kind))
-    ctx.block_model("orbital_rocket_asat", rocket_model("asat", body="rocket_body_asat", fin="rocket_fin_asat"))
+    # The rocket drawn on the pad and the 3D satellites: tools/features/satellites.py
 
     # ---------------------------------------------------------------- ground station
     ctx.block_model("ground_station", {"parent": "minecraft:block/block", "textures": STATION_TEX,
@@ -397,8 +437,7 @@ def generate(ctx):
         "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, -1, 0], "scale": [0.625, 0.625, 0.625]}}})
     ctx.item_def("orbital_radar", "item/orbital_radar")
 
-    for item in ("survey_satellite", "uplink_satellite", "guardian_satellite", "asat_missile", "rocket_fuel",
-                 "wireless_terminal"):
+    for item in ("asat_missile", "rocket_fuel", "wireless_terminal"):
         ctx.flat_item(item)
     for block in PICKAXE_BLOCKS:
         ctx.loot_self(block)
@@ -441,10 +480,9 @@ def generate(ctx):
     code_advancement(ctx, "orbital_uplink", "orbital_launch", "uplink_satellite", "challenge",
                      ("Uplink Online", "Put an Uplink Satellite in orbit: your team has signal in the whole dimension"),
                      ("Enlace en línea", "Pon un satélite de enlace en órbita: tu equipo tiene señal en toda la dimensión"))
-    ctx.advancement("orbital_station", "orbital_launch", "ground_station", ["ground_station"], "Ground Control",
-                    "Build a Ground Station and use an empty map on it to map the area from orbit",
-                    "Control de tierra",
-                    "Construye una estación terrena y usa un mapa vacío en ella para cartografiar la zona desde la órbita")
+    code_advancement(ctx, "orbital_station", "orbital_launch", "ground_station", "task",
+                     ("Ground Control", "Open the survey map on a Ground Station with a Survey Satellite overhead"),
+                     ("Control de tierra", "Abre el mapa de reconocimiento en una estación terrena con un satélite de reconocimiento en órbita"))
     ctx.advancement("orbital_wireless", "orbital_uplink", "wireless_terminal", ["wireless_terminal"], "Look, No Cables",
                     "Link a Wireless Terminal to a Storage Terminal and open it from anywhere with signal",
                     "Mira, sin cables",

@@ -113,14 +113,13 @@ public class StorageDeviceBlock extends BaseEntityBlock implements StorageNodeBl
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         BlockEntity be = level.getBlockEntity(pos);
         switch (kind) {
-            case CONTROLLER -> {
-                if (be instanceof StorageControllerBlockEntity controller) player.sendOverlayMessage(controller.statusMessage());
+            case CONTROLLER, INTERFACE -> {
+                if (be instanceof StorageNodeBlockEntity && player instanceof net.minecraft.server.level.ServerPlayer sp) {
+                    net.juli2kapo.factoryascent.ui.NetworkScreens.open(sp, pos);
+                }
             }
             case DRIVE, TERMINAL -> {
                 if (be instanceof net.minecraft.world.MenuProvider provider) player.openMenu(provider, pos);
-            }
-            case INTERFACE -> {
-                if (be instanceof StorageNodeBlockEntity node) player.sendOverlayMessage(statusOf(node.network()));
             }
         }
         return InteractionResult.SUCCESS;
