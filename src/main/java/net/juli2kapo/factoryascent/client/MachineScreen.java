@@ -437,12 +437,15 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, 8, 7, TEXT, false);
+        g.text(font, FactoryGui.fit(font, title, imageWidth - 16), 8, 7, TEXT, false);
         g.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT, false);
         Component status = statusLine();
         g.text(font, status, (imageWidth - font.width(status)) / 2, 76, TEXT, false);
         String info = infoLine();
-        if (!info.isEmpty()) g.text(font, info, (imageWidth - font.width(info)) / 2, 64, TEXT, false);
+        if (!info.isEmpty()) {
+            var line = FactoryGui.fit(font, Component.literal(info), imageWidth - 8);
+            g.text(font, line, (imageWidth - font.width(line)) / 2, 64, TEXT, false);
+        }
         if (type().power() == MachineType.Power.MANUAL) {
             g.text(font, Component.translatable("gui.factoryascent.crank"), CRANK_X + 2, CRANK_Y + 2, 0xFFFFFFFF, false);
         }

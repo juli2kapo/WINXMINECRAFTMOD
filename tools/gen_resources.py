@@ -166,7 +166,7 @@ MACHINE_ES = {
     "sieve": "Criba", "drying_rack": "Secadero", "water_wheel": "Rueda hidráulica", "windmill": "Molino de viento",
     "charger": "Cargador", "floodlight": "Reflector", "block_breaker": "Rompedor de bloques", "block_placer": "Colocador de bloques",
     "vacuum_hopper": "Tolva aspiradora", "tree_farm": "Granja de árboles", "industrial_grinder": "Moledora industrial",
-    "recycler": "Recicladora", "mob_farm": "Controlador de granja de criaturas",
+    "recycler": "Recicladora", "mob_farm": "Granja de criaturas",
 }
 
 CABLES = {"lv": "copper_cable", "mv": "aluminum_cable", "hv": "titanium_cable", "ev": "superconductor_cable"}

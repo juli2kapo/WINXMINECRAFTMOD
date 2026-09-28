@@ -31,7 +31,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
             g.fill(i, fy + 2, i + 2, fy + 3, STITCH);
             g.fill(i, fy + fh - 3, i + 2, fy + fh - 2, STITCH);
         }
-        for (int bx : new int[] {fx + 76, fx + fw - 40}) {
+        for (int bx : new int[] {fx + fw - 66, fx + fw - 30}) { // straps on the right, clear of the title
             g.fill(bx, y + 5, bx + 8, fy, LEATHER_DARK);
             g.fill(bx - 1, fy - 3, bx + 9, fy + 1, BRONZE);
             g.fill(bx + 2, fy - 2, bx + 6, fy, 0xFF6E4617);
@@ -44,7 +44,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, FactoryGui.fit(font, title, 60), 8, 6, FactoryGui.TEXT, false);
+        g.text(font, FactoryGui.fit(font, title, 94), 8, 6, FactoryGui.TEXT, false);
         g.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, FactoryGui.TEXT, false);
     }
 }

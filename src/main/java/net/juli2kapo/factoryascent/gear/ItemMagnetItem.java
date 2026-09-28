@@ -61,7 +61,9 @@ public class ItemMagnetItem extends PoweredItem {
     /** Pulls the loose items around the player to them. Returns how many item entities moved. */
     public static int pull(ItemStack magnet, ServerLevel level, Player player) {
         List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, new AABB(player.blockPosition()).inflate(RANGE),
-                e -> e.isAlive() && !e.hasPickUpDelay());
+                // already at the player's feet: nothing to pull (and with a full inventory it would
+                // otherwise cost power every sweep for an item that can't be picked up)
+                e -> e.isAlive() && !e.hasPickUpDelay() && e.distanceToSqr(player) > 2.25);
         int moved = 0;
         for (ItemEntity item : items) {
             if (!drain(magnet, COST_PER_ITEM)) break;

@@ -578,8 +578,8 @@ LANG = [
     ("message.factoryascent.magnet_off", "Item Magnet off", "Imán de objetos apagado"),
     ("gui.factoryascent.kinetic_info", "Turning at %s%% · drives %s", "Gira al %s%% · mueve %s"),
     ("gui.factoryascent.floodlight_info", "Lighting %s spots", "Iluminando %s puntos"),
-    ("gui.factoryascent.mob_farm_info", "Farming: %s", "Criando: %s"),
-    ("gui.factoryascent.mob_farm_empty", "Insert a filled Mob Capsule", "Pon una cápsula de criaturas llena"),
+    ("gui.factoryascent.mob_farm_info", "Farming: %s", "Produce: %s"),
+    ("gui.factoryascent.mob_farm_empty", "Insert a filled Mob Capsule", "Pon una cápsula llena"),
     ("gui.factoryascent.crank_hint", "Click (or sneak + right-click the machine) to turn it",
      "Haz clic (o agáchate + clic derecho en la máquina) para girarla"),
 ]
