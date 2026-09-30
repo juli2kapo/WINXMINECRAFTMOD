@@ -596,14 +596,13 @@ def reactor_casing(rng):
 
 
 def reactor_glass():
-    """Thick leaded glass: almost clear with a faint green tint, a thin frame and two glints."""
+    """Thick leaded glass: a thin lead frame and a few glints on clear pane (cutout, so what burns
+    behind it, like a tokamak's plasma, always shows through)."""
     t = tex()
-    for y in range(16):
-        for x in range(16):
-            t.set(x, y, C("#C8F0E0", 38))
     for i in range(3, 7):
-        t.set(i + 1, i, C("#FFFFFF", 120))
-        t.set(i + 7, i + 6, C("#FFFFFF", 90))
+        t.set(i + 1, i, C("#E8FFF6"))
+    for i in range(9, 12):
+        t.set(i, i + 1, C("#D0F4E8"))
     bevel(t, 0, 0, 15, 15, LEAD[3], LEAD[0])
     for x, y in ((0, 0), (15, 0), (0, 15), (15, 15)):
         t.set(x, y, LEAD[1])
@@ -825,13 +824,14 @@ def tokamak_top(rng, on):
 
 
 def plasma():
+    """The plasma: a white-hot core fading to violet at the edge (translucent, drawn full-bright)."""
     t = tex()
     for y in range(16):
         for x in range(16):
             v = abs(y - 7.5) / 8
-            a = int(235 - 150 * v)
-            col = mix(C("#FFE8FF"), C("#B050FF"), min(1, v * 1.6))
-            if (x + y * 2) % 7 == 0:
+            a = int(255 - 90 * v)
+            col = mix(C("#FFF4FF"), C("#C060FF"), min(1, v * 1.5))
+            if (x * 3 + y * 5) % 11 == 0:
                 col = C("#FFFFFF")
             t.set(x, y, (col[0], col[1], col[2], a))
     return t
@@ -842,7 +842,7 @@ def plasma_filament():
     for y in range(16):
         for x in range(16):
             if (x + y) % 6 in (0, 1):
-                t.set(x, y, (200, 250, 255, 190 if (x + y) % 6 == 0 else 110))
+                t.set(x, y, (210, 250, 255, 230 if (x + y) % 6 == 0 else 150))
     return t
 
 
@@ -1001,7 +1001,7 @@ def hazmat_armor():
     for y in range(32):
         for x in range(64):
             r = rng.random()
-            main.set(x, y, Y[1] if r < 0.06 else Y[3] if r < 0.1 else Y[2])
+            main.set(x, y, mix(Y[2], Y[1], 0.35) if r < 0.03 else mix(Y[2], Y[3], 0.4) if r < 0.06 else Y[2])
     # visor on the helmet front (8..15, 8..15)
     main.rect(9, 10, 14, 13, C("#5AC8E0"))
     main.rect(10, 11, 11, 11, C("#FFFFFF"))
@@ -1021,7 +1021,7 @@ def hazmat_armor():
     for y in range(32):
         for x in range(64):
             r = rng.random()
-            legs.set(x, y, Y[1] if r < 0.06 else Y[3] if r < 0.1 else Y[2])
+            legs.set(x, y, mix(Y[2], Y[1], 0.35) if r < 0.03 else mix(Y[2], Y[3], 0.4) if r < 0.06 else Y[2])
     # boots region of the main layer (legs 0..15, 16..31) darker soles
     for x in range(0, 16):
         for y in (30, 31):

@@ -297,7 +297,11 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             for (BlockPos p : structure.interiorBlocks()) level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             if (power > 0) level.explode(null, c.getX() + 0.5, c.getY() + 0.5, c.getZ() + 0.5, power, true, Level.ExplosionInteraction.BLOCK);
             if (corium) {
-                for (BlockPos p : channels) pour(level, p);        // the melt runs down into a pool
+                // the melt runs down into a pool on the crater floor
+                for (int i = 0; i < channels.size(); i++) {
+                    int[] o = POOL[i % POOL.length];
+                    pour(level, c.offset(o[0], 0, o[1]));
+                }
                 var random = level.getRandom();
                 for (int i = 0; i < 2 + channels.size() / 4; i++) {  // and splashes out of the breach
                     pour(level, c.offset(random.nextInt(9) - 4, random.nextInt(3), random.nextInt(9) - 4));
@@ -309,6 +313,10 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         }
         if (!isRemoved()) updateActive(level, false);
     }
+
+    /** Where the molten core spreads, from the middle of the crater outwards. */
+    private static final int[][] POOL = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {2, 0}, {0, 2},
+            {-2, 0}, {0, -2}, {2, 1}, {1, 2}, {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2}, {1, -2}, {2, -1}};
 
     /** Drops a block of corium from {@code p} down onto whatever is below. */
     private static void pour(ServerLevel level, BlockPos p) {

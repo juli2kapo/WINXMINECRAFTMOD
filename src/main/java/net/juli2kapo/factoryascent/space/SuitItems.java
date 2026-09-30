@@ -148,6 +148,9 @@ public final class SuitItems {
         public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                     Consumer<Component> tooltip, TooltipFlag flag) {
             tooltip.accept(oxygenLine(oxygen(stack)));
+            if (net.juli2kapo.factoryascent.space.planet.ThermalLiningItem.lined(stack)) {
+                tooltip.accept(Component.translatable("tooltip.factoryascent.thermal_lining_on").withStyle(ChatFormatting.GOLD));
+            }
             tooltip.accept(Component.translatable("tooltip.factoryascent.suit_chest").withStyle(ChatFormatting.DARK_AQUA));
             tooltip.accept(Component.translatable("tooltip.factoryascent.suit_refill").withStyle(ChatFormatting.DARK_GRAY));
         }

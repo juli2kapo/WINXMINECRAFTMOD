@@ -158,18 +158,18 @@ final class StationScreens {
             int[] earth = onOrbit(cx, cy, earthR, t * 2 * Math.PI / 8 + 0.4);
             int[] mars = onOrbit(cx, cy, marsR, t * 2 * Math.PI / 15 + 2.2);
             int[] jupiter = onOrbit(cx, cy, jupiterR, t * 2 * Math.PI / 95 + 4.0);
-            int[] moon = onOrbit(earth[0], earth[1], 7, t * 2 * Math.PI * 1.2);
-            int[] io = onOrbit(jupiter[0], jupiter[1], 9, t * 2 * Math.PI * 3);
+            int[] moon = onOrbit(earth[0], earth[1], 10, t * 2 * Math.PI * 1.2);
+            int[] io = onOrbit(jupiter[0], jupiter[1], 11, t * 2 * Math.PI * 3);
             dot(g, earth[0], earth[1], 3, 0xFF3E8EE8);
             dot(g, moon[0], moon[1], 1, Planet.MOON.color);
             dot(g, mars[0], mars[1], 2, Planet.MARS.color);
             dot(g, jupiter[0], jupiter[1], 5, 0xFFD8B080);
             dot(g, io[0], io[1], 1, Planet.IO.color);
             label(g, Component.translatable("planet.factoryascent.earth"), earth[0], earth[1] + 5);
-            label(g, Planet.MOON.displayName(), moon[0], moon[1] - 11);
+            g.text(font, Planet.MOON.displayName(), moon[0] + 4, moon[1] - 4, MUTED, false);
             label(g, Planet.MARS.displayName(), mars[0], mars[1] + 4);
             label(g, Component.translatable("planet.factoryascent.jupiter"), jupiter[0], jupiter[1] + 7);
-            label(g, Planet.IO.displayName(), io[0], io[1] - 11);
+            g.text(font, Planet.IO.displayName(), io[0] + 4, io[1] - 4, MUTED, false);
             // you are here
             int[] here = where(chart.here(), earth, moon, mars, io);
             if (here != null && (mc.player == null || mc.player.tickCount / 10 % 2 == 0)) {

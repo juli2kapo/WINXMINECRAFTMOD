@@ -31,7 +31,7 @@ O = _orbital()
 rgb, mix, shade, Canvas, noisy = O.rgb, O.mix, O.shade, O.Canvas, O.noisy
 OUTLINE = O.OUTLINE
 
-REGOLITH = [rgb(h) for h in ("#BEBEC2", "#A9A9AE", "#9A9A9F", "#86868C", "#6C6C72")]
+REGOLITH = [rgb(h) for h in ("#ABABB0", "#96969B", "#88888D", "#75757A", "#5E5E63")]
 MOONROCK = [rgb(h) for h in ("#9C9CA2", "#7C7C83", "#65656C", "#505057", "#3A3A40")]
 MARS = [rgb(h) for h in ("#E89A62", "#CC7444", "#B05E34", "#8E4828", "#6A341E")]
 MARSROCK = [rgb(h) for h in ("#B0644A", "#944E38", "#7C402E", "#643224", "#48241A")]

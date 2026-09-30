@@ -46,7 +46,7 @@ final class DustStormClient {
 
     static void fog(ViewportEvent.RenderFog event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || event.getType() != FogType.NONE) return;
+        if (mc.level == null || (event.getType() != FogType.ATMOSPHERIC && event.getType() != FogType.NONE)) return;
         float storm = storm(mc.level, (float) event.getPartialTick());
         if (storm <= 0.01f) return;
         float far = event.getFarPlaneDistance();
