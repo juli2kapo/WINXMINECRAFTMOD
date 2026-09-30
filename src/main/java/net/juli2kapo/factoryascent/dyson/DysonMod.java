@@ -6,7 +6,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 
 /**
- * The Dyson Sphere's own entry point (a further {@code @Mod} class of Factory Ascent, like the
+ * The Dyson Cube's own entry point (a further {@code @Mod} class of Factory Ascent, like the
  * ships' one), so the megaproject plugs in without touching the main mod class.
  */
 @Mod(FactoryAscent.MOD_ID)

@@ -34,12 +34,12 @@ final class DustStormClient {
         if (storm <= 0.03f) return;
         RandomSource r = level.getRandom();
         double wind = 0.35 + 0.5 * storm;
-        int count = Mth.ceil(22 * storm);
+        int count = Mth.ceil(30 * storm);
         for (int i = 0; i < count; i++) {
             double x = mc.player.getX() + (r.nextDouble() - 0.5) * 24;
             double y = mc.player.getY() + r.nextDouble() * 8 - 1;
             double z = mc.player.getZ() + (r.nextDouble() - 0.5) * 24;
-            DustParticleOptions dust = new DustParticleOptions(r.nextInt(3) == 0 ? DUST_DARK : DUST, 1.2f + r.nextFloat() * 1.6f);
+            DustParticleOptions dust = new DustParticleOptions(r.nextInt(3) == 0 ? DUST_DARK : DUST, 0.7f + r.nextFloat() * 0.9f);
             level.addParticle(dust, x, y, z, wind, (r.nextDouble() - 0.5) * 0.05, wind * 0.3);
         }
     }
@@ -50,9 +50,9 @@ final class DustStormClient {
         float storm = storm(mc.level, (float) event.getPartialTick());
         if (storm <= 0.01f) return;
         float far = event.getFarPlaneDistance();
-        float target = Mth.lerp(storm, far, 22f);
+        float target = Mth.lerp(storm, far, 14f);
         event.setFarPlaneDistance(Math.min(far, target));
-        event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), target * 0.05f));
+        event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), 0f));
         event.getFogData().skyEnd = Math.min(event.getFogData().skyEnd, Mth.lerp(storm, event.getFogData().skyEnd, 30f));
     }
 

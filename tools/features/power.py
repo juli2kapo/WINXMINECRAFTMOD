@@ -987,7 +987,7 @@ def lang(ctx):
     # reactor screen
     for key, en, es in [
         ("output", "Output", "Salida"), ("temp", "Core", "Núcleo"), ("heat", "Heat", "Calor"), ("rods", "Rods", "Barras"),
-        ("bonus", "Bonus · ctrl", "Bonus · ctrl"), ("insertion", "Control rods: %s%% in", "Barras de control: %s%% dentro"),
+        ("bonus", "Bonus", "Bonus"), ("insertion", "Control rods in: %s%%", "Barras dentro: %s%%"),
         ("scram", "SCRAM", "SCRAM"), ("fuel", "Fuel", "Combust."), ("spent", "Spent", "Gastado"), ("coolant", "Coolant", "Refrig."),
         ("melted", "MELTDOWN", "FUSIÓN DEL NÚCLEO"), ("incomplete", "Structure incomplete", "Estructura incompleta"),
         ("alarm", "!! TEMPERATURE !!", "¡¡ TEMPERATURA !!"), ("scram_waste", "SCRAM: no room for waste", "SCRAM: sin sitio para residuos"),
@@ -1026,7 +1026,7 @@ def lang(ctx):
         ("start", "Start", "Arrancar"), ("stop", "Stop", "Parar"), ("incomplete", "Ring incomplete", "Anillo incompleto"),
         ("state.cold", "Cold", "Frío"), ("state.charging", "Charging magnets", "Cargando imanes"),
         ("state.ready", "Charged: needs fuel", "Cargado: falta combustible"), ("state.igniting", "Igniting", "Encendiendo"),
-        ("state.running", "Burning", "Ardiendo"), ("state.disrupted", "DISRUPTION", "DISRUPCIÓN"),
+        ("state.running", "Burning", "Ardiendo"), ("state_temp", "%s · %s MK", "%s · %s MK"), ("state.disrupted", "DISRUPTION", "DISRUPCIÓN"),
         ("output", "Output: %s FE/t", "Salida: %s FE/t"), ("charge", "Magnets: %s / %s FE", "Imanes: %s / %s FE"),
         ("charge_hint", "Feed FE into a Fusion Port while it's switched on", "Mete FE por un puerto de fusión con el tokamak encendido"),
         ("how", "Start, charge the magnets, load deuterium, helium-3 and a tritium cell: it ignites by itself",

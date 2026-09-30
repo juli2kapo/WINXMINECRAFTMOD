@@ -41,7 +41,7 @@ public final class PlanetHazards {
         if (planet.hot() && player.tickCount % 20 == 0 && burns(player, breath)) {
             ServerLevel level = player.level();
             player.hurtServer(level, heat(level), (float) SpaceConfig.get(SpaceConfig.HEAT_DAMAGE));
-            level.sendParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + 1, player.getZ(), 6, 0.3, 0.5, 0.3, 0.02);
+            level.sendParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + 0.2, player.getZ(), 4, 0.45, 0.1, 0.45, 0.01);
             player.sendOverlayMessage(Component.translatable("message.factoryascent.too_hot").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         }
     }

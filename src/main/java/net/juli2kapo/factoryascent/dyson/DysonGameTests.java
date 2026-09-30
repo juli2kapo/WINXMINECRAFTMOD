@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-/** Game test bodies for the Dyson Sphere, listed in {@code ModGameTests.TESTS}. */
+/** Game test bodies for the Dyson Cube, listed in {@code ModGameTests.TESTS}. */
 public final class DysonGameTests {
     private DysonGameTests() {}
 
@@ -163,9 +163,9 @@ public final class DysonGameTests {
         h.assertTrue(swarm.project(team).milestones() == 0b111, "25% must reach first, 10% and 25%, got " + swarm.project(team).milestones());
         long added = DysonService.addCollectors(server, team, target * 2L);
         h.assertTrue(added == target - (long) Math.ceil(target * 0.25), "the swarm must stop at the target, added " + added);
-        h.assertTrue(swarm.isComplete(team) && swarm.completion(team) == 1.0, "the sphere must be complete");
+        h.assertTrue(swarm.isComplete(team) && swarm.completion(team) == 1.0, "the cube must be complete");
         h.assertTrue(swarm.project(team).milestones() == 0b11111, "100% must reach every milestone, got " + swarm.project(team).milestones());
-        h.assertTrue(DysonService.addCollectors(server, team, 1) == 0, "a complete sphere takes no more collectors");
+        h.assertTrue(DysonService.addCollectors(server, team, 1) == 0, "a complete cube takes no more collectors");
         var holder = server.getAdvancements().get(Identifier.fromNamespaceAndPath("factoryascent", "dyson_100"));
         h.assertTrue(holder != null, "the Type II Civilization advancement must exist");
         if (server.getPlayerList().getPlayer(owner.getUUID()) != null) {

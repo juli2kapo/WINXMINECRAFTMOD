@@ -272,7 +272,11 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
-    /** The core melts: explosion, lost fuel, corium where the channels were. */
+    /**
+     * The core melts. With block damage on (the default) the core vaporises and the steam explosion
+     * breaches the walls; the molten fuel runs down into a pool of corium, and splashes land around.
+     * With it off, the explosion only hurts and the channels turn into corium in place. The fuel is lost.
+     */
     public void meltdown(ServerLevel level) {
         if (meltedDown) return;
         meltedDown = true;
@@ -280,6 +284,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         rate = 0;
         BlockPos c = structure.center();
         boolean destroy = testDestroyBlocks != null ? testDestroyBlocks : PowerConfig.get(PowerConfig.MELTDOWN_DESTROYS_BLOCKS);
+        boolean corium = PowerConfig.get(PowerConfig.MELTDOWN_LEAVES_CORIUM);
         for (int i = 0; i < FIRST_DEPLETED + DEPLETED_SLOTS; i++) inventory.setStack(i, ItemStack.EMPTY);
         List<BlockPos> channels = new ArrayList<>(structure.channelBlocks());
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, new AABB(c).inflate(48))) {
@@ -287,25 +292,29 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             p.sendSystemMessage(Component.translatable("message.factoryascent.meltdown").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
         }
         setChanged();
-        if (PowerConfig.get(PowerConfig.MELTDOWN_LEAVES_CORIUM)) {
-            for (BlockPos p : channels) level.setBlock(p, PowerContent.CORIUM.get().defaultBlockState(), Block.UPDATE_ALL);
-        }
         float power = (float) (PowerConfig.get(PowerConfig.MELTDOWN_EXPLOSION_POWER) * (1 + Math.min(1f, structure.interior() / 125f)));
-        if (power > 0) {
-            level.explode(null, c.getX() + 0.5, c.getY() + 0.5, c.getZ() + 0.5, power, destroy,
-                    destroy ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE);
-        }
-        if (destroy && PowerConfig.get(PowerConfig.MELTDOWN_LEAVES_CORIUM)) {
-            // molten core splashed into the crater
-            var random = level.getRandom();
-            int splashes = 2 + channels.size() / 3;
-            for (int i = 0; i < splashes; i++) {
-                BlockPos p = c.offset(random.nextInt(7) - 3, random.nextInt(3) - 1, random.nextInt(7) - 3);
-                while (p.getY() > level.getMinY() && level.getBlockState(p.below()).isAir()) p = p.below();
-                if (level.getBlockState(p).isAir()) level.setBlock(p, PowerContent.CORIUM.get().defaultBlockState(), Block.UPDATE_ALL);
+        if (destroy) {
+            for (BlockPos p : structure.interiorBlocks()) level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            if (power > 0) level.explode(null, c.getX() + 0.5, c.getY() + 0.5, c.getZ() + 0.5, power, true, Level.ExplosionInteraction.BLOCK);
+            if (corium) {
+                for (BlockPos p : channels) pour(level, p);        // the melt runs down into a pool
+                var random = level.getRandom();
+                for (int i = 0; i < 2 + channels.size() / 4; i++) {  // and splashes out of the breach
+                    pour(level, c.offset(random.nextInt(9) - 4, random.nextInt(3), random.nextInt(9) - 4));
+                }
             }
+        } else {
+            if (corium) for (BlockPos p : channels) level.setBlock(p, PowerContent.CORIUM.get().defaultBlockState(), Block.UPDATE_ALL);
+            if (power > 0) level.explode(null, c.getX() + 0.5, c.getY() + 0.5, c.getZ() + 0.5, power, false, Level.ExplosionInteraction.NONE);
         }
         if (!isRemoved()) updateActive(level, false);
+    }
+
+    /** Drops a block of corium from {@code p} down onto whatever is below. */
+    private static void pour(ServerLevel level, BlockPos p) {
+        if (!level.getBlockState(p).isAir()) return;
+        while (p.getY() > level.getMinY() && level.getBlockState(p.below()).isAir()) p = p.below();
+        level.setBlock(p, PowerContent.CORIUM.get().defaultBlockState(), Block.UPDATE_ALL);
     }
 
     // ---------------------------------------------------------------- controls & read-outs

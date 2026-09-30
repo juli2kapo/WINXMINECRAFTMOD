@@ -208,7 +208,7 @@ public final class DysonSky {
             }
             if (y > 0 && onDisc(x, z)) return; // behind the sun's glare
             float hidden = 0f;
-            if (y > 0 && stage.shell() > 0 && x * x + z * z < DysonShape.SHELL * DysonShape.SHELL) hidden = 0.85f * stage.shell();
+            if (y > 0 && stage.shell() > 0 && Math.max(Math.abs(x), Math.abs(z)) < DysonShape.SHELL * 1.2f) hidden = 0.85f * stage.shell();
             // A slow shimmer plus the odd bright flash as a panel catches the light.
             float wave = (float) Math.sin(time * (1.3 + phase * 2.1) + phase * 40.0);
             float flash = (float) Math.pow(Math.max(0, wave), 24);

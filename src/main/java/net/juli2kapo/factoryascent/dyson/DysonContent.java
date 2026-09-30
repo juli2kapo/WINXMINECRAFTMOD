@@ -33,7 +33,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * The Dyson Sphere: the Quantum age's capstone megaproject. A team builds Solar Collectors
+ * The Dyson Cube: the Quantum age's capstone megaproject. A team builds Solar Collectors
  * (Stellar Alloy from the Plasma Forge, assembled in the Precision Assembler), fires them into
  * solar orbit with a Mass Driver (or, early on, one per rocket from a Launch Pad), and the swarm
  * ({@link DysonSwarm}) grows around the sun, visibly, in the sky of every member. Dyson Receivers

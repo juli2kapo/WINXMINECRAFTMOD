@@ -20,9 +20,9 @@ public final class SatelliteTrack {
         return ((id.getMostSignificantBits() >>> 8) & 0xFFFF) / 65536.0 * Math.PI * 2;
     }
 
-    /** Ticks per pass: two to four minutes. */
+    /** Ticks per pass: five to ten minutes (a slow, steady crossing, like a real satellite pass). */
     public static int period(UUID id) {
-        return 2400 + (int) Math.floorMod(id.getMostSignificantBits() >>> 24, 2400L);
+        return 6000 + (int) Math.floorMod(id.getMostSignificantBits() >>> 24, 6000L);
     }
 
     /**

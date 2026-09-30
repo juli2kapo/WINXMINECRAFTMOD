@@ -596,17 +596,17 @@ def reactor_casing(rng):
 
 
 def reactor_glass():
+    """Thick leaded glass: almost clear with a faint green tint, a thin frame and two glints."""
     t = tex()
     for y in range(16):
         for x in range(16):
-            t.set(x, y, C("#A8E8D0", 70))
-    for i in range(2, 8):
-        t.set(i + 2, i, C("#FFFFFF", 150))
-        t.set(i + 6, i + 1, C("#FFFFFF", 110))
+            t.set(x, y, C("#C8F0E0", 38))
+    for i in range(3, 7):
+        t.set(i + 1, i, C("#FFFFFF", 120))
+        t.set(i + 7, i + 6, C("#FFFFFF", 90))
     bevel(t, 0, 0, 15, 15, LEAD[3], LEAD[0])
-    bevel(t, 1, 1, 14, 14, LEAD[2], LEAD[1])
-    for x, y in ((1, 1), (13, 1), (1, 13), (13, 13)):
-        bolt(t, x, y, LEAD)
+    for x, y in ((0, 0), (15, 0), (0, 15), (15, 15)):
+        t.set(x, y, LEAD[1])
     return t
 
 
@@ -983,6 +983,15 @@ def hazmat_item(kind):
     return t
 
 
+def effect_icon():
+    """18x18 status effect icon: a green trefoil on a dark disc."""
+    t = Tex(18, 18)
+    disc(t, 9, 9, 8.6, C("#1A2A10"))
+    disc(t, 9, 9, 8.6, C("#5FD13B"), 7.6)
+    trefoil(t, 9, 9, 6.6, C("#8CF05A"))
+    return t
+
+
 def hazmat_armor():
     """64x32 humanoid layer (helmet with visor, suit) and the leggings layer."""
     from PIL import Image
@@ -1167,6 +1176,11 @@ def write(only_missing):
         meta = Path(str(path) + ".mcmeta")
         if rel in anim:
             meta.write_text('{\n  "animation": {\n    "frametime": %d,\n    "interpolate": true\n  }\n}\n' % anim[rel])
+    icon = effect_icon()
+    path = TEX / "mob_effect" / "radiation.png"
+    if not (only_missing and path.exists()):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        icon.image().save(path)
     main, legs = hazmat_armor()
     for sub, t in (("humanoid", main), ("humanoid_leggings", legs)):
         path = TEX / "entity" / "equipment" / sub / "hazmat.png"

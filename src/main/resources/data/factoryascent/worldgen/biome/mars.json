@@ -1,7 +1,7 @@
 {
   "attributes": {
-    "minecraft:visual/sky_color": "#d9a27a",
-    "minecraft:visual/fog_color": "#c98f68",
+    "minecraft:visual/sky_color": "#dba395",
+    "minecraft:visual/fog_color": "#c9927c",
     "minecraft:visual/ambient_particles": [
       {
         "particle": {

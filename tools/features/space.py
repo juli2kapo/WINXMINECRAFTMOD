@@ -199,7 +199,8 @@ def items(ctx):
 
 def dimension(ctx):
     D = ctx.DATA / MOD
-    sky = {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#000000"}
+    sky = {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#000000",
+           "minecraft:visual/sunrise_sunset_color": "#00000000"}
     ctx.write(D / "dimension_type" / "orbit.json", {
         "ambient_light": 0.1,
         "attributes": {

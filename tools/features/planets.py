@@ -239,7 +239,8 @@ def worlds(ctx):
     ctx.write(wg / "noise_settings" / "io.json", noise_settings("io", io_density(), "io_rock", "minecraft:lava", 58, surf["io"]))
 
     # Moon: black sky, a fixed low sun, craters and Helium-3 in the regolith
-    black = {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#000000"}
+    black = {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#000000",
+             "minecraft:visual/sunrise_sunset_color": "#00000000"}
     moon_ores = [ore(ctx, "helium_3_regolith", "helium_3_regolith", ["moon_regolith"], 7, 18, 40, 130)]
     biome(ctx, "moon", black, [crater(ctx, "moon_crater", 3)], moon_ores)
     dimension_type(ctx, "moon", {**black, "minecraft:visual/star_brightness": 1.0, "minecraft:visual/sun_angle": 320.0,
@@ -261,7 +262,8 @@ def worlds(ctx):
                    timelines=[f"{MOD}:mars_day"], clock="minecraft:overworld")
 
     # Io: black sky, low sun, lava lakes, ash in the air
-    io_sky = {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#120c08"}
+    io_sky = {"minecraft:visual/sky_color": "#000000", "minecraft:visual/fog_color": "#120c08",
+              "minecraft:visual/sunrise_sunset_color": "#00000000"}
     io_ores = [ore(ctx, "ionite_ore", "ionite_ore", ["io_rock"], 5, 8, 0, 80)]
     biome(ctx, "io", io_sky, [], io_ores, particles=[{"particle": {"type": "minecraft:ash"}, "probability": 0.012}])
     dimension_type(ctx, "io", {**io_sky, "minecraft:visual/star_brightness": 1.0, "minecraft:visual/sun_angle": 60.0,

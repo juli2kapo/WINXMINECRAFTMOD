@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
- * The Dyson Monitor's screen: a live preview of the team's sphere turning around its star, the
+ * The Dyson Monitor's screen: a live preview of the team's cube turning around its star, the
  * completion, collectors in orbit, the power the swarm beams down and what the team's receivers
  * take, and the milestones. The server sends the numbers ({@link DysonPayloads.MonitorView}); the
  * screen asks for fresh ones every second.
@@ -82,12 +82,12 @@ public class DysonScreen extends Screen {
 
     private record Prim(float depth, int kind, float[] pts, int color) {}
 
-    /** Draws the sphere, depth-sorted (painter's algorithm), in pixel art. */
+    /** Draws the cube, depth-sorted (painter's algorithm), in pixel art. */
     private void preview(GuiGraphicsExtractor g, int cx, int cy, float partial) {
         float time = (ticks + partial) / 20f;
         float turn = time * 0.25f;
         float ct = (float) Math.cos(turn), st = (float) Math.sin(turn);
-        float scale = PREVIEW / 2f / 3.7f;
+        float scale = PREVIEW / 2f / 4.9f;
         List<Prim> prims = new ArrayList<>();
         DysonShape.build(view.collectors(), view.target(), time * 4f, new DysonShape.Sink() {
             private float[] p(float x, float y, float z) {

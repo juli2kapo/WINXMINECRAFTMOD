@@ -78,7 +78,7 @@ public final class SatelliteSkyClient {
 
     /** Heights of the passes: low over orbit (you're up there with them), higher over planets, highest seen from the ground. */
     private static double[] heights(net.minecraft.resources.ResourceKey<Level> dim) {
-        if (dim == SpaceRules.ORBIT) return new double[] {30, 60};
+        if (dim == SpaceRules.ORBIT) return new double[] {40, 60};
         if (Planet.of(dim) != null) return new double[] {90, 80};
         return new double[] {170, 90};
     }
@@ -150,7 +150,6 @@ public final class SatelliteSkyClient {
         List<SatelliteSky.Entry> list = current();
         if (list.isEmpty()) return;
         float stars = SpaceSkies.starBrightness(partial) * (1f - level.getRainLevel(partial));
-        if (level.getGameTime() % 100 == 0) com.mojang.logging.LogUtils.getLogger().info("[sky-debug] dots {} stars {}", list.size(), stars);
         if (stars <= 0.02f) return;
         double time = level.getGameTime() + partial;
         double[] h = heights(level.dimension());
@@ -160,7 +159,7 @@ public final class SatelliteSkyClient {
             if (dir.y < 0.05f) continue;
             float fade = Math.min(1f, (dir.y - 0.05f) * 6f) * Math.min(1f, stars * 2.5f);
             float r = e.own() ? 0.85f : 1f, g = 1f, b = e.own() ? 0.9f : 0.95f;
-            SpaceSkies.disc(mv, dir, 0.6f, 0f, DOT, new Vector4f(r, g, b, fade));
+            SpaceSkies.disc(mv, dir, 0.7f, 0f, DOT, new Vector4f(r, g, b, fade));
         }
     }
 }

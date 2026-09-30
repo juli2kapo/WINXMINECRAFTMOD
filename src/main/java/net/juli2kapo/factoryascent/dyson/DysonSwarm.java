@@ -11,7 +11,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
 /**
- * Every team's Dyson Sphere project, by team key (see
+ * Every team's Dyson Cube project, by team key (see
  * {@link net.juli2kapo.factoryascent.orbital.FactoryTeams}): how many Solar Collectors the team
  * has in solar orbit, how many it ever launched, and which milestones it has announced. Stored in
  * the overworld's data storage.
@@ -72,7 +72,7 @@ public final class DysonSwarm extends SavedData {
         return server.getDataStorage().computeIfAbsent(TYPE);
     }
 
-    /** Solar Collectors a complete sphere needs (config). */
+    /** Solar Collectors a complete cube needs (config). */
     public static int target() {
         return DysonConfig.SWARM_TARGET.get();
     }
@@ -86,7 +86,7 @@ public final class DysonSwarm extends SavedData {
         return p == null ? 0 : p.collectors;
     }
 
-    /** 0..1 of a complete sphere. */
+    /** 0..1 of a complete cube. */
     public double completion(String team) {
         return Math.min(1.0, collectors(team) / (double) target());
     }

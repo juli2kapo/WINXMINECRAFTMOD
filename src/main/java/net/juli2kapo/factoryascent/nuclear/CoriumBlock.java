@@ -37,9 +37,8 @@ public class CoriumBlock extends Block implements DescribedBlock {
             level.addParticle(ParticleTypes.SMOKE, pos.getX() + random.nextDouble(), pos.getY() + 1.05, pos.getZ() + random.nextDouble(),
                     0, 0.02, 0);
         }
-        if (random.nextInt(10) == 0) {
-            level.addParticle(ParticleTypes.GLOW, pos.getX() + random.nextDouble(), pos.getY() + 1.05, pos.getZ() + random.nextDouble(),
-                    0, 0.05, 0);
+        if (random.nextInt(40) == 0) {
+            level.addParticle(ParticleTypes.LAVA, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0, 0, 0);
         }
     }
 

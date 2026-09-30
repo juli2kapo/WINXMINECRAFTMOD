@@ -18,8 +18,8 @@
         "sound": "minecraft:music.end"
       }
     },
-    "minecraft:visual/sky_color": "#d9a27a",
-    "minecraft:visual/fog_color": "#c98f68",
+    "minecraft:visual/sky_color": "#dba395",
+    "minecraft:visual/fog_color": "#c9927c",
     "minecraft:visual/moon_angle": 180.0,
     "minecraft:visual/sky_light_color": "#fff0e0",
     "minecraft:visual/ambient_light_color": "#1c1210",

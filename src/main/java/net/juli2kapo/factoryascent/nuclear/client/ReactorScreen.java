@@ -225,7 +225,7 @@ public class ReactorScreen extends AbstractContainerScreen<ReactorMenu> {
                     Component.literal(d.i(ReactorData.RODS) + "/" + d.i(ReactorData.CHANNELS)), sx, right, sy + 30,
                     FactoryGui.DISPLAY_MUTED, FactoryGui.DISPLAY_TEXT);
             FactoryGui.row(g, font, Component.translatable("gui.factoryascent.reactor.bonus"),
-                    Component.literal(String.format("x%.2f  %d%%", d.i(ReactorData.BONUS) / 100f, d.i(ReactorData.AUTHORITY))), sx, right, sy + 40,
+                    Component.literal(String.format("x%.2f · %d%%", d.i(ReactorData.BONUS) / 100f, d.i(ReactorData.AUTHORITY))), sx, right, sy + 40,
                     FactoryGui.DISPLAY_MUTED, d.i(ReactorData.AUTHORITY) < 100 ? FactoryGui.WARN : FactoryGui.DISPLAY_TEXT);
         } else {
             List<net.minecraft.util.FormattedCharSequence> lines = font.split(errorText(), STATS_W - 8);

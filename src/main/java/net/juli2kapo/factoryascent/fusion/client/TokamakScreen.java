@@ -121,12 +121,6 @@ public class TokamakScreen extends AbstractContainerScreen<TokamakMenu> {
         boolean on = d().i(TokamakData.ENABLED) != 0;
         Component label = Component.translatable(on ? "gui.factoryascent.tokamak.stop" : "gui.factoryascent.tokamak.start");
         g.text(font, FactoryGui.fit(font, label, BTN_W - 16), BTN_X + 14, BTN_Y + 4, on ? 0xFFFFFFFF : 0xFF202020, false);
-        String temp = switch (state()) {
-            case RUNNING -> "150 MK";
-            case IGNITING -> Math.round(150 * d().i(TokamakData.PLASMA) / 1000f) + " MK";
-            default -> "";
-        };
-        if (!temp.isEmpty()) g.text(font, temp, VIEW_X + 4, VIEW_Y + VIEW_H - 11, 0xFFF0D0FF, false);
         Component info = state() == TokamakCoreBlockEntity.State.RUNNING
                 ? Component.translatable("gui.factoryascent.tokamak.output", EnergyUtil.format(d().i(TokamakData.RATE)))
                 : Component.translatable("gui.factoryascent.tokamak.charge", EnergyUtil.format(d().i(TokamakData.CHARGE_K) * 1000L),
@@ -146,6 +140,10 @@ public class TokamakScreen extends AbstractContainerScreen<TokamakMenu> {
             case DISRUPTED -> ChatFormatting.DARK_RED;
             default -> ChatFormatting.DARK_GRAY;
         };
+        if (state() == TokamakCoreBlockEntity.State.RUNNING || state() == TokamakCoreBlockEntity.State.IGNITING) {
+            int mk = Math.round(150 * d.i(TokamakData.PLASMA) / 1000f);
+            return Component.translatable("gui.factoryascent.tokamak.state_temp", Component.translatable(key), mk).withStyle(c);
+        }
         return Component.translatable(key).withStyle(c);
     }
 

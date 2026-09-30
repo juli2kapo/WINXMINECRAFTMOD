@@ -74,7 +74,7 @@ public final class PowerConfig {
         ALARM_TEMPERATURE = b.comment("Fission reactor: core temperature (C) at which the alarm sounds.")
                 .defineInRange("alarmTemperature", 900, 100, 100_000);
         MELTDOWN_EXPLOSION_POWER = b.comment("Fission reactor: explosion power of a meltdown (TNT is 4). Bigger cores add up to x2.")
-                .defineInRange("meltdownExplosionPower", 6.0, 0.0, 40.0);
+                .defineInRange("meltdownExplosionPower", 8.0, 0.0, 40.0);
         MELTDOWN_DESTROYS_BLOCKS = b.comment("Fission reactor: whether a meltdown explosion breaks blocks (false: it only hurts, and the core turns to corium).")
                 .define("meltdownDestroysBlocks", true);
         MELTDOWN_LEAVES_CORIUM = b.comment("Fission reactor: whether a meltdown leaves radioactive corium behind.")

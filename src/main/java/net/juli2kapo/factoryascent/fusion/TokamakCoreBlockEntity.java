@@ -181,6 +181,7 @@ public class TokamakCoreBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     private void burn(ServerLevel level) {
+        if (output.space() < outputPerTick()) return; // nowhere for the power to go: the plasma idles, burning no fuel
         int dTicks = PowerConfig.get(PowerConfig.FUSION_DEUTERIUM_SECONDS) * 20;
         int hTicks = PowerConfig.get(PowerConfig.FUSION_HELIUM3_SECONDS) * 20;
         if (deuteriumBurn <= 0) {

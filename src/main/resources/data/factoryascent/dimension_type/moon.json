@@ -20,6 +20,7 @@
     },
     "minecraft:visual/sky_color": "#000000",
     "minecraft:visual/fog_color": "#000000",
+    "minecraft:visual/sunrise_sunset_color": "#00000000",
     "minecraft:visual/star_brightness": 1.0,
     "minecraft:visual/sun_angle": 320.0,
     "minecraft:visual/moon_angle": 180.0,

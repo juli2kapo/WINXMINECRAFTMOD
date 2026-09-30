@@ -96,15 +96,15 @@ public final class PowerClient {
         long time = mc.level.getGameTime();
         int sickness = Radiation.sickness(s.dose());
         if (sickness >= 1) {
-            float a = (0.18f + 0.1f * sickness) * (0.6f + 0.4f * Mth.sin(time * 0.15f));
-            int w = g.guiWidth(), h = g.guiHeight();
-            int color = ((int) (a * 255) << 24) | 0x5FD13B;
-            for (int i = 0; i < 12; i++) {
-                int c = (((int) (a * 255 * (12 - i) / 12)) << 24) | (color & 0xFFFFFF);
-                g.fill(i, i, w - i, i + 1, c);
-                g.fill(i, h - i - 1, w - i, h - i, c);
-                g.fill(i, i, i + 1, h - i, c);
-                g.fill(w - i - 1, i, w - i, h - i, c);
+            // a sickly green glow creeping in from the screen edges, pulsing
+            float a = (0.22f + 0.12f * sickness) * (0.65f + 0.35f * Mth.sin(time * 0.15f));
+            int w = g.guiWidth(), h = g.guiHeight(), depth = 18 + 8 * sickness;
+            for (int i = 0; i < depth; i += 2) {
+                int c = ((int) (a * 255 * (depth - i) / depth) << 24) | 0x5FD13B;
+                g.fill(i, i, w - i, i + 2, c);
+                g.fill(i, h - i - 2, w - i, h - i, c);
+                g.fill(i, i + 2, i + 2, h - i - 2, c);
+                g.fill(w - i - 2, i + 2, w - i, h - i - 2, c);
             }
         }
         float shown = geiger ? s.exposure() : s.rate();

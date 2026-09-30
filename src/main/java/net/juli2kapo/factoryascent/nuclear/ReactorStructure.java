@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  */
 public record ReactorStructure(Error error, @Nullable BlockPos bad, int width, int height, int depth, int channels,
                                int controlRods, float neighbours, int[][] columns, List<BlockPos> ports,
-                               List<BlockPos> channelBlocks, BlockPos center) {
+                               List<BlockPos> channelBlocks, List<BlockPos> interiorBlocks, BlockPos center) {
     public static final int MIN = 3, MAX = 7;
 
     public enum Error { OK, TOO_SMALL, TOO_BIG, BAD_WALL, BAD_INTERIOR, NO_CHANNELS, TWO_CONTROLLERS }
@@ -43,7 +43,7 @@ public record ReactorStructure(Error error, @Nullable BlockPos bad, int width, i
     }
 
     static ReactorStructure invalid(Error error, @Nullable BlockPos bad, BlockPos center) {
-        return new ReactorStructure(error, bad, 0, 0, 0, 0, 0, 0, new int[0][0], List.of(), List.of(), center);
+        return new ReactorStructure(error, bad, 0, 0, 0, 0, 0, 0, new int[0][0], List.of(), List.of(), List.of(), center);
     }
 
     private static boolean isWall(Level level, BlockPos p) {
@@ -76,6 +76,7 @@ public record ReactorStructure(Error error, @Nullable BlockPos bad, int width, i
         int[][] columns = new int[w - 2][depth - 2];
         List<BlockPos> ports = new ArrayList<>();
         List<BlockPos> channelBlocks = new ArrayList<>();
+        List<BlockPos> interiorBlocks = new ArrayList<>();
         for (int a = 0; a < w; a++) {
             for (int b = 0; b < h; b++) {
                 for (int c = 0; c < depth; c++) {
@@ -90,6 +91,7 @@ public record ReactorStructure(Error error, @Nullable BlockPos bad, int width, i
                         if (s.getBlock() instanceof ReactorPortBlock) ports.add(p.immutable());
                         continue;
                     }
+                    interiorBlocks.add(p.immutable());
                     if (s.getBlock() instanceof ReactorPartBlock part && part.part() == ReactorPartBlock.Part.FUEL_CHANNEL) {
                         channels++;
                         channelBlocks.add(p.immutable());
@@ -109,6 +111,6 @@ public record ReactorStructure(Error error, @Nullable BlockPos bad, int width, i
         }
         if (channels == 0) return invalid(Error.NO_CHANNELS, null, center);
         return new ReactorStructure(Error.OK, null, w, h, depth, channels, rods, touching / (float) channels, columns,
-                ports, channelBlocks, center);
+                ports, channelBlocks, interiorBlocks, center);
     }
 }

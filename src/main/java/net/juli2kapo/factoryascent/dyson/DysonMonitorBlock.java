@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Dyson Monitor: a console with a holographic projector on top that shows your team's swarm
  * around a tiny sun. Right-click opens the Dyson Monitor screen (progress, collectors, power,
- * milestones and a live preview of the sphere).
+ * milestones and a live preview of the cube).
  */
 public class DysonMonitorBlock extends BaseEntityBlock implements DescribedBlock {
     public static final MapCodec<DysonMonitorBlock> CODEC = simpleCodec(DysonMonitorBlock::new);
@@ -70,6 +70,7 @@ public class DysonMonitorBlock extends BaseEntityBlock implements DescribedBlock
     @Override
     public void describe(Consumer<Component> tooltip) {
         tooltip.accept(Component.translatable("tooltip.factoryascent.dyson_monitor").withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.dyson_monitor_square").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
     }
 
     @Override

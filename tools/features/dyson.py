@@ -1,4 +1,4 @@
-"""The Dyson Sphere (Quantum age capstone): Stellar Alloy, Solar Collectors, the Mass Driver (breech +
+"""The Dyson Cube (Quantum age capstone): Stellar Alloy, Solar Collectors, the Mass Driver (breech +
 rails, coils and shots drawn by a renderer), the Dyson Receiver (3x3 rectenna, sun-tracking dish drawn
 by a renderer), the Dyson Monitor (screen + hologram); recipes, advancements (milestones 10/25/50/100%)
 and lang (English + Spanish). Textures: dyson_textures.py."""
@@ -148,8 +148,9 @@ def lang(L):
       "La energía sale por abajo (y arriba) del bloque central")
     L(f"{T}.dyson_receiver_array", "Eight of these around a Dyson Receiver make its 3×3 rectenna",
       "Ocho de estas alrededor de un receptor Dyson forman su rectena de 3×3")
-    L(f"{T}.dyson_monitor", "Shows your team's Dyson Sphere: a hologram on top, and progress, power and milestones on right-click",
-      "Muestra la esfera Dyson de tu equipo: un holograma encima, y progreso, energía e hitos con clic derecho")
+    L(f"{T}.dyson_monitor_square", "It's Minecraft. The sun is square.", "Es Minecraft. El sol es cuadrado.")
+    L(f"{T}.dyson_monitor", "Shows your team's Dyson Cube: a hologram on top, and progress, power and milestones on right-click",
+      "Muestra el cubo Dyson de tu equipo: un holograma encima, y progreso, energía e hitos con clic derecho")
 
     L(f"{M}.mass_driver", "Mass Driver · %s/%s collectors · coils %s%% · %s",
       "Acelerador de masas · %s/%s colectores · bobinas %s%% · %s")
@@ -158,7 +159,7 @@ def lang(L):
     L(f"{M}.mass_driver.incomplete", "needs %s rails stacked on top", "faltan %s rieles apilados encima")
     L(f"{M}.mass_driver.empty", "load Solar Collectors", "carga colectores solares")
     L(f"{M}.mass_driver.blocked", "the sky above the rails is blocked", "el cielo sobre los rieles está tapado")
-    L(f"{M}.mass_driver.complete", "your Dyson Sphere is complete!", "¡tu esfera Dyson está completa!")
+    L(f"{M}.mass_driver.complete", "your Dyson Cube is complete!", "¡tu cubo Dyson está completo!")
     L(f"{M}.mass_driver.unowned", "right-click it with collectors to claim it", "haz clic derecho con colectores para reclamarlo")
     L(f"{M}.dyson_receiver.incomplete", "Dyson Receiver: needs 8 Receiver Arrays around it",
       "Receptor Dyson: faltan 8 matrices receptoras alrededor")
@@ -171,11 +172,11 @@ def lang(L):
       "Receptor Dyson: %s FE/t de %s colectores · sol %s%%")
     L(f"{M}.dyson.first", "☀ Your first Solar Collector reached solar orbit! Look at the sun…",
       "☀ ¡Tu primer colector solar llegó a la órbita solar! Mira al sol…")
-    L(f"{M}.dyson.milestone", "☀ Dyson Sphere %s%% complete (%s/%s collectors)",
-      "☀ Esfera Dyson completa al %s%% (%s/%s colectores)")
+    L(f"{M}.dyson.milestone", "☀ Dyson Cube %s%% complete (%s/%s collectors)",
+      "☀ Cubo Dyson completo al %s%% (%s/%s colectores)")
     L(f"{M}.dyson.pad_arrived", "A Solar Collector reached solar orbit (%s/%s)", "Un colector solar llegó a la órbita solar (%s/%s)")
-    L(f"{M}.dyson.full", "Your Dyson Sphere is already complete: the collector burns up in the sun",
-      "Tu esfera Dyson ya está completa: el colector se quema en el sol")
+    L(f"{M}.dyson.full", "Your Dyson Cube is already complete: the collector burns up in the sun",
+      "Tu cubo Dyson ya está completo: el colector se quema en el sol")
     L(f"{M}.dyson.info", "Team %s: %s/%s Solar Collectors (%s%%), %s FE/t in full sun",
       "Equipo %s: %s/%s colectores solares (%s%%), %s FE/t a pleno sol")
 
@@ -187,16 +188,16 @@ def lang(L):
     L(f"{G}.received", "Receivers take", "Recibido")
     L(f"{G}.milestones", "Milestones", "Hitos")
     L(f"{G}.milestone.first", "First collector in orbit", "Primer colector en órbita")
-    L(f"{G}.milestone.10", "10%: a glinting ring", "10%: un anillo brillante")
-    L(f"{G}.milestone.25", "25%: a swarm of rings", "25%: un enjambre de anillos")
-    L(f"{G}.milestone.50", "50%: the lattice closes in", "50%: la estructura se cierra")
+    L(f"{G}.milestone.10", "10%: a glinting square orbit", "10%: una órbita cuadrada")
+    L(f"{G}.milestone.25", "25%: a swarm of squares", "25%: un enjambre de cuadrados")
+    L(f"{G}.milestone.50", "50%: the cube frame closes in", "50%: el armazón cúbico se cierra")
     L(f"{G}.milestone.100", "100%: Type II civilization", "100%: civilización de tipo II")
-    L(f"{G}.hint_empty", "Build Solar Collectors and fire them at the sun with a Mass Driver (or a Launch Pad) to start your sphere.",
-      "Fabrica colectores solares y dispáralos al sol con un acelerador de masas (o una plataforma de lanzamiento) para empezar tu esfera.")
+    L(f"{G}.hint_empty", "Build Solar Collectors and fire them at the sun with a Mass Driver (or a Launch Pad) to start your cube.",
+      "Fabrica colectores solares y dispáralos al sol con un acelerador de masas (o una plataforma de lanzamiento) para empezar tu cubo.")
     L(f"{G}.hint", "Every collector adds power to your Dyson Receivers. Look at the sun: your swarm grows there.",
-      "Cada colector suma energía a tus receptores Dyson. Mira al sol: tu enjambre crece ahí.")
-    L(f"{G}.hint_complete", "The sphere is closed. The whole star works for your factory.",
-      "La esfera está cerrada. Toda la estrella trabaja para tu fábrica.")
+      "Cada colector suma energía a tus receptores Dyson. Mira al sol: tu cubo crece ahí.")
+    L(f"{G}.hint_complete", "The cube is closed. The whole (square) star works for your factory.",
+      "El cubo está cerrado. Toda la estrella (cuadrada) trabaja para tu fábrica.")
 
 
 def code_advancement(ctx, key, parent, icon, frame, en, es):
@@ -284,8 +285,8 @@ def generate(ctx):
 
     # ---------------------------------------------------------------- advancements (branch of age_quantum)
     ctx.advancement("dyson_stellar", "age_quantum", SA, [SA], "Starforged",
-                    "Fuse Stellar Alloy in the Plasma Forge: the first step towards a Dyson Sphere",
-                    "Forjado en las estrellas", "Funde aleación estelar en la forja de plasma: el primer paso hacia una esfera Dyson")
+                    "Fuse Stellar Alloy in the Plasma Forge: the first step towards a Dyson Cube",
+                    "Forjado en las estrellas", "Funde aleación estelar en la forja de plasma: el primer paso hacia un cubo Dyson")
     ctx.advancement("dyson_mass_driver", "dyson_stellar", "mass_driver", ["mass_driver"], "Next Stop: the Sun",
                     "Build a Mass Driver", "Próxima parada: el sol", "Construye un acelerador de masas")
     code_advancement(ctx, "dyson_first", "dyson_stellar", "dyson_collector", "goal",
@@ -295,16 +296,16 @@ def generate(ctx):
                      ("Sunbeam", "Power a Dyson Receiver with your team's swarm"),
                      ("Rayo de sol", "Alimenta un receptor Dyson con el enjambre de tu equipo"))
     code_advancement(ctx, "dyson_10", "dyson_first", "dyson_collector", "task",
-                     ("Swarm Seeded", "Your Dyson Sphere is 10% complete: a ring of collectors glints around the sun"),
-                     ("Enjambre sembrado", "Tu esfera Dyson está completa al 10%: un anillo de colectores brilla alrededor del sol"))
+                     ("Swarm Seeded", "Your Dyson Cube is 10% complete: a square orbit of collectors glints around the sun"),
+                     ("Enjambre sembrado", "Tu cubo Dyson está completo al 10%: una órbita cuadrada de colectores brilla alrededor del sol"))
     code_advancement(ctx, "dyson_25", "dyson_10", "mass_driver_rail", "task",
-                     ("Eclipse Season", "Your Dyson Sphere is 25% complete: rings of collectors cross the sun"),
-                     ("Temporada de eclipses", "Tu esfera Dyson está completa al 25%: anillos de colectores cruzan el sol"))
+                     ("Eclipse Season", "Your Dyson Cube is 25% complete: square orbits of collectors cross the sun"),
+                     ("Temporada de eclipses", "Tu cubo Dyson está completo al 25%: órbitas cuadradas de colectores cruzan el sol"))
     code_advancement(ctx, "dyson_50", "dyson_25", "dyson_monitor", "goal",
-                     ("Half a Star", "Your Dyson Sphere is 50% complete: a lattice closes around the sun"),
-                     ("Media estrella", "Tu esfera Dyson está completa al 50%: una estructura se cierra alrededor del sol"))
+                     ("Half a Star", "Your Dyson Cube is 50% complete: a cube frame closes around the sun"),
+                     ("Media estrella", "Tu cubo Dyson está completo al 50%: un armazón cúbico se cierra alrededor del sol"))
     code_advancement(ctx, "dyson_100", "dyson_50", "dyson_receiver", "challenge",
-                     ("Type II Civilization", "Complete a Dyson Sphere: the whole light of the sun is yours"),
-                     ("Civilización de tipo II", "Completa una esfera Dyson: toda la luz del sol es tuya"))
+                     ("Type II Civilization", "Complete a Dyson Cube: the whole light of the sun is yours"),
+                     ("Civilización de tipo II", "Completa un cubo Dyson: toda la luz del sol es tuya"))
 
     lang(ctx.lang)

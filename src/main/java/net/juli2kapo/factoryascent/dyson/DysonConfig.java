@@ -3,7 +3,7 @@ package net.juli2kapo.factoryascent.dyson;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
- * Balance knobs of the Dyson Sphere megaproject, in their own server config file
+ * Balance knobs of the Dyson Cube megaproject, in their own server config file
  * ({@code factoryascent-dyson-server.toml}, synced to clients like the main config).
  */
 public final class DysonConfig {
@@ -17,7 +17,7 @@ public final class DysonConfig {
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
         b.push("dyson");
-        SWARM_TARGET = b.comment("Solar Collectors a team needs in solar orbit for a complete Dyson Sphere (100%).")
+        SWARM_TARGET = b.comment("Solar Collectors a team needs in solar orbit for a complete Dyson Cube (100%).")
                 .defineInRange("swarmTarget", 1000, 10, 1_000_000);
         FE_PER_COLLECTOR = b.comment("FE per tick each collector beams down in full sunlight, shared by the team's Dyson Receivers.")
                 .defineInRange("fePerCollector", 64, 1, 1_000_000);

@@ -19,7 +19,7 @@ import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlers
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
- * Client side of the Dyson Sphere (its own {@code @Mod} class for the client dist): the swarm in
+ * Client side of the Dyson Cube (its own {@code @Mod} class for the client dist): the swarm in
  * the sky ({@link DysonSky}), the Mass Driver's coils and shots, the Dyson Receiver's sun-tracking
  * dish and beam, the Dyson Monitor's hologram ({@link DysonRenderers}) and its screen
  * ({@link DysonScreen}). Knows the size of the local player's team swarm (sent by the server).

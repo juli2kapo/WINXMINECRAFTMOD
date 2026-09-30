@@ -2,6 +2,7 @@
   "attributes": {
     "minecraft:visual/sky_color": "#000000",
     "minecraft:visual/fog_color": "#120c08",
+    "minecraft:visual/sunrise_sunset_color": "#00000000",
     "minecraft:visual/ambient_particles": [
       {
         "particle": {

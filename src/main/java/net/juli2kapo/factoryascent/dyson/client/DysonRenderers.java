@@ -231,7 +231,7 @@ final class DysonRenderers {
         int target;
     }
 
-    /** A turning hologram of the team's sphere floats over the Dyson Monitor. */
+    /** A turning hologram of the team's cube floats over the Dyson Monitor. */
     static final class MonitorRenderer implements BlockEntityRenderer<DysonMonitorBlockEntity, MonitorState> {
         private static final float SCALE = 0.19f;
 
