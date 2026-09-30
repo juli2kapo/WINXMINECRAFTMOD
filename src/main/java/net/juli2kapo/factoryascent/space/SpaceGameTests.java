@@ -93,32 +93,112 @@ public final class SpaceGameTests {
         });
     }
 
-    /** A powered sealer makes a breathable bubble (no suit needed inside); unpowered, the bubble is gone. */
+    /** A glass box from (1,1,1) to (7,5,7) around the arena's middle: 5x3x5 of air inside. */
+    private static void glassBox(GameTestHelper h) {
+        for (int x = 1; x <= 7; x++) {
+            for (int y = 1; y <= 5; y++) {
+                for (int z = 1; z <= 7; z++) {
+                    boolean shell = x == 1 || x == 7 || y == 1 || y == 5 || z == 1 || z == 7;
+                    h.setBlock(new BlockPos(x, y, z), shell ? net.minecraft.world.level.block.Blocks.GLASS
+                            : net.minecraft.world.level.block.Blocks.AIR);
+                }
+            }
+        }
+    }
+
+    /**
+     * A powered sealer fills its sealed room with air (no suit needed inside); unpowered, or once
+     * the room is breached and the air has leaked out, there is none.
+     */
     public static void sealerMakesAir(GameTestHelper h) {
-        BlockPos pos = new BlockPos(4, 1, 4);
+        glassBox(h);
+        BlockPos pos = new BlockPos(4, 2, 4);
         h.setBlock(pos, SpaceContent.OXYGEN_SEALER.get());
         OxygenSealerBlockEntity be = h.getBlockEntity(pos, OxygenSealerBlockEntity.class);
-        Pig inside = h.spawnWithNoFreeWill(EntityTypes.PIG, pos.east(2).above());
+        be.setLimitForTest(200); // the arena around the box is closed too: a breach must count as open space
+        Pig inside = h.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(2, 2, 2));
+        BlockPos abs = h.absolutePos(pos);
         h.runAfterDelay(3, () -> {
             h.assertTrue(!be.running(), "an unpowered sealer must not run");
-            h.assertTrue(SpaceRules.breathing(inside, true) == SpaceRules.Breath.NONE, "no bubble without power");
+            h.assertTrue(SpaceRules.breathing(inside, true) == SpaceRules.Breath.NONE, "no air without power");
             be.fillEnergy();
+            be.rescanSoon();
         });
         h.runAfterDelay(6, () -> {
             h.assertTrue(be.running(), "a powered sealer must run");
-            BlockPos abs = h.absolutePos(pos);
-            h.assertTrue(SpaceRules.inOxygenBubble(h.getLevel(), Vec3.atCenterOf(abs.east(5))), "5 blocks away is inside the bubble");
-            int radius = SpaceConfig.get(SpaceConfig.SEALER_RADIUS);
-            h.assertTrue(!SpaceRules.inOxygenBubble(h.getLevel(), Vec3.atCenterOf(abs.east(radius + 3))), "beyond the radius is outside");
-            h.assertTrue(SpaceRules.breathing(inside, true) == SpaceRules.Breath.BUBBLE, "inside the bubble, no suit needed");
+            h.assertTrue(be.sealed(), "the glass box is a sealed room: " + be.status().getString());
+            h.assertTrue(be.volume() == 5 * 3 * 5 - 1, "the room is the box's inside minus the sealer, got " + be.volume());
+            h.assertTrue(SpaceRules.inOxygenBubble(h.getLevel(), Vec3.atCenterOf(abs.offset(2, 2, 2))), "a corner of the room has air");
+            h.assertTrue(!SpaceRules.inOxygenBubble(h.getLevel(), Vec3.atCenterOf(abs.offset(4, 0, 0))), "outside the glass there is none");
+            h.assertTrue(SpaceRules.breathing(inside, true) == SpaceRules.Breath.BUBBLE, "inside the room, no suit needed");
             h.assertTrue(SpaceEvents.tickBreathing(inside, true) == SpaceRules.Breath.BUBBLE && inside.getHealth() == inside.getMaxHealth(),
-                    "breathing in the bubble must not hurt");
+                    "breathing in the room must not hurt");
+            h.destroyBlock(new BlockPos(7, 3, 4)); // a hole in the east wall
+            be.rescanSoon();
+        });
+        h.runAfterDelay(9, () -> {
+            h.assertTrue(be.leaking(), "a breached room leaks: " + be.status().getString());
+            h.assertTrue(SpaceRules.inOxygenBubble(h.getLevel(), Vec3.atCenterOf(abs.offset(-2, 0, -2))), "while leaking there is still some air");
+        });
+        int leak = SpaceConfig.get(SpaceConfig.AIR_LEAK_SECONDS) * 20;
+        h.runAfterDelay(12 + leak, () -> {
+            h.assertTrue(!be.sealed() && !be.leaking(), "after the leak the room is in vacuum");
+            h.assertTrue(!SpaceRules.inOxygenBubble(h.getLevel(), inside.getEyePosition()), "no air left in a breached room");
+            h.setBlock(new BlockPos(7, 3, 4), net.minecraft.world.level.block.Blocks.GLASS);
+            be.rescanSoon();
+        });
+        h.runAfterDelay(16 + leak, () -> {
+            h.assertTrue(be.sealed(), "patching the hole seals the room again");
             h.destroyBlock(pos);
         });
-        h.runAfterDelay(8, () -> {
-            h.assertTrue(!SpaceRules.inOxygenBubble(h.getLevel(), inside.getEyePosition()), "a removed sealer leaves no bubble");
+        h.runAfterDelay(18 + leak, () -> {
+            h.assertTrue(!SpaceRules.inOxygenBubble(h.getLevel(), inside.getEyePosition()), "a removed sealer leaves no air");
             h.succeed();
         });
+    }
+
+    /** The flood fill itself: a closed box is sealed, a hole or an over-large room is not; doors and slabs hold air. */
+    public static void sealedRoomFloodFill(GameTestHelper h) {
+        // a pure 4x4x4 room of "air" inside walls at 0 and 5
+        java.util.function.Function<BlockPos, net.juli2kapo.factoryascent.space.station.AirVolume.Cell> box = p ->
+                p.getX() <= 0 || p.getX() >= 5 || p.getY() <= 0 || p.getY() >= 5 || p.getZ() <= 0 || p.getZ() >= 5
+                        ? net.juli2kapo.factoryascent.space.station.AirVolume.Cell.WALL
+                        : net.juli2kapo.factoryascent.space.station.AirVolume.Cell.OPEN;
+        var sealed = net.juli2kapo.factoryascent.space.station.AirVolume.flood(box, List.of(new BlockPos(2, 2, 2)), 1000);
+        h.assertTrue(sealed.sealed() && sealed.size() == 64, "a closed 4x4x4 room is sealed with 64 cells, got " + sealed.size());
+        var small = net.juli2kapo.factoryascent.space.station.AirVolume.flood(box, List.of(new BlockPos(2, 2, 2)), 63);
+        h.assertTrue(!small.sealed(), "a room bigger than the limit doesn't count as sealed");
+        BlockPos hole = new BlockPos(5, 2, 2);
+        java.util.function.Function<BlockPos, net.juli2kapo.factoryascent.space.station.AirVolume.Cell> holed = p -> {
+            if (p.equals(hole)) return net.juli2kapo.factoryascent.space.station.AirVolume.Cell.OPEN;
+            if (p.getX() > 5) return p.getX() > 9 ? net.juli2kapo.factoryascent.space.station.AirVolume.Cell.VOID
+                    : net.juli2kapo.factoryascent.space.station.AirVolume.Cell.OPEN;
+            return box.apply(p);
+        };
+        var breached = net.juli2kapo.factoryascent.space.station.AirVolume.flood(holed, List.of(new BlockPos(2, 2, 2)), 100_000);
+        h.assertTrue(!breached.sealed(), "a hole to open space breaches the room");
+        var leaks = net.juli2kapo.factoryascent.space.station.AirVolume.breaches(sealed.cells(), holed, 8);
+        h.assertTrue(leaks.size() == 1 && leaks.get(0)[1].equals(hole), "the breach is found at the hole");
+        var none = net.juli2kapo.factoryascent.space.station.AirVolume.flood(p -> net.juli2kapo.factoryascent.space.station.AirVolume.Cell.WALL,
+                List.of(BlockPos.ZERO), 10);
+        h.assertTrue(!none.sealed(), "a sealer walled in on every side has no room to fill");
+
+        // what holds air in the world
+        var level = h.getLevel();
+        BlockPos door = new BlockPos(2, 1, 2);
+        h.setBlock(door, net.juli2kapo.factoryascent.space.station.StationContent.AIRLOCK_DOOR.get());
+        BlockPos abs = h.absolutePos(door);
+        h.assertTrue(net.juli2kapo.factoryascent.space.station.AirVolume.airtight(level.getBlockState(abs), level, abs), "a closed airlock holds air");
+        h.setBlock(door, level.getBlockState(abs).setValue(net.minecraft.world.level.block.DoorBlock.OPEN, true));
+        h.assertTrue(!net.juli2kapo.factoryascent.space.station.AirVolume.airtight(level.getBlockState(abs), level, abs), "an open airlock lets air through");
+        BlockPos slab = new BlockPos(5, 1, 5);
+        h.setBlock(slab, net.juli2kapo.factoryascent.space.station.StationContent.HULLS.get("white").get(1).get());
+        h.assertTrue(net.juli2kapo.factoryascent.space.station.AirVolume.airtight(level.getBlockState(h.absolutePos(slab)), level, h.absolutePos(slab)),
+                "hull slabs hold air");
+        h.setBlock(slab, net.minecraft.world.level.block.Blocks.TORCH);
+        h.assertTrue(!net.juli2kapo.factoryascent.space.station.AirVolume.airtight(level.getBlockState(h.absolutePos(slab)), level, h.absolutePos(slab)),
+                "a torch doesn't");
+        h.succeed();
     }
 
     private static LaunchControllerBlockEntity pad(GameTestHelper h, BlockPos c) {

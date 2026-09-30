@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:centrifuging",
+  "ingredients": [
+    {
+      "ingredient": "#c:dusts/uranium",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "factoryascent:enriched_uranium"
+  },
+  "time": 200,
+  "min_grade": 5,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:depleted_uranium",
+      "count": 2
+    },
+    "chance": 1.0
+  }
+}

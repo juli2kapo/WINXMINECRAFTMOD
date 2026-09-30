@@ -1,0 +1,215 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "casing": "factoryascent:block/reactor_casing",
+    "face": "factoryascent:block/reactor_port_redstone",
+    "detail": "factoryascent:block/reactor_port_redstone_detail",
+    "particle": "factoryascent:block/reactor_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        -1.2
+      ],
+      "to": [
+        11,
+        11,
+        0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            1.2,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            1.2,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            6,
+            1.2
+          ]
+        },
+        "down": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            6,
+            1.2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        6.5,
+        -1.8
+      ],
+      "to": [
+        9.5,
+        9.5,
+        -1.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ]
+        },
+        "south": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ]
+        },
+        "east": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            0.6,
+            3.0
+          ]
+        },
+        "west": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            0.6,
+            3.0
+          ]
+        },
+        "up": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.6
+          ]
+        },
+        "down": {
+          "texture": "#detail",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.6
+          ]
+        }
+      }
+    }
+  ]
+}

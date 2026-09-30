@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " S ",
+    "SGS",
+    " S "
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "G": "minecraft:tinted_glass"
+  },
+  "result": {
+    "id": "factoryascent:station_window",
+    "count": 4
+  }
+}

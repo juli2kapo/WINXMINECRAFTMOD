@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "H  ",
+    "HH ",
+    "HHH"
+  ],
+  "key": {
+    "H": "factoryascent:station_hull_dark"
+  },
+  "result": {
+    "id": "factoryascent:station_hull_dark_stairs",
+    "count": 4
+  }
+}

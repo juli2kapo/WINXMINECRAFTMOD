@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "factoryascent:block/tokamak_core"
+    },
+    "active=true": {
+      "model": "factoryascent:block/tokamak_core_on"
+    }
+  }
+}

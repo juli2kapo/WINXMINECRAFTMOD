@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:raw_uranium"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:raw_uranium"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_uranium.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_uranium.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_industrial"
+}

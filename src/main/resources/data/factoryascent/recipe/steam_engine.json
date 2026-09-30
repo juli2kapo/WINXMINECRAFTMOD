@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CGC",
+    "PMP",
+    "BFB"
+  ],
+  "key": {
+    "C": "#c:plates/copper",
+    "G": "#c:gears/steel",
+    "P": "minecraft:piston",
+    "M": "factoryascent:machine_frame",
+    "B": "minecraft:bricks",
+    "F": "minecraft:furnace"
+  },
+  "result": {
+    "id": "factoryascent:steam_engine"
+  }
+}

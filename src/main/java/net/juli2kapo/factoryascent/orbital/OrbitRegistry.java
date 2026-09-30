@@ -26,6 +26,12 @@ public final class OrbitRegistry extends SavedData {
     public record Owned(String team, Satellite satellite) {}
 
     private final Map<String, List<Satellite>> byTeam = new HashMap<>();
+    /** Bumped on every launch and removal, so the sky sync knows when to resend (see {@link SatelliteSky}). */
+    private static final java.util.concurrent.atomic.AtomicInteger CHANGES = new java.util.concurrent.atomic.AtomicInteger();
+
+    public static int changes() {
+        return CHANGES.get();
+    }
 
     private OrbitRegistry(Map<String, List<Satellite>> stored) {
         stored.forEach((team, list) -> byTeam.put(team, new ArrayList<>(list)));
@@ -39,6 +45,7 @@ public final class OrbitRegistry extends SavedData {
 
     public void add(String team, Satellite satellite) {
         byTeam.computeIfAbsent(team, k -> new ArrayList<>()).add(satellite);
+        CHANGES.incrementAndGet();
         setDirty();
     }
 
@@ -49,6 +56,7 @@ public final class OrbitRegistry extends SavedData {
                 Satellite s = it.next();
                 if (s.id().equals(id)) {
                     it.remove();
+                    CHANGES.incrementAndGet();
                     setDirty();
                     return Optional.of(new Owned(entry.getKey(), s));
                 }

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PWP",
+    "GCG",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/bronze",
+    "W": "#c:wires/copper",
+    "G": "#c:gears/iron",
+    "C": "minecraft:copper_block"
+  },
+  "result": {
+    "id": "factoryascent:kinetic_dynamo"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SAS",
+    "ADA",
+    "SAS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "A": "#c:plates/aluminum",
+    "D": "minecraft:light_gray_dye"
+  },
+  "result": {
+    "id": "factoryascent:station_hull_gray",
+    "count": 8
+  }
+}

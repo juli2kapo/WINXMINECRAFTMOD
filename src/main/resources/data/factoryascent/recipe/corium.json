@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "WMW",
+    "WWW"
+  ],
+  "key": {
+    "W": "factoryascent:nuclear_waste",
+    "M": "minecraft:magma_block"
+  },
+  "result": {
+    "id": "factoryascent:corium"
+  }
+}

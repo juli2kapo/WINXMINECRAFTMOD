@@ -183,12 +183,24 @@ public final class Orbit {
 
     // ---------------------------------------------------------------- gravity
 
-    /** Low gravity (and softer falls) while in orbit; normal elsewhere. */
+    /** Gravity of a dimension as a fraction of normal: orbit and the planets are lighter (config). */
+    public static double gravityFor(ResourceKey<Level> dimension) {
+        if (dimension.equals(SpaceRules.ORBIT)) return SpaceConfig.orbitGravity();
+        net.juli2kapo.factoryascent.space.planet.Planet planet = net.juli2kapo.factoryascent.space.planet.Planet.of(dimension);
+        return planet != null ? planet.gravity() : 1.0;
+    }
+
+    /**
+     * Low gravity (and softer falls) in orbit and on the planets; normal elsewhere. Magnetic Boots
+     * hold their wearer to the floor under them at normal gravity (see
+     * {@link net.juli2kapo.factoryascent.space.station.MagneticBoots}).
+     */
     static void applyGravity(LivingEntity entity) {
-        boolean inOrbit = entity.level().dimension() == SpaceRules.ORBIT;
-        double amount = SpaceConfig.get(SpaceConfig.ORBIT_GRAVITY) - 1.0;
-        modifier(entity.getAttribute(Attributes.GRAVITY), inOrbit, amount);
-        modifier(entity.getAttribute(Attributes.FALL_DAMAGE_MULTIPLIER), inOrbit, amount);
+        double g = gravityFor(entity.level().dimension());
+        double fall = g;
+        g = net.juli2kapo.factoryascent.space.station.MagneticBoots.gravity(entity, g);
+        modifier(entity.getAttribute(Attributes.GRAVITY), g != 1.0, g - 1.0);
+        modifier(entity.getAttribute(Attributes.FALL_DAMAGE_MULTIPLIER), fall != 1.0, fall - 1.0);
     }
 
     private static void modifier(@Nullable AttributeInstance attribute, boolean on, double amount) {

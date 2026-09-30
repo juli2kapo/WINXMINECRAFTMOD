@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SQS",
+    "SSS"
+  ],
+  "key": {
+    "S": "factoryascent:superconductor_cable",
+    "Q": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "factoryascent:fusion_magnet",
+    "count": 2
+  }
+}

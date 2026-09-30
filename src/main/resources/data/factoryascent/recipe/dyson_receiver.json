@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SDS",
+    "AFA",
+    "SES"
+  ],
+  "key": {
+    "S": "factoryascent:stellar_alloy_ingot",
+    "D": "factoryascent:ground_station",
+    "A": "factoryascent:advanced_circuit",
+    "F": "factoryascent:advanced_machine_frame",
+    "E": "factoryascent:quantum_energy_cell"
+  },
+  "result": {
+    "id": "factoryascent:dyson_receiver"
+  }
+}

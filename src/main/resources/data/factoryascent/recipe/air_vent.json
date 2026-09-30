@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SBS",
+    "BMB",
+    "SCS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "B": "minecraft:iron_bars",
+    "M": "factoryascent:motor",
+    "C": "factoryascent:basic_circuit"
+  },
+  "result": {
+    "id": "factoryascent:air_vent"
+  }
+}

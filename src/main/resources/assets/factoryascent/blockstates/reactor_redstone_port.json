@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "factoryascent:block/reactor_redstone_port"
+    },
+    "facing=east": {
+      "model": "factoryascent:block/reactor_redstone_port",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "factoryascent:block/reactor_redstone_port",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "factoryascent:block/reactor_redstone_port",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "factoryascent:block/reactor_redstone_port",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "factoryascent:block/reactor_redstone_port",
+      "x": 90
+    }
+  }
+}

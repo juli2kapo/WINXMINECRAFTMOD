@@ -40,7 +40,7 @@ public class OxygenMachineBlock extends BaseEntityBlock implements DescribedBloc
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
-    public enum Kind { COMPRESSOR, SEALER }
+    public enum Kind { COMPRESSOR, SEALER, VENT }
 
     private final Kind kind;
 
@@ -52,10 +52,15 @@ public class OxygenMachineBlock extends BaseEntityBlock implements DescribedBloc
 
     private static final MapCodec<OxygenMachineBlock> COMPRESSOR_CODEC = simpleCodec(p -> new OxygenMachineBlock(p, Kind.COMPRESSOR));
     private static final MapCodec<OxygenMachineBlock> SEALER_CODEC = simpleCodec(p -> new OxygenMachineBlock(p, Kind.SEALER));
+    private static final MapCodec<OxygenMachineBlock> VENT_CODEC = simpleCodec(p -> new OxygenMachineBlock(p, Kind.VENT));
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return kind == Kind.COMPRESSOR ? COMPRESSOR_CODEC : SEALER_CODEC;
+        return switch (kind) {
+            case COMPRESSOR -> COMPRESSOR_CODEC;
+            case SEALER -> SEALER_CODEC;
+            case VENT -> VENT_CODEC;
+        };
     }
 
     public Kind kind() {
@@ -70,6 +75,14 @@ public class OxygenMachineBlock extends BaseEntityBlock implements DescribedBloc
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** A wall opening or a block placed next to a sealer changes its room: measure again soon. */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block neighbor,
+                                   net.minecraft.world.level.redstone.@Nullable Orientation orientation, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, neighbor, orientation, movedByPiston);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof OxygenSealerBlockEntity sealer) sealer.rescanSoon();
     }
 
     @Override
@@ -130,10 +143,14 @@ public class OxygenMachineBlock extends BaseEntityBlock implements DescribedBloc
             tooltip.accept(Component.translatable("tooltip.factoryascent.oxygen_compressor_use",
                     SpaceConfig.get(SpaceConfig.COMPRESSOR_ENERGY_PER_SECOND)).withStyle(ChatFormatting.DARK_AQUA));
         } else {
-            tooltip.accept(Component.translatable("tooltip.factoryascent.oxygen_sealer",
-                    SpaceConfig.get(SpaceConfig.SEALER_RADIUS)).withStyle(ChatFormatting.GRAY));
-            tooltip.accept(Component.translatable("tooltip.factoryascent.oxygen_sealer_use",
-                    SpaceConfig.get(SpaceConfig.SEALER_ENERGY)).withStyle(ChatFormatting.DARK_AQUA));
+            int limit = SpaceConfig.airVolumeLimit(), energy = SpaceConfig.get(SpaceConfig.SEALER_ENERGY);
+            if (kind == Kind.VENT) {
+                limit = Math.max(8, limit / 4);
+                energy /= 4;
+            }
+            tooltip.accept(Component.translatable("tooltip.factoryascent.oxygen_sealer", limit).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.translatable("tooltip.factoryascent.oxygen_sealer_how").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.accept(Component.translatable("tooltip.factoryascent.oxygen_sealer_use", energy).withStyle(ChatFormatting.DARK_AQUA));
         }
     }
 }

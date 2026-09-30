@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "factoryascent:vacuum"
+    "factoryascent:vacuum",
+    "factoryascent:radiation"
   ]
 }

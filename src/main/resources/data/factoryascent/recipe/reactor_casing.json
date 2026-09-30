@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LTL",
+    "TCT",
+    "LTL"
+  ],
+  "key": {
+    "L": "#c:plates/lead",
+    "T": "#c:plates/titanium",
+    "C": "minecraft:gray_concrete"
+  },
+  "result": {
+    "id": "factoryascent:reactor_casing",
+    "count": 8
+  }
+}

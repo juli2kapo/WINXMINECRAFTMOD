@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SHS",
+    "HCH",
+    "SHS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "H": "minecraft:hopper",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:docking_port"
+  }
+}

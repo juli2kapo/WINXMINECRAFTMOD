@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " G ",
+    "GMG",
+    " C "
+  ],
+  "key": {
+    "G": "minecraft:glowstone_dust",
+    "M": "minecraft:map",
+    "C": "factoryascent:basic_circuit"
+  },
+  "result": {
+    "id": "factoryascent:star_chart"
+  }
+}

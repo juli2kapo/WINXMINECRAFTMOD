@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "HHH",
+    " T "
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "H": "factoryascent:helium_3"
+  },
+  "result": {
+    "id": "factoryascent:helium_3_fuel_cell"
+  }
+}

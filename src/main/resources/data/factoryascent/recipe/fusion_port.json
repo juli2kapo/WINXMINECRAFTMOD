@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:fusion_casing",
+    "factoryascent:superconductor_cable",
+    "minecraft:hopper"
+  ],
+  "result": {
+    "id": "factoryascent:fusion_port"
+  }
+}

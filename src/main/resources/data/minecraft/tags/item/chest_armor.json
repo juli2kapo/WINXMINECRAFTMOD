@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "factoryascent:bronze_chestplate"
+    "factoryascent:bronze_chestplate",
+    "factoryascent:hazmat_chestplate"
   ]
 }

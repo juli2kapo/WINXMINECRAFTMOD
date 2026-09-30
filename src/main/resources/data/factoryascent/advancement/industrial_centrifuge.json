@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:centrifuge",
+              "factoryascent:enriched_uranium"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:centrifuge"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_centrifuge.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_centrifuge.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_uranium"
+}

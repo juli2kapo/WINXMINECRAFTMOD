@@ -19,9 +19,14 @@ public class ShipMenu extends AbstractContainerMenu {
     public static final int PANEL_W = 124;
     public static final int GRID_X = 8, GRID_Y = 18;
     public static final int BUTTON_HORN = 0, BUTTON_LIGHTS = 1;
+    /** Shuttle navigation: pick destination {@code BUTTON_DEST + index}, then Engage. */
+    public static final int BUTTON_DEST = 10, BUTTON_ENGAGE = 20;
+    /** Width of the shuttle's Navigation panel, right of the instruments. */
+    public static final int NAV_W = 132;
 
     public static final int D_SPEED = 0, D_HEADING = 1, D_FUEL = 2, D_FUEL_MAX = 3, D_ALT = 4, D_STATE = 5, D_AUX = 6,
-            D_LIGHTS = 7, D_WIND = 8, D_WIND_STRENGTH = 9, D_FUEL_SCALE = 10, D_COUNT = 11;
+            D_LIGHTS = 7, D_WIND = 8, D_WIND_STRENGTH = 9, D_FUEL_SCALE = 10,
+            D_NAV_SELECTED = 11, D_NAV_HERE = 12, D_NAV_CRUISE = 13, D_NAV_ION = 14, D_NAV_TARGET = 15, D_COUNT = 16;
 
     private final AbstractShip ship;
     private final ContainerData data;
@@ -74,6 +79,11 @@ public class ShipMenu extends AbstractContainerMenu {
                     case D_WIND_STRENGTH -> Math.round(ShipMath.windStrength(time, ship.level().getRainLevel(1f),
                             ship.level().getThunderLevel(1f)) * 100);
                     case D_FUEL_SCALE -> scale;
+                    case D_NAV_SELECTED -> ship instanceof Shuttle s ? s.selected().ordinal() : 0;
+                    case D_NAV_HERE -> ship instanceof Shuttle s && s.here() != null ? s.here().ordinal() : -1;
+                    case D_NAV_CRUISE -> ship instanceof Shuttle s && s.cruising() ? Math.round(s.cruiseProgress() * 100) : -1;
+                    case D_NAV_ION -> ship instanceof Shuttle s && s.ionDrive() ? 1 : 0;
+                    case D_NAV_TARGET -> ship instanceof Shuttle s && s.cruiseTarget() != null ? s.cruiseTarget().ordinal() : -1;
                     default -> 0;
                 };
             }
@@ -99,7 +109,7 @@ public class ShipMenu extends AbstractContainerMenu {
     }
 
     public int imageWidth() {
-        return 176 + PANEL_W;
+        return 176 + PANEL_W + (ship instanceof Shuttle ? NAV_W : 0);
     }
 
     public int imageHeight() {
@@ -136,6 +146,16 @@ public class ShipMenu extends AbstractContainerMenu {
         }
         if (id == BUTTON_LIGHTS) {
             ship.action(player, ShipPayloads.ACTION_LIGHTS);
+            return true;
+        }
+        if (ship instanceof Shuttle shuttle && id >= BUTTON_DEST && id < BUTTON_DEST + net.juli2kapo.factoryascent.space.planet.Navigation.Destination.values().length) {
+            if (!shuttle.cruising()) shuttle.select(id - BUTTON_DEST);
+            return true;
+        }
+        if (ship instanceof Shuttle shuttle && id == BUTTON_ENGAGE) {
+            var why = shuttle.engage(player);
+            if (why != null) player.sendOverlayMessage(why.copy().withStyle(net.minecraft.ChatFormatting.YELLOW));
+            else player.closeContainer();
             return true;
         }
         return false;

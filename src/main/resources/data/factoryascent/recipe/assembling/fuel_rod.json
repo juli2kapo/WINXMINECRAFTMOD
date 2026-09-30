@@ -1,0 +1,22 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:enriched_uranium",
+      "count": 3
+    },
+    {
+      "ingredient": "#c:rods/steel",
+      "count": 2
+    },
+    {
+      "ingredient": "#c:plates/lead",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:fuel_rod"
+  },
+  "time": 160,
+  "min_grade": 3
+}

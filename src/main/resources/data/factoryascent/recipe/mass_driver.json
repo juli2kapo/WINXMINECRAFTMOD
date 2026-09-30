@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SCS",
+    "QFQ",
+    "SES"
+  ],
+  "key": {
+    "S": "factoryascent:stellar_alloy_ingot",
+    "C": "factoryascent:superconductor_cable",
+    "Q": "#c:ingots/quantum_alloy",
+    "F": "factoryascent:advanced_machine_frame",
+    "E": "factoryascent:quantum_energy_cell"
+  },
+  "result": {
+    "id": "factoryascent:mass_driver"
+  }
+}

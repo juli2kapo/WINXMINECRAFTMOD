@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "ingredient": "factoryascent:lead_dust",
+  "result": {
+    "id": "factoryascent:lead_ingot"
+  },
+  "experience": 0.3,
+  "cookingtime": 100
+}

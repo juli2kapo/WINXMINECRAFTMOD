@@ -92,6 +92,9 @@ public final class SpaceContent {
     public static final DeferredBlock<OxygenMachineBlock> OXYGEN_SEALER = BLOCKS.registerBlock("oxygen_sealer",
             p -> new OxygenMachineBlock(p, OxygenMachineBlock.Kind.SEALER),
             () -> metal().mapColor(MapColor.COLOR_CYAN).lightLevel(s -> s.getValue(OxygenMachineBlock.LIT) ? 10 : 0));
+    public static final DeferredBlock<OxygenMachineBlock> AIR_VENT = BLOCKS.registerBlock("air_vent",
+            p -> new OxygenMachineBlock(p, OxygenMachineBlock.Kind.VENT),
+            () -> metal().mapColor(MapColor.COLOR_LIGHT_GRAY).lightLevel(s -> s.getValue(OxygenMachineBlock.LIT) ? 6 : 0));
 
     public static final DeferredItem<BlockItem> RETURN_POD_ITEM = ITEMS.registerItem("return_pod",
             p -> new FactoryBlockItem(RETURN_POD.get(), p), p -> p.useBlockDescriptionPrefix());
@@ -99,11 +102,13 @@ public final class SpaceContent {
             p -> new FactoryBlockItem(OXYGEN_COMPRESSOR.get(), p), p -> p.useBlockDescriptionPrefix());
     public static final DeferredItem<BlockItem> OXYGEN_SEALER_ITEM = ITEMS.registerItem("oxygen_sealer",
             p -> new FactoryBlockItem(OXYGEN_SEALER.get(), p), p -> p.useBlockDescriptionPrefix());
+    public static final DeferredItem<BlockItem> AIR_VENT_ITEM = ITEMS.registerItem("air_vent",
+            p -> new FactoryBlockItem(AIR_VENT.get(), p), p -> p.useBlockDescriptionPrefix());
 
     public static final Supplier<BlockEntityType<OxygenCompressorBlockEntity>> OXYGEN_COMPRESSOR_BE = BLOCK_ENTITIES.register(
             "oxygen_compressor", () -> new BlockEntityType<>(OxygenCompressorBlockEntity::new, OXYGEN_COMPRESSOR.get()));
     public static final Supplier<BlockEntityType<OxygenSealerBlockEntity>> OXYGEN_SEALER_BE = BLOCK_ENTITIES.register(
-            "oxygen_sealer", () -> new BlockEntityType<>(OxygenSealerBlockEntity::new, OXYGEN_SEALER.get()));
+            "oxygen_sealer", () -> new BlockEntityType<>(OxygenSealerBlockEntity::new, OXYGEN_SEALER.get(), AIR_VENT.get()));
 
     public static final Supplier<MenuType<OxygenCompressorMenu>> OXYGEN_COMPRESSOR_MENU = MENUS.register(
             "oxygen_compressor", () -> IMenuTypeExtension.create(OxygenCompressorMenu::fromNetwork));
@@ -165,6 +170,8 @@ public final class SpaceContent {
         ATTACHMENTS.register(modBus);
         RECIPE_SERIALIZERS.register(modBus);
         container.registerConfig(ModConfig.Type.SERVER, SpaceConfig.SPEC, FactoryAscent.MOD_ID + "-space-server.toml");
+        net.juli2kapo.factoryascent.space.planet.PlanetContent.register(modBus);
+        net.juli2kapo.factoryascent.space.station.StationContent.register(modBus);
         modBus.addListener(SpacePayloads::register);
         modBus.addListener(SpaceContent::registerCapabilities);
         SpaceEvents.register();
@@ -182,8 +189,11 @@ public final class SpaceContent {
 
     /** Space items for the Orbital creative tab, in order. */
     public static List<Supplier<? extends ItemLike>> orbitalItems() {
-        return List.of(CREW_CAPSULE, RETURN_POD_ITEM, ASTRONAUT_HELMET, ASTRONAUT_SUIT, ASTRONAUT_LEGGINGS, ASTRONAUT_BOOTS,
-                JET_SUIT, OXYGEN_COMPRESSOR_ITEM, OXYGEN_SEALER_ITEM);
+        List<Supplier<? extends ItemLike>> out = new java.util.ArrayList<>(List.of(CREW_CAPSULE, RETURN_POD_ITEM, ASTRONAUT_HELMET,
+                ASTRONAUT_SUIT, ASTRONAUT_LEGGINGS, ASTRONAUT_BOOTS, JET_SUIT, OXYGEN_COMPRESSOR_ITEM, OXYGEN_SEALER_ITEM, AIR_VENT_ITEM));
+        out.addAll(net.juli2kapo.factoryascent.space.station.StationContent.creativeItems());
+        out.addAll(net.juli2kapo.factoryascent.space.planet.PlanetContent.creativeItems());
+        return out;
     }
 
     /** Jetpacks for the Tools creative tab. */

@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:dyson_first",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:dyson_receiver"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.dyson_receiver.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.dyson_receiver.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

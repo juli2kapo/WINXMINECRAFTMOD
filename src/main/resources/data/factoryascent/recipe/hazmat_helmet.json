@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "WLW",
+    "WGW"
+  ],
+  "key": {
+    "W": "minecraft:yellow_wool",
+    "L": "#c:plates/lead",
+    "G": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "factoryascent:hazmat_helmet"
+  }
+}

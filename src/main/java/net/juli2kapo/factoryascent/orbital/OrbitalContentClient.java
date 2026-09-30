@@ -149,7 +149,8 @@ public final class OrbitalContentClient {
             SatelliteType type = pad.satelliteType();
             state.missile = pad.hasMissile();
             state.crew = net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(pad.satellite()); // [space hook]
-            state.present = state.missile || type != null || state.crew;
+            state.present = state.missile || type != null || state.crew
+                    || net.juli2kapo.factoryascent.dyson.DysonLaunch.isCollector(pad.satellite()); // [dyson hook] empty fairing
             state.payload = type == null ? null : switch (type) {
                 case SURVEY -> PAYLOAD_SURVEY;
                 case UPLINK -> PAYLOAD_UPLINK;

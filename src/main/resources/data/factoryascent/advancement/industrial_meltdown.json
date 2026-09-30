@@ -1,0 +1,26 @@
+{
+  "parent": "factoryascent:industrial_reactor",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:corium"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_meltdown.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_meltdown.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

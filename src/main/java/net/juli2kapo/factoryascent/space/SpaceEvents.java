@@ -43,8 +43,23 @@ public final class SpaceEvents {
         });
         NeoForge.EVENT_BUS.addListener((EntityTickEvent.Pre e) -> {
             if (!(e.getEntity() instanceof Player) && e.getEntity() instanceof LivingEntity living
-                    && !living.level().isClientSide() && living.level().dimension() == SpaceRules.ORBIT) {
+                    && !living.level().isClientSide() && living.tickCount % 10 == 0
+                    && (Orbit.gravityFor(living.level().dimension()) != 1.0 || living.getAttributeValue(
+                    net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY) != living.getAttributeBaseValue(
+                    net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY))) {
                 Orbit.applyGravity(living);
+            }
+        });
+        // Blocks built in orbit stay where they are put: sand and gravel don't fall in zero-g.
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e) -> {
+            if (e.getEntity() instanceof net.minecraft.world.entity.item.FallingBlockEntity falling && !e.getLevel().isClientSide()
+                    && e.getLevel().dimension() == SpaceRules.ORBIT && !e.loadedFromDisk()) {
+                net.minecraft.core.BlockPos pos = net.minecraft.core.BlockPos.containing(falling.position());
+                if (e.getLevel().getBlockState(pos).isAir()) {
+                    e.setCanceled(true);
+                    e.getLevel().setBlock(pos, falling.getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS
+                            | net.minecraft.world.level.block.Block.UPDATE_SKIP_ON_PLACE);
+                }
             }
         });
         NeoForge.EVENT_BUS.addListener(SpaceEvents::onMount);
@@ -66,6 +81,7 @@ public final class SpaceEvents {
         Orbit.tickReentry(player);
         boolean airless = SpaceRules.isAirless(player.level());
         SpaceRules.Breath breath = tickBreathing(player, airless);
+        net.juli2kapo.factoryascent.space.planet.PlanetHazards.tickPlayer(player, breath);
         if (airless && player.tickCount % 10 == 0 && player.connection != null
                 && player.connection.hasChannel(SpacePayloads.Breathing.TYPE)) {
             PacketDistributor.sendToPlayer(player, new SpacePayloads.Breathing(breath.ordinal()));
@@ -84,9 +100,11 @@ public final class SpaceEvents {
         if (breath == SpaceRules.Breath.SUIT) {
             if (second) {
                 ItemStack tank = SpaceRules.suitTank(entity);
-                int left = SuitItems.oxygen(tank) - 20;
+                net.juli2kapo.factoryascent.space.planet.Planet planet = net.juli2kapo.factoryascent.space.planet.Planet.of(entity.level());
+                int drain = planet == null ? 20 : (int) Math.round(20 * planet.suitDrain());
+                int left = SuitItems.oxygen(tank) - drain;
                 SuitItems.setOxygen(tank, left);
-                if (entity instanceof ServerPlayer sp && left > 0 && left <= 60 * 20 && left % (15 * 20) == 0) {
+                if (entity instanceof ServerPlayer sp && left > 0 && left <= 60 * 20 && left % (15 * 20) < drain) {
                     sp.sendOverlayMessage(Component.translatable("message.factoryascent.oxygen_low", left / 20).withStyle(ChatFormatting.GOLD));
                 }
             }

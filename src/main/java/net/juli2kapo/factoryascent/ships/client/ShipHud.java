@@ -58,8 +58,18 @@ final class ShipHud {
             bars.add(new float[] {lines.size(), ship.syncedFuel() / (float) cap, 0xFFE08030});
             lines.add(Component.empty());
             var realm = OrbitTransfer.realm(level);
-            lines.add(ShipText.destination(realm == ShipMath.Realm.ORBIT, realm == ShipMath.Realm.OVERWORLD,
-                    realm == ShipMath.Realm.OVERWORLD ? level.getMaxY() + 1 : 320));
+            Shuttle sh = (Shuttle) ship;
+            var target = sh.cruiseTarget();
+            if (target != null) {
+                lines.add(Component.translatable("gui.factoryascent.nav.cruising", target.displayName(), Math.round(sh.cruiseProgress() * 100)));
+                bars.add(new float[] {lines.size(), sh.cruiseProgress(), 0xFFC080FF});
+                lines.add(Component.empty());
+            } else {
+                lines.add(ShipText.destination(realm, realm == ShipMath.Realm.OVERWORLD ? level.getMaxY() + 1 : 320));
+                if (realm == ShipMath.Realm.ORBIT || realm == ShipMath.Realm.PLANET) {
+                    lines.add(Component.translatable("gui.factoryascent.nav.selected", sh.selected().displayName()));
+                }
+            }
         }
         lines.add(ShipText.lights(ship.lightsOn()));
         int w = 0;

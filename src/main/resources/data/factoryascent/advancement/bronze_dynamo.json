@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:kinetic_dynamo"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:kinetic_dynamo"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_dynamo.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_dynamo.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_bronze"
+}

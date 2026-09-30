@@ -1,0 +1,31 @@
+{
+  "type": "factoryascent:centrifuging",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:depleted_fuel_rod",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:nuclear_waste",
+    "count": 2
+  },
+  "time": 300,
+  "min_grade": 5,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:depleted_uranium",
+      "count": 1
+    },
+    "chance": 1.0
+  },
+  "extras": [
+    {
+      "item": {
+        "id": "factoryascent:enriched_uranium",
+        "count": 1
+      },
+      "chance": 0.25
+    }
+  ]
+}

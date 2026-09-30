@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "factoryascent:block/station_hull_orange",
+    "top": "factoryascent:block/station_hull_orange",
+    "side": "factoryascent:block/station_hull_orange"
+  }
+}

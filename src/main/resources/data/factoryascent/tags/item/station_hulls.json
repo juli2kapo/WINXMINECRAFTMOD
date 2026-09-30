@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "factoryascent:station_hull_white",
+    "factoryascent:station_hull_gray",
+    "factoryascent:station_hull_dark",
+    "factoryascent:station_hull_orange"
+  ]
+}

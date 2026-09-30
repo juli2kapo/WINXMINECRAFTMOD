@@ -3,6 +3,8 @@
   "values": [
     "#c:ores/tin",
     "#c:ores/aluminum",
-    "#c:ores/titanium"
+    "#c:ores/titanium",
+    "#c:ores/lead",
+    "#c:ores/uranium"
   ]
 }

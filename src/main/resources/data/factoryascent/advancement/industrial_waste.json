@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:waste_barrel",
+              "factoryascent:depleted_fuel_rod"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:waste_barrel"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_waste.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_waste.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_reactor"
+}

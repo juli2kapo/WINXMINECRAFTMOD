@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " P ",
+    "PRP",
+    " P "
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "R": "#c:rods/steel"
+  },
+  "result": {
+    "id": "factoryascent:turbine_mast",
+    "count": 4
+  }
+}

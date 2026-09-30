@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QTQ",
+    "T T",
+    "QTQ"
+  ],
+  "key": {
+    "Q": "#c:ingots/quantum_alloy",
+    "T": "#c:plates/titanium"
+  },
+  "result": {
+    "id": "factoryascent:fusion_casing",
+    "count": 8
+  }
+}

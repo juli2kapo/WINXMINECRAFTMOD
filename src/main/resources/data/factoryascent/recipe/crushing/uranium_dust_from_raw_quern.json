@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:raw_uranium",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:uranium_dust"
+  },
+  "time": 40,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:uranium_dust"
+    },
+    "chance": 0.5
+  }
+}

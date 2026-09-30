@@ -8,6 +8,8 @@
     "#c:dusts/coal",
     "#c:dusts/quartz",
     "#c:dusts/bauxite",
-    "#c:dusts/titanium"
+    "#c:dusts/titanium",
+    "#c:dusts/lead",
+    "#c:dusts/uranium"
   ]
 }

@@ -191,4 +191,51 @@ public final class ShipGameTests {
         check(h, ShipMath.shuttleFuelPerTick(true, true, true, false, true, 1) == 2, "two axes in orbit burn 2");
         h.succeed();
     }
+
+    /** Navigation between Earth orbit and the planets: fuel ladder, cruise times, when a trip may start and where a climb goes. */
+    public static void navigationRules(GameTestHelper h) {
+        var costs = net.juli2kapo.factoryascent.space.planet.Navigation.Costs.DEFAULT;
+        var E = net.juli2kapo.factoryascent.space.planet.Navigation.Destination.EARTH_ORBIT;
+        var MOON = net.juli2kapo.factoryascent.space.planet.Navigation.Destination.MOON;
+        var MARS = net.juli2kapo.factoryascent.space.planet.Navigation.Destination.MARS;
+        var IO = net.juli2kapo.factoryascent.space.planet.Navigation.Destination.IO;
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.fuelCost(E, MOON, costs, false) == 3000, "Earth orbit to the Moon costs 3000");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.fuelCost(MOON, E, costs, false) == 3000, "and the same back");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.fuelCost(MOON, MARS, costs, false) == 4000, "Moon to Mars is the difference");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.fuelCost(E, IO, costs, true) == 5500, "an Ion Drive halves the fuel");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.fuelCost(MARS, MARS, costs, false) == 0, "staying put is free");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.travelTicks(E, MOON, costs, false) == 160, "8 s to the Moon");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.travelTicks(MARS, IO, costs, true) >= 100, "every trip is at least 5 s of warp");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.travelTicks(E, IO, costs, true)
+                < net.juli2kapo.factoryascent.space.planet.Navigation.travelTicks(E, IO, costs, false), "an Ion Drive is faster");
+        var OK = net.juli2kapo.factoryascent.space.planet.Navigation.Check.OK;
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.check(null, MOON, 99999, false, costs, false)
+                == net.juli2kapo.factoryascent.space.planet.Navigation.Check.NOT_IN_SPACE, "no navigating from the Overworld");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.check(E, E, 99999, false, costs, false)
+                == net.juli2kapo.factoryascent.space.planet.Navigation.Check.SAME_PLACE, "already there");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.check(E, MARS, 6999, false, costs, false)
+                == net.juli2kapo.factoryascent.space.planet.Navigation.Check.NO_FUEL, "not enough fuel for Mars");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.check(E, MARS, 7000, false, costs, false) == OK, "just enough");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.check(E, MARS, 7000, true, costs, false)
+                == net.juli2kapo.factoryascent.space.planet.Navigation.Check.BUSY, "not while cruising");
+        // leaving a planet: on to the selected destination, else home, else nowhere
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.leavingPlanet(MOON, MARS, 5000, costs, false) == MARS, "Moon to Mars directly");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.leavingPlanet(MOON, IO, 5000, costs, false) == E,
+                "can't afford Io: back to Earth orbit");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.leavingPlanet(MOON, MOON, 5000, costs, false) == E,
+                "selecting the planet itself means home");
+        check(h, net.juli2kapo.factoryascent.space.planet.Navigation.leavingPlanet(MARS, MARS, 100, costs, false) == null,
+                "no fuel: stuck under the sky's ceiling");
+        check(h, ShipMath.leavesPlanet(net.juli2kapo.factoryascent.space.planet.Planet.ORBIT_LINE, 0.2,
+                net.juli2kapo.factoryascent.space.planet.Planet.ORBIT_LINE), "climbing through the line leaves");
+        check(h, !ShipMath.leavesPlanet(net.juli2kapo.factoryascent.space.planet.Planet.ARRIVAL_Y, -0.3,
+                net.juli2kapo.factoryascent.space.planet.Planet.ORBIT_LINE), "arriving below the line, falling, stays");
+        check(h, ShipMath.planetFuelPerTick(true, true, false, false, 1, 0.166) < ShipMath.shuttleFuelPerTick(false, true, true, false, false, 1),
+                "climbing on the Moon burns less than on Earth");
+        check(h, ShipMath.planetFuelPerTick(false, false, false, false, 1, 0.38) == 0, "parked on Mars burns nothing");
+        check(h, net.juli2kapo.factoryascent.space.planet.PlanetContent.shuttleFuelValue(
+                new ItemStack(net.juli2kapo.factoryascent.space.planet.PlanetContent.HELIUM_3_FUEL_CELL.get()), 1000) == 4000,
+                "a Helium-3 Fuel Cell is worth four Rocket Fuel");
+        h.succeed();
+    }
 }

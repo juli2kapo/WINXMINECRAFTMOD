@@ -89,7 +89,8 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     /** Can this item ride the rocket? */
     public static boolean isPayload(ItemStack stack) {
         return stack.getItem() instanceof SatelliteItem || stack.getItem() instanceof AsatMissileItem
-                || net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(stack); // [space hook] crew capsules ride too
+                || net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(stack) // [space hook] crew capsules ride too
+                || net.juli2kapo.factoryascent.dyson.DysonLaunch.isCollector(stack); // [dyson hook] a Solar Collector for the swarm
     }
 
     /** [space hook] Fuel units the mounted payload needs (a crew capsule may need more). */
@@ -369,6 +370,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         UUID who = launcher != null ? launcher : new UUID(0, 0);
         if (hasMissile()) strike(level, who);
         if (net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(satellite)) net.juli2kapo.factoryascent.space.CrewLaunch.arrive(level, this); // [space hook]
+        if (net.juli2kapo.factoryascent.dyson.DysonLaunch.isCollector(satellite)) net.juli2kapo.factoryascent.dyson.DysonLaunch.arrive(level, who); // [dyson hook]
         if (type != null) {
             FactoryTeams teams = FactoryTeams.get(server);
             String team = teams.teamOf(who);

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LDL",
+    "L L",
+    "LLL"
+  ],
+  "key": {
+    "L": "#c:plates/lead",
+    "D": "minecraft:yellow_dye"
+  },
+  "result": {
+    "id": "factoryascent:waste_barrel"
+  }
+}

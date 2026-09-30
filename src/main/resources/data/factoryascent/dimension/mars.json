@@ -1,0 +1,11 @@
+{
+  "type": "factoryascent:mars",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "factoryascent:mars"
+    },
+    "settings": "factoryascent:mars"
+  }
+}

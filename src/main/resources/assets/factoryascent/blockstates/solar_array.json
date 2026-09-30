@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "factoryascent:block/solar_array"
+    },
+    "active=true,facing=north": {
+      "model": "factoryascent:block/solar_array"
+    },
+    "active=false,facing=east": {
+      "model": "factoryascent:block/solar_array",
+      "y": 90
+    },
+    "active=true,facing=east": {
+      "model": "factoryascent:block/solar_array",
+      "y": 90
+    },
+    "active=false,facing=south": {
+      "model": "factoryascent:block/solar_array",
+      "y": 180
+    },
+    "active=true,facing=south": {
+      "model": "factoryascent:block/solar_array",
+      "y": 180
+    },
+    "active=false,facing=west": {
+      "model": "factoryascent:block/solar_array",
+      "y": 270
+    },
+    "active=true,facing=west": {
+      "model": "factoryascent:block/solar_array",
+      "y": 270
+    }
+  }
+}

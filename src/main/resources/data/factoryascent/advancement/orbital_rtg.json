@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:rtg"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:rtg"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_rtg.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_rtg.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_orbital"
+}

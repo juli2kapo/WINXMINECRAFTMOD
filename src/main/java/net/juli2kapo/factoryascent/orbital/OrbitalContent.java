@@ -110,6 +110,7 @@ public final class OrbitalContent {
         COMPONENTS.register(modBus);
         MENUS.register(modBus);
         modBus.addListener(OrbitalPayloads::register);
+        SatelliteSky.register(modBus);
         modBus.addListener((RegisterCapabilitiesEvent e) -> {
             e.registerBlockEntity(Capabilities.Item.BLOCK, LAUNCH_CONTROLLER_BE.get(), (be, side) -> be.itemHandler());
             e.registerBlockEntity(Capabilities.Energy.BLOCK, ORBITAL_RADAR_BE.get(), (be, side) -> be.energyHandler());

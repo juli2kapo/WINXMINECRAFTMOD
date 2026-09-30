@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:hazmat_chestplate"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:hazmat_chestplate"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_hazmat.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_hazmat.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_lead"
+}

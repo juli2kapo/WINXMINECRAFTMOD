@@ -49,6 +49,7 @@ public final class ModBlockEntities {
                         case VACUUM_HOPPER -> new net.juli2kapo.factoryascent.automation.VacuumHopperBlockEntity(pos, state);
                         case TREE_FARM -> new net.juli2kapo.factoryascent.automation.TreeFarmBlockEntity(pos, state);
                         case MOB_FARM -> new net.juli2kapo.factoryascent.automation.MobFarmBlockEntity(pos, state);
+                        case ELECTROLYZER -> new net.juli2kapo.factoryascent.fusion.ElectrolyzerBlockEntity(pos, state);
                         default -> new ProcessingMachineBlockEntity(type, pos, state);
                     },
                     ModBlocks.machine(type).get())));

@@ -35,6 +35,7 @@ public final class OrbitTransfer {
     public static ShipMath.Realm realm(Level level) {
         if (level.dimension() == ORBIT) return ShipMath.Realm.ORBIT;
         if (level.dimension() == Level.OVERWORLD) return ShipMath.Realm.OVERWORLD;
+        if (net.juli2kapo.factoryascent.space.planet.Planet.of(level) != null) return ShipMath.Realm.PLANET;
         return ShipMath.Realm.OTHER;
     }
 
@@ -65,15 +66,26 @@ public final class OrbitTransfer {
         Vec3 arrive = transfer == ShipMath.Transfer.TO_ORBIT
                 ? new Vec3(v.x * 0.5, 0.05, v.z * 0.5)       // coast into orbit, climbing gently
                 : new Vec3(v.x * 0.5, -0.6, v.z * 0.5);      // falling into the atmosphere
+        Entity moved = travel(ship, target, new Vec3(ship.getX(), y, ship.getZ()), arrive, transfer == ShipMath.Transfer.TO_ORBIT
+                ? "message.factoryascent.shuttle.to_orbit" : "message.factoryascent.shuttle.reentry");
+        if (moved instanceof Shuttle shuttle && transfer == ShipMath.Transfer.TO_OVERWORLD) shuttle.startReentry();
+        return moved;
+    }
+
+    /**
+     * Moves the shuttle, crew and all, to a position in another (or the same) dimension, arriving
+     * with the given velocity; tells every player aboard {@code messageKey} (nothing if null).
+     */
+    public static @Nullable Entity travel(Shuttle ship, ServerLevel target, Vec3 pos, Vec3 arrive, @Nullable String messageKey,
+                                          Object... args) {
         List<UUID> riders = ship.getPassengers().stream().map(Entity::getUUID).toList();
-        for (Entity p : ship.getPassengers()) {
-            if (p instanceof ServerPlayer sp) {
-                sp.sendOverlayMessage(Component.translatable(transfer == ShipMath.Transfer.TO_ORBIT
-                        ? "message.factoryascent.shuttle.to_orbit" : "message.factoryascent.shuttle.reentry"));
+        if (messageKey != null) {
+            for (Entity p : ship.getPassengers()) {
+                if (p instanceof ServerPlayer sp) sp.sendOverlayMessage(Component.translatable(messageKey, args));
             }
         }
-        TeleportTransition transition = new TeleportTransition(target, new Vec3(ship.getX(), y, ship.getZ()), arrive,
-                ship.getYRot(), 0f, TeleportTransition.DO_NOTHING);
+        target.getChunk(net.minecraft.util.Mth.floor(pos.x) >> 4, net.minecraft.util.Mth.floor(pos.z) >> 4);
+        TeleportTransition transition = new TeleportTransition(target, pos, arrive, ship.getYRot(), 0f, TeleportTransition.DO_NOTHING);
         ship.allowDismount = true;
         Entity moved;
         try {
@@ -83,7 +95,6 @@ public final class OrbitTransfer {
         }
         if (moved instanceof Shuttle shuttle) {
             shuttle.setDeltaMovement(arrive);
-            if (transfer == ShipMath.Transfer.TO_OVERWORLD) shuttle.startReentry();
             if (!riders.isEmpty()) PENDING.add(new Pending(target.dimension(), shuttle.getUUID(), riders, new int[] {40}));
         }
         return moved;

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:reactor_casing",
+    "factoryascent:aluminum_cable",
+    "factoryascent:aluminum_cable"
+  ],
+  "result": {
+    "id": "factoryascent:reactor_power_port"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GWG",
+    "RHR",
+    "GWG"
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "W": "minecraft:white_wool",
+    "R": "factoryascent:raw_hematite",
+    "H": "factoryascent:helium_3"
+  },
+  "result": {
+    "id": "factoryascent:thermal_lining"
+  }
+}

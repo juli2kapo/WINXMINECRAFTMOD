@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "SS",
+    "GC",
+    "SS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "G": "minecraft:glass",
+    "C": "factoryascent:basic_circuit"
+  },
+  "result": {
+    "id": "factoryascent:airlock_door"
+  }
+}

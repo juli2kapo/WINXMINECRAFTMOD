@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "factoryascent:airlock_door",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "factoryascent:airlock_door",
+              "properties": {
+                "half": "lower"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "factoryascent:blocks/airlock_door"
+}

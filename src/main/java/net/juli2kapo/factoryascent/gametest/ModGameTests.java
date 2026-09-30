@@ -98,12 +98,17 @@ public final class ModGameTests {
             new Test("ui_machine_sides_panel", 20, net.juli2kapo.factoryascent.ui.UiGameTests::machineSidesPanel),
             new Test("space_suit_oxygen_drains_only_airless", 20, net.juli2kapo.factoryascent.space.SpaceGameTests::suitOxygenDrainsOnlyWhereAirless),
             new Test("space_compressor_refills_suits", 400, net.juli2kapo.factoryascent.space.SpaceGameTests::compressorRefillsSuits),
-            new Test("space_sealer_makes_air", 40, net.juli2kapo.factoryascent.space.SpaceGameTests::sealerMakesAir),
+            new Test("space_sealer_makes_air", 200, net.juli2kapo.factoryascent.space.SpaceGameTests::sealerMakesAir),
+            new Test("space_sealed_room_flood_fill", 20, net.juli2kapo.factoryascent.space.SpaceGameTests::sealedRoomFloodFill),
             new Test("space_crew_capsule_rules", 60, net.juli2kapo.factoryascent.space.SpaceGameTests::crewCapsuleRules),
             new Test("space_crew_strapped_in_after_liftoff", 120, net.juli2kapo.factoryascent.space.SpaceGameTests::crewStrappedInAfterLiftoff),
             new Test("space_jetpack_thrusts", 20, net.juli2kapo.factoryascent.space.SpaceGameTests::jetpackThrusts),
             new Test("space_jet_suit_recipe_keeps_components", 20, net.juli2kapo.factoryascent.space.SpaceGameTests::jetSuitRecipeKeepsComponents),
             new Test("space_starter_deck", 20, net.juli2kapo.factoryascent.space.SpaceGameTests::starterDeck),
+            new Test("planet_rules", 20, net.juli2kapo.factoryascent.space.PlanetGameTests::planetRules),
+            new Test("station_magnetic_boots", 20, net.juli2kapo.factoryascent.space.PlanetGameTests::magneticBoots),
+            new Test("satellite_sky_list", 20, net.juli2kapo.factoryascent.space.PlanetGameTests::satelliteSkyList),
+            new Test("ship_navigation_rules", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::navigationRules),
             new Test("sieve_sifts_gravel", 200, AgeContentTests::sieveSiftsGravel),
             new Test("water_wheel_drives_quern", 400, AgeContentTests::waterWheelDrivesQuern),
             new Test("windmill_needs_open_air", 100, AgeContentTests::windmillNeedsOpenAir),
@@ -124,7 +129,14 @@ public final class ModGameTests {
             new Test("ship_motor_uses_power", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::motorUsesPower),
             new Test("ship_cargo_persists", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::cargoPersists),
             new Test("ship_shuttle_climbs_on_fuel", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::shuttleClimbs),
-            new Test("ship_orbit_transfer_thresholds", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::transferThresholds)
+            new Test("ship_orbit_transfer_thresholds", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::transferThresholds),
+            new Test("dyson_mass_driver_launches", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::massDriverLaunches),
+            new Test("dyson_mass_driver_needs_rails_and_sky", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::massDriverNeedsRailsAndSky),
+            new Test("dyson_receiver_scales_with_swarm_and_sky", 100, net.juli2kapo.factoryascent.dyson.DysonGameTests::receiverScalesWithSwarmAndSky),
+            new Test("dyson_milestones_fire", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::milestonesFire),
+            new Test("dyson_swarm_is_per_team", 60, net.juli2kapo.factoryascent.dyson.DysonGameTests::swarmIsPerTeam),
+            new Test("dyson_saves_and_loads", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::savesAndLoads),
+            new Test("dyson_launch_pad_carries_collector", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::launchPadCarriesCollector)
     );
 
     private ModGameTests() {}

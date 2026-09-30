@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TAT",
+    "AOA",
+    "TAT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "A": "factoryascent:advanced_circuit",
+    "O": "factoryascent:orbital_targeting_core"
+  },
+  "result": {
+    "id": "factoryascent:station_core"
+  }
+}

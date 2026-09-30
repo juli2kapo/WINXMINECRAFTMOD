@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TIT",
+    "ICI",
+    "TMT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "I": "factoryascent:ionite",
+    "C": "factoryascent:advanced_circuit",
+    "M": "factoryascent:motor"
+  },
+  "result": {
+    "id": "factoryascent:ion_drive"
+  }
+}

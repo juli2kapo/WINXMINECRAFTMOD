@@ -1,0 +1,26 @@
+{
+  "parent": "factoryascent:industrial_uranium",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:nuclear_waste"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_radiation.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_radiation.description"
+    },
+    "frame": "task",
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

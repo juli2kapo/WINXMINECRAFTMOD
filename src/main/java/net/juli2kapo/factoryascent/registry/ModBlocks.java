@@ -92,6 +92,8 @@ public final class ModBlocks {
         if (type == MachineType.SOLAR_PANEL || type == MachineType.QUERN || type == MachineType.FLOODLIGHT
                 || type == MachineType.VACUUM_HOPPER || type == MachineType.CHARGER) p = p.noOcclusion();
         if (type == MachineType.FLOODLIGHT) p = p.lightLevel(state -> MachineBlock.isActive(state) ? 15 : 0);
+        // power ladder machines whose models don't fill the block (tubes, glass cell)
+        if (type == MachineType.CENTRIFUGE || type == MachineType.ELECTROLYZER) p = p.noOcclusion();
         if (type.power() == MachineType.Power.FUEL || type == MachineType.ELECTRIC_FURNACE
                 || type == MachineType.ALLOY_SMELTER || type == MachineType.COKE_OVEN || type == MachineType.GEOTHERMAL_GENERATOR) {
             p = p.lightLevel(state -> MachineBlock.isActive(state) ? 12 : 0);

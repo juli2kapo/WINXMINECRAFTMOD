@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:stellar_alloy_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:stellar_alloy_ingot"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.dyson_stellar.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.dyson_stellar.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_quantum"
+}

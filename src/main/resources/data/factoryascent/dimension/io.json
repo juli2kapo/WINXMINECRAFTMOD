@@ -1,0 +1,11 @@
+{
+  "type": "factoryascent:io",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "factoryascent:io"
+    },
+    "settings": "factoryascent:io"
+  }
+}

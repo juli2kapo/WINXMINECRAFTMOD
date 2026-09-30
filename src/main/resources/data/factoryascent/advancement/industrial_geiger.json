@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:geiger_counter"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:geiger_counter"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_geiger.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_geiger.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_uranium"
+}

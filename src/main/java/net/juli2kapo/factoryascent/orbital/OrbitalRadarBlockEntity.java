@@ -214,6 +214,7 @@ public class OrbitalRadarBlockEntity extends BlockEntity {
         String team = ownerTeam(server);
         OrbitRegistry orbit = OrbitRegistry.get(server);
         boolean changed = locked.removeIf(id -> !isForeignContact(orbit, team, level, id));
+        if (team != null && !locked.isEmpty()) SatelliteSky.noteLocks(team, locked);
         if (designated != null && !locked.contains(designated) && !isOwn(designated)) {
             designated = null;
             changed = true;
@@ -242,6 +243,7 @@ public class OrbitalRadarBlockEntity extends BlockEntity {
             return;
         }
         locked.add(id);
+        SatelliteSky.noteLocks(team, java.util.List.of(id));
         if (designated == null) designated = id;
         changed();
         FactoryTeams teams = FactoryTeams.get(server);

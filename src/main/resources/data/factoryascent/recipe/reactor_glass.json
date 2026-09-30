@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LGL",
+    "G G",
+    "LGL"
+  ],
+  "key": {
+    "L": "#c:plates/lead",
+    "G": "minecraft:glass"
+  },
+  "result": {
+    "id": "factoryascent:reactor_glass",
+    "count": 4
+  }
+}

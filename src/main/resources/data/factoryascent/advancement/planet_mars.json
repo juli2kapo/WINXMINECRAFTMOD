@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:planet_moon",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:mars_sand"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.planet_mars.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.planet_mars.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

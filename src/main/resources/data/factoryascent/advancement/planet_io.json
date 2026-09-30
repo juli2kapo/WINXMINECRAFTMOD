@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:planet_mars",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:ionite"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.planet_io.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.planet_io.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

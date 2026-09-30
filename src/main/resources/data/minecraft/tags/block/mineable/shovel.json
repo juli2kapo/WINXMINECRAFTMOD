@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "factoryascent:moon_regolith",
+    "factoryascent:helium_3_regolith",
+    "factoryascent:mars_sand"
+  ]
+}

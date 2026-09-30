@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CAC",
+    "KFK",
+    "CTC"
+  ],
+  "key": {
+    "C": "factoryascent:reactor_casing",
+    "A": "factoryascent:advanced_circuit",
+    "K": "minecraft:comparator",
+    "F": "factoryascent:advanced_machine_frame",
+    "T": "#c:plates/titanium"
+  },
+  "result": {
+    "id": "factoryascent:reactor_controller"
+  }
+}

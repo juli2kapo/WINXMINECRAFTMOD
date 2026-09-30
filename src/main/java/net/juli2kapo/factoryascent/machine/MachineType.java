@@ -68,11 +68,15 @@ public enum MachineType {
     RECYCLER(Age.INDUSTRIAL, Category.PROCESSOR, RecipeKind.RECYCLING, Power.ELECTRIC, 5, 2f, 48, 3),
     /** Farms the loot of the mob held in a Mob Capsule, without the mob. */
     MOB_FARM(Age.INDUSTRIAL, Category.UTILITY, null, Power.ELECTRIC, 5, 1f, 64, 3),
+    /** Gas centrifuge cascade: enriches uranium, reprocesses spent fuel (power ladder, see nuclear/). */
+    CENTRIFUGE(Age.INDUSTRIAL, Category.PROCESSOR, RecipeKind.CENTRIFUGING, Power.ELECTRIC, 5, 1f, 96, 3),
     // ---- Orbital age
     /** Builds orbital components such as the Orbital Targeting Core (grade 6). */
     PRECISION_ASSEMBLER(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ASSEMBLING, Power.ELECTRIC, 6, 2f, 128, 3),
     /** Forges quantum alloy (grade 7): the breakthrough into the Quantum age. */
     PLASMA_FORGE(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ALLOYING, Power.ELECTRIC, 7, 2f, 256, 3),
+    /** Splits heavy water out of water into Deuterium Cells, and tritium out of those (fusion fuel, see fusion/). */
+    ELECTROLYZER(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ELECTROLYSIS, Power.ELECTRIC, 6, 1f, 128, 3),
     // ---- Quantum age
     QUANTUM_ENERGY_CELL(Age.QUANTUM, Category.STORAGE, null, Power.ELECTRIC, 1, 1f, 0, 0, Tier.EV);
 

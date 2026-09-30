@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "minecraft:visual/sky_color": "#d9a27a",
+    "minecraft:visual/fog_color": "#c98f68",
+    "minecraft:visual/ambient_particles": [
+      {
+        "particle": {
+          "type": "minecraft:dust",
+          "color": [
+            0.78,
+            0.45,
+            0.3
+          ],
+          "scale": 1.0
+        },
+        "probability": 0.004
+      }
+    ]
+  },
+  "carvers": [],
+  "downfall": 0.0,
+  "effects": {
+    "water_color": "#3f76e4"
+  },
+  "features": [
+    [],
+    [],
+    [
+      "factoryascent:mars_crater"
+    ],
+    [],
+    [],
+    [],
+    [
+      "factoryascent:hematite_ore",
+      "factoryascent:martian_ice"
+    ],
+    [],
+    [],
+    [],
+    []
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [],
+    "misc": [],
+    "monster": [],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": -0.5
+}

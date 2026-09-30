@@ -16,7 +16,11 @@ public enum RecipeKind {
     /** Drying Rack: slow air-drying (rotten flesh into leather, kelp…). */
     DRYING(1, false),
     /** Recycler: junk into scrap, worn-out gear back into materials. */
-    RECYCLING(1, false);
+    RECYCLING(1, false),
+    /** Centrifuge: uranium enrichment and spent-fuel reprocessing. */
+    CENTRIFUGING(1, false),
+    /** Electrolyzer: water into deuterium, deuterium into tritium. */
+    ELECTROLYSIS(2, false);
 
     public static final RecipeKind[] VALUES = values();
 

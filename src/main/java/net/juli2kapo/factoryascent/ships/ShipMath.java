@@ -105,8 +105,8 @@ public final class ShipMath {
 
     // ---------------------------------------------------------------- orbit transfer
 
-    /** Where a shuttle is, as far as orbit transfers care. */
-    public enum Realm { OVERWORLD, ORBIT, OTHER }
+    /** Where a shuttle is, as far as orbit transfers care: the Overworld, Earth orbit, a planet, or anywhere else. */
+    public enum Realm { OVERWORLD, ORBIT, PLANET, OTHER }
 
     public enum Transfer { NONE, TO_ORBIT, TO_OVERWORLD }
 
@@ -146,8 +146,27 @@ public final class ShipMath {
         return switch (realm) {
             case OVERWORLD -> y >= t.orbitY(overworldTop) && vy >= -0.01 ? Transfer.TO_ORBIT : Transfer.NONE;
             case ORBIT -> y < t.reentryY() && vy <= 0.01 ? Transfer.TO_OVERWORLD : Transfer.NONE;
-            case OTHER -> Transfer.NONE;
+            case PLANET, OTHER -> Transfer.NONE;
         };
+    }
+
+    /**
+     * Whether a shuttle on a planet at height {@code y}, moving vertically at {@code vy}, is
+     * climbing (not falling) through the planet's orbit line and leaves it (where for, the
+     * navigation decides).
+     */
+    public static boolean leavesPlanet(double y, double vy, int orbitLine) {
+        return y >= orbitLine && vy >= -0.01;
+    }
+
+    /**
+     * Shuttle fuel units per tick on a planet: the atmospheric rule, scaled by its gravity (less to
+     * climb and hover on the Moon), never below 1 while a thruster fires.
+     */
+    public static int planetFuelPerTick(boolean airborne, boolean up, boolean down, boolean horizontal, double multiplier, double gravity) {
+        int full = shuttleFuelPerTick(false, airborne, up, down, horizontal, multiplier);
+        if (full == 0) return 0;
+        return Math.max(1, (int) Math.ceil(full * Math.max(0.2, Math.min(1.0, gravity))));
     }
 
     /** Arrival height for a transfer. */

@@ -351,8 +351,10 @@ def lang(L):
     L(f"{T}.oxygen_compressor", "Fills Astronaut Suits with air: one in its slot, or worn by players standing on or next to it",
       "Llena de aire los trajes de astronauta: uno en su ranura, o los que llevan los jugadores encima o al lado")
     L(f"{T}.oxygen_compressor_use", "%s FE per second of air", "%s FE por segundo de aire")
-    L(f"{T}.oxygen_sealer", "Keeps a breathable bubble %s blocks around itself: helmets off inside",
-      "Mantiene una burbuja respirable de %s bloques a su alrededor: sin casco dentro")
+    L(f"{T}.oxygen_sealer", "Fills the sealed room around it with air (up to %s blocks of air): helmets off inside",
+      "Llena de aire la sala sellada que lo rodea (hasta %s bloques de aire): sin casco dentro")
+    L(f"{T}.oxygen_sealer_how", "Walls, floor and ceiling of full blocks, glass, slabs, stairs or closed Airlocks. A hole lets the air out",
+      "Paredes, suelo y techo de bloques enteros, cristal, losas, escaleras o esclusas cerradas. Un agujero deja escapar el aire")
     L(f"{T}.oxygen_sealer_use", "Uses %s FE/t", "Consume %s FE/t")
 
     for key, en, es in [
@@ -377,8 +379,13 @@ def lang(L):
         ("jetpack_none", "You aren't wearing a jetpack", "No llevas una mochila propulsora"),
         ("jetpack_hover_on", "Jetpack hover: ON", "Flotar: ACTIVADO"),
         ("jetpack_hover_off", "Jetpack hover: OFF", "Flotar: DESACTIVADO"),
-        ("sealer_on", "Oxygen Sealer running: breathable air within %s blocks (%s FE stored)",
-         "Sellador en marcha: aire respirable en %s bloques (%s FE almacenados)"),
+        ("sealer_on", "Room sealed: %s blocks of breathable air (%s FE stored)",
+         "Sala sellada: %s bloques de aire respirable (%s FE almacenados)"),
+        ("sealer_open", "Not sealed: the room is open to space or bigger than %s blocks. Close every gap",
+         "Sin sellar: la sala está abierta al espacio o supera los %s bloques. Cierra todos los huecos"),
+        ("sealer_leaking", "HULL BREACH: the air is leaking out!", "BRECHA EN EL CASCO: ¡el aire se está escapando!"),
+        ("air_sealed", "Room sealed: %s blocks of air. You can take your helmet off", "Sala sellada: %s bloques de aire. Puedes quitarte el casco"),
+        ("air_breach", "HULL BREACH! Air leaking: seal the hole or put your helmet on", "¡BRECHA EN EL CASCO! Se escapa el aire: tapa el agujero o ponte el casco"),
         ("sealer_off", "Oxygen Sealer off: needs power (%s FE/t)", "Sellador apagado: necesita energía (%s FE/t)"),
     ]:
         L(f"{M}.{key}", en, es)
@@ -400,10 +407,10 @@ def lang(L):
         L(f"{G}.{key}", en, es)
     for key, en, es in [
         ("air", "O₂", "O₂"), ("jet", "JET", "JET"), ("hover", "HOVER", "FLOTAR"),
-        ("breath_bubble", "sealed area", "zona sellada"), ("breath_cabin", "cabin air", "aire de cabina"),
+        ("breath_bubble", "sealed room", "sala sellada"), ("breath_cabin", "cabin air", "aire de cabina"),
         ("no_air", "NO AIR", "SIN AIRE"),
-        ("no_air_hint", "Put on a full Astronaut Suit with air, or find an Oxygen Sealer's bubble",
-         "Ponte el traje de astronauta completo con aire, o busca la burbuja de un sellador de oxígeno"),
+        ("no_air_hint", "Put on a full Astronaut Suit with air, or get into a room sealed by an Oxygen Sealer",
+         "Ponte el traje de astronauta completo con aire, o entra en una sala sellada por un sellador de oxígeno"),
         ("air_low", "AIR LOW", "POCO AIRE"),
         ("t_minus", "T-%s", "T-%s"), ("climb_out", "Sneak to climb out", "Agáchate para bajar"),
         ("altitude", "Altitude %s m", "Altitud %s m"),

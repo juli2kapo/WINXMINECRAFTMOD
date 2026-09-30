@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:space_orbit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:station_core"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.station_core.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.station_core.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

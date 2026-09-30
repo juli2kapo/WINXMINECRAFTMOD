@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:dyson_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:mass_driver_rail"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.dyson_25.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.dyson_25.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "factoryascent:block/station_hull_gray_slab"
+    },
+    "type=top": {
+      "model": "factoryascent:block/station_hull_gray_slab_top"
+    },
+    "type=double": {
+      "model": "factoryascent:block/station_hull_gray"
+    }
+  }
+}

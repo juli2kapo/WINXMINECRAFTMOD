@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_bottom_right",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bottom": "factoryascent:block/airlock_door_bottom",
+    "top": "factoryascent:block/airlock_door_top"
+  }
+}

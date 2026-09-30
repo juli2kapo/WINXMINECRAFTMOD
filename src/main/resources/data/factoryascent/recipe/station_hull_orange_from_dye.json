@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#factoryascent:station_hulls",
+    "minecraft:orange_dye"
+  ],
+  "result": {
+    "id": "factoryascent:station_hull_orange"
+  }
+}

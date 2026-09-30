@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:dyson_stellar",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:dyson_collector"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.dyson_first.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.dyson_first.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

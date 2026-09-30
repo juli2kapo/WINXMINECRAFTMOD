@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:quantum_tokamak",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:tokamak_core"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.quantum_fusion.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.quantum_fusion.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

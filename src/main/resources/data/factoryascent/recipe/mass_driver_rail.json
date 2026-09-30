@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QCQ",
+    "S S",
+    "QCQ"
+  ],
+  "key": {
+    "Q": "#c:ingots/quantum_alloy",
+    "C": "factoryascent:superconductor_cable",
+    "S": "factoryascent:stellar_alloy_ingot"
+  },
+  "result": {
+    "id": "factoryascent:mass_driver_rail",
+    "count": 2
+  }
+}

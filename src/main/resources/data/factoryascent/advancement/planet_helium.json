@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:helium_3"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:helium_3"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.planet_helium.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.planet_helium.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:planet_moon"
+}

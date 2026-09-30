@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/lead",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:lead_dust"
+  },
+  "time": 40,
+  "min_grade": 2
+}

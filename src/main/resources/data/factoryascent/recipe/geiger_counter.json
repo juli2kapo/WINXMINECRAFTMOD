@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GW ",
+    "PCP",
+    "PRP"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "W": "#c:wires/copper",
+    "P": "#c:plates/tin",
+    "C": "factoryascent:basic_circuit",
+    "R": "minecraft:redstone"
+  },
+  "result": {
+    "id": "factoryascent:geiger_counter"
+  }
+}

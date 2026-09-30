@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "factoryascent:block/fusion_port"
+    },
+    "facing=east": {
+      "model": "factoryascent:block/fusion_port",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "factoryascent:block/fusion_port",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "factoryascent:block/fusion_port",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "factoryascent:block/fusion_port",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "factoryascent:block/fusion_port",
+      "x": 90
+    }
+  }
+}

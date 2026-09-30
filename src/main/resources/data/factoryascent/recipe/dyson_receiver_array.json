@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "SPS"
+  ],
+  "key": {
+    "W": "factoryascent:silicon_wafer",
+    "S": "factoryascent:stellar_alloy_ingot",
+    "P": "#c:plates/titanium"
+  },
+  "result": {
+    "id": "factoryascent:dyson_receiver_array",
+    "count": 4
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "HHH"
+  ],
+  "key": {
+    "H": "factoryascent:station_hull_gray"
+  },
+  "result": {
+    "id": "factoryascent:station_hull_gray_slab",
+    "count": 6
+  }
+}

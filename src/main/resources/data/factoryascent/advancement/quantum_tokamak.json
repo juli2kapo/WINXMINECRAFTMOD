@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:tokamak_core"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:tokamak_core"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.quantum_tokamak.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.quantum_tokamak.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_quantum"
+}

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:mass_driver"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:mass_driver"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.dyson_mass_driver.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.dyson_mass_driver.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:dyson_stellar"
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "factoryascent:block/docking_port_top",
+    "side": "factoryascent:block/docking_port_side",
+    "bottom": "factoryascent:block/docking_port_side"
+  }
+}

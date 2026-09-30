@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:electrolysis",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:deuterium_cell",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "factoryascent:tritium_cell"
+  },
+  "time": 400,
+  "min_grade": 6,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:empty_cell",
+      "count": 3
+    },
+    "chance": 1.0
+  }
+}

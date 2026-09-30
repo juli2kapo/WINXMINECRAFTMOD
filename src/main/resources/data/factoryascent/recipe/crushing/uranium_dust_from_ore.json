@@ -1,0 +1,21 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ores/uranium",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:uranium_dust",
+    "count": 3
+  },
+  "time": 80,
+  "min_grade": 3,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:lead_dust"
+    },
+    "chance": 0.1
+  }
+}

@@ -18,6 +18,12 @@ public final class ShipConfig {
     public static final ModConfigSpec.IntValue ORBIT_REENTRY_Y;
     public static final ModConfigSpec.IntValue REENTRY_DROP;
     public static final ModConfigSpec.BooleanValue CARGO_IN_ITEM;
+    public static final ModConfigSpec.IntValue FUEL_MOON;
+    public static final ModConfigSpec.IntValue FUEL_MARS;
+    public static final ModConfigSpec.IntValue FUEL_IO;
+    public static final ModConfigSpec.IntValue CRUISE_MOON;
+    public static final ModConfigSpec.IntValue CRUISE_MARS;
+    public static final ModConfigSpec.IntValue CRUISE_IO;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -48,6 +54,17 @@ public final class ShipConfig {
         REENTRY_DROP = b.comment("Blocks below the orbit threshold at which a re-entering shuttle appears in the Overworld.")
                 .defineInRange("reentryDrop", 40, 5, 2000);
         b.pop();
+        b.push("navigation");
+        FUEL_MOON = b.comment("Shuttle navigation: tank units a trip between Earth orbit and the Moon costs.",
+                        "Trips cost the difference between two destinations' values (Moon -> Mars = Mars - Moon); an Ion Drive halves it.")
+                .defineInRange("fuelMoon", 3000, 0, 1_000_000);
+        FUEL_MARS = b.comment("Tank units from Earth orbit to Mars.").defineInRange("fuelMars", 7000, 0, 1_000_000);
+        FUEL_IO = b.comment("Tank units from Earth orbit to Io.").defineInRange("fuelIo", 11000, 0, 1_000_000);
+        CRUISE_MOON = b.comment("Seconds of cruise from Earth orbit to the Moon (trips take the difference, at least 5 s).")
+                .defineInRange("cruiseSecondsMoon", 8, 1, 600);
+        CRUISE_MARS = b.comment("Seconds of cruise from Earth orbit to Mars.").defineInRange("cruiseSecondsMars", 15, 1, 600);
+        CRUISE_IO = b.comment("Seconds of cruise from Earth orbit to Io.").defineInRange("cruiseSecondsIo", 22, 1, 600);
+        b.pop();
         SPEC = b.build();
     }
 
@@ -76,6 +93,14 @@ public final class ShipConfig {
 
     public static boolean cargoInItem() {
         return !SPEC.isLoaded() || CARGO_IN_ITEM.get();
+    }
+
+    /** The navigation ladder currently configured (fuel units and cruise ticks from Earth orbit). */
+    public static net.juli2kapo.factoryascent.space.planet.Navigation.Costs navCosts() {
+        if (!SPEC.isLoaded()) return net.juli2kapo.factoryascent.space.planet.Navigation.Costs.DEFAULT;
+        return new net.juli2kapo.factoryascent.space.planet.Navigation.Costs(
+                new int[] {0, FUEL_MOON.get(), FUEL_MARS.get(), FUEL_IO.get()},
+                new int[] {0, CRUISE_MOON.get() * 20, CRUISE_MARS.get() * 20, CRUISE_IO.get() * 20});
     }
 
     /** The orbit-transfer thresholds currently configured. */

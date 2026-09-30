@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:wind_turbine"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:wind_turbine"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_wind.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_wind.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_power"
+}

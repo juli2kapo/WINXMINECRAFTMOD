@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "factoryascent:block/air_vent_top_on",
+    "bottom": "factoryascent:block/air_vent_side",
+    "side": "factoryascent:block/air_vent_side"
+  }
+}

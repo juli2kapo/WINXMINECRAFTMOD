@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:alloying",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/quantum_alloy",
+      "count": 1
+    },
+    {
+      "ingredient": "minecraft:glowstone_dust",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "factoryascent:stellar_alloy_ingot",
+    "count": 2
+  },
+  "time": 160,
+  "min_grade": 7
+}

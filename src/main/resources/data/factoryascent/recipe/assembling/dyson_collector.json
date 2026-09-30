@@ -1,0 +1,27 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:stellar_alloy_ingot",
+      "count": 1
+    },
+    {
+      "ingredient": "factoryascent:silicon_wafer",
+      "count": 4
+    },
+    {
+      "ingredient": "factoryascent:advanced_circuit",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:plates/aluminum",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:dyson_collector",
+    "count": 2
+  },
+  "time": 200,
+  "min_grade": 6
+}

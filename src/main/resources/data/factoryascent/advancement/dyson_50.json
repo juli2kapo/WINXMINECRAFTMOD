@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:dyson_25",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:dyson_monitor"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.dyson_50.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.dyson_50.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

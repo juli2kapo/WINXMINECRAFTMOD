@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " P ",
+    "PGP",
+    " P "
+  ],
+  "key": {
+    "P": "#c:plates/tin",
+    "G": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "factoryascent:empty_cell",
+    "count": 4
+  }
+}

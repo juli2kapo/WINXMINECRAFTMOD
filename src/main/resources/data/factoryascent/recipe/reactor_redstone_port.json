@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:reactor_casing",
+    "minecraft:comparator",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "id": "factoryascent:reactor_redstone_port"
+  }
+}

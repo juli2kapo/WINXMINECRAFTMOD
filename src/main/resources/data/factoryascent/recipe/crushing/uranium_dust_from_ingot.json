@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "#c:ingots/uranium",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:uranium_dust"
+  },
+  "time": 40,
+  "min_grade": 2
+}

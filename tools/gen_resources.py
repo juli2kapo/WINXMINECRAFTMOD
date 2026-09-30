@@ -129,12 +129,19 @@ MACHINES = {
     "mob_farm": ("industrial", True, True,
                  "Put a filled Mob Capsule in: it produces that mob's drops with power, without the mob. Bosses are refused.",
                  "Pon una cápsula de criaturas llena: produce lo que suelta esa criatura usando energía, sin la criatura. Rechaza jefes."),
+    # power ladder (models, recipes and lang in tools/features/power.py)
+    "centrifuge": ("industrial", True, True,
+                   "Gas centrifuge cascade: enriches uranium (3 dust into 1 enriched + 2 depleted) and reprocesses spent fuel into nuclear waste and RTG pellets.",
+                   "Cascada de centrifugado de gas: enriquece uranio (3 polvos en 1 enriquecido + 2 empobrecidos) y reprocesa combustible gastado en residuos nucleares y pastillas para RTG."),
     "precision_assembler": ("orbital", True, True,
                             "Clean-room assembler for spacecraft parts such as the Orbital Targeting Core.",
                             "Ensambladora de sala limpia para piezas espaciales como el núcleo de puntería orbital."),
     "plasma_forge": ("orbital", True, True,
                      "Forges quantum alloy in a plasma arc: the way into the Quantum age.",
                      "Forja aleación cuántica en un arco de plasma: la entrada a la Era Cuántica."),
+    "electrolyzer": ("orbital", True, True,
+                     "Splits water: a water bucket and an Empty Cell make a Deuterium Cell; four Deuterium Cells give a Tritium Cell. Fusion fuel.",
+                     "Separa el agua: un cubo de agua y una celda vacía dan una celda de deuterio; cuatro celdas de deuterio dan una de tritio. Combustible de fusión."),
     "quantum_energy_cell": ("quantum", True, False, "Stores 64× more energy.", "Almacena 64 veces más energía."),
 }
 MACHINE_EN = {
@@ -151,6 +158,7 @@ MACHINE_EN = {
     "charger": "Charger", "floodlight": "Floodlight", "block_breaker": "Block Breaker", "block_placer": "Block Placer",
     "vacuum_hopper": "Vacuum Hopper", "tree_farm": "Tree Farm", "industrial_grinder": "Industrial Grinder",
     "recycler": "Recycler", "mob_farm": "Mob Farm Controller",
+    "centrifuge": "Centrifuge", "electrolyzer": "Electrolyzer",
 }
 MACHINE_ES = {
     "quern": "Molino de mano", "brick_kiln": "Horno de ladrillo", "burner_crusher": "Trituradora a combustión",
@@ -167,6 +175,7 @@ MACHINE_ES = {
     "charger": "Cargador", "floodlight": "Reflector", "block_breaker": "Rompedor de bloques", "block_placer": "Colocador de bloques",
     "vacuum_hopper": "Tolva aspiradora", "tree_farm": "Granja de árboles", "industrial_grinder": "Moledora industrial",
     "recycler": "Recicladora", "mob_farm": "Granja de criaturas",
+    "centrifuge": "Centrifugadora", "electrolyzer": "Electrolizador",
 }
 
 CABLES = {"lv": "copper_cable", "mv": "aluminum_cable", "hv": "titanium_cable", "ev": "superconductor_cable"}
@@ -256,6 +265,10 @@ class FeatureContext:
         self.DATA = DATA
         self.en = {}
         self.es = {}
+
+    def add_tag(self, namespace, kind, path, values):
+        """Adds entries to a tag file the core generator writes (needs_iron_tool, c:ingots...)."""
+        TAG_EXTRAS.setdefault((namespace, kind, path), []).extend(values)
 
     def lang(self, key, en, es):
         """Adds a translation (key without namespace prefix handling: pass the full key)."""
@@ -626,9 +639,24 @@ def loot():
 
 # ============================================================ tags & data maps
 
+# Entries feature modules add to tags this script writes itself (ctx.add_tag), merged in by tag().
+TAG_EXTRAS = {}
+
+
 def tag(namespace, kind, path, values):
+    values = list(values) + [v for v in TAG_EXTRAS.pop((namespace, kind, path), []) if v not in values]
     write(DATA / namespace / "tags" / kind / f"{path}.json",
           {"replace": False, "values": [v if v.startswith("#") else ns(v) for v in values]})
+
+
+def flush_tag_extras():
+    """ctx.add_tag entries for tags the core doesn't write: merged into whatever file features wrote."""
+    for (namespace, kind, path), values in sorted(TAG_EXTRAS.items()):
+        f = DATA / namespace / "tags" / kind / f"{path}.json"
+        old = json.loads(f.read_text())["values"] if f.exists() else []
+        new = old + [v for v in (x if x.startswith("#") else ns(x) for x in values) if v not in old]
+        write(f, {"replace": False, "values": new})
+    TAG_EXTRAS.clear()
 
 
 def tags(extra_pickaxe, extra_axe=()):
@@ -1164,6 +1192,7 @@ def main():
     lang(extra_en, extra_es, ADV)
     loot()
     tags(extra_pickaxe, extra_axe)
+    flush_tag_extras()
     worldgen()
     count = sum(1 for _ in ROOT.rglob("*.json"))
     print(f"wrote resources, {count} json files under {ROOT} (storage module: {'yes' if storage else 'no'}, "

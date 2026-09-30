@@ -78,14 +78,18 @@ public class KineticBlockEntity extends AbstractMachineBlockEntity {
             return false;
         }
         List<ProcessingMachineBlockEntity> targets = new ArrayList<>(2);
+        List<net.juli2kapo.factoryascent.power.KineticSink> sinks = new ArrayList<>(1);
         for (Direction dir : Direction.values()) {
-            if (level.getBlockEntity(worldPosition.relative(dir)) instanceof ProcessingMachineBlockEntity machine
-                    && machine.type().power() == MachineType.Power.MANUAL) {
+            var be = level.getBlockEntity(worldPosition.relative(dir));
+            if (be instanceof ProcessingMachineBlockEntity machine && machine.type().power() == MachineType.Power.MANUAL) {
                 targets.add(machine);
+            } else if (be instanceof net.juli2kapo.factoryascent.power.KineticSink sink) {
+                sinks.add(sink); // the Kinetic Dynamo (power ladder)
             }
         }
-        driven = targets.size();
+        driven = targets.size() + sinks.size();
         for (ProcessingMachineBlockEntity machine : targets) machine.driveKinetic(output / driven);
+        for (var sink : sinks) sink.driveKinetic(output / driven);
         status = driven > 0 ? STATUS_WORKING : STATUS_IDLE;
         return true;
     }

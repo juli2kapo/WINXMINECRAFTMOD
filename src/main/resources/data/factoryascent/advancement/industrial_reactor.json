@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:reactor_controller"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:reactor_controller"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_reactor.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_reactor.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_fuel_rod"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "factoryascent:centrifuging",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:nuclear_waste",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "factoryascent:radioisotope_pellet"
+  },
+  "time": 400,
+  "min_grade": 5
+}

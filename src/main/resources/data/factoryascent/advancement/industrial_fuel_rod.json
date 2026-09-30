@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:fuel_rod"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:fuel_rod"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_fuel_rod.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_fuel_rod.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_centrifuge"
+}

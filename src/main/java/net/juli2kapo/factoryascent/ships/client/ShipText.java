@@ -69,16 +69,20 @@ final class ShipText {
             case Shuttle.STATE_FLYING -> Component.translatable("gui.factoryascent.ship.state.flying").withStyle(ChatFormatting.AQUA);
             case Shuttle.STATE_ORBIT -> Component.translatable("gui.factoryascent.ship.state.orbit").withStyle(ChatFormatting.LIGHT_PURPLE);
             case Shuttle.STATE_REENTRY -> Component.translatable("gui.factoryascent.ship.state.reentry").withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
+            case Shuttle.STATE_CRUISE -> Component.translatable("gui.factoryascent.ship.state.cruise").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
             default -> Component.translatable("gui.factoryascent.ship.state.landed").withStyle(ChatFormatting.GRAY);
         };
     }
 
     /** Where climbing (or descending) will take the shuttle from here. */
-    static Component destination(boolean orbit, boolean overworld, int overworldTop) {
+    static Component destination(ShipMath.Realm realm, int overworldTop) {
         ShipMath.Thresholds t = ShipConfig.thresholds();
-        Component where = orbit ? Component.translatable("gui.factoryascent.ship.dest_earth", t.reentryY())
-                : overworld ? Component.translatable("gui.factoryascent.ship.dest_orbit", t.orbitY(overworldTop))
-                : Component.translatable("gui.factoryascent.ship.dest_none");
+        Component where = switch (realm) {
+            case ORBIT -> Component.translatable("gui.factoryascent.ship.dest_earth", t.reentryY());
+            case OVERWORLD -> Component.translatable("gui.factoryascent.ship.dest_orbit", t.orbitY(overworldTop));
+            case PLANET -> Component.translatable("gui.factoryascent.ship.dest_leave", net.juli2kapo.factoryascent.space.planet.Planet.ORBIT_LINE);
+            case OTHER -> Component.translatable("gui.factoryascent.ship.dest_none");
+        };
         return Component.translatable("gui.factoryascent.ship.destination", where);
     }
 

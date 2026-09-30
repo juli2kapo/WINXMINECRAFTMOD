@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "factoryascent:block/mass_driver_top",
+    "side": "factoryascent:block/mass_driver_side",
+    "bottom": "factoryascent:block/mass_driver_bottom"
+  }
+}

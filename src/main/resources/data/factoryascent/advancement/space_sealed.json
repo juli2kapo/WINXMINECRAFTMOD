@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:space_orbit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:oxygen_sealer"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.space_sealed.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.space_sealed.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

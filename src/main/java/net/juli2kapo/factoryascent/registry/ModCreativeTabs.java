@@ -56,6 +56,7 @@ public final class ModCreativeTabs {
             out -> {
                 machines(out, ModCreativeTabs::isPower);
                 for (Tier tier : Tier.VALUES) out.accept(ModBlocks.POWER_CABLES.get(tier).get());
+                net.juli2kapo.factoryascent.power.PowerContent.powerItems().forEach(i -> out.accept(i.get()));
             });
 
     public static final Supplier<CreativeModeTab> LOGISTICS = tab("logistics", "power",
@@ -74,6 +75,7 @@ public final class ModCreativeTabs {
                 ModItems.TOOLS.values().forEach(t -> out.accept(t.get()));
                 net.juli2kapo.factoryascent.gear.GearContent.toolItems().forEach(i -> out.accept(i.get()));
                 net.juli2kapo.factoryascent.space.SpaceContent.toolItems().forEach(i -> out.accept(i.get()));
+                net.juli2kapo.factoryascent.power.PowerContent.toolItems().forEach(i -> out.accept(i.get()));
             });
 
     public static final Supplier<CreativeModeTab> MATERIALS = tab("materials", "orbital",
@@ -81,6 +83,7 @@ public final class ModCreativeTabs {
             out -> {
                 ModItems.MATERIALS.values().forEach(m -> out.accept(m.get()));
                 net.juli2kapo.factoryascent.gear.GearContent.materialItems().forEach(i -> out.accept(i.get()));
+                net.juli2kapo.factoryascent.power.PowerContent.materialItems().forEach(i -> out.accept(i.get()));
             });
 
     public static final Supplier<CreativeModeTab> UTILITY = tab("utility", "tools",
@@ -100,9 +103,12 @@ public final class ModCreativeTabs {
 
     public static final Supplier<CreativeModeTab> WORLD = tab("world", "materials",
             () -> ModBlocks.SIMPLE.get("tin_ore").get(),
-            out -> ModBlocks.SIMPLE.forEach((name, b) -> {
-                if (b != ModBlocks.COKE_OVEN_BRICKS && b != ModBlocks.FIRE_BRICKS) out.accept(b.get());
-            }));
+            out -> {
+                ModBlocks.SIMPLE.forEach((name, b) -> {
+                    if (b != ModBlocks.COKE_OVEN_BRICKS && b != ModBlocks.FIRE_BRICKS) out.accept(b.get());
+                });
+                net.juli2kapo.factoryascent.power.PowerContent.worldItems().forEach(i -> out.accept(i.get()));
+            });
 
     private static Supplier<CreativeModeTab> tab(String name, String after, Supplier<? extends ItemLike> icon,
                                                  Consumer<CreativeModeTab.Output> items) {

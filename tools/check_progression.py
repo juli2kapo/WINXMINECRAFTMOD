@@ -189,12 +189,31 @@ def ore_drops():
 
 
 def worldgen_blocks():
-    """Mod blocks placed by world generation (ores)."""
+    """Mod blocks placed by world generation: ores (configured features) and the terrain of the mod's own
+    dimensions (the planets' noise settings: default block, fluid and surface rules)."""
     found = set()
-    for f in (RES / f"data/{MOD}/worldgen/configured_feature").glob("*.json"):
-        for m in re.finditer(r'"Name":\s*"(factoryascent:[^"]+)"', f.read_text()):
-            found.add(m.group(1))
+    for sub in ("configured_feature", "noise_settings"):
+        for f in (RES / f"data/{MOD}/worldgen/{sub}").glob("*.json"):
+            for m in re.finditer(r'"Name":\s*"(factoryascent:[^"]+)"', f.read_text()):
+                found.add(m.group(1))
     return found
+
+
+def feature_progression():
+    """Conversions that aren't recipes (a reactor burning fuel rods into spent ones...), declared by feature
+    modules as PROGRESSION = [(name, [outputs], [inputs], [blocks that must be obtainable])]."""
+    import importlib.util
+    out = []
+    for path in sorted((ROOT / "tools" / "features").glob("*.py")):
+        if "PROGRESSION = " not in path.read_text():
+            continue
+        spec = importlib.util.spec_from_file_location(f"progression_{path.stem}", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for name, outs, ins, blocks in getattr(module, "PROGRESSION", []):
+            out.append((f"{path.stem}: {name}", [ns(o) if ":" in o else f"{MOD}:{o}" for o in outs],
+                        [{ns(i) if ":" in i else f"{MOD}:{i}"} for i in list(ins) + list(blocks)], None))
+    return out
 
 
 def main():
@@ -202,7 +221,7 @@ def main():
     tags = load_tags()
     items = mod_items()
     grades = machine_grades()
-    recipes = load_recipes(tags)
+    recipes = load_recipes(tags) + feature_progression()
     drops = ore_drops()
 
     have = set()

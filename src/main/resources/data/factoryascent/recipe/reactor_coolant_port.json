@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:reactor_casing",
+    "minecraft:bucket",
+    "factoryascent:motor"
+  ],
+  "result": {
+    "id": "factoryascent:reactor_coolant_port"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:space_orbit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:moon_regolith"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.planet_moon.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.planet_moon.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -2,6 +2,7 @@ package net.juli2kapo.factoryascent.space;
 
 import java.util.Map;
 import java.util.Set;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.concurrent.ConcurrentHashMap;
 import net.juli2kapo.factoryascent.FactoryAscent;
 import net.minecraft.core.BlockPos;
@@ -22,9 +23,11 @@ import net.minecraft.world.phys.Vec3;
  * capsules): which dimensions have no air, and whether an entity can breathe right now.
  *
  * <p>An entity breathes in an airless dimension when it rides a {@link SealedCabin} (or an entity
- * type in the {@link #SEALED_VEHICLES} tag), stands in an Oxygen Sealer's bubble, or wears the whole
- * Astronaut Suit with air left in its chestplate. Everything else suffocates (see
- * {@link SpaceEvents}).
+ * type in the {@link #SEALED_VEHICLES} tag), stands in a sealed room an Oxygen Sealer or Air Vent
+ * keeps full of air ({@link net.juli2kapo.factoryascent.space.station.AirVolume}), or wears the
+ * whole Astronaut Suit with air left in its chestplate. Everything else suffocates (see
+ * {@link SpaceEvents}). The planets ({@link net.juli2kapo.factoryascent.space.planet.Planet}) are
+ * airless too.
  */
 public final class SpaceRules {
     /** The orbit dimension (data pack {@code factoryascent:orbit}). */
@@ -35,11 +38,14 @@ public final class SpaceRules {
             TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "sealed_vehicles"));
 
     private static final Set<ResourceKey<Level>> AIRLESS = ConcurrentHashMap.newKeySet();
-    /** Running Oxygen Sealers per dimension (server side, refreshed by the sealers every tick). */
-    private static final Map<ResourceKey<Level>, Set<BlockPos>> SEALERS = new ConcurrentHashMap<>();
+    /** Sealed rooms with air per dimension, by the sealer or vent filling them (server side). */
+    private static final Map<ResourceKey<Level>, Map<BlockPos, LongSet>> ZONES = new ConcurrentHashMap<>();
 
     static {
         AIRLESS.add(ORBIT);
+        for (net.juli2kapo.factoryascent.space.planet.Planet p : net.juli2kapo.factoryascent.space.planet.Planet.values()) {
+            if (p.airless()) AIRLESS.add(p.key);
+        }
     }
 
     private SpaceRules() {}
@@ -50,7 +56,7 @@ public final class SpaceRules {
         AIR,
         /** Riding a sealed vehicle. */
         CABIN,
-        /** Inside an Oxygen Sealer's bubble. */
+        /** Inside a sealed room full of air. */
         BUBBLE,
         /** On its suit's tank (drains). */
         SUIT,
@@ -113,30 +119,36 @@ public final class SpaceRules {
         return SuitItems.holdsOxygen(chest) ? chest : ItemStack.EMPTY;
     }
 
-    // ---------------------------------------------------------------- sealer bubbles
+    // ---------------------------------------------------------------- sealed rooms
 
-    /** Inside the bubble of a running Oxygen Sealer (server side). */
+    /** Inside a sealed room kept full of air by a running Oxygen Sealer or Air Vent (server side). */
     public static boolean inOxygenBubble(Level level, Vec3 pos) {
-        Set<BlockPos> sealers = SEALERS.get(level.dimension());
-        if (sealers == null || sealers.isEmpty()) return false;
-        double r = SpaceConfig.get(SpaceConfig.SEALER_RADIUS) + 0.5;
-        for (BlockPos s : sealers) {
-            if (pos.distanceToSqr(s.getX() + 0.5, s.getY() + 0.5, s.getZ() + 0.5) <= r * r) return true;
-        }
-        return false;
+        return airSourceAt(level, BlockPos.containing(pos)) != null;
     }
 
-    static void setSealer(Level level, BlockPos pos, boolean running) {
+    /** The sealer or vent whose room holds this cell, if any. */
+    public static @org.jspecify.annotations.Nullable BlockPos airSourceAt(Level level, BlockPos cell) {
+        Map<BlockPos, LongSet> zones = ZONES.get(level.dimension());
+        if (zones == null || zones.isEmpty()) return null;
+        long key = cell.asLong();
+        for (var e : zones.entrySet()) {
+            if (e.getValue().contains(key)) return e.getKey();
+        }
+        return null;
+    }
+
+    /** Sets (or with null clears) the room a sealer keeps full of air. */
+    public static void setAirZone(Level level, BlockPos source, @org.jspecify.annotations.Nullable LongSet cells) {
         if (level.isClientSide()) return;
-        if (running) {
-            SEALERS.computeIfAbsent(level.dimension(), k -> ConcurrentHashMap.newKeySet()).add(pos.immutable());
+        if (cells != null && !cells.isEmpty()) {
+            ZONES.computeIfAbsent(level.dimension(), k -> new ConcurrentHashMap<>()).put(source.immutable(), cells);
         } else {
-            Set<BlockPos> set = SEALERS.get(level.dimension());
-            if (set != null) set.remove(pos);
+            Map<BlockPos, LongSet> zones = ZONES.get(level.dimension());
+            if (zones != null) zones.remove(source);
         }
     }
 
     static void clearSealers() {
-        SEALERS.clear();
+        ZONES.clear();
     }
 }

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PKP",
+    "CMC",
+    "PFP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "K": "minecraft:composter",
+    "C": "factoryascent:advanced_circuit",
+    "M": "factoryascent:advanced_machine_frame",
+    "F": "minecraft:furnace"
+  },
+  "result": {
+    "id": "factoryascent:biogas_generator"
+  }
+}

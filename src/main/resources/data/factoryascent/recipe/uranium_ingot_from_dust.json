@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": "factoryascent:uranium_dust",
+  "result": {
+    "id": "factoryascent:uranium_ingot"
+  },
+  "experience": 0.3,
+  "cookingtime": 200
+}

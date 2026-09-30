@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:electrolysis",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:water_bucket",
+      "count": 1
+    },
+    {
+      "ingredient": "factoryascent:empty_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:deuterium_cell"
+  },
+  "time": 200,
+  "min_grade": 6
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "factoryascent:block/reactor_control_rod"
+    }
+  }
+}

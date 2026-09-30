@@ -65,8 +65,10 @@ public final class ShipsClient {
             e.register(LIGHTS);
             e.register(HATCH);
         });
-        modBus.addListener((RegisterGuiLayersEvent e) ->
-                e.registerAbove(VanillaGuiLayers.HOTBAR, Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "ship_hud"), ShipHud::render));
+        modBus.addListener((RegisterGuiLayersEvent e) -> {
+            e.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "shuttle_warp"), WarpOverlay::render);
+            e.registerAbove(VanillaGuiLayers.HOTBAR, Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "ship_hud"), ShipHud::render);
+        });
         NeoForge.EVENT_BUS.addListener(ShipsClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(ShipsClient::onCameraDistance);
         NeoForge.EVENT_BUS.addListener(ShipsClient::onCameraAngles);

@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "factoryascent:tin_ore",
-    "factoryascent:bauxite_ore"
+    "factoryascent:bauxite_ore",
+    "factoryascent:lead_ore"
   ]
 }

@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:raw_lead",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:lead_dust"
+  },
+  "time": 40,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:lead_dust"
+    },
+    "chance": 0.5
+  }
+}

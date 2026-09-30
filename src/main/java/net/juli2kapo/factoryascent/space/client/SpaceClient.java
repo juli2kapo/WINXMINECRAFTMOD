@@ -73,6 +73,9 @@ public final class SpaceClient {
                 e.register(k.getKey(), SimpleUnbakedStandaloneModel.simpleModelWrapper(
                         Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "block/" + k.getValue())));
             }
+            for (var k : List.of(SatelliteSkyClient.SURVEY, SatelliteSkyClient.UPLINK, SatelliteSkyClient.GUARDIAN)) {
+                e.register(k, SimpleUnbakedStandaloneModel.simpleModelWrapper(SatelliteSkyClient.modelId(k)));
+            }
         });
         modBus.addListener((EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerEntityRenderer(SpaceContent.ROCKET_SEAT.get(), NoopRenderer::new));
@@ -89,7 +92,7 @@ public final class SpaceClient {
             e.registerCategory(HOVER_KEY.getCategory());
             e.register(HOVER_KEY);
         });
-        modBus.addListener((RegisterRenderPipelinesEvent e) -> e.registerPipeline(OrbitSky.PIPELINE));
+        modBus.addListener((RegisterRenderPipelinesEvent e) -> e.registerPipeline(SpaceSkies.PIPELINE));
         modBus.addListener((RegisterGuiLayersEvent e) -> e.registerAbove(VanillaGuiLayers.HOTBAR,
                 Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "space_hud"), SpaceHud::render));
         modBus.addListener((RegisterClientPayloadHandlersEvent e) -> {
@@ -97,6 +100,11 @@ public final class SpaceClient {
                 reentryTicks = payload.ticks();
                 reentryLength = Math.max(1, payload.ticks());
             });
+            e.register(net.juli2kapo.factoryascent.orbital.SatelliteSky.Payload.TYPE, (payload, context) -> SatelliteSkyClient.receive(payload));
+            e.register(net.juli2kapo.factoryascent.space.station.StationPayloads.StationView.TYPE,
+                    (payload, context) -> StationScreens.handleView(payload));
+            e.register(net.juli2kapo.factoryascent.space.station.StationPayloads.StarChart.TYPE,
+                    (payload, context) -> StationScreens.handleChart(payload));
             e.register(SpacePayloads.Breathing.TYPE, (payload, context) -> {
                 breath = payload.breath();
                 Minecraft mc = Minecraft.getInstance();
@@ -109,9 +117,13 @@ public final class SpaceClient {
                 if (Minecraft.getInstance().player != null) ClientPacketDistributor.sendToServer(new SpacePayloads.JetpackHover());
             }
             if (reentryTicks > 0) reentryTicks--;
+            DustStormClient.tick();
         });
         NeoForge.EVENT_BUS.addListener(SpaceClient::shake);
-        NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent.AfterSky e) -> OrbitSky.afterSky(e));
+        NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent.AfterSky e) -> SpaceSkies.afterSky(e));
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent e) -> SatelliteSkyClient.submit(e));
+        NeoForge.EVENT_BUS.addListener((ViewportEvent.RenderFog e) -> DustStormClient.fog(e));
+        NeoForge.EVENT_BUS.addListener((ViewportEvent.ComputeFogColor e) -> DustStormClient.fogColor(e));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

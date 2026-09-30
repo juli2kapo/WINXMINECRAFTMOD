@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "factoryascent:hazmat"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "factoryascent:hazmat"
+      }
+    ]
+  }
+}

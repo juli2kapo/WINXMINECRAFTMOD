@@ -1,0 +1,45 @@
+{
+  "geiger_click": {
+    "subtitle": "subtitles.factoryascent.geiger_click",
+    "sounds": [
+      {
+        "name": "minecraft:random/click",
+        "pitch": 2.0,
+        "volume": 0.35
+      },
+      {
+        "name": "minecraft:note/hat",
+        "pitch": 1.6,
+        "volume": 0.45
+      }
+    ]
+  },
+  "reactor_alarm": {
+    "subtitle": "subtitles.factoryascent.reactor_alarm",
+    "sounds": [
+      {
+        "name": "minecraft:note/bit",
+        "pitch": 0.8,
+        "volume": 1.0,
+        "attenuation_distance": 48
+      },
+      {
+        "name": "minecraft:note/pling",
+        "pitch": 0.7,
+        "volume": 1.0,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "fusion_hum": {
+    "subtitle": "subtitles.factoryascent.fusion_hum",
+    "sounds": [
+      {
+        "name": "minecraft:block/beacon/ambient",
+        "pitch": 0.6,
+        "volume": 1.0,
+        "attenuation_distance": 24
+      }
+    ]
+  }
+}

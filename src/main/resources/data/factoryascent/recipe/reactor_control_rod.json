@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " M ",
+    "LRL",
+    " R "
+  ],
+  "key": {
+    "M": "factoryascent:motor",
+    "L": "#c:plates/lead",
+    "R": "#c:rods/steel"
+  },
+  "result": {
+    "id": "factoryascent:reactor_control_rod"
+  }
+}

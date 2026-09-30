@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "factoryascent:block/dyson_monitor"
+    },
+    "facing=east": {
+      "model": "factoryascent:block/dyson_monitor",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "factoryascent:block/dyson_monitor",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "factoryascent:block/dyson_monitor",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "PCP",
+    "PWP"
+  ],
+  "key": {
+    "S": "factoryascent:solar_panel",
+    "P": "#c:plates/aluminum",
+    "C": "factoryascent:advanced_circuit",
+    "W": "#c:wires/gold"
+  },
+  "result": {
+    "id": "factoryascent:solar_array"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:electrolyzer",
+              "factoryascent:deuterium_cell"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:electrolyzer"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_electrolyzer.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_electrolyzer.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_orbital"
+}

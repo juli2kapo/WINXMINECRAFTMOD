@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "factoryascent:bronze_helmet"
+    "factoryascent:bronze_helmet",
+    "factoryascent:hazmat_helmet"
   ]
 }

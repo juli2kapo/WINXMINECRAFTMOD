@@ -6,6 +6,8 @@
     "#c:ingots/steel",
     "#c:ingots/aluminum",
     "#c:ingots/titanium",
-    "#c:ingots/quantum_alloy"
+    "#c:ingots/quantum_alloy",
+    "#c:ingots/lead",
+    "#c:ingots/uranium"
   ]
 }

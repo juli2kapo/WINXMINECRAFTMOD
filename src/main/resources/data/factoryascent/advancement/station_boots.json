@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:magnetic_boots"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:magnetic_boots"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.station_boots.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.station_boots.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:space_suit"
+}

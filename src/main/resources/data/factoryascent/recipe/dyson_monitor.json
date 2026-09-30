@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TGT",
+    "AOA",
+    "TST"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "G": "minecraft:tinted_glass",
+    "A": "factoryascent:advanced_circuit",
+    "O": "factoryascent:orbital_targeting_core",
+    "S": "factoryascent:stellar_alloy_ingot"
+  },
+  "result": {
+    "id": "factoryascent:dyson_monitor"
+  }
+}
