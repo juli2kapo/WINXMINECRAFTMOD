@@ -50,10 +50,10 @@ final class DustStormClient {
         float storm = storm(mc.level, (float) event.getPartialTick());
         if (storm <= 0.01f) return;
         float far = event.getFarPlaneDistance();
-        float target = Mth.lerp(storm, far, 14f);
+        float target = Mth.lerp(storm, far, 30f);
         event.setFarPlaneDistance(Math.min(far, target));
         event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), 0f));
-        event.getFogData().skyEnd = Math.min(event.getFogData().skyEnd, Mth.lerp(storm, event.getFogData().skyEnd, 30f));
+        event.getFogData().skyEnd = Math.min(event.getFogData().skyEnd, Mth.lerp(storm, event.getFogData().skyEnd, 45f));
     }
 
     static void fogColor(ViewportEvent.ComputeFogColor event) {
