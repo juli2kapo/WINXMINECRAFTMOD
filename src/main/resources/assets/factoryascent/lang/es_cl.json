@@ -924,7 +924,7 @@
   "desc.factoryascent.steam_engine": "El combustible calienta la caldera; desde 100 °C el vapor mueve el volante. Necesita agua: cubos, o fuentes de agua que la toquen. Necesita aire.",
   "tooltip.factoryascent.power.steam_engine": "%s FE/t a plena presión",
   "block.factoryascent.wind_turbine": "Turbina eólica",
-  "desc.factoryascent.wind_turbine": "Ponla sobre 4+ tramos de mástil. Más energía en altura y con tormenta; el disco de 5×5 del rotor debe estar libre.",
+  "desc.factoryascent.wind_turbine": "Ponla sobre 4+ tramos de mástil: la energía sale bajo el pie del mástil. Más energía en altura y con tormenta; el disco de 5×5 del rotor debe estar libre.",
   "tooltip.factoryascent.power.wind_turbine": "Hasta %s FE/t con tormenta",
   "block.factoryascent.biogas_generator": "Generador de biogás",
   "desc.factoryascent.biogas_generator": "Digiere cultivos, hojas, brotes o carne podrida en biogás y lo quema. Necesita aire.",

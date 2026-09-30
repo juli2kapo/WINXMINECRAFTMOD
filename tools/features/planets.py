@@ -13,7 +13,7 @@ Blocks, items, loot, recipes, advancements (landing on each planet) and lang (En
 """
 
 MOD = "factoryascent"
-PICKAXE_BLOCKS = ["moon_rock", "hematite_ore", "martian_ice", "io_rock", "ionite_ore"]
+PICKAXE_BLOCKS = ["moon_rock", "mars_rock", "hematite_ore", "martian_ice", "io_rock", "ionite_ore"]
 SHOVEL_BLOCKS = ["moon_regolith", "helium_3_regolith", "mars_sand"]
 TERRAIN = SHOVEL_BLOCKS + PICKAXE_BLOCKS
 ITEMS = ["helium_3", "raw_hematite", "ionite", "helium_3_fuel_cell", "thermal_lining", "ion_drive", "star_chart"]
@@ -250,7 +250,7 @@ def worlds(ctx):
     tracks = dict(DAY_TRACKS)
     tracks["minecraft:visual/sunrise_sunset_color"] = blue_sunset(DAY_TRACKS["minecraft:visual/sunrise_sunset_color"])
     ctx.write(ctx.DATA / MOD / "timeline" / "mars_day.json", {"clock": "minecraft:overworld", "period_ticks": 24000, "tracks": tracks})
-    mars_sky = {"minecraft:visual/sky_color": "#d9a27a", "minecraft:visual/fog_color": "#c98f68"}
+    mars_sky = {"minecraft:visual/sky_color": "#dba395", "minecraft:visual/fog_color": "#c9927c"}
     mars_ores = [ore(ctx, "hematite_ore", "hematite_ore", ["mars_rock"], 8, 12, 0, 90),
                  ore(ctx, "martian_ice", "martian_ice", ["mars_rock", "mars_sand"], 18, 4, 28, 70)]
     biome(ctx, "mars", mars_sky, [crater(ctx, "mars_crater", 7)], mars_ores,

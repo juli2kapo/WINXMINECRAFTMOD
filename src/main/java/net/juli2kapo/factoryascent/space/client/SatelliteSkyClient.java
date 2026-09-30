@@ -46,7 +46,7 @@ public final class SatelliteSkyClient {
     static final StandaloneModelKey<BlockStateModelPart> GUARDIAN = key("guardian_satellite_3d");
     private static final Identifier DOT = Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "textures/environment/satellite_dot.png");
     /** How big a satellite looks: as if it were this many times its item model, at its true distance. */
-    private static final float SCALE = 5f;
+    private static final float SCALE = 9f;
     /** Nearest a satellite is drawn (farther ones are pulled in and shrunk to match). */
     private static final double DRAW_DISTANCE = 64;
 
@@ -78,7 +78,7 @@ public final class SatelliteSkyClient {
 
     /** Heights of the passes: low over orbit (you're up there with them), higher over planets, highest seen from the ground. */
     private static double[] heights(net.minecraft.resources.ResourceKey<Level> dim) {
-        if (dim == SpaceRules.ORBIT) return new double[] {40, 70};
+        if (dim == SpaceRules.ORBIT) return new double[] {30, 60};
         if (Planet.of(dim) != null) return new double[] {90, 80};
         return new double[] {170, 90};
     }
@@ -127,7 +127,7 @@ public final class SatelliteSkyClient {
             }
             if (scoping) {
                 Vec3 to = new Vec3(off[0], off[1], off[2]).normalize();
-                if (to.dot(look) > Math.cos(Math.toRadians(4))) {
+                if (to.dot(look) > Math.cos(Math.toRadians(6))) {
                     collector.submitNameTag(pose, new Vec3(0, SCALE * k * 0.9, 0), 0, label(e), true,
                             LightCoordsUtil.FULL_BRIGHT, event.getLevelRenderState().cameraRenderState);
                 }
@@ -150,6 +150,7 @@ public final class SatelliteSkyClient {
         List<SatelliteSky.Entry> list = current();
         if (list.isEmpty()) return;
         float stars = SpaceSkies.starBrightness(partial) * (1f - level.getRainLevel(partial));
+        if (level.getGameTime() % 100 == 0) com.mojang.logging.LogUtils.getLogger().info("[sky-debug] dots {} stars {}", list.size(), stars);
         if (stars <= 0.02f) return;
         double time = level.getGameTime() + partial;
         double[] h = heights(level.dimension());
@@ -159,7 +160,7 @@ public final class SatelliteSkyClient {
             if (dir.y < 0.05f) continue;
             float fade = Math.min(1f, (dir.y - 0.05f) * 6f) * Math.min(1f, stars * 2.5f);
             float r = e.own() ? 0.85f : 1f, g = 1f, b = e.own() ? 0.9f : 0.95f;
-            SpaceSkies.disc(mv, dir, 0.42f, 0f, DOT, new Vector4f(r, g, b, fade));
+            SpaceSkies.disc(mv, dir, 0.6f, 0f, DOT, new Vector4f(r, g, b, fade));
         }
     }
 }

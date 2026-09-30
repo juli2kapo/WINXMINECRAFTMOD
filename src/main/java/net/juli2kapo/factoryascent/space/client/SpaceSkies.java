@@ -29,7 +29,6 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
@@ -112,11 +111,17 @@ final class SpaceSkies {
         }
     }
 
-    /** A disc of half-size {@code size} in the direction {@code dir} (sky space), turned by {@code roll} about its own axis. */
+    /**
+     * A disc of half-size {@code size} in the direction {@code dir} (sky space), kept upright (the
+     * texture's rows stay level with the horizon) and then turned by {@code roll} about its own axis.
+     */
     static void disc(Matrix4f modelView, Vector3f dir, float size, float roll, Identifier texture, Vector4f color) {
         Vector3f d = new Vector3f(dir).normalize();
+        float yaw = (float) Math.atan2(d.x, d.z);
+        float tilt = (float) Math.acos(Math.max(-1f, Math.min(1f, d.y)));
         Matrix4f pose = new Matrix4f(modelView)
-                .rotate(new Quaternionf().rotationTo(0f, 1f, 0f, d.x, d.y, d.z))
+                .rotateY(yaw)
+                .rotateX(tilt)
                 .rotateY(roll)
                 .translate(0f, 100f, 0f)
                 .scale(size, 1f, size);
@@ -152,11 +157,11 @@ final class SpaceSkies {
             float night = 1f - brightness(level, partial);
             // Phobos rises in the west and races east in a few minutes; Deimos crawls the other way.
             double pa = (time * 0.05) % 360.0, da = (time * 0.006 + 140) % 360.0;
-            disc(mv, orbitDir(pa, 28), 2.6f, 0f, PHOBOS, new Vector4f(1f, 1f, 1f, 0.55f + 0.45f * night));
-            disc(mv, orbitDir(da, -18), 1.4f, 0f, DEIMOS, new Vector4f(1f, 1f, 1f, 0.45f + 0.55f * night));
+            disc(mv, orbitDir(pa, 28), 3.6f, 0f, PHOBOS, new Vector4f(1f, 1f, 1f, 0.55f + 0.45f * night));
+            disc(mv, orbitDir(da, -18), 2.0f, 0f, DEIMOS, new Vector4f(1f, 1f, 1f, 0.45f + 0.55f * night));
             if (night > 0.3f) disc(mv, dir(250, 20), 0.55f, 0f, DOT, new Vector4f(0.55f, 0.75f, 1f, night));
         } else if (planet == Planet.IO) {
-            disc(mv, dir(125, 36), 58f, 0.18f, JUPITER, white);
+            disc(mv, dir(10, 34), 58f, 0.05f, JUPITER, white);
             double ea = (time * 0.012) % 360.0;
             disc(mv, orbitDir(ea, 12), 2.2f, 0f, EUROPA, white);
         }

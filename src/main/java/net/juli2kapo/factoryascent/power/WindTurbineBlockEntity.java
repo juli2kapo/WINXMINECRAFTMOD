@@ -5,12 +5,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 /**
  * Electric age: a nacelle with a 5-block three-bladed rotor, standing on a mast of at least
  * {@link #MIN_MAST} Turbine Masts. Unlike the stone-age Windmill it makes FE: {@code windTurbineOutput}
  * at 96+ blocks above sea level (15% at sea level, scaling in between), x1.3 in rain and x1.8 in
- * thunderstorms. The 5x5 disc its blades sweep in front of it must be clear.
+ * thunderstorms. The 5x5 disc its blades sweep in front of it must be clear. The mast carries the
+ * power down: it comes out into the cable or machine under the foot of the mast.
  */
 public class WindTurbineBlockEntity extends PowerBlockEntity {
     public static final int MIN_MAST = 4, MAX_MAST = 32;
@@ -18,6 +23,7 @@ public class WindTurbineBlockEntity extends PowerBlockEntity {
     private boolean clear;
     private float output;
     private int height;
+    private BlockCapabilityCache<EnergyHandler, Direction> footCache;
 
     public WindTurbineBlockEntity(BlockPos pos, BlockState state) {
         super(PowerContent.generatorType(Generator.WIND_TURBINE).get(), pos, state, 0);
@@ -33,9 +39,25 @@ public class WindTurbineBlockEntity extends PowerBlockEntity {
         return List.of();
     }
 
+    /** The mast carries the power down: it comes out into whatever sits under the foot of the mast. */
     @Override
     protected Direction[] outputSides() {
-        return new Direction[] {Direction.DOWN};
+        return new Direction[0];
+    }
+
+    private void pushDownTheMast(ServerLevel level) {
+        if (masts < MIN_MAST || energy.energy() <= 0) return;
+        BlockPos foot = worldPosition.below(masts + 1);
+        if (footCache == null || !footCache.pos().equals(foot)) {
+            footCache = BlockCapabilityCache.create(Capabilities.Energy.BLOCK, level, foot, Direction.UP);
+        }
+        EnergyHandler target = footCache.getCapability();
+        if (target == null) return;
+        try (Transaction tx = Transaction.openRoot()) {
+            int moved = target.insert(Math.min(energy.energy(), maxOutput() * 2), tx);
+            tx.commit();
+            if (moved > 0) energy.consume(moved);
+        }
     }
 
     @Override
@@ -48,6 +70,7 @@ public class WindTurbineBlockEntity extends PowerBlockEntity {
         }
         if (output > 0) generate(output);
         else lastRate = 0;
+        pushDownTheMast(level);
         if (masts < MIN_MAST) status = ST_NO_MAST;
         else if (!clear) status = ST_BLOCKED;
         else if (airless(level)) status = ST_NO_AIR;

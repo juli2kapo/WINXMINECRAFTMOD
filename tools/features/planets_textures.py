@@ -31,7 +31,7 @@ O = _orbital()
 rgb, mix, shade, Canvas, noisy = O.rgb, O.mix, O.shade, O.Canvas, O.noisy
 OUTLINE = O.OUTLINE
 
-REGOLITH = [rgb(h) for h in ("#C4C4C8", "#A6A6AB", "#8E8E94", "#737379", "#5A5A60")]
+REGOLITH = [rgb(h) for h in ("#BEBEC2", "#A9A9AE", "#9A9A9F", "#86868C", "#6C6C72")]
 MOONROCK = [rgb(h) for h in ("#9C9CA2", "#7C7C83", "#65656C", "#505057", "#3A3A40")]
 MARS = [rgb(h) for h in ("#E89A62", "#CC7444", "#B05E34", "#8E4828", "#6A341E")]
 MARSROCK = [rgb(h) for h in ("#B0644A", "#944E38", "#7C402E", "#643224", "#48241A")]
@@ -66,8 +66,8 @@ def pit(c, x, y, pal):
 def moon_regolith():
     rng = random.Random(3101)
     c = Canvas()
-    noisy(c, REGOLITH, rng, base=1, p=0.35)
-    speckle(c, REGOLITH, rng, 14, [REGOLITH[0], REGOLITH[3]])
+    noisy(c, REGOLITH, rng, base=1, p=0.22)
+    speckle(c, REGOLITH, rng, 8, [REGOLITH[0], REGOLITH[3]])
     for x, y in ((3, 4), (10, 11), (12, 2)):
         pit(c, x, y, REGOLITH)
     return c
@@ -390,7 +390,7 @@ def jupiter():
     y = -1.0
     tones = [(222, 200, 170), (190, 140, 100), (236, 222, 196), (170, 116, 80), (214, 184, 150), (150, 100, 72)]
     while y < 1.0:
-        h = rng.uniform(0.06, 0.16)
+        h = rng.uniform(0.04, 0.11)
         bands.append((y, y + h, tones[len(bands) % len(tones)]))
         y += h
 

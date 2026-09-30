@@ -54,6 +54,7 @@ public class StationCoreBlock extends BaseEntityBlock implements DescribedBlock 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level instanceof ServerLevel server && player instanceof ServerPlayer sp && level.getBlockEntity(pos) instanceof StationCoreBlockEntity core) {
+            if (core.team().isEmpty()) core.claim(sp, ItemStack.EMPTY); // placed by a machine or command: the first user claims it
             core.sendView(server, sp, true);
         }
         return InteractionResult.SUCCESS;

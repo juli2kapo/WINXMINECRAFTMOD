@@ -360,6 +360,7 @@ public class Shuttle extends AbstractShip implements SealedCabin {
             } else if (powered && down && airborne) {
                 vy += gravity * 0.55;
                 vy = Math.max(vy, -0.6);
+                if (planet != null) vy = Math.max(-0.55, vy - 0.03); // light gravity: the thrusters push down to a brisk descent
             } else if (powered && airborne) {
                 vy += gravity; // hover
                 vy *= 0.85;

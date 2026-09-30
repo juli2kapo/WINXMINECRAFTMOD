@@ -924,7 +924,7 @@
   "desc.factoryascent.steam_engine": "Fuel heats the boiler; from 100 °C the steam turns the flywheel. Needs water: buckets, or water sources touching it. Needs air.",
   "tooltip.factoryascent.power.steam_engine": "%s FE/t at full pressure",
   "block.factoryascent.wind_turbine": "Wind Turbine",
-  "desc.factoryascent.wind_turbine": "Put it on 4+ Turbine Masts. More power high up and in storms; its 5×5 rotor disc must be clear.",
+  "desc.factoryascent.wind_turbine": "Put it on 4+ Turbine Masts: the power comes out under the foot of the mast. More power high up and in storms; the 5×5 rotor disc must be clear.",
   "tooltip.factoryascent.power.wind_turbine": "Up to %s FE/t in a thunderstorm",
   "block.factoryascent.biogas_generator": "Biogas Generator",
   "desc.factoryascent.biogas_generator": "Digests crops, leaves, saplings or rotten flesh into biogas and burns it. Needs air.",
