@@ -1,5 +1,6 @@
 package net.juli2kapo.factoryascent.power;
 
+import net.juli2kapo.factoryascent.util.SkyAccess;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,7 +38,7 @@ public class SolarArrayBlockEntity extends PowerBlockEntity {
 
     /** Percent of full output under the current sky at {@code pos}. */
     public static int sunPercent(ServerLevel level, BlockPos pos) {
-        if (!level.dimensionType().hasSkyLight() || !level.canSeeSky(pos.above())) return 0;
+        if (!level.dimensionType().hasSkyLight() || !SkyAccess.canSeeSky(level, pos.above())) return 0;
         boolean airless = PowerRules.isAirless(level);
         if (!airless && level.isDarkOutside()) return 0;
         if (airless) return 150;
@@ -47,7 +48,7 @@ public class SolarArrayBlockEntity extends PowerBlockEntity {
     @Override
     protected boolean tickGenerator(ServerLevel level) {
         if (level.getGameTime() % 20 == 0) {
-            sky = level.dimensionType().hasSkyLight() && level.canSeeSky(worldPosition.above());
+            sky = level.dimensionType().hasSkyLight() && SkyAccess.canSeeSky(level, worldPosition.above());
             sunPercent = sunPercent(level, worldPosition);
         }
         float out = (float) (PowerConfig.get(PowerConfig.SOLAR_ARRAY_OUTPUT) * sunPercent / 100.0 * PowerConfig.generatorMultiplier());

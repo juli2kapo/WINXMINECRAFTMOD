@@ -1,5 +1,6 @@
 package net.juli2kapo.factoryascent.dyson;
 
+import net.juli2kapo.factoryascent.util.SkyAccess;
 import java.util.UUID;
 import net.juli2kapo.factoryascent.orbital.FactoryTeams;
 import net.juli2kapo.factoryascent.space.SpaceRules;
@@ -119,7 +120,7 @@ public class DysonReceiverBlockEntity extends BlockEntity {
     public static float exposure(Level level, BlockPos pos) {
         if (SpaceRules.isAirless(level) && level.dimensionType().hasSkyLight()) return 1f;
         if (!level.dimensionType().hasSkyLight() || level.dimensionType().hasCeiling()) return 0f;
-        if (!level.canSeeSky(pos.above())) return 0f;
+        if (!SkyAccess.canSeeSky(level, pos.above())) return 0f;
         if (level.isDarkOutside()) return 0f;
         if (level.isThundering()) return 0.3f;
         if (level.isRaining()) return 0.6f;

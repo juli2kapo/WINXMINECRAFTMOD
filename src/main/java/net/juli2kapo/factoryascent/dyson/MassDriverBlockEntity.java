@@ -1,5 +1,6 @@
 package net.juli2kapo.factoryascent.dyson;
 
+import net.juli2kapo.factoryascent.util.SkyAccess;
 import java.util.UUID;
 import net.juli2kapo.factoryascent.space.SpaceRules;
 import net.minecraft.ChatFormatting;
@@ -137,7 +138,7 @@ public class MassDriverBlockEntity extends BlockEntity {
         if (level == null) return false;
         if (SpaceRules.isAirless(level)) return true;
         BlockPos muzzle = worldPosition.above(RAILS + 1);
-        return level.dimensionType().hasSkyLight() && !level.dimensionType().hasCeiling() && level.canSeeSky(muzzle);
+        return level.dimensionType().hasSkyLight() && !level.dimensionType().hasCeiling() && SkyAccess.canSeeSky(level, muzzle);
     }
 
     // ---------------------------------------------------------------- collectors in

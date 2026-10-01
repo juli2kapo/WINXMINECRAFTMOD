@@ -55,20 +55,32 @@ public final class ShipGameTests {
         h.succeed();
     }
 
-    /** A cog with the sail set gathers way along its heading on water. */
+    /**
+     * A cog with the sail set gathers way along its heading on water, never beyond the wind's top speed.
+     *
+     * <p>The wind ({@link ShipMath#windYaw}, {@link ShipMath#windStrength}) follows the world's game
+     * time and weather, which every test shares, so the sail factor can be anything from 0.25 to 1.35:
+     * in 40 ticks the cog covers anywhere from ~1.4 to ~7.4 blocks. The pool is 9 blocks long inside the
+     * arena's barrier wall, and from z = 2.5 a 3-wide hull reaches the wall after 5 blocks, where the
+     * collision stops it dead (speed 0). So rather than sampling at a fixed tick, the test passes as
+     * soon as the cog is under way and has moved a block (well short of the wall in any wind), and
+     * checks the top-speed bound on every tick until then.
+     */
     public static void cogSails(GameTestHelper h) {
         pool(h);
         BronzeCog cog = launch(h, ShipContent.BRONZE_COG.get(), 2.5);
         double z0 = cog.getZ();
         cog.setScriptedInput(AbstractShip.IN_FORWARD);
-        h.runAfterDelay(40, () -> {
-            check(h, cog.afloat(), "the cog must float");
+        h.onEachTick(() -> {
             double speed = cog.getDeltaMovement().horizontalDistance();
-            check(h, speed > 0.05, "the cog must be under way, speed " + speed);
-            check(h, cog.getZ() - z0 > 1.0, "the cog must move along its heading, moved " + (cog.getZ() - z0));
             double expected = BronzeCog.BASE_SPEED * cog.sailFactor();
             check(h, speed < expected * 1.05, "speed " + speed + " must stay under the wind's top speed " + expected);
-            h.succeed();
+        });
+        h.succeedWhen(() -> {
+            check(h, cog.afloat(), "the cog must float");
+            double speed = cog.getDeltaMovement().horizontalDistance();
+            h.assertTrue(speed > 0.05, "the cog must be under way, speed " + speed);
+            h.assertTrue(cog.getZ() - z0 > 1.0, "the cog must move along its heading, moved " + (cog.getZ() - z0));
         });
     }
 

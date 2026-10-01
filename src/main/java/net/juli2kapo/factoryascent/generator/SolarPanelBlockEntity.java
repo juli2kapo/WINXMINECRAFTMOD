@@ -1,5 +1,6 @@
 package net.juli2kapo.factoryascent.generator;
 
+import net.juli2kapo.factoryascent.util.SkyAccess;
 import net.juli2kapo.factoryascent.Config;
 import net.juli2kapo.factoryascent.machine.AbstractMachineBlockEntity;
 import net.juli2kapo.factoryascent.machine.MachineType;
@@ -30,7 +31,7 @@ public class SolarPanelBlockEntity extends AbstractMachineBlockEntity {
     @Override
     protected boolean tickMachine(ServerLevel level) {
         if (level.getGameTime() % 20 == 0) {
-            if (!level.canSeeSky(worldPosition.above()) || !level.dimensionType().hasSkyLight() || level.isDarkOutside()) {
+            if (!SkyAccess.canSeeSky(level, worldPosition.above()) || !level.dimensionType().hasSkyLight() || level.isDarkOutside()) {
                 sunlightPercent = 0;
             } else {
                 sunlightPercent = level.isRaining() ? 50 : 100;
