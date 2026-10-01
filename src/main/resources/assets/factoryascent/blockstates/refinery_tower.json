@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "top=false": {
+      "model": "factoryascent:block/refinery_tower"
+    },
+    "top=true": {
+      "model": "factoryascent:block/refinery_tower_top"
+    }
+  }
+}

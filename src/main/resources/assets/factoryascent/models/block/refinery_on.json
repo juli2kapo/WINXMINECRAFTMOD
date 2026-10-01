@@ -1,0 +1,152 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "base": "factoryascent:block/refinery_base",
+    "base_on": "factoryascent:block/refinery_base_on",
+    "side": "factoryascent:block/refinery_side",
+    "top": "factoryascent:block/refinery_tower_top",
+    "steel": "factoryascent:block/pumpjack_steel",
+    "tower": "factoryascent:block/refinery_tower",
+    "tower_top": "factoryascent:block/refinery_tower_top",
+    "flare": "factoryascent:block/refinery_flare",
+    "particle": "factoryascent:block/refinery_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base_on",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        15.9,
+        2
+      ],
+      "to": [
+        14,
+        16.4,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ]
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            12,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

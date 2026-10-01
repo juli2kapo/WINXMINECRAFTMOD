@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:blasting",
+  "category": "blocks",
+  "ingredient": "factoryascent:moon_regolith",
+  "result": {
+    "id": "factoryascent:lunar_glass"
+  },
+  "experience": 0.4,
+  "cookingtime": 100
+}

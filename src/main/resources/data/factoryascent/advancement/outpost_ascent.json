@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:planet_moon",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:ascent_module"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_ascent.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_ascent.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

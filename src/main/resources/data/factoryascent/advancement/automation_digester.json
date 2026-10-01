@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:biogas_digester"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:biogas_digester"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_digester.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_digester.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_biogas"
+}

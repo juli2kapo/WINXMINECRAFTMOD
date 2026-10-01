@@ -67,6 +67,48 @@ public class TokamakCoreBlockEntity extends BlockEntity implements MenuProvider 
     private long charge;
     private int timer;
     private int deuteriumBurn, helium3Burn;
+    /** Gas fed by pipes (mB); 1000 mB stands in for one cell / one Helium-3. */
+    private float deuteriumGas, tritiumGas, helium3Gas;
+    public static final int GAS_CAPACITY = 8000, GAS_PER_UNIT = 1000;
+    private final net.juli2kapo.factoryascent.fluid.FloatTanks gases = new net.juli2kapo.factoryascent.fluid.FloatTanks(this::setChanged,
+            gasTank(net.juli2kapo.factoryascent.fluid.ModFluids.DEUTERIUM::source, () -> deuteriumGas, v -> deuteriumGas = v),
+            gasTank(net.juli2kapo.factoryascent.fluid.ModFluids.TRITIUM::source, () -> tritiumGas, v -> tritiumGas = v),
+            gasTank(net.juli2kapo.factoryascent.fluid.ModFluids.HELIUM_3::source, () -> helium3Gas, v -> helium3Gas = v));
+
+    private static net.juli2kapo.factoryascent.fluid.FloatTanks.Tank gasTank(java.util.function.Supplier<net.minecraft.world.level.material.Fluid> fluid,
+                                                                             java.util.function.Supplier<Float> get, java.util.function.Consumer<Float> set) {
+        return new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(fluid, net.juli2kapo.factoryascent.fluid.FloatTanks.only(fluid, 1),
+                get, set, () -> GAS_CAPACITY, true, false);
+    }
+
+    /** What pipes see (at the core and its Fusion Ports): deuterium, tritium and helium-3 inlets. */
+    public net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> fluidHandler() {
+        return gases;
+    }
+
+    public float deuteriumGas() {
+        return deuteriumGas;
+    }
+
+    public float tritiumGas() {
+        return tritiumGas;
+    }
+
+    public float helium3Gas() {
+        return helium3Gas;
+    }
+
+    private boolean hasDeuterium() {
+        return inventory.stack(DEUTERIUM).is(PowerContent.DEUTERIUM_CELL.get()) || deuteriumGas >= GAS_PER_UNIT;
+    }
+
+    private boolean hasHelium3() {
+        return inventory.stack(HELIUM3).is(helium3()) || helium3Gas >= GAS_PER_UNIT;
+    }
+
+    private boolean hasTritium() {
+        return inventory.stack(TRITIUM).is(PowerContent.TRITIUM_CELL.get()) || tritiumGas >= GAS_PER_UNIT;
+    }
     private int rate;
     private int scanCooldown;
     /** Client only: plasma ring spin for the renderer. */
@@ -162,18 +204,21 @@ public class TokamakCoreBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     private boolean hasFuel(boolean withTritium) {
-        return inventory.stack(DEUTERIUM).is(PowerContent.DEUTERIUM_CELL.get()) && inventory.stack(HELIUM3).is(helium3())
-                && (!withTritium || inventory.stack(TRITIUM).is(PowerContent.TRITIUM_CELL.get()));
+        return hasDeuterium() && hasHelium3() && (!withTritium || hasTritium());
     }
 
     private void ignite(ServerLevel level) {
-        if (!inventory.canAddOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()))) {
-            state = State.READY;
-            return;
+        if (tritiumGas >= GAS_PER_UNIT) {
+            tritiumGas -= GAS_PER_UNIT; // piped tritium: no cell to give back
+        } else {
+            if (!inventory.canAddOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()))) {
+                state = State.READY;
+                return;
+            }
+            inventory.stack(TRITIUM).shrink(1);
+            inventory.addOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()));
+            inventory.changed();
         }
-        inventory.stack(TRITIUM).shrink(1);
-        inventory.addOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()));
-        inventory.changed();
         charge = 0;
         state = State.IGNITING;
         timer = 0;
@@ -185,23 +230,31 @@ public class TokamakCoreBlockEntity extends BlockEntity implements MenuProvider 
         int dTicks = PowerConfig.get(PowerConfig.FUSION_DEUTERIUM_SECONDS) * 20;
         int hTicks = PowerConfig.get(PowerConfig.FUSION_HELIUM3_SECONDS) * 20;
         if (deuteriumBurn <= 0) {
-            if (!inventory.stack(DEUTERIUM).is(PowerContent.DEUTERIUM_CELL.get())
-                    || !inventory.canAddOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()))) {
-                shutDown(level);
-                return;
+            if (deuteriumGas >= GAS_PER_UNIT) {
+                deuteriumGas -= GAS_PER_UNIT;
+            } else {
+                if (!inventory.stack(DEUTERIUM).is(PowerContent.DEUTERIUM_CELL.get())
+                        || !inventory.canAddOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()))) {
+                    shutDown(level);
+                    return;
+                }
+                inventory.stack(DEUTERIUM).shrink(1);
+                inventory.addOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()));
+                inventory.changed();
             }
-            inventory.stack(DEUTERIUM).shrink(1);
-            inventory.addOutput(EMPTY_OUT, new ItemStack(PowerContent.EMPTY_CELL.get()));
-            inventory.changed();
             deuteriumBurn = dTicks;
         }
         if (helium3Burn <= 0) {
-            if (!inventory.stack(HELIUM3).is(helium3())) {
-                shutDown(level);
-                return;
+            if (helium3Gas >= GAS_PER_UNIT) {
+                helium3Gas -= GAS_PER_UNIT;
+            } else {
+                if (!inventory.stack(HELIUM3).is(helium3())) {
+                    shutDown(level);
+                    return;
+                }
+                inventory.stack(HELIUM3).shrink(1);
+                inventory.changed();
             }
-            inventory.stack(HELIUM3).shrink(1);
-            inventory.changed();
             helium3Burn = hTicks;
         }
         deuteriumBurn--;
@@ -336,6 +389,9 @@ public class TokamakCoreBlockEntity extends BlockEntity implements MenuProvider 
         timer = input.getIntOr("timer", 0);
         deuteriumBurn = input.getIntOr("deuterium_burn", 0);
         helium3Burn = input.getIntOr("helium3_burn", 0);
+        deuteriumGas = input.getFloatOr("deuterium_gas", 0f);
+        tritiumGas = input.getFloatOr("tritium_gas", 0f);
+        helium3Gas = input.getFloatOr("helium3_gas", 0f);
     }
 
     @Override
@@ -349,6 +405,9 @@ public class TokamakCoreBlockEntity extends BlockEntity implements MenuProvider 
         out.putInt("timer", timer);
         out.putInt("deuterium_burn", deuteriumBurn);
         out.putInt("helium3_burn", helium3Burn);
+        out.putFloat("deuterium_gas", deuteriumGas);
+        out.putFloat("tritium_gas", tritiumGas);
+        out.putFloat("helium3_gas", helium3Gas);
     }
 
     @Override

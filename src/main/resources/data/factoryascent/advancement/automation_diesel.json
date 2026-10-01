@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:diesel_generator"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:diesel_generator"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_diesel.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_diesel.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_refinery"
+}

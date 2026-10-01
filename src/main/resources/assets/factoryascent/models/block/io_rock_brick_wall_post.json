@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/template_wall_post",
+  "textures": {
+    "wall": "factoryascent:block/io_rock_bricks"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PP",
+    "PP"
+  ],
+  "key": {
+    "P": "factoryascent:polished_moon_rock"
+  },
+  "result": {
+    "id": "factoryascent:moon_rock_bricks",
+    "count": 4
+  }
+}

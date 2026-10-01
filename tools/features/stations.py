@@ -141,7 +141,8 @@ def recipes(ctx):
                category="building")
     ctx.shaped("airlock_door", ["SS", "GC", "SS"], {"S": SP, "G": "minecraft:glass", "C": "basic_circuit"}, "airlock_door",
                category="redstone")
-    ctx.shaped("docking_port", ["SHS", "HCH", "SHS"], {"S": SP, "H": "minecraft:hopper", "C": "advanced_circuit"}, "docking_port")
+    ctx.shaped("docking_port", ["SHS", "HCH", "SHS"], {"S": "martian_steel_ingot", "H": "minecraft:hopper", "C": "advanced_circuit"},
+               "docking_port")  # Martian Steel: planetary-grade clamps (tools/features/outpost.py)
     ctx.shaped("station_core", ["TAT", "AOA", "TAT"], {"T": TP, "A": "advanced_circuit", "O": "orbital_targeting_core"}, "station_core")
     ctx.shaped("air_vent", ["SBS", "BMB", "SCS"], {"S": SP, "B": "minecraft:iron_bars", "M": "motor", "C": "basic_circuit"}, "air_vent")
     ctx.shaped("magnetic_boots", ["MBM", " R "], {"M": "item_magnet", "B": "astronaut_boots", "R": "minecraft:redstone_block"},

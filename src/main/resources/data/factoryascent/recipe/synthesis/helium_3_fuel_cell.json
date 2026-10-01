@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:synthesis",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:helium_3",
+      "count": 3
+    },
+    {
+      "ingredient": "factoryascent:empty_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:helium_3_fuel_cell"
+  },
+  "time": 300,
+  "min_grade": 6
+}

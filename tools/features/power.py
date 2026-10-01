@@ -722,7 +722,7 @@ def recipes(ctx):
     electrolysis_recipe(ctx, "tritium_cell", [("deuterium_cell", 4)], "tritium_cell", ("empty_cell", 3), time=400)
     # ---- Quantum: the tokamak
     Q = "#c:ingots/quantum_alloy"
-    SH("fusion_casing", ["QTQ", "T T", "QTQ"], {"Q": Q, "T": TP}, "fusion_casing", 8)
+    SH("fusion_casing", ["QTQ", "T T", "QTQ"], {"Q": Q, "T": "martian_steel_ingot"}, "fusion_casing", 8)  # Mars: outpost.py
     SH("fusion_magnet", ["SSS", "SQS", "SSS"], {"S": "superconductor_cable", "Q": Q}, "fusion_magnet", 2)
     SL("fusion_port", ["fusion_casing", "superconductor_cable", "minecraft:hopper"], "fusion_port")
     SH("tokamak_core", ["QMQ", "OFO", "QMQ"], {"Q": "#c:storage_blocks/quantum_alloy", "M": "fusion_magnet",
@@ -839,8 +839,8 @@ GEN_NAMES = {
 GEN_DESC = {
     "kinetic_dynamo": ("Turns the rotation of a Water Wheel or Windmill touching it into FE.",
                        "Convierte en FE el giro de una rueda hidráulica o un molino de viento que la toque."),
-    "steam_engine": ("Fuel heats the boiler; from 100 °C the steam turns the flywheel. Needs water: buckets, or water sources touching it. Needs air.",
-                     "El combustible calienta la caldera; desde 100 °C el vapor mueve el volante. Necesita agua: cubos, o fuentes de agua que la toquen. Necesita aire."),
+    "steam_engine": ("Fuel heats the boiler; from 100 °C the steam turns the flywheel. Needs water: buckets, pipes, or water sources touching it. Needs air. Steam piped in from a Boiler runs it without fire.",
+                     "El combustible calienta la caldera; desde 100 °C el vapor mueve el volante. Necesita agua: cubos, tuberías, o fuentes de agua que la toquen. Necesita aire. El vapor de una caldera por tubería la mueve sin fuego."),
     "wind_turbine": ("Put it on 4+ Turbine Masts: the power comes out under the foot of the mast. More power high up and in storms; the 5×5 rotor disc must be clear.",
                      "Ponla sobre 4+ tramos de mástil: la energía sale bajo el pie del mástil. Más energía en altura y con tormenta; el disco de 5×5 del rotor debe estar libre."),
     "biogas_generator": ("Digests crops, leaves, saplings or rotten flesh into biogas and burns it. Needs air.",
@@ -932,8 +932,8 @@ def lang(ctx):
         ("reactor_access_port", "Fuel rods and coolant items in, spent rods and empty buckets/cells out (pipes, hoppers)",
          "Entran barras de combustible y refrigerante, salen barras gastadas y cubos/celdas vacíos (tuberías, tolvas)"),
         ("reactor_power_port", "The reactor's FE comes out here", "Por aquí sale la FE del reactor"),
-        ("reactor_coolant_port", "Pumps 50 mB/t of coolant from each water source block touching it; takes coolant items",
-         "Bombea 50 mB/t de refrigerante por cada fuente de agua que lo toque; acepta objetos refrigerantes"),
+        ("reactor_coolant_port", "Pumps 50 mB/t of coolant from each water source block touching it; takes coolant items, piped water and coolant, and gives steam to Steam Turbines",
+         "Bombea 50 mB/t de refrigerante por cada fuente de agua que lo toque; acepta objetos refrigerantes, agua y refrigerante por tubería, y da vapor a las turbinas de vapor"),
         ("reactor_redstone_port", "A redstone signal SCRAMs the reactor; a comparator reads its temperature",
          "Una señal de redstone hace SCRAM; un comparador lee su temperatura"),
         ("reactor_port_wall", "Place it in a reactor wall, facing out", "Colócalo en una pared del reactor, mirando afuera"),

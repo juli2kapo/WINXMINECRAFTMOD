@@ -20,6 +20,15 @@ public class MagmaticGeneratorBlockEntity extends PowerBlockEntity {
     public static final int IN = 0, OUT = 1;
     public static final int LAVA_CAPACITY = 4000;
     private float lava;
+    private final net.juli2kapo.factoryascent.fluid.FloatTanks fluids = new net.juli2kapo.factoryascent.fluid.FloatTanks(this::setChanged,
+            new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(() -> net.minecraft.world.level.material.Fluids.LAVA,
+                    f -> f.isSame(net.minecraft.world.level.material.Fluids.LAVA) ? 1 : 0, () -> lava, v -> lava = v,
+                    () -> LAVA_CAPACITY, true, false));
+
+    /** What pipes see: a lava inlet (a Pump on a lava lake feeds it). */
+    public net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> fluidHandler() {
+        return fluids;
+    }
 
     public MagmaticGeneratorBlockEntity(BlockPos pos, BlockState state) {
         super(PowerContent.generatorType(Generator.MAGMATIC_GENERATOR).get(), pos, state, 2);

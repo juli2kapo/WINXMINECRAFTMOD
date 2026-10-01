@@ -1,0 +1,80 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "t": "factoryascent:block/aluminum_fluid_pipe",
+    "particle": "factoryascent:block/aluminum_fluid_pipe"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        4,
+        0
+      ],
+      "to": [
+        12,
+        12,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#t"
+        },
+        "south": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#t"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            12,
+            4
+          ],
+          "texture": "#t"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            12,
+            4
+          ],
+          "texture": "#t"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            12,
+            4
+          ],
+          "texture": "#t",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            12,
+            4
+          ],
+          "texture": "#t",
+          "rotation": 90
+        }
+      }
+    }
+  ]
+}

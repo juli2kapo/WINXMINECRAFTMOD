@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "RR",
+    "RR"
+  ],
+  "key": {
+    "R": "factoryascent:io_rock"
+  },
+  "result": {
+    "id": "factoryascent:polished_io_rock",
+    "count": 4
+  }
+}

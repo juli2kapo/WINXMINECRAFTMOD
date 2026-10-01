@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "PCP",
+    "SWS"
+  ],
+  "key": {
+    "G": "factoryascent:lunar_glass",
+    "P": "#c:plates/aluminum",
+    "C": "factoryascent:advanced_circuit",
+    "S": "factoryascent:solar_panel",
+    "W": "#c:wires/gold"
+  },
+  "result": {
+    "id": "factoryascent:solar_array",
+    "count": 2
+  }
+}

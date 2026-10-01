@@ -1,0 +1,33 @@
+{
+  "type": "factoryascent:assembling",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:advanced_circuit",
+      "count": 1
+    },
+    {
+      "ingredient": "factoryascent:ionite",
+      "count": 2
+    },
+    {
+      "ingredient": "factoryascent:sulfuric_acid_cell",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:wires/gold",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:quantum_circuit",
+    "count": 2
+  },
+  "time": 300,
+  "min_grade": 6,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:empty_cell"
+    },
+    "chance": 1.0
+  }
+}

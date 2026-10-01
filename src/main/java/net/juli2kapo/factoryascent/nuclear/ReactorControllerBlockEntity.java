@@ -67,6 +67,10 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     public static final int ENERGY_CAPACITY = 2_000_000, PUSH = 32_768;
     public static final float AMBIENT = 20f, BOILING = 100f;
     public static final int COOLANT_PER_SOURCE = 50;
+    /** Steam chest of the steam loop (see {@link #coolantFluidHandler()}). */
+    public static final int STEAM_CAPACITY = 64_000;
+    /** Coolant fluid carries this many times the heat of water. */
+    public static final int COOLANT_FLUID_FACTOR = 4;
 
     private final MachineEnergy energy = new MachineEnergy(this::setChanged);
     private final Stacks inventory = new Stacks();
@@ -90,6 +94,21 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     private int rate;
     private int scanCooldown;
     private int alarmCooldown;
+    /** Steam made for turbines (Coolant Ports hand it out). */
+    private float steam;
+    /** Game time steam was last taken out: while something takes it, the reactor makes steam instead of FE. */
+    private long lastSteamDraw = Long.MIN_VALUE / 2;
+    private final net.juli2kapo.factoryascent.fluid.FloatTanks coolantFluids = new net.juli2kapo.factoryascent.fluid.FloatTanks(this::setChanged,
+            new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(() -> net.minecraft.world.level.material.Fluids.WATER,
+                    f -> f.isSame(net.minecraft.world.level.material.Fluids.WATER) ? 1
+                            : f.isSame(net.juli2kapo.factoryascent.fluid.ModFluids.COOLANT.source()) ? COOLANT_FLUID_FACTOR : 0,
+                    () -> coolant, v -> coolant = v, () -> Math.max(coolantCapacity(), 1000), true, false),
+            new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(net.juli2kapo.factoryascent.fluid.ModFluids.STEAM::source,
+                    f -> f.isSame(net.juli2kapo.factoryascent.fluid.ModFluids.STEAM.source()) ? 1 : 0,
+                    () -> steam, v -> {
+                        if (v < steam && level != null) lastSteamDraw = level.getGameTime();
+                        steam = v;
+                    }, () -> STEAM_CAPACITY, false, true));
     /** GameTests: melt down without breaking the arena (null = follow the config). */
     public @Nullable Boolean testDestroyBlocks;
 
@@ -160,7 +179,18 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         float passive = 0.0005f * volume * (temperature - AMBIENT);
         temperature += (heat - removed - passive) / (5f * volume);
         if (temperature < AMBIENT) temperature = AMBIENT;
-        float fe = (float) (removed * PowerConfig.get(PowerConfig.REACTOR_FE_PER_HEAT) * PowerConfig.generatorMultiplier());
+        // Steam loop: while a turbine (through a Coolant Port) takes steam, the boiled coolant
+        // becomes steam for it instead of FE made here.
+        float heatToFe = removed;
+        double steamPerHeat = net.juli2kapo.factoryascent.fluid.FluidsConfig.get(net.juli2kapo.factoryascent.fluid.FluidsConfig.REACTOR_STEAM_PER_HEAT);
+        if (steamMode(level) && steamPerHeat > 0 && removed > 0) {
+            float made = (float) Math.min(removed * steamPerHeat, STEAM_CAPACITY - steam);
+            if (made > 0) {
+                steam += made;
+                heatToFe = (float) Math.max(0f, removed - made / steamPerHeat);
+            }
+        }
+        float fe = (float) (heatToFe * PowerConfig.get(PowerConfig.REACTOR_FE_PER_HEAT) * PowerConfig.generatorMultiplier());
         rate = energy.produce(Math.round(fe));
         alarm(level);
         if (temperature >= PowerConfig.get(PowerConfig.MELTDOWN_TEMPERATURE)) {
@@ -250,6 +280,28 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         inventory.changed();
         if (!rest.isEmpty()) inventory.addOutput(COOLANT_OUT, rest);
         coolant += value;
+    }
+
+    /** Whether a steam consumer took steam lately (then the reactor feeds the steam loop). */
+    public boolean steamMode(Level level) {
+        return level.getGameTime() - lastSteamDraw < 40;
+    }
+
+    public float steam() {
+        return steam;
+    }
+
+    /** GameTests: pretend a turbine is drawing steam. */
+    public void markSteamDemand(Level level) {
+        lastSteamDraw = level.getGameTime();
+    }
+
+    /**
+     * What pipes see at a Coolant Port: water and coolant fluid in (coolant counts
+     * {@value #COOLANT_FLUID_FACTOR}x), steam out.
+     */
+    public ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> coolantFluidHandler() {
+        return coolantFluids;
     }
 
     /** Called by Coolant Ports: water pumped in from source blocks next to them. */
@@ -462,6 +514,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         energy.deserialize(input.childOrEmpty("energy"));
         temperature = input.getFloatOr("temperature", AMBIENT);
         coolant = input.getFloatOr("coolant", 0f);
+        steam = input.getFloatOr("steam", 0f);
         insertion = input.getIntOr("insertion", 50);
         scramButton = input.getBooleanOr("scram", false);
         meltedDown = input.getBooleanOr("melted_down", false);
@@ -475,6 +528,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         energy.serialize(output.child("energy"));
         output.putFloat("temperature", temperature);
         output.putFloat("coolant", coolant);
+        output.putFloat("steam", steam);
         output.putInt("insertion", insertion);
         output.putBoolean("scram", scramButton);
         output.putBoolean("melted_down", meltedDown);

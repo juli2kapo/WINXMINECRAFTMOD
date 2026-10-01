@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:factory_phone"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:factory_phone"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_phone.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_phone.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

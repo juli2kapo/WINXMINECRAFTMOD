@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "BBB"
+  ],
+  "key": {
+    "B": "factoryascent:io_rock_bricks"
+  },
+  "result": {
+    "id": "factoryascent:io_rock_brick_slab",
+    "count": 6
+  }
+}

@@ -7,7 +7,7 @@
     "SHS"
   ],
   "key": {
-    "S": "#c:plates/steel",
+    "S": "factoryascent:martian_steel_ingot",
     "H": "minecraft:hopper",
     "C": "factoryascent:advanced_circuit"
   },

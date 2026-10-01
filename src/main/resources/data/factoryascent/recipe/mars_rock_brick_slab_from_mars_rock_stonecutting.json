@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "factoryascent:mars_rock",
+  "result": {
+    "id": "factoryascent:mars_rock_brick_slab",
+    "count": 2
+  }
+}

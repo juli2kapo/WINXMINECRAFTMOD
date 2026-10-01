@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:fuelling_port"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:fuelling_port"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_fuelling.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_fuelling.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_orbital"
+}

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:boiler"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:boiler"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.electric_boiler.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.electric_boiler.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:electric_steam"
+}

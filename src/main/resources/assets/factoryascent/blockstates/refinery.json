@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "active=false,facing=north,formed=false": {
+      "model": "factoryascent:block/refinery"
+    },
+    "active=false,facing=north,formed=true": {
+      "model": "factoryascent:block/refinery"
+    },
+    "active=true,facing=north,formed=false": {
+      "model": "factoryascent:block/refinery_on"
+    },
+    "active=true,facing=north,formed=true": {
+      "model": "factoryascent:block/refinery_on"
+    },
+    "active=false,facing=east,formed=false": {
+      "model": "factoryascent:block/refinery",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true": {
+      "model": "factoryascent:block/refinery",
+      "y": 90
+    },
+    "active=true,facing=east,formed=false": {
+      "model": "factoryascent:block/refinery_on",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true": {
+      "model": "factoryascent:block/refinery_on",
+      "y": 90
+    },
+    "active=false,facing=south,formed=false": {
+      "model": "factoryascent:block/refinery",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true": {
+      "model": "factoryascent:block/refinery",
+      "y": 180
+    },
+    "active=true,facing=south,formed=false": {
+      "model": "factoryascent:block/refinery_on",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true": {
+      "model": "factoryascent:block/refinery_on",
+      "y": 180
+    },
+    "active=false,facing=west,formed=false": {
+      "model": "factoryascent:block/refinery",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true": {
+      "model": "factoryascent:block/refinery",
+      "y": 270
+    },
+    "active=true,facing=west,formed=false": {
+      "model": "factoryascent:block/refinery_on",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true": {
+      "model": "factoryascent:block/refinery_on",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SRS",
+    "PMP",
+    "SCS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "R": "#c:rods/steel",
+    "P": "factoryascent:steel_fluid_pipe",
+    "M": "factoryascent:motor",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:oil_derrick"
+  }
+}

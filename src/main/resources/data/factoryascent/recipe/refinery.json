@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PFP",
+    "HMH",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "F": "minecraft:blast_furnace",
+    "H": "factoryascent:heating_coil",
+    "M": "factoryascent:advanced_machine_frame",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:refinery"
+  }
+}

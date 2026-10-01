@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:asphalt"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:asphalt"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_asphalt.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_asphalt.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_refinery"
+}

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:martian_steel_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:martian_steel_ingot"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_martian_steel.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_martian_steel.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:planet_mars"
+}

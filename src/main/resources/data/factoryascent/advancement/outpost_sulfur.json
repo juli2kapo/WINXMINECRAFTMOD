@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:sulfur"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:sulfur"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_sulfur.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_sulfur.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:planet_io"
+}

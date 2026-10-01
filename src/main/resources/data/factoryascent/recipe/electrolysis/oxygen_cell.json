@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:electrolysis",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:martian_ice",
+      "count": 1
+    },
+    {
+      "ingredient": "factoryascent:empty_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:oxygen_cell"
+  },
+  "time": 160,
+  "min_grade": 6
+}

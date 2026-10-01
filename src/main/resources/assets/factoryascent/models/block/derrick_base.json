@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "factoryascent:block/derrick_base",
+    "bottom": "factoryascent:block/derrick_base_side",
+    "side": "factoryascent:block/derrick_base_side"
+  }
+}

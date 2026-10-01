@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "factoryascent:block/io_rock_bricks"
+  }
+}

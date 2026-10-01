@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:lunar_glass"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:lunar_glass"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_lunar_glass.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_lunar_glass.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:planet_moon"
+}

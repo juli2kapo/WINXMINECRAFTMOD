@@ -34,6 +34,9 @@ public class ShipScreen extends AbstractContainerScreen<ShipMenu> {
     private final int navX = 176 + ShipMenu.PANEL_W;
     private final List<Button> destButtons = new ArrayList<>();
     private Button engage;
+    private Button beaconButton;
+    /** Rows of the Navigation panel: the four destinations, then the distress beacon button. */
+    private static final int NAV_ROW_Y = 30, NAV_ROW = 17, NAV_STATUS_Y = 116;
 
     public ShipScreen(ShipMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, menu.imageWidth(), menu.imageHeight());
@@ -61,10 +64,12 @@ public class ShipScreen extends AbstractContainerScreen<ShipMenu> {
             for (Navigation.Destination d : Navigation.Destination.values()) {
                 int id = ShipMenu.BUTTON_DEST + d.ordinal();
                 destButtons.add(addRenderableWidget(Button.builder(d.displayName(), b -> click(id))
-                        .bounds(nx, topPos + 32 + d.ordinal() * 20, nw, 18).build()));
+                        .bounds(nx, topPos + NAV_ROW_Y + d.ordinal() * NAV_ROW, nw, 16).build()));
             }
+            beaconButton = addRenderableWidget(Button.builder(Component.translatable("gui.factoryascent.nav.beacons_none"),
+                    b -> click(ShipMenu.BUTTON_BEACON)).bounds(nx, topPos + NAV_ROW_Y + 4 * NAV_ROW, nw, 16).build());
             engage = addRenderableWidget(Button.builder(Component.translatable("gui.factoryascent.nav.engage"), b -> click(ShipMenu.BUTTON_ENGAGE))
-                    .bounds(nx, topPos + imageHeight - 24, nw, 16).build());
+                    .bounds(nx, topPos + imageHeight - 20, nw, 16).build());
             updateNav();
         }
     }
@@ -82,10 +87,11 @@ public class ShipScreen extends AbstractContainerScreen<ShipMenu> {
         boolean ion = menu.get(ShipMenu.D_NAV_ION) != 0, cruising = menu.get(ShipMenu.D_NAV_CRUISE) >= 0;
         var costs = ShipConfig.navCosts();
         Navigation.Destination from = here >= 0 ? Navigation.Destination.byIndex(here) : Navigation.Destination.EARTH_ORBIT;
+        int beacons = menu.get(ShipMenu.D_BEACON_COUNT), beaconAt = menu.get(ShipMenu.D_BEACON_INDEX);
         for (Navigation.Destination d : Navigation.Destination.values()) {
             Button b = destButtons.get(d.ordinal());
             var label = Component.empty();
-            if (d.ordinal() == selected) label.append(Component.literal("\u25B6 ").withStyle(ChatFormatting.GOLD));
+            if (d.ordinal() == selected && beaconAt == 0) label.append(Component.literal("\u25B6 ").withStyle(ChatFormatting.GOLD));
             label.append(d.displayName());
             if (here >= 0 && d.ordinal() != here) {
                 label.append(Component.literal("  " + Navigation.fuelCost(from, d, costs, ion)).withStyle(ChatFormatting.GRAY));
@@ -94,6 +100,27 @@ public class ShipScreen extends AbstractContainerScreen<ShipMenu> {
             }
             b.setMessage(label);
             b.active = !cruising;
+        }
+        var sos = Component.empty();
+        if (beaconAt > 0) {
+            sos.append(Component.literal("\u25B6 ").withStyle(ChatFormatting.GOLD));
+            int planet = menu.get(ShipMenu.D_BEACON_PLANET);
+            Component where = planet >= 0 && planet < Planet.values().length ? Planet.values()[planet].displayName() : Component.literal("?");
+            sos.append(Component.translatable("gui.factoryascent.nav.beacon", where,
+                    menu.coordinate(ShipMenu.D_BEACON_X, ShipMenu.D_BEACON_XH), menu.coordinate(ShipMenu.D_BEACON_Z, ShipMenu.D_BEACON_ZH))
+                    .withStyle(ChatFormatting.RED));
+        } else if (beacons > 0) {
+            sos.append(Component.translatable("gui.factoryascent.nav.beacons", beacons).withStyle(ChatFormatting.RED));
+        } else {
+            sos.append(Component.translatable("gui.factoryascent.nav.beacons_none").withStyle(ChatFormatting.DARK_GRAY));
+        }
+        beaconButton.setMessage(sos);
+        beaconButton.active = !cruising && beacons > 0;
+        if (beaconAt > 0) {
+            beaconButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                    Component.translatable("gui.factoryascent.nav.beacon_tip", beaconAt, beacons)));
+        } else {
+            beaconButton.setTooltip(null);
         }
         engage.active = !cruising && here == Navigation.Destination.EARTH_ORBIT.ordinal() && selected != here;
     }
@@ -139,7 +166,7 @@ public class ShipScreen extends AbstractContainerScreen<ShipMenu> {
         if (shuttle()) {
             FactoryGui.panel(g, x + navX - 2, y, ShipMenu.NAV_W + 2, imageHeight, accent);
             FactoryGui.display(g, x + navX + 5, y + 16, ShipMenu.NAV_W - 12, 13);
-            FactoryGui.display(g, x + navX + 5, y + 113, ShipMenu.NAV_W - 12, 13);
+            FactoryGui.display(g, x + navX + 5, y + NAV_STATUS_Y, ShipMenu.NAV_W - 12, 13);
         }
         int cargo = menu.ship().cargoSize();
         for (int i = 0; i < cargo; i++) FactoryGui.slot(g, x + ShipMenu.GRID_X + (i % 9) * 18, y + ShipMenu.GRID_Y + (i / 9) * 18);
@@ -210,7 +237,7 @@ public class ShipScreen extends AbstractContainerScreen<ShipMenu> {
             g.text(font, font.substrByWidth(Component.translatable("gui.factoryascent.nav.at", at), ShipMenu.NAV_W - 16).getString(),
                     nx + 2, 19, FactoryGui.DISPLAY_TEXT, false);
             var status = font.split(navStatus(), ShipMenu.NAV_W - 16);
-            if (!status.isEmpty()) g.text(font, status.get(0), nx + 2, 116, FactoryGui.DISPLAY_TEXT, false);
+            if (!status.isEmpty()) g.text(font, status.get(0), nx + 2, NAV_STATUS_Y + 3, FactoryGui.DISPLAY_TEXT, false);
         }
         int y = ShipMenu.GRID_Y + 25;
         int w = ShipMenu.PANEL_W - 16;

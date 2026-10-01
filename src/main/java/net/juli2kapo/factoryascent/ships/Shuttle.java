@@ -81,6 +81,8 @@ public class Shuttle extends AbstractShip implements SealedCabin {
     private int selected;
     private int cruiseLeft, cruiseTotal, cruiseTarget = -1;
     private boolean arriveNow;
+    /** A teammate's Distress Beacon picked in the Navigation panel, and the one the cruise under way homes in on. */
+    private net.minecraft.core.@Nullable GlobalPos beacon, cruiseBeacon;
 
     public Shuttle(EntityType<? extends Shuttle> type, Level level) {
         super(type, level);
@@ -138,7 +140,32 @@ public class Shuttle extends AbstractShip implements SealedCabin {
 
     public void select(int index) {
         selected = Navigation.Destination.byIndex(index).ordinal();
+        beacon = null;
         syncNav();
+    }
+
+    /** The Distress Beacon picked as the destination (server side), or null. */
+    public net.minecraft.core.@Nullable GlobalPos beacon() {
+        return beacon;
+    }
+
+    /**
+     * The Navigation panel's distress beacon button: picks the next beacon of the player's team
+     * (the destination becomes its planet, and a cruise there lands next to it). Returns what to
+     * tell the player when there is none.
+     */
+    public net.minecraft.network.chat.@Nullable Component selectBeacon(Player player) {
+        if (!(level() instanceof ServerLevel server)) return null;
+        String team = net.juli2kapo.factoryascent.orbital.FactoryTeams.get(server.getServer()).teamOf(player.getUUID());
+        var list = net.juli2kapo.factoryascent.outpost.DistressBeacons.get(server.getServer()).forTeam(team);
+        var next = net.juli2kapo.factoryascent.outpost.DistressBeacons.next(list, beacon);
+        if (next == null) return Component.translatable("message.factoryascent.nav.no_beacons");
+        Navigation.Destination at = Navigation.Destination.at(next.dimension());
+        if (at == null) return Component.translatable("message.factoryascent.nav.no_beacons");
+        beacon = next.global();
+        selected = at.ordinal();
+        syncNav();
+        return null;
     }
 
     private void syncNav() {
@@ -177,6 +204,8 @@ public class Shuttle extends AbstractShip implements SealedCabin {
         cruiseTotal = Navigation.travelTicks(from, to, costs, ion);
         cruiseLeft = cruiseTotal;
         cruiseTarget = to.ordinal();
+        cruiseBeacon = beacon != null && beacon.dimension().equals(to.dimension()) && level() instanceof ServerLevel sl
+                && net.juli2kapo.factoryascent.outpost.DistressBeacons.get(sl.getServer()).at(beacon) != null ? beacon : null;
         setDeltaMovement(Vec3.ZERO);
         setState(STATE_CRUISE);
         syncNav();
@@ -219,7 +248,20 @@ public class Shuttle extends AbstractShip implements SealedCabin {
         boolean planet = to.planet != null;
         double y = planet ? Planet.ARRIVAL_Y : ShipConfig.thresholds().arrivalInOrbit();
         Vec3 arrive = planet ? new Vec3(0, -0.35, 0) : Vec3.ZERO;
-        OrbitTransfer.travel(this, target, new Vec3(getX(), y, getZ()), arrive, "message.factoryascent.nav.arrived", to.displayName());
+        double x = getX(), z = getZ();
+        var homing = cruiseBeacon;
+        cruiseBeacon = null;
+        if (homing != null && planet && homing.dimension().equals(to.dimension())) {
+            // a rescue: come down right next to the teammate's Distress Beacon
+            BlockPos spot = net.juli2kapo.factoryascent.outpost.DistressBeacons.landingSpot(homing.pos());
+            x = spot.getX() + 0.5;
+            z = spot.getZ() + 0.5;
+            for (Entity p : getPassengers()) {
+                if (p instanceof ServerPlayer sp) sp.sendSystemMessage(Component.translatable("message.factoryascent.nav.homing",
+                        homing.pos().getX(), homing.pos().getZ()).withStyle(ChatFormatting.RED));
+            }
+        }
+        OrbitTransfer.travel(this, target, new Vec3(x, y, z), arrive, "message.factoryascent.nav.arrived", to.displayName());
     }
 
     /** Climbing out of a planet's sky: on to the selected destination, home to Earth orbit, or (no fuel) nowhere. */
@@ -588,6 +630,8 @@ public class Shuttle extends AbstractShip implements SealedCabin {
         output.putInt("cruise_left", cruiseLeft);
         output.putInt("cruise_total", cruiseTotal);
         output.putInt("cruise_target", cruiseTarget);
+        output.storeNullable("nav_beacon", net.minecraft.core.GlobalPos.CODEC, beacon);
+        output.storeNullable("cruise_beacon", net.minecraft.core.GlobalPos.CODEC, cruiseBeacon);
     }
 
     @Override
@@ -598,6 +642,8 @@ public class Shuttle extends AbstractShip implements SealedCabin {
         cruiseLeft = input.getIntOr("cruise_left", 0);
         cruiseTotal = input.getIntOr("cruise_total", 0);
         cruiseTarget = input.getIntOr("cruise_target", -1);
+        beacon = input.read("nav_beacon", net.minecraft.core.GlobalPos.CODEC).orElse(null);
+        cruiseBeacon = input.read("cruise_beacon", net.minecraft.core.GlobalPos.CODEC).orElse(null);
         syncNav();
     }
 }

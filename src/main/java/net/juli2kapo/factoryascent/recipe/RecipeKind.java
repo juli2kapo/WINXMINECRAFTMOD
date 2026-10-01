@@ -20,7 +20,9 @@ public enum RecipeKind {
     /** Centrifuge: uranium enrichment and spent-fuel reprocessing. */
     CENTRIFUGING(1, false),
     /** Electrolyzer: water into deuterium, deuterium into tritium. */
-    ELECTROLYSIS(2, false);
+    ELECTROLYSIS(2, false),
+    /** Fuel Synthesizer: shuttle fuel out of planet resources (Martian ice, Helium-3, sulfur). */
+    SYNTHESIS(2, false);
 
     public static final RecipeKind[] VALUES = values();
 

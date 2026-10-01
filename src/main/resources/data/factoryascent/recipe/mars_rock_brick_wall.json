@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "BBB",
+    "BBB"
+  ],
+  "key": {
+    "B": "factoryascent:mars_rock_bricks"
+  },
+  "result": {
+    "id": "factoryascent:mars_rock_brick_wall",
+    "count": 6
+  }
+}

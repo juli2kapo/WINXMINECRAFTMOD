@@ -1,0 +1,151 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "base": "factoryascent:block/derrick_base",
+    "base_side": "factoryascent:block/derrick_base_side",
+    "steel": "factoryascent:block/pumpjack_steel",
+    "paint": "factoryascent:block/pumpjack_paint",
+    "weight": "factoryascent:block/pumpjack_weight",
+    "wellhead": "factoryascent:block/wellhead",
+    "wellhead_on": "factoryascent:block/wellhead_on",
+    "particle": "factoryascent:block/pumpjack_steel"
+  },
+  "elements": [
+    {
+      "from": [
+        7.6667,
+        -1.6667,
+        6.6667
+      ],
+      "to": [
+        8.3333,
+        8.3333,
+        7.3333
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            0.6667,
+            10.0
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            0.6667,
+            10.0
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            0.6667,
+            10.0
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            0.6667,
+            10.0
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            0.6667,
+            0.6667
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            0.6667,
+            0.6667
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.1667,
+        8.0,
+        6.1667
+      ],
+      "to": [
+        8.8333,
+        8.5,
+        7.8333
+      ],
+      "faces": {
+        "north": {
+          "texture": "#weight",
+          "uv": [
+            0,
+            0,
+            1.6667,
+            0.5
+          ]
+        },
+        "south": {
+          "texture": "#weight",
+          "uv": [
+            0,
+            0,
+            1.6667,
+            0.5
+          ]
+        },
+        "east": {
+          "texture": "#weight",
+          "uv": [
+            0,
+            0,
+            1.6667,
+            0.5
+          ]
+        },
+        "west": {
+          "texture": "#weight",
+          "uv": [
+            0,
+            0,
+            1.6667,
+            0.5
+          ]
+        },
+        "up": {
+          "texture": "#weight",
+          "uv": [
+            0,
+            0,
+            1.6667,
+            1.6667
+          ]
+        },
+        "down": {
+          "texture": "#weight",
+          "uv": [
+            0,
+            0,
+            1.6667,
+            1.6667
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "factoryascent:block/ascent_module"
+    },
+    "facing=east": {
+      "model": "factoryascent:block/ascent_module",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "factoryascent:block/ascent_module",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "factoryascent:block/ascent_module",
+      "y": 270
+    }
+  }
+}

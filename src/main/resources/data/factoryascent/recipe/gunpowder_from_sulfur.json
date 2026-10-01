@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:sulfur",
+    "factoryascent:sulfur",
+    "#c:dusts/coal",
+    "minecraft:bone_meal"
+  ],
+  "result": {
+    "id": "minecraft:gunpowder",
+    "count": 3
+  }
+}

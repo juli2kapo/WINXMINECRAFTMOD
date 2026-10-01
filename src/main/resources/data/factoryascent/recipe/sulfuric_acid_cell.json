@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:empty_cell",
+    "factoryascent:sulfur",
+    "factoryascent:sulfur",
+    [
+      "minecraft:water_bucket",
+      "factoryascent:martian_ice"
+    ]
+  ],
+  "result": {
+    "id": "factoryascent:sulfuric_acid_cell"
+  }
+}

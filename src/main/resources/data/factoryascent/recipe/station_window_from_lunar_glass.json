@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " G ",
+    "GSG",
+    " G "
+  ],
+  "key": {
+    "G": "factoryascent:lunar_glass",
+    "S": "#c:plates/steel"
+  },
+  "result": {
+    "id": "factoryascent:station_window",
+    "count": 8
+  }
+}

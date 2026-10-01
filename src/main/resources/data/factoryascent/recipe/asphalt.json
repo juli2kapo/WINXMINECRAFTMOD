@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:tar",
+    "minecraft:gravel",
+    "minecraft:gravel",
+    "#c:sands"
+  ],
+  "result": {
+    "id": "factoryascent:asphalt",
+    "count": 4
+  }
+}

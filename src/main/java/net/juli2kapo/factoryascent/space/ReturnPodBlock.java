@@ -61,6 +61,11 @@ public class ReturnPodBlock extends HorizontalDirectionalBlock implements Descri
             player.sendOverlayMessage(Component.translatable("message.factoryascent.return_pod_ground").withStyle(ChatFormatting.GRAY));
             return InteractionResult.SUCCESS;
         }
+        if (net.juli2kapo.factoryascent.space.planet.Planet.of(level) != null) {
+            // a planet's gravity well is too deep for a re-entry capsule: that takes an Ascent Module
+            player.sendOverlayMessage(Component.translatable("message.factoryascent.return_pod_planet").withStyle(ChatFormatting.YELLOW));
+            return InteractionResult.SUCCESS;
+        }
         if (player instanceof ServerPlayer sp) Orbit.reenter(sp);
         return InteractionResult.SUCCESS;
     }

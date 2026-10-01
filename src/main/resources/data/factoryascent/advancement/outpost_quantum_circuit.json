@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:quantum_circuit"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:quantum_circuit"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_quantum_circuit.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_quantum_circuit.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:outpost_sulfur"
+}

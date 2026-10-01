@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:crushing",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:io_rock",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:sulfur"
+  },
+  "time": 60,
+  "byproduct": {
+    "item": {
+      "id": "factoryascent:sulfur"
+    },
+    "chance": 0.5
+  }
+}

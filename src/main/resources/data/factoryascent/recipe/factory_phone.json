@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PGP",
+    "WCW",
+    "PRP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "G": "minecraft:black_stained_glass_pane",
+    "W": "factoryascent:silicon_wafer",
+    "C": "factoryascent:advanced_circuit",
+    "R": "minecraft:redstone"
+  },
+  "result": {
+    "id": "factoryascent:factory_phone"
+  }
+}

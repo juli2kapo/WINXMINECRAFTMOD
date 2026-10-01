@@ -5,6 +5,16 @@
     "factoryascent:station_hull_white",
     "factoryascent:station_hull_gray",
     "factoryascent:station_hull_dark",
-    "factoryascent:station_hull_orange"
+    "factoryascent:station_hull_orange",
+    "factoryascent:polished_moon_rock",
+    "factoryascent:moon_rock_bricks",
+    "factoryascent:moon_rock_tiles",
+    "factoryascent:polished_mars_rock",
+    "factoryascent:mars_rock_bricks",
+    "factoryascent:mars_rock_tiles",
+    "factoryascent:polished_io_rock",
+    "factoryascent:io_rock_bricks",
+    "factoryascent:io_rock_tiles",
+    "factoryascent:lunar_glass"
   ]
 }

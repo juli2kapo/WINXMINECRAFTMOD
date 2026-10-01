@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PGP",
+    "P P",
+    "PGP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "factoryascent:steel_fluid_pipe"
+  },
+  "result": {
+    "id": "factoryascent:refinery_tower"
+  }
+}

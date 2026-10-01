@@ -142,6 +142,10 @@ MACHINES = {
     "electrolyzer": ("orbital", True, True,
                      "Splits water: a water bucket and an Empty Cell make a Deuterium Cell; four Deuterium Cells give a Tritium Cell. Fusion fuel.",
                      "Separa el agua: un cubo de agua y una celda vacía dan una celda de deuterio; cuatro celdas de deuterio dan una de tritio. Combustible de fusión."),
+    # planetary outposts (models, recipes and lang in tools/features/outpost.py)
+    "fuel_synthesizer": ("orbital", True, True,
+                         "Makes shuttle fuel where there is none: Martian ice into Hydrolox Cells, Helium-3 into fuel cells, Io sulfur into Rocket Fuel. Needs Empty Cells and power.",
+                         "Fabrica combustible de transbordador donde no lo hay: hielo marciano en celdas de hidrolox, helio-3 en pilas de combustible, azufre de Ío en combustible de cohete. Necesita celdas vacías y energía."),
     "quantum_energy_cell": ("quantum", True, False, "Stores 64× more energy.", "Almacena 64 veces más energía."),
 }
 MACHINE_EN = {
@@ -158,7 +162,7 @@ MACHINE_EN = {
     "charger": "Charger", "floodlight": "Floodlight", "block_breaker": "Block Breaker", "block_placer": "Block Placer",
     "vacuum_hopper": "Vacuum Hopper", "tree_farm": "Tree Farm", "industrial_grinder": "Industrial Grinder",
     "recycler": "Recycler", "mob_farm": "Mob Farm Controller",
-    "centrifuge": "Centrifuge", "electrolyzer": "Electrolyzer",
+    "centrifuge": "Centrifuge", "electrolyzer": "Electrolyzer", "fuel_synthesizer": "Fuel Synthesizer",
 }
 MACHINE_ES = {
     "quern": "Molino de mano", "brick_kiln": "Horno de ladrillo", "burner_crusher": "Trituradora a combustión",
@@ -175,7 +179,7 @@ MACHINE_ES = {
     "charger": "Cargador", "floodlight": "Reflector", "block_breaker": "Rompedor de bloques", "block_placer": "Colocador de bloques",
     "vacuum_hopper": "Tolva aspiradora", "tree_farm": "Granja de árboles", "industrial_grinder": "Moledora industrial",
     "recycler": "Recicladora", "mob_farm": "Granja de criaturas",
-    "centrifuge": "Centrifugadora", "electrolyzer": "Electrolizador",
+    "centrifuge": "Centrifugadora", "electrolyzer": "Electrolizador", "fuel_synthesizer": "Sintetizador de combustible",
 }
 
 CABLES = {"lv": "copper_cable", "mv": "aluminum_cable", "hv": "titanium_cable", "ev": "superconductor_cable"}

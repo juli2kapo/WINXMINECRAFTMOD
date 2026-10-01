@@ -63,6 +63,8 @@ public class ReactorPortBlockEntity extends BlockEntity {
                     sources = n;
                 }
                 if (sources > 0) c.addCoolant(sources * ReactorControllerBlockEntity.COOLANT_PER_SOURCE);
+                // hand steam to turbines and pipes touching the port
+                if (c.steam() >= 1) pushSteam(level, c);
             }
             default -> { }
         }
@@ -77,6 +79,30 @@ public class ReactorPortBlockEntity extends BlockEntity {
             case COOLANT -> c.coolantHandler();
             default -> null;
         };
+    }
+
+    private void pushSteam(ServerLevel level, ReactorControllerBlockEntity c) {
+        var handler = c.coolantFluidHandler();
+        var steam = net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.juli2kapo.factoryascent.fluid.ModFluids.STEAM.source());
+        for (Direction d : Direction.values()) {
+            BlockPos other = worldPosition.relative(d);
+            if (level.getBlockEntity(other) instanceof ReactorPortBlockEntity || level.getBlockEntity(other) instanceof ReactorControllerBlockEntity) continue;
+            var target = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK, other, d.getOpposite());
+            if (target == null) continue;
+            int have = (int) handler.getAmountAsLong(1);
+            if (have <= 0) return;
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                int in = target.insert(steam, Math.min(have, 4000), tx);
+                if (in > 0 && handler.extract(1, steam, in, tx) == in) tx.commit();
+            }
+        }
+    }
+
+    /** Coolant Ports: water and coolant fluid in, steam out (to Steam Turbines). */
+    public @Nullable ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> fluidHandler() {
+        if (level == null || kind() != ReactorPortBlock.Kind.COOLANT) return null;
+        ReactorControllerBlockEntity c = controller(level);
+        return c == null ? null : c.coolantFluidHandler();
     }
 
     public @Nullable EnergyHandler energyHandler() {

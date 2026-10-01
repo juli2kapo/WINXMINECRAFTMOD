@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:bucket",
+    "minecraft:packed_ice",
+    "minecraft:packed_ice",
+    "minecraft:lapis_lazuli"
+  ],
+  "result": {
+    "id": "factoryascent:coolant_bucket"
+  }
+}

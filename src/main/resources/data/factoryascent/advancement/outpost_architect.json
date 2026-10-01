@@ -1,0 +1,42 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:polished_moon_rock",
+              "factoryascent:moon_rock_bricks",
+              "factoryascent:moon_rock_tiles",
+              "factoryascent:polished_mars_rock",
+              "factoryascent:mars_rock_bricks",
+              "factoryascent:mars_rock_tiles",
+              "factoryascent:polished_io_rock",
+              "factoryascent:io_rock_bricks",
+              "factoryascent:io_rock_tiles"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:moon_rock_bricks"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_architect.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_architect.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:outpost_lunar_glass"
+}

@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:automation_oil",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:oil_derrick"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_derrick.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_derrick.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

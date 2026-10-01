@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SRS",
+    "R R",
+    "SRS"
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "R": "#c:rods/steel"
+  },
+  "result": {
+    "id": "factoryascent:derrick_base",
+    "count": 4
+  }
+}

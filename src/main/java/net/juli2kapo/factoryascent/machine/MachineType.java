@@ -77,6 +77,8 @@ public enum MachineType {
     PLASMA_FORGE(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ALLOYING, Power.ELECTRIC, 7, 2f, 256, 3),
     /** Splits heavy water out of water into Deuterium Cells, and tritium out of those (fusion fuel, see fusion/). */
     ELECTROLYZER(Age.ORBITAL, Category.PROCESSOR, RecipeKind.ELECTROLYSIS, Power.ELECTRIC, 6, 1f, 128, 3),
+    /** Makes shuttle fuel from planet resources: Martian ice into Hydrolox Cells, Helium-3 and sulfur into fuel (see outpost/). */
+    FUEL_SYNTHESIZER(Age.ORBITAL, Category.PROCESSOR, RecipeKind.SYNTHESIS, Power.ELECTRIC, 6, 1f, 96, 3),
     // ---- Quantum age
     QUANTUM_ENERGY_CELL(Age.QUANTUM, Category.STORAGE, null, Power.ELECTRIC, 1, 1f, 0, 0, Tier.EV);
 

@@ -9,7 +9,7 @@
   "key": {
     "S": "factoryascent:stellar_alloy_ingot",
     "C": "factoryascent:superconductor_cable",
-    "Q": "#c:ingots/quantum_alloy",
+    "Q": "factoryascent:quantum_circuit",
     "F": "factoryascent:advanced_machine_frame",
     "E": "factoryascent:quantum_energy_cell"
   },

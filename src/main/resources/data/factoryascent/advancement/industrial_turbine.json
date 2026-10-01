@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:steam_turbine"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:steam_turbine"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.industrial_turbine.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.industrial_turbine.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:industrial_reactor"
+}

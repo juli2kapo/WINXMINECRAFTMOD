@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MCM",
+    "EFE",
+    "MHM"
+  ],
+  "key": {
+    "M": "factoryascent:martian_steel_ingot",
+    "C": "factoryascent:advanced_circuit",
+    "E": "factoryascent:empty_cell",
+    "F": "factoryascent:machine_frame",
+    "H": "factoryascent:heating_coil"
+  },
+  "result": {
+    "id": "factoryascent:fuel_synthesizer"
+  }
+}

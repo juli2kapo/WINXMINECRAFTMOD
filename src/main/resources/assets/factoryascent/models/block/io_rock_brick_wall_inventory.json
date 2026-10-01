@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/wall_inventory",
+  "textures": {
+    "wall": "factoryascent:block/io_rock_bricks"
+  }
+}

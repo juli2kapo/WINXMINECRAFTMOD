@@ -121,6 +121,7 @@ public final class PlanetContent {
     public static int shuttleFuelValue(net.minecraft.world.item.ItemStack stack, int rocketFuelUnits) {
         if (stack.is(net.juli2kapo.factoryascent.orbital.OrbitalContent.ROCKET_FUEL.get())) return rocketFuelUnits;
         if (stack.is(HELIUM_3_FUEL_CELL.get())) return rocketFuelUnits * 4;
+        if (stack.is(net.juli2kapo.factoryascent.outpost.OutpostContent.HYDROLOX_FUEL_CELL.get())) return rocketFuelUnits * 2;
         return 0;
     }
 }

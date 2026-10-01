@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:buckets/crude_oil",
+    "#c:buckets/diesel",
+    "#c:buckets/rocket_fuel",
+    "#c:buckets/coolant"
+  ]
+}

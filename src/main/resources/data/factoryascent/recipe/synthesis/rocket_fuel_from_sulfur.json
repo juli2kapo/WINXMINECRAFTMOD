@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:synthesis",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:sulfur",
+      "count": 4
+    },
+    {
+      "ingredient": "factoryascent:empty_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:rocket_fuel",
+    "count": 2
+  },
+  "time": 200,
+  "min_grade": 6
+}

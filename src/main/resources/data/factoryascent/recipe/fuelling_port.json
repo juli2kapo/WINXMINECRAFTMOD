@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TRT",
+    "HAH",
+    "TCT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "R": "factoryascent:rocket_fuel",
+    "H": "factoryascent:aluminum_fluid_pipe",
+    "A": "factoryascent:advanced_machine_frame",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:fuelling_port"
+  }
+}

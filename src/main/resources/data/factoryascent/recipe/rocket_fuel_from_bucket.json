@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "factoryascent:rocket_fuel_bucket"
+  ],
+  "result": {
+    "id": "factoryascent:rocket_fuel",
+    "count": 4
+  }
+}

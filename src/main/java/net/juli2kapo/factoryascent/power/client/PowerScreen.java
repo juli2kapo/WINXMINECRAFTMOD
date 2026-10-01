@@ -70,6 +70,7 @@ public class PowerScreen extends AbstractContainerScreen<PowerMenu> {
                 flame(g, x + 45, y + 36, d.extra(3) / 1000f);
                 thermometer(g, x + 70, y + 17, d.extra(0) / 10f);
                 tank(g, x + 90, y + 17, 18, 54, d.extra(1) / (float) Math.max(1, d.extra(2)), 0xFF3F76E4, 0xFF7FB2FF);
+                if (d.extra(6) > 0) FactoryGui.bar(g, x + 90, y + 72, 18, 3, d.extra(6) / (float) Math.max(1, d.extra(7)), 0xFFE6ECEF);
                 downArrow(g, x + 120, y + 37);
             }
             case WIND_TURBINE -> wind(g, x + 30, y + 20, d.extra(0) / 1000f);
@@ -292,6 +293,9 @@ public class PowerScreen extends AbstractContainerScreen<PowerMenu> {
                     } else if (isHovering(90, 17, 18, 54, mouseX, mouseY)) {
                         lines.add(Component.translatable("gui.factoryascent.power.water", d.extra(1), d.extra(2)));
                         lines.add(Component.translatable("gui.factoryascent.power.water_sources", d.extra(5)).withStyle(ChatFormatting.GRAY));
+                        if (d.extra(6) > 0) {
+                            lines.add(Component.translatable("gui.factoryascent.power.steam_chest", d.extra(6), d.extra(7)).withStyle(ChatFormatting.AQUA));
+                        }
                     }
                 }
                 case BIOGAS_GENERATOR -> {

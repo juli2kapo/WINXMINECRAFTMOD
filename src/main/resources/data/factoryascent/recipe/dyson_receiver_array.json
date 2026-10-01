@@ -2,10 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
+    "GGG",
     "WWW",
     "SPS"
   ],
   "key": {
+    "G": "factoryascent:lunar_glass",
     "W": "factoryascent:silicon_wafer",
     "S": "factoryascent:stellar_alloy_ingot",
     "P": "#c:plates/titanium"

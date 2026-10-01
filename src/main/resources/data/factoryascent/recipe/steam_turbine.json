@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TPT",
+    "RAR",
+    "TCT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "P": "factoryascent:steel_fluid_pipe",
+    "R": "factoryascent:motor",
+    "A": "factoryascent:advanced_machine_frame",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:steam_turbine"
+  }
+}

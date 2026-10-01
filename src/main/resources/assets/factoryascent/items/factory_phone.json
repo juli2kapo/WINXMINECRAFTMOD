@@ -1,0 +1,31 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": [
+          "gui",
+          "ground",
+          "fixed"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "factoryascent:item/factory_phone"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "factoryascent:phone_screen_on",
+      "on_true": {
+        "type": "minecraft:model",
+        "model": "factoryascent:item/factory_phone_3d_on"
+      },
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "factoryascent:item/factory_phone_3d"
+      }
+    }
+  }
+}

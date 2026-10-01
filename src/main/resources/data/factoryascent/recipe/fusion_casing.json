@@ -8,7 +8,7 @@
   ],
   "key": {
     "Q": "#c:ingots/quantum_alloy",
-    "T": "#c:plates/titanium"
+    "T": "factoryascent:martian_steel_ingot"
   },
   "result": {
     "id": "factoryascent:fusion_casing",

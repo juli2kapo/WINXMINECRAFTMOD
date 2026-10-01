@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:automation_phone",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:factory_phone"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.phone_alert.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.phone_alert.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -20,10 +20,14 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
  * with the pressure to {@code steamEngineOutput} FE/t at 180 C. Every 50 FE of steam boils 1 mB
  * of water: water buckets in its slot, or water source blocks touching it (25 mB/t each).
  * Nothing burns without air.
+ *
+ * <p>Fluids: pipes can feed it water, and steam from a separate Boiler: with steam in its steam
+ * chest the engine runs on that (no fire needed), {@code steamFePerMb} FE per mB of steam, up to
+ * its rated output.
  */
 public class SteamEngineBlockEntity extends PowerBlockEntity {
     public static final int FUEL = 0, WATER_IN = 1, BUCKET_OUT = 2;
-    public static final int WATER_CAPACITY = 8000;
+    public static final int WATER_CAPACITY = 8000, STEAM_CAPACITY = 8000;
     public static final float AMBIENT = 20f, BOILING = 100f, FULL_PRESSURE = 180f, MAX_TEMP = 200f;
     private static final float HEAT = 0.4f, LOSS = 0.15f, STEAM_DRAW = 0.1f;
 
@@ -33,6 +37,14 @@ public class SteamEngineBlockEntity extends PowerBlockEntity {
     private float water;
     private int waterSources;
     private float pressure;
+    private float steam;
+    private boolean onSteam;
+    private final net.juli2kapo.factoryascent.fluid.FloatTanks fluids = new net.juli2kapo.factoryascent.fluid.FloatTanks(this::setChanged,
+            new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(() -> net.minecraft.world.level.material.Fluids.WATER,
+                    f -> f.isSame(net.minecraft.world.level.material.Fluids.WATER) ? 1 : 0, () -> water, v -> water = v, () -> WATER_CAPACITY, true, false),
+            new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(net.juli2kapo.factoryascent.fluid.ModFluids.STEAM::source,
+                    f -> f.isSame(net.juli2kapo.factoryascent.fluid.ModFluids.STEAM.source()) ? 1 : 0, () -> steam, v -> steam = v,
+                    () -> STEAM_CAPACITY, true, false));
 
     public SteamEngineBlockEntity(BlockPos pos, BlockState state) {
         super(PowerContent.generatorType(Generator.STEAM_ENGINE).get(), pos, state, 3);
@@ -84,6 +96,18 @@ public class SteamEngineBlockEntity extends PowerBlockEntity {
             water += 1000;
         }
         float out = (float) (PowerConfig.get(PowerConfig.STEAM_ENGINE_OUTPUT) * PowerConfig.generatorMultiplier());
+        // Steam piped in from a Boiler: the piston runs on it directly, no fire needed.
+        int fePerMb = net.juli2kapo.factoryascent.fluid.FluidsConfig.get(net.juli2kapo.factoryascent.fluid.FluidsConfig.STEAM_FE_PER_MB);
+        float fromSteam = Math.min(out, steam * fePerMb);
+        onSteam = fromSteam >= 1f && energy.space() > 0;
+        if (onSteam) {
+            int made = generate(fromSteam);
+            steam = Math.max(0f, steam - made / (float) fePerMb);
+            status = ST_RUNNING;
+            temperature = Math.max(AMBIENT, temperature - 0.05f);
+            setChanged();
+            return true;
+        }
         if (burnLeft <= 0 && !airless && temperature < MAX_TEMP - 1 && energy.space() > 0 && water > 0) {
             ItemStack fuel = inventory.stack(FUEL);
             int burn = fuel.isEmpty() ? 0 : fuel.getBurnTime(RecipeType.SMELTING, level.fuelValues());
@@ -148,6 +172,21 @@ public class SteamEngineBlockEntity extends PowerBlockEntity {
         extra[3] = burnTotal <= 0 ? 0 : Math.round(burnLeft / burnTotal * 1000);
         extra[4] = Math.round(pressure * 100);
         extra[5] = waterSources;
+        extra[6] = Math.round(steam);
+        extra[7] = STEAM_CAPACITY;
+    }
+
+    public float steam() {
+        return steam;
+    }
+
+    public boolean onSteam() {
+        return onSteam;
+    }
+
+    /** What pipes see: a water inlet and a steam inlet. */
+    public net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> fluidHandler() {
+        return fluids;
     }
 
     @Override
@@ -157,6 +196,7 @@ public class SteamEngineBlockEntity extends PowerBlockEntity {
         burnLeft = input.getFloatOr("burn_left", 0f);
         burnTotal = input.getFloatOr("burn_total", 0f);
         water = input.getFloatOr("water", 0f);
+        steam = input.getFloatOr("steam", 0f);
     }
 
     @Override
@@ -166,5 +206,6 @@ public class SteamEngineBlockEntity extends PowerBlockEntity {
         output.putFloat("burn_left", burnLeft);
         output.putFloat("burn_total", burnTotal);
         output.putFloat("water", water);
+        output.putFloat("steam", steam);
     }
 }

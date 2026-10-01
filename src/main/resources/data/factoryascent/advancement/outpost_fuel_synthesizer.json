@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:hydrolox_fuel_cell"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:fuel_synthesizer"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.outpost_fuel_synthesizer.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.outpost_fuel_synthesizer.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:outpost_martian_steel"
+}

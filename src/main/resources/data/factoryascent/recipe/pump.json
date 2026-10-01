@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "CBC",
+    "PIP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "M": "factoryascent:motor",
+    "C": "factoryascent:basic_circuit",
+    "B": "minecraft:bucket",
+    "I": "factoryascent:bronze_fluid_pipe"
+  },
+  "result": {
+    "id": "factoryascent:pump"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SBS",
+    "SMS",
+    "SPS"
+  ],
+  "key": {
+    "S": "minecraft:smooth_stone",
+    "B": "minecraft:composter",
+    "M": "factoryascent:machine_frame",
+    "P": "factoryascent:bronze_fluid_pipe"
+  },
+  "result": {
+    "id": "factoryascent:biogas_digester"
+  }
+}

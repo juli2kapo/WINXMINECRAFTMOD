@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:crude_oil_bucket"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:crude_oil_bucket"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_oil.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_oil.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_automation"
+}

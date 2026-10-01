@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IGI",
+    "ICI",
+    "RFR"
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "G": "#c:glass_blocks",
+    "C": "factoryascent:advanced_circuit",
+    "R": "#factoryascent:planet_rock",
+    "F": "minecraft:furnace"
+  },
+  "result": {
+    "id": "factoryascent:ascent_module"
+  }
+}

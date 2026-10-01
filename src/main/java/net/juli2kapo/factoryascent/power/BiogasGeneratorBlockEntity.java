@@ -16,6 +16,8 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
  * flesh, spider eyes and poisonous potatoes) into biogas, and a gas engine that burns it:
  * {@code biogasOutput} FE/t for 2 mB of gas a tick. An item gives 50 + 450 x its composting
  * chance mB (wheat 340, a pumpkin 340, a cake 500). Gas doesn't burn without air.
+ *
+ * <p>Fluids: pipes can feed it biogas (from a Biogas Digester) straight into its gas tank.
  */
 public class BiogasGeneratorBlockEntity extends PowerBlockEntity {
     public static final int GAS_CAPACITY = 8000;
@@ -23,6 +25,15 @@ public class BiogasGeneratorBlockEntity extends PowerBlockEntity {
     public static final float GAS_PER_TICK = 2f;
     private float gas;
     private int digest;
+    private final net.juli2kapo.factoryascent.fluid.FloatTanks fluids = new net.juli2kapo.factoryascent.fluid.FloatTanks(this::setChanged,
+            new net.juli2kapo.factoryascent.fluid.FloatTanks.Tank(net.juli2kapo.factoryascent.fluid.ModFluids.BIOGAS::source,
+                    net.juli2kapo.factoryascent.fluid.FloatTanks.only(net.juli2kapo.factoryascent.fluid.ModFluids.BIOGAS::source, 1),
+                    () -> gas, v -> gas = v, () -> GAS_CAPACITY, true, false));
+
+    /** What pipes see: a biogas inlet. */
+    public net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> fluidHandler() {
+        return fluids;
+    }
 
     public BiogasGeneratorBlockEntity(BlockPos pos, BlockState state) {
         super(PowerContent.generatorType(Generator.BIOGAS_GENERATOR).get(), pos, state, 3);

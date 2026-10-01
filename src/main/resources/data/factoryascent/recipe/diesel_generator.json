@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PXP",
+    "MFM",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "X": "minecraft:piston",
+    "M": "factoryascent:motor",
+    "F": "factoryascent:advanced_machine_frame",
+    "C": "factoryascent:advanced_circuit"
+  },
+  "result": {
+    "id": "factoryascent:diesel_generator"
+  }
+}

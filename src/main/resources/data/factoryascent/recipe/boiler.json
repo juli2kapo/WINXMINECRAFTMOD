@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CFC",
+    "BMB"
+  ],
+  "key": {
+    "C": "#c:plates/copper",
+    "F": "minecraft:furnace",
+    "B": "minecraft:bricks",
+    "M": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:boiler"
+  }
+}

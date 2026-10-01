@@ -1,0 +1,13 @@
+{
+  "type": "factoryascent:blasting",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:raw_hematite",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "factoryascent:martian_steel_ingot"
+  },
+  "time": 600
+}

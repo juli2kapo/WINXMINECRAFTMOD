@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "factoryascent:polished_mars_rock",
+  "result": {
+    "id": "factoryascent:mars_rock_bricks"
+  }
+}

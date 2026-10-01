@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "factoryascent:bronze_fluid_pipe",
+              "factoryascent:bronze_fluid_tank"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:bronze_fluid_pipe"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_fluids.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_fluids.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:bronze_logistics"
+}

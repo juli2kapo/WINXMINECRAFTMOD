@@ -21,12 +21,18 @@ public class ShipMenu extends AbstractContainerMenu {
     public static final int BUTTON_HORN = 0, BUTTON_LIGHTS = 1;
     /** Shuttle navigation: pick destination {@code BUTTON_DEST + index}, then Engage. */
     public static final int BUTTON_DEST = 10, BUTTON_ENGAGE = 20;
+    /** Shuttle navigation: cycle through the team's Distress Beacons (see outpost/DistressBeacons). */
+    public static final int BUTTON_BEACON = 15;
     /** Width of the shuttle's Navigation panel, right of the instruments. */
     public static final int NAV_W = 132;
 
     public static final int D_SPEED = 0, D_HEADING = 1, D_FUEL = 2, D_FUEL_MAX = 3, D_ALT = 4, D_STATE = 5, D_AUX = 6,
             D_LIGHTS = 7, D_WIND = 8, D_WIND_STRENGTH = 9, D_FUEL_SCALE = 10,
-            D_NAV_SELECTED = 11, D_NAV_HERE = 12, D_NAV_CRUISE = 13, D_NAV_ION = 14, D_NAV_TARGET = 15, D_COUNT = 16;
+            D_NAV_SELECTED = 11, D_NAV_HERE = 12, D_NAV_CRUISE = 13, D_NAV_ION = 14, D_NAV_TARGET = 15,
+            /** Distress beacons: how many the viewer's team has, which one is picked (1-based, 0 none), its planet
+             * ordinal and x/z, each coordinate split in 16-bit halves (data slots sync as shorts). */
+            D_BEACON_COUNT = 16, D_BEACON_INDEX = 17, D_BEACON_PLANET = 18, D_BEACON_X = 19, D_BEACON_XH = 20,
+            D_BEACON_Z = 21, D_BEACON_ZH = 22, D_COUNT = 23;
 
     private final AbstractShip ship;
     private final ContainerData data;
@@ -34,7 +40,7 @@ public class ShipMenu extends AbstractContainerMenu {
     private final int rows;
 
     public ShipMenu(int id, Inventory inventory, AbstractShip ship) {
-        this(id, inventory, ship, serverData(ship));
+        this(id, inventory, ship, serverData(ship, inventory.player));
     }
 
     private ShipMenu(int id, Inventory inventory, AbstractShip ship, ContainerData data) {
@@ -59,10 +65,11 @@ public class ShipMenu extends AbstractContainerMenu {
         throw new IllegalStateException("No ship with id " + entityId);
     }
 
-    private static ContainerData serverData(AbstractShip ship) {
+    private static ContainerData serverData(AbstractShip ship, Player viewer) {
         return new ContainerData() {
             @Override
             public int get(int index) {
+                if (index >= D_BEACON_COUNT) return beaconData(ship, viewer, index);
                 int scale = Math.max(1, ship.fuelCapacity() / 30000 + (ship.fuelCapacity() > 30000 ? 1 : 0));
                 long time = ship.level().getGameTime();
                 return switch (index) {
@@ -96,6 +103,32 @@ public class ShipMenu extends AbstractContainerMenu {
                 return D_COUNT;
             }
         };
+    }
+
+    /** The distress beacon slots: the viewer's team's beacons and the shuttle's pick among them. */
+    private static int beaconData(AbstractShip ship, Player viewer, int index) {
+        if (!(ship instanceof Shuttle shuttle) || ship.level().getServer() == null) return index == D_BEACON_PLANET ? -1 : 0;
+        var server = ship.level().getServer();
+        String team = net.juli2kapo.factoryascent.orbital.FactoryTeams.get(server).teamOf(viewer.getUUID());
+        var list = net.juli2kapo.factoryascent.outpost.DistressBeacons.get(server).forTeam(team);
+        var picked = shuttle.beacon();
+        int at = net.juli2kapo.factoryascent.outpost.DistressBeacons.indexOf(list, picked);
+        var planet = at > 0 ? list.get(at - 1).planet() : null;
+        return switch (index) {
+            case D_BEACON_COUNT -> list.size();
+            case D_BEACON_INDEX -> at;
+            case D_BEACON_PLANET -> planet == null ? -1 : planet.ordinal();
+            case D_BEACON_X -> at > 0 ? picked.pos().getX() & 0xFFFF : 0;
+            case D_BEACON_XH -> at > 0 ? (picked.pos().getX() >> 16) & 0xFFFF : 0;
+            case D_BEACON_Z -> at > 0 ? picked.pos().getZ() & 0xFFFF : 0;
+            case D_BEACON_ZH -> at > 0 ? (picked.pos().getZ() >> 16) & 0xFFFF : 0;
+            default -> 0;
+        };
+    }
+
+    /** A coordinate synced as two 16-bit halves. */
+    public int coordinate(int low, int high) {
+        return ((get(high) & 0xFFFF) << 16) | (get(low) & 0xFFFF);
     }
 
     // ---------------------------------------------------------------- layout
@@ -150,6 +183,13 @@ public class ShipMenu extends AbstractContainerMenu {
         }
         if (ship instanceof Shuttle shuttle && id >= BUTTON_DEST && id < BUTTON_DEST + net.juli2kapo.factoryascent.space.planet.Navigation.Destination.values().length) {
             if (!shuttle.cruising()) shuttle.select(id - BUTTON_DEST);
+            return true;
+        }
+        if (ship instanceof Shuttle shuttle && id == BUTTON_BEACON) {
+            if (!shuttle.cruising()) {
+                var why = shuttle.selectBeacon(player);
+                if (why != null) player.sendOverlayMessage(why.copy().withStyle(net.minecraft.ChatFormatting.YELLOW));
+            }
             return true;
         }
         if (ship instanceof Shuttle shuttle && id == BUTTON_ENGAGE) {

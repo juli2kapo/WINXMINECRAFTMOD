@@ -1,0 +1,19 @@
+{
+  "type": "factoryascent:alloying",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:raw_hematite",
+      "count": 2
+    },
+    {
+      "ingredient": "#c:ingots/steel",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:martian_steel_ingot",
+    "count": 2
+  },
+  "time": 160,
+  "min_grade": 3
+}

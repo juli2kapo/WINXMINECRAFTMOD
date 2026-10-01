@@ -153,7 +153,33 @@ public final class ModGameTests {
             new Test("dyson_milestones_fire", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::milestonesFire),
             new Test("dyson_swarm_is_per_team", 60, net.juli2kapo.factoryascent.dyson.DysonGameTests::swarmIsPerTeam),
             new Test("dyson_saves_and_loads", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::savesAndLoads),
-            new Test("dyson_launch_pad_carries_collector", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::launchPadCarriesCollector)
+            new Test("dyson_launch_pad_carries_collector", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::launchPadCarriesCollector),
+            // fluids (fluid/FluidGameTests)
+            new Test("fluid_pipe_moves_between_tanks", 200, net.juli2kapo.factoryascent.fluid.FluidGameTests::pipeMovesFluidBetweenTanks),
+            new Test("fluid_pipe_side_config", 20, net.juli2kapo.factoryascent.fluid.FluidGameTests::pipeSideConfig),
+            new Test("fluid_tank_keeps_contents", 20, net.juli2kapo.factoryascent.fluid.FluidGameTests::tankKeepsContents),
+            new Test("fluid_pump_drains_pool", 200, net.juli2kapo.factoryascent.fluid.FluidGameTests::pumpDrainsPool),
+            new Test("fluid_derrick_on_deposit", 200, net.juli2kapo.factoryascent.fluid.FluidGameTests::derrickOnDeposit),
+            new Test("fluid_derrick_needs_platform", 100, net.juli2kapo.factoryascent.fluid.FluidGameTests::derrickNeedsPlatform),
+            new Test("fluid_refinery_outputs", 300, net.juli2kapo.factoryascent.fluid.FluidGameTests::refineryOutputs),
+            new Test("fluid_diesel_generator_burns", 60, net.juli2kapo.factoryascent.fluid.FluidGameTests::dieselGeneratorBurns),
+            new Test("fluid_fuelling_port_fuels_launch", 100, net.juli2kapo.factoryascent.fluid.FluidGameTests::fuellingPortFuelsLaunch),
+            new Test("fluid_boiler_drives_steam_engine", 200, net.juli2kapo.factoryascent.fluid.FluidGameTests::boilerDrivesSteamEngine),
+            new Test("fluid_reactor_steam_drives_turbine", 300, net.juli2kapo.factoryascent.fluid.FluidGameTests::reactorSteamDrivesTurbine),
+            new Test("fluid_electrolyzer_makes_deuterium", 200, net.juli2kapo.factoryascent.fluid.FluidGameTests::electrolyzerMakesDeuterium),
+            new Test("fluid_tokamak_takes_gas", 20, net.juli2kapo.factoryascent.fluid.FluidGameTests::tokamakTakesGas),
+            new Test("fluid_cells_are_containers", 20, net.juli2kapo.factoryascent.fluid.FluidGameTests::cellsAreContainers),
+            new Test("outpost_ascent_costs", 20, net.juli2kapo.factoryascent.outpost.OutpostGameTests::ascentCosts),
+            new Test("outpost_ascent_module_block", 20, net.juli2kapo.factoryascent.outpost.OutpostGameTests::ascentModuleBlock),
+            new Test("outpost_distress_beacon_rules", 20, net.juli2kapo.factoryascent.outpost.OutpostGameTests::distressBeaconRules),
+            new Test("outpost_distress_beacon_block", 20, net.juli2kapo.factoryascent.outpost.OutpostGameTests::distressBeaconBlock),
+            new Test("outpost_fuel_synthesizer_makes_hydrolox", 400, net.juli2kapo.factoryascent.outpost.OutpostGameTests::fuelSynthesizerMakesHydrolox),
+            new Test("outpost_oxygen_cell_fills_suit", 20, net.juli2kapo.factoryascent.outpost.OutpostGameTests::oxygenCellFillsSuit),
+            new Test("phone_signal_rule", 40, net.juli2kapo.factoryascent.phone.PhoneGameTests::signalRule),
+            new Test("phone_link_and_unlink", 40, net.juli2kapo.factoryascent.phone.PhoneGameTests::linkAndUnlink),
+            new Test("phone_alerts_when_watched_machine_stops", 400, net.juli2kapo.factoryascent.phone.PhoneGameTests::alertsWhenWatchedMachineStops),
+            new Test("phone_team_chat_delivery", 60, net.juli2kapo.factoryascent.phone.PhoneGameTests::teamChatDelivery),
+            new Test("phone_battery_drain_and_charge", 200, net.juli2kapo.factoryascent.phone.PhoneGameTests::batteryDrainAndCharge)
     );
 
     private ModGameTests() {}

@@ -1,0 +1,18 @@
+{
+  "type": "factoryascent:synthesis",
+  "ingredients": [
+    {
+      "ingredient": "factoryascent:martian_ice",
+      "count": 2
+    },
+    {
+      "ingredient": "factoryascent:empty_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "factoryascent:hydrolox_fuel_cell"
+  },
+  "time": 200,
+  "min_grade": 6
+}

@@ -266,18 +266,19 @@ def generate(ctx):
 
     # ---------------------------------------------------------------- recipes (Quantum age)
     SA, Q, SC = "stellar_alloy_ingot", "#c:ingots/quantum_alloy", "superconductor_cable"
-    # Plasma Forge (grade 7): quantum alloy fused with glowstone into a white-gold alloy that loves sunlight.
-    ctx.machine("alloying", "stellar_alloy_ingot", [(Q, 1), ("minecraft:glowstone_dust", 4)], SA, count=2,
+    # Plasma Forge (grade 7): quantum alloy fused with the Moon's Helium-3 into a white-gold alloy that loves
+    # sunlight (planet materials: tools/features/outpost.py).
+    ctx.machine("alloying", "stellar_alloy_ingot", [(Q, 1), ("helium_3", 2)], SA, count=2,
                 time=160, min_grade=7)
     # Precision Assembler (grade 6): the Solar Collector, two at a time.
-    ctx.machine("assembling", "dyson_collector", [(SA, 1), ("silicon_wafer", 4), ("advanced_circuit", 1),
+    ctx.machine("assembling", "dyson_collector", [(SA, 1), ("silicon_wafer", 4), ("quantum_circuit", 1),
                                                   ("#c:plates/aluminum", 2)], "dyson_collector", count=2, time=200, min_grade=6)
-    ctx.shaped("mass_driver", ["SCS", "QFQ", "SES"], {"S": SA, "C": SC, "Q": Q, "F": "advanced_machine_frame",
+    ctx.shaped("mass_driver", ["SCS", "QFQ", "SES"], {"S": SA, "C": SC, "Q": "quantum_circuit", "F": "advanced_machine_frame",
                                                      "E": "quantum_energy_cell"}, "mass_driver")
-    ctx.shaped("mass_driver_rail", ["QCQ", "S S", "QCQ"], {"Q": Q, "C": SC, "S": SA}, "mass_driver_rail", count=2)
-    ctx.shaped("dyson_receiver", ["SDS", "AFA", "SES"], {"S": SA, "D": "ground_station", "A": "advanced_circuit",
+    ctx.shaped("mass_driver_rail", ["MCM", "S S", "MCM"], {"M": "martian_steel_ingot", "C": SC, "S": SA}, "mass_driver_rail", count=2)
+    ctx.shaped("dyson_receiver", ["SDS", "AFA", "SES"], {"S": SA, "D": "ground_station", "A": "quantum_circuit",
                                                         "F": "advanced_machine_frame", "E": "quantum_energy_cell"}, "dyson_receiver")
-    ctx.shaped("dyson_receiver_array", ["WWW", "SPS"], {"W": "silicon_wafer", "S": SA, "P": "#c:plates/titanium"},
+    ctx.shaped("dyson_receiver_array", ["GGG", "WWW", "SPS"], {"G": "lunar_glass", "W": "silicon_wafer", "S": SA, "P": "#c:plates/titanium"},
                "dyson_receiver_array", count=4)
     ctx.shaped("dyson_monitor", ["TGT", "AOA", "TST"], {"T": "#c:plates/titanium", "G": "minecraft:tinted_glass",
                                                        "A": "advanced_circuit", "O": "orbital_targeting_core", "S": SA},

@@ -14,6 +14,8 @@ non-zero if anything is unobtainable.
 
     python3 tools/check_progression.py            # report
     python3 tools/check_progression.py --why ITEM # show what blocks one item
+    python3 tools/check_progression.py --planets  # what each planet's blocks gate (Moon, Mars, Io)
+    python3 tools/check_progression.py --without A,B  # pretend world-gen blocks A, B don't exist
 """
 import json
 import re
@@ -157,7 +159,8 @@ def load_recipes(tags):
         elif t in ("minecraft:crafting_transmute", f"{MOD}:jet_suit"):  # jet_suit: a transmute that keeps both items' data
             ins = [ingredient_options(r["input"], tags), ingredient_options(r["material"], tags)]
             outs = [result_id(r["result"])]
-        elif t in ("minecraft:smelting", "minecraft:blasting", "minecraft:smoking", "minecraft:campfire_cooking"):
+        elif t in ("minecraft:smelting", "minecraft:blasting", "minecraft:smoking", "minecraft:campfire_cooking",
+                   "minecraft:stonecutting"):
             ins = [ingredient_options(r["ingredient"], tags)]
             outs = [result_id(r["result"])]
         elif t.startswith(f"{MOD}:") and "result" in r:  # special recipes (no fixed result) are skipped
@@ -216,14 +219,17 @@ def feature_progression():
     return out
 
 
-def main():
-    why = sys.argv[sys.argv.index("--why") + 1] if "--why" in sys.argv else None
-    tags = load_tags()
-    items = mod_items()
-    grades = machine_grades()
-    recipes = load_recipes(tags) + feature_progression()
-    drops = ore_drops()
+# The planets' world-gen blocks (tools/features/planets.py), for --planets.
+PLANET_BLOCKS = {
+    "Moon": ["moon_regolith", "moon_rock", "helium_3_regolith"],
+    "Mars": ["mars_sand", "mars_rock", "hematite_ore", "martian_ice"],
+    "Io": ["io_rock", "ionite_ore"],
+}
 
+
+def reachable(tags, recipes, grades, drops, without=()):
+    """Everything obtainable in survival, pretending the world-gen blocks in {without} don't exist."""
+    without = {ns(w) if ":" in w else f"{MOD}:{w}" for w in without}
     have = set()
     # vanilla: everything but creative-only items
     if CLIENT_JAR.exists():
@@ -234,6 +240,8 @@ def main():
                     have.add(f"minecraft:{m.group(1)}")
     have -= NOT_SURVIVAL
     for block in worldgen_blocks():
+        if block in without:
+            continue
         have.add(block)  # silk touch
         have |= drops.get(block, set())
 
@@ -249,7 +257,7 @@ def main():
                     continue
             if all(opts & have for opts in ins):
                 for o in outs:
-                    if o not in have:
+                    if o not in have and o not in without:
                         have.add(o)
                         changed = True
         # placed blocks drop themselves (and loot)
@@ -257,6 +265,40 @@ def main():
             if block in have and not items_ <= have:
                 have |= items_
                 changed = True
+    return have
+
+
+def planets_report(tags, recipes, grades, drops, items):
+    """What each planet gates: the mod items that become unobtainable without that planet (and the ones after it)."""
+    full = reachable(tags, recipes, grades, drops)
+    order = list(PLANET_BLOCKS)
+    for i, planet in enumerate(order):
+        cut = [b for p in order[i:] for b in PLANET_BLOCKS[p]]
+        have = reachable(tags, recipes, grades, drops, cut)
+        lost = sorted(x for x in items if x in full and x not in have)
+        print(f"without {' + '.join(order[i:])} ({len(lost)} items unreachable):")
+        print("   " + ", ".join(x.split(":", 1)[1] for x in lost))
+    for target in ("dyson_collector", "mass_driver", "mass_driver_rail", "dyson_receiver", "stellar_alloy_ingot", "fusion_casing",
+                   "docking_port", "thermal_lining", "ion_drive"):
+        needs = [p for p in order if f"{MOD}:{target}" not in reachable(tags, recipes, grades, drops, PLANET_BLOCKS[p])]
+        print(f"{target} needs: {', '.join(needs) or 'no planet'}")
+    planet_made = sorted(o for name, outs, ins, need in recipes for o in outs
+                         if o.split(":", 1)[1] in {b for bs in PLANET_BLOCKS.values() for b in bs})
+    print("planet blocks made by recipes (must be none): " + (", ".join(planet_made) or "none"))
+
+
+def main():
+    why = sys.argv[sys.argv.index("--why") + 1] if "--why" in sys.argv else None
+    without = sys.argv[sys.argv.index("--without") + 1].split(",") if "--without" in sys.argv else ()
+    tags = load_tags()
+    items = mod_items()
+    grades = machine_grades()
+    recipes = load_recipes(tags) + feature_progression()
+    drops = ore_drops()
+    if "--planets" in sys.argv:
+        planets_report(tags, recipes, grades, drops, items)
+        return
+    have = reachable(tags, recipes, grades, drops, without)
 
     missing = sorted(i for i in items if i not in have)
     if why:

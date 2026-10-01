@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "factoryascent:moon_rock_brick_slab",
+    "factoryascent:mars_rock_brick_slab",
+    "factoryascent:io_rock_brick_slab"
+  ]
+}

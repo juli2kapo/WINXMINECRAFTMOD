@@ -156,7 +156,7 @@ public final class PowerGameTests {
      * north wall (facing north), and a 3x3x3 core: fuel channels in the four corner columns and the
      * middle one (15), control rods in the other four columns (12, full control).
      */
-    static ReactorControllerBlockEntity buildReactor(GameTestHelper h, BlockPos o) {
+    public static ReactorControllerBlockEntity buildReactor(GameTestHelper h, BlockPos o) {
         for (int x = 0; x < 5; x++) {
             for (int y = 0; y < 5; y++) {
                 for (int z = 0; z < 5; z++) {

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GLG",
+    "RCR",
+    "III"
+  ],
+  "key": {
+    "G": "#c:glass_blocks",
+    "L": "minecraft:redstone_lamp",
+    "R": "minecraft:redstone",
+    "C": "factoryascent:basic_circuit",
+    "I": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "factoryascent:distress_beacon"
+  }
+}

@@ -2,12 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "QCQ",
+    "MCM",
     "S S",
-    "QCQ"
+    "MCM"
   ],
   "key": {
-    "Q": "#c:ingots/quantum_alloy",
+    "M": "factoryascent:martian_steel_ingot",
     "C": "factoryascent:superconductor_cable",
     "S": "factoryascent:stellar_alloy_ingot"
   },

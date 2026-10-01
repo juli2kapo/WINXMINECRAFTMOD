@@ -47,6 +47,11 @@ public class FusionPortBlockEntity extends BlockEntity {
         return c == null ? null : c.energyHandler();
     }
 
+    public @Nullable ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> fluidHandler() {
+        TokamakCoreBlockEntity c = level == null ? null : core(level);
+        return c == null ? null : c.fluidHandler();
+    }
+
     public @Nullable ResourceHandler<ItemResource> itemHandler() {
         TokamakCoreBlockEntity c = level == null ? null : core(level);
         return c == null ? null : c.itemHandler();
