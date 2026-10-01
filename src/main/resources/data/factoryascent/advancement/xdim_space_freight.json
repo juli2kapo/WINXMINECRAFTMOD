@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:xdim_quantum",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:quantum_entangler"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.xdim_space_freight.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.xdim_space_freight.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

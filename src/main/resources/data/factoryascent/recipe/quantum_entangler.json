@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TCT",
+    "SLS",
+    "TQT"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "C": "factoryascent:quantum_circuit",
+    "S": "factoryascent:superconductor_cable",
+    "L": "factoryascent:ender_link",
+    "Q": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "factoryascent:quantum_entangler"
+  }
+}

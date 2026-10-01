@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "factoryascent:block/quantum_entangler_active"
+  }
+}

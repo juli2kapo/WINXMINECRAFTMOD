@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:quantum_entangler"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:quantum_entangler"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.xdim_quantum.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.xdim_quantum.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:age_quantum"
+}

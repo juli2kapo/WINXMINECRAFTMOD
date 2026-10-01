@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OPO",
+    "DCD",
+    "OFO"
+  ],
+  "key": {
+    "O": "minecraft:obsidian",
+    "P": "minecraft:ender_pearl",
+    "D": "factoryascent:ender_dust",
+    "C": "factoryascent:advanced_circuit",
+    "F": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:ender_link",
+    "count": 2
+  }
+}

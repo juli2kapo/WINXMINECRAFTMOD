@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "factoryascent:block/ender_link"
+    },
+    "active=true": {
+      "model": "factoryascent:block/ender_link_active"
+    }
+  }
+}

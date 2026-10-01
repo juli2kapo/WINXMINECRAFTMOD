@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:xdim_first_link",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:ender_link"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.xdim_portal_plumbing.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.xdim_portal_plumbing.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

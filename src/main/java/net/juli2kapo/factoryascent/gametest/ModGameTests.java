@@ -154,6 +154,16 @@ public final class ModGameTests {
             new Test("dyson_swarm_is_per_team", 60, net.juli2kapo.factoryascent.dyson.DysonGameTests::swarmIsPerTeam),
             new Test("dyson_saves_and_loads", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::savesAndLoads),
             new Test("dyson_launch_pad_carries_collector", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::launchPadCarriesCollector),
+            // interdimensional links (xdim/XdimGameTests)
+            new Test("xdim_items_overworld_to_nether", 200, net.juli2kapo.factoryascent.xdim.XdimGameTests::itemsOverworldToNether),
+            new Test("xdim_nether_lava_to_magmatic", 600, net.juli2kapo.factoryascent.xdim.XdimGameTests::netherLavaToMagmatic),
+            new Test("xdim_energy_overworld_to_nether", 100, net.juli2kapo.factoryascent.xdim.XdimGameTests::energyOverworldToNether),
+            new Test("xdim_face_modes_respected", 200, net.juli2kapo.factoryascent.xdim.XdimGameTests::faceModesRespected),
+            new Test("xdim_team_privacy", 200, net.juli2kapo.factoryascent.xdim.XdimGameTests::teamPrivacy),
+            new Test("xdim_chunk_loading_keeps_remote_ticking", 200, net.juli2kapo.factoryascent.xdim.XdimGameTests::chunkLoadingKeepsRemoteTicking),
+            new Test("xdim_tier_dimension_rules", 200, net.juli2kapo.factoryascent.xdim.XdimGameTests::tierDimensionRules),
+            new Test("xdim_quantum_costs_fe", 200, net.juli2kapo.factoryascent.xdim.XdimGameTests::quantumCostsFe),
+            new Test("xdim_wrench_cycles_face", 20, net.juli2kapo.factoryascent.xdim.XdimGameTests::wrenchCyclesFace),
             // fluids (fluid/FluidGameTests)
             new Test("fluid_pipe_moves_between_tanks", 200, net.juli2kapo.factoryascent.fluid.FluidGameTests::pipeMovesFluidBetweenTanks),
             new Test("fluid_pipe_side_config", 20, net.juli2kapo.factoryascent.fluid.FluidGameTests::pipeSideConfig),

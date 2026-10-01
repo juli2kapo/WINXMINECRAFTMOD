@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "factoryascent:block/quantum_entangler"
+    },
+    "active=true": {
+      "model": "factoryascent:block/quantum_entangler_active"
+    }
+  }
+}
