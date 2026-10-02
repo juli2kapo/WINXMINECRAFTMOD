@@ -40,7 +40,8 @@ import org.jspecify.annotations.Nullable;
  * energy leaves through the bottom of the centre block (and its top) into cables.
  */
 public class DysonReceiverBlockEntity extends BlockEntity {
-    private static final Direction[] OUTPUTS = {Direction.DOWN, Direction.UP};
+    // Only downwards: a cable on top would shade the receiver from the sun.
+    private static final Direction[] OUTPUTS = {Direction.DOWN};
 
     private final SimpleEnergyHandler energy = new SimpleEnergyHandler(bufferSize(), 0, Integer.MAX_VALUE) {
         @Override
@@ -162,7 +163,7 @@ public class DysonReceiverBlockEntity extends BlockEntity {
         }
     }
 
-    /** Pushes the buffer into cables below and above the centre block; returns FE moved. */
+    /** Pushes the buffer into the cable below the centre block; returns FE moved. */
     private int push(ServerLevel level) {
         int budget = Math.min(energy.getAmountAsInt(), DysonConfig.RECEIVER_MAX_OUTPUT.get());
         int moved = 0;

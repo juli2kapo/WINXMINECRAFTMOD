@@ -144,8 +144,8 @@ def lang(L):
       "%s FE/t por colector a pleno sol (repartido entre tus receptores), hasta %s FE/t por receptor")
     L(f"{T}.dyson_receiver_multiblock", "Multiblock: surround it with 8 Receiver Arrays. Needs open sky and daylight (always on in space)",
       "Multibloque: rodéalo con 8 matrices receptoras. Necesita cielo abierto y luz de día (siempre activo en el espacio)")
-    L(f"{T}.dyson_receiver_output", "Energy comes out of the bottom (and top) of the centre block",
-      "La energía sale por abajo (y arriba) del bloque central")
+    L(f"{T}.dyson_receiver_output", "Energy comes out of the bottom of the centre block: put the cable underneath (anything on top blocks the sun)",
+      "La energía sale por abajo del bloque central: pon el cable debajo (lo que esté encima le tapa el sol)")
     L(f"{T}.dyson_receiver_array", "Eight of these around a Dyson Receiver make its 3×3 rectenna",
       "Ocho de estas alrededor de un receptor Dyson forman su rectena de 3×3")
     L(f"{T}.dyson_monitor_square", "It's Minecraft. The sun is square.", "Es Minecraft. El sol es cuadrado.")

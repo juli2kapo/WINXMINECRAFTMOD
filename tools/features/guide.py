@@ -199,9 +199,9 @@ NOTES = {
                   "Deja 9 bloques de aire libre sobre el controlador: ahí se alza el cohete."),
     "sky": ("Needs open sky above the top rail (always open in space).",
             "Necesita cielo abierto sobre el último riel (en el espacio siempre lo hay)."),
-    "daylight": ("Needs open sky and daylight; in space it never sets. Energy comes out of the centre block's bottom and top.",
-                 "Necesita cielo abierto y luz de día; en el espacio nunca se pone el sol. La energía sale por abajo y "
-                 "arriba del bloque central."),
+    "daylight": ("Needs open sky and daylight; in space it never sets. Energy comes out of the centre block's bottom: nothing on top.",
+                 "Necesita cielo abierto y luz de día; en el espacio nunca se pone el sol. La energía sale por abajo "
+                 "del bloque central: nada encima."),
     "rotor": ("The 5×5 disc in front of the nacelle (corners free) must be clear for the blades. Higher is windier.",
               "El disco de 5×5 delante de la góndola (sin las esquinas) debe estar libre para las aspas. Más alto, más viento."),
     "mast_power": ("At least 4 Turbine Masts. The power comes out under the foot of the mast: put a cable or a cell there.",
@@ -796,11 +796,11 @@ entry("mass_driver", "Mass Driver", (
 entry("dyson_receiver", "Dyson Receiver", (
     "A [[dyson_receiver]] surrounded by 8 [[dyson_receiver_array|Receiver Arrays]] (a 3×3 rectenna). It needs open sky "
     "and daylight on a planet (rain scatters some light); in space it is always on. FE per collector is shared by your "
-    "receivers and comes out of the bottom and top of the centre block."),
+    "receivers and comes out of the bottom of the centre block: run the cable underneath, since anything on top blocks the sun."),
     "Receptor Dyson", (
     "Un [[dyson_receiver]] rodeado de 8 [[dyson_receiver_array|antenas]] (una rectena de 3×3). Necesita cielo abierto y luz "
     "de día en un planeta (la lluvia dispersa parte); en el espacio siempre funciona. El FE por colector se reparte entre "
-    "tus receptores y sale por abajo y arriba del bloque central."))
+    "tus receptores y sale por abajo del bloque central: pon el cable debajo, porque lo que esté encima le tapa el sol."))
 
 # ---- Ender
 entry("ender_anchor", "Ender Anchor", (
