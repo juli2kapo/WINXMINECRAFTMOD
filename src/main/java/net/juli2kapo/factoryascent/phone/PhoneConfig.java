@@ -12,6 +12,7 @@ public final class PhoneConfig {
     public static final ModConfigSpec.IntValue DRAIN_STANDBY;
     public static final ModConfigSpec.IntValue MAX_MACHINES;
     public static final ModConfigSpec.IntValue MAX_POWER;
+    public static final ModConfigSpec.IntValue MAX_BEACONS;
     public static final ModConfigSpec.IntValue LOCAL_RANGE;
     public static final ModConfigSpec.IntValue CHAT_HISTORY;
     public static final ModConfigSpec.IntValue STOP_SECONDS;
@@ -24,9 +25,11 @@ public final class PhoneConfig {
         DRAIN_STANDBY = b.comment("FE per second the phone uses in your inventory while it watches machines for alerts.")
                 .defineInRange("drainStandbyPerSecond", 4, 0, 100_000);
         MAX_MACHINES = b.comment("How many machines one phone can watch (Machines app).")
-                .defineInRange("maxWatchedMachines", 8, 1, 32);
+                .defineInRange("maxWatchedMachines", 16, 1, 32);
         MAX_POWER = b.comment("How many energy networks one phone can link (Power app).")
                 .defineInRange("maxPowerNetworks", 4, 1, 16);
+        MAX_BEACONS = b.comment("How many Ender Beacons one phone can link (Recall app: no Recall Charm needed).")
+                .defineInRange("maxRecallBeacons", 16, 1, 24);
         LOCAL_RANGE = b.comment("Blocks within which the phone reaches linked machines and cables without uplink signal (short-range radio).",
                         "Farther away (same dimension) it needs your team's Uplink Satellite overhead.")
                 .defineInRange("localRange", 48, 0, 1024);

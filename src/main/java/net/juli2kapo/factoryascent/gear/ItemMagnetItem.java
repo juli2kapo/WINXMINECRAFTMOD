@@ -42,6 +42,9 @@ public class ItemMagnetItem extends PoweredItem {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        // One toggle per press: holding the button must not flip it on and off every 4 ticks.
+        if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(player)) return InteractionResult.FAIL;
+        net.juli2kapo.factoryascent.util.HeldUse.hold(player);
         boolean on = !enabled(stack);
         stack.set(GearContent.MAGNET_ON.get(), on);
         level.playSound(null, player.blockPosition(), on ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE,

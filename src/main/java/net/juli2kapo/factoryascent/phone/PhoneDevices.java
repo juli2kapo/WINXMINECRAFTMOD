@@ -16,6 +16,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -36,14 +38,93 @@ public final class PhoneDevices {
 
     private PhoneDevices() {}
 
-    /** What a block can be linked as: a {@link PhoneMemory} kind, or -1. */
+    /**
+     * What a block can be linked as: a {@link PhoneMemory} kind, or -1. Machines, generators and
+     * reactors, and also any other Factory Ascent device that holds energy or fluid or reports a
+     * status (tanks, Dyson Receivers and Monitors, Mass Drivers, the orbital consoles, cross-dimension
+     * links, anchors…) are watched as machines; Ender Beacons go to the Recall app.
+     */
     public static int linkKind(@Nullable BlockEntity be, BlockState state) {
         if (be instanceof StorageTerminalBlockEntity || be instanceof StorageControllerBlockEntity) return PhoneMemory.STORAGE;
         if (state.getBlock() instanceof PowerCableBlock) return PhoneMemory.POWER;
+        if (be instanceof net.juli2kapo.factoryascent.ender.EnderBeaconBlockEntity) return PhoneMemory.BEACON;
         if (be instanceof AbstractMachineBlockEntity || be instanceof PowerBlockEntity || be instanceof ReactorControllerBlockEntity) {
             return PhoneMemory.MACHINE;
         }
+        if (be != null && isDevice(be)) return PhoneMemory.MACHINE;
         return -1;
+    }
+
+    /** Status-reporting blocks that are neither machines nor generators. */
+    private static boolean namedDevice(BlockEntity be) {
+        return be instanceof net.juli2kapo.factoryascent.dyson.DysonReceiverBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.dyson.DysonMonitorBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.dyson.MassDriverBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.orbital.GroundStationBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.orbital.OrbitalRadarBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.orbital.LaunchControllerBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.xdim.LinkBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.ender.EnderAnchorBlockEntity;
+    }
+
+    /** A Factory Ascent block entity (not a pipe, cable or storage-network part) worth watching. */
+    private static boolean isDevice(BlockEntity be) {
+        if (be instanceof net.juli2kapo.factoryascent.pipe.ItemPipeBlockEntity
+                || be instanceof net.juli2kapo.factoryascent.storagenet.StorageNodeBlockEntity
+                || be.getClass().getSimpleName().contains("Pipe")) return false;
+        var key = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
+        if (key == null || !key.getNamespace().equals(net.juli2kapo.factoryascent.FactoryAscent.MOD_ID)) return false;
+        if (namedDevice(be)) return true;
+        if (be.getLevel() == null) return false;
+        return be.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK, be.getBlockPos(),
+                be.getBlockState(), be, null) != null
+                || be.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK, be.getBlockPos(),
+                be.getBlockState(), be, null) != null;
+    }
+
+    /** Status of a device that isn't a machine, generator or reactor: energy, fluid and its own status line. */
+    private static void device(ServerLevel level, BlockEntity be, CompoundTag tag) {
+        tag.putString("status", "gui.factoryascent.phone.device.online");
+        tag.putInt("level", OK);
+        tag.putBoolean("benign", true);
+        var energy = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK, be.getBlockPos(),
+                be.getBlockState(), be, null);
+        if (energy != null && energy.getCapacityAsLong() > 0) {
+            tag.putInt("energy", (int) Math.min(Integer.MAX_VALUE, energy.getAmountAsLong()));
+            tag.putInt("capacity", (int) Math.min(Integer.MAX_VALUE, energy.getCapacityAsLong()));
+        }
+        var fluid = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK, be.getBlockPos(),
+                be.getBlockState(), be, null);
+        if (fluid != null && energy == null) {
+            long amount = 0, capacity = 0;
+            for (int i = 0; i < fluid.size(); i++) {
+                amount += fluid.getAmountAsLong(i);
+                capacity += fluid.getCapacityAsLong(i, fluid.getResource(i));
+            }
+            tag.putString("status", "gui.factoryascent.phone.device.fluid");
+            tag.putInt("arg", (int) Math.min(Integer.MAX_VALUE, amount));
+            if (capacity > 0) {
+                tag.putInt("energy", (int) Math.min(Integer.MAX_VALUE, amount));
+                tag.putInt("capacity", (int) Math.min(Integer.MAX_VALUE, capacity));
+                tag.putBoolean("fluid", true);
+            }
+        }
+        Component line = null;
+        if (be instanceof net.juli2kapo.factoryascent.dyson.DysonReceiverBlockEntity r) {
+            line = r.statusLine(level);
+            tag.putBoolean("working", r.active());
+            tag.putInt("rate", r.lastOut());
+            tag.putInt("level", r.active() ? OK : r.isFormed() ? WARN : BAD);
+            tag.putBoolean("benign", r.isFormed());
+            tag.putBoolean("dyson", true);
+            tag.putInt("dysonIn", r.lastIn());
+            tag.putInt("dysonOut", r.lastOut());
+            tag.putBoolean("formed", r.isFormed());
+        }
+        if (line != null) {
+            ComponentSerialization.CODEC.encodeStart(level.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), line)
+                    .result().ifPresent(t -> tag.put("statusc", t));
+        }
     }
 
     /** A storage controller links its network's first terminal; null if it has none. */
@@ -155,6 +236,8 @@ public final class PhoneDevices {
             tag.putInt("energy", r.energy().energy());
             tag.putInt("capacity", r.energy().capacity());
             tag.putInt("rate", r.rate());
+        } else {
+            device(level, be, tag);
         }
         return tag;
     }

@@ -559,6 +559,8 @@
   "message.factoryascent.dyson_receiver.unowned": "Dyson Receiver: no owner",
   "message.factoryascent.dyson_receiver.no_swarm": "Dyson Receiver: your team has no collectors around the sun yet",
   "message.factoryascent.dyson_receiver.no_sun": "Dyson Receiver: %s collectors, but no sun here (night, or the sky is blocked)",
+  "message.factoryascent.dyson_receiver.blocked": "Dyson Receiver: %s collectors, but %s at %s, %s, %s shades it from the sun",
+  "message.factoryascent.dyson_receiver.night": "Dyson Receiver: %s collectors, but it's night: no sunlight to collect",
   "message.factoryascent.dyson_receiver.status": "Dyson Receiver: %s FE/t from %s collectors · sun %s%%",
   "message.factoryascent.dyson.first": "☀ Your first Solar Collector reached solar orbit! Look at the sun…",
   "message.factoryascent.dyson.milestone": "☀ Dyson Cube %s%% complete (%s/%s collectors)",

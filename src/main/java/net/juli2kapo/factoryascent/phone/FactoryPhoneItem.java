@@ -20,6 +20,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Factory Phone: right-click to open it (a phone-shaped screen with apps, see {@link PhoneApps}).
@@ -42,7 +43,7 @@ public class FactoryPhoneItem extends PoweredItem {
         BlockPos pos = context.getClickedPos();
         BlockEntity be = level.getBlockEntity(pos);
         BlockState state = level.getBlockState(pos);
-        int kind = be != null ? PhoneDevices.linkKind(be, state) : PhoneDevices.linkKind(null, state);
+        int kind = PhoneDevices.linkKind(be, state);
         if (kind < 0) return InteractionResult.PASS;
         if (level instanceof ServerLevel server && player instanceof ServerPlayer sp) {
             Component message = toggleLink(sp, context.getItemInHand(), server, pos, kind);
@@ -51,35 +52,54 @@ public class FactoryPhoneItem extends PoweredItem {
         return InteractionResult.SUCCESS;
     }
 
-    /** Links the device at {@code pos} (or unlinks it if it was linked); returns the message to show. */
-    public static Component toggleLink(ServerPlayer player, ItemStack phone, ServerLevel level, BlockPos pos, int kind) {
-        PhoneMemory memory = PhoneMemory.of(phone);
+    /** What linking a block gives: the link, or why it can't be linked. */
+    public record Resolved(PhoneMemory.@Nullable Link link, @Nullable Component error) {}
+
+    /**
+     * The link the block at {@code pos} makes (phone or Link Card): storage blocks resolve to their
+     * network's terminal, Ender Beacons must be the player's own. {@code player} may be null (no owner check).
+     */
+    public static Resolved resolve(@Nullable ServerPlayer player, ServerLevel level, BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);
+        int kind = PhoneDevices.linkKind(be, level.getBlockState(pos));
+        if (kind < 0) return new Resolved(null, Component.translatable("message.factoryascent.link_card.not_linkable").withStyle(ChatFormatting.RED));
         if (kind == PhoneMemory.STORAGE) {
             BlockPos terminal = be == null ? null : PhoneDevices.terminalFor(level, be);
             if (terminal == null) {
-                return Component.translatable("message.factoryascent.phone.no_terminal").withStyle(ChatFormatting.RED);
+                return new Resolved(null, Component.translatable("message.factoryascent.phone.no_terminal").withStyle(ChatFormatting.RED));
             }
             pos = terminal;
         }
-        GlobalPos where = GlobalPos.of(level.dimension(), pos);
-        String block = level.getBlockState(pos).getBlock().getDescriptionId();
-        Component name = Component.translatable(block);
-        if (memory.find(where) != null) {
-            memory.without(where).store(phone);
-            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 0.6f, 0.8f);
-            return Component.translatable("message.factoryascent.phone.unlinked", name).withStyle(ChatFormatting.YELLOW);
+        if (kind == PhoneMemory.BEACON && player != null && be instanceof net.juli2kapo.factoryascent.ender.EnderBeaconBlockEntity beacon
+                && beacon.owner() != null && !beacon.owner().equals(player.getUUID())) {
+            return new Resolved(null, Component.translatable("message.factoryascent.beacon_not_yours").withStyle(ChatFormatting.RED));
         }
+        return new Resolved(new PhoneMemory.Link(kind, GlobalPos.of(level.dimension(), pos),
+                level.getBlockState(pos).getBlock().getDescriptionId()), null);
+    }
+
+    /**
+     * Adds {@code link} to the phone's memory (phone sneak-use or Phone Dock). Returns null when it
+     * was added (or was already there), else why not: the per-kind limits and one link per energy network.
+     */
+    public static @Nullable Component addLink(net.minecraft.server.MinecraftServer server, ItemStack phone, PhoneMemory.Link link) {
+        PhoneMemory memory = PhoneMemory.of(phone);
+        if (memory.find(link.pos()) != null) return null;
+        int kind = link.kind();
         if (kind == PhoneMemory.MACHINE && memory.of(PhoneMemory.MACHINE).size() >= PhoneConfig.MAX_MACHINES.get()) {
             return Component.translatable("message.factoryascent.phone.too_many_machines", PhoneConfig.MAX_MACHINES.get())
                     .withStyle(ChatFormatting.RED);
         }
+        if (kind == PhoneMemory.BEACON && memory.of(PhoneMemory.BEACON).size() >= PhoneConfig.MAX_BEACONS.get()) {
+            return Component.translatable("message.factoryascent.phone.too_many_beacons", PhoneConfig.MAX_BEACONS.get())
+                    .withStyle(ChatFormatting.RED);
+        }
         if (kind == PhoneMemory.POWER) {
-            // one link per network: a second cable of an already linked network replaces nothing
-            var manager = net.juli2kapo.factoryascent.energy.EnergyNetworkManager.get(level);
-            var net = manager.networkAt(pos);
+            // one link per network: a second cable of an already linked network adds nothing
+            ServerLevel level = server.getLevel(link.pos().dimension());
+            var net = level == null ? null : net.juli2kapo.factoryascent.energy.EnergyNetworkManager.get(level).networkAt(link.pos().pos());
             for (PhoneMemory.Link l : memory.of(PhoneMemory.POWER)) {
-                if (net != null && l.pos().dimension().equals(level.dimension()) && net.cables().contains(l.pos().pos())) {
+                if (net != null && l.pos().dimension().equals(link.pos().dimension()) && net.cables().contains(l.pos().pos())) {
                     return Component.translatable("message.factoryascent.phone.network_already").withStyle(ChatFormatting.YELLOW);
                 }
             }
@@ -88,14 +108,38 @@ public class FactoryPhoneItem extends PoweredItem {
                         .withStyle(ChatFormatting.RED);
             }
         }
-        memory.with(new PhoneMemory.Link(kind, where, block)).store(phone);
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 0.7f, 1.5f);
-        String key = switch (kind) {
+        memory.with(link).store(phone);
+        return null;
+    }
+
+    /** The message for a link that was just added. */
+    public static Component linkedMessage(PhoneMemory.Link link) {
+        Component name = Component.translatable(link.block());
+        String key = switch (link.kind()) {
             case PhoneMemory.STORAGE -> "message.factoryascent.phone.linked_storage";
             case PhoneMemory.POWER -> "message.factoryascent.phone.linked_power";
+            case PhoneMemory.BEACON -> "message.factoryascent.phone.linked_beacon";
             default -> "message.factoryascent.phone.linked_machine";
         };
         return Component.translatable(key, name).withStyle(ChatFormatting.AQUA);
+    }
+
+    /** Links the device at {@code pos} (or unlinks it if it was linked); returns the message to show. */
+    public static Component toggleLink(ServerPlayer player, ItemStack phone, ServerLevel level, BlockPos pos, int kind) {
+        Resolved resolved = resolve(player, level, pos);
+        if (resolved.link() == null) return resolved.error();
+        PhoneMemory.Link link = resolved.link();
+        PhoneMemory memory = PhoneMemory.of(phone);
+        if (memory.find(link.pos()) != null) {
+            memory.without(link.pos()).store(phone);
+            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 0.6f, 0.8f);
+            return Component.translatable("message.factoryascent.phone.unlinked", Component.translatable(link.block()))
+                    .withStyle(ChatFormatting.YELLOW);
+        }
+        Component error = addLink(level.getServer(), phone, link);
+        if (error != null) return error;
+        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 0.7f, 1.5f);
+        return linkedMessage(link);
     }
 
     @Override
@@ -117,10 +161,14 @@ public class FactoryPhoneItem extends PoweredItem {
         super.appendHoverText(stack, context, display, tooltip, flag);
         PhoneMemory memory = PhoneMemory.of(stack);
         int machines = memory.of(PhoneMemory.MACHINE).size(), power = memory.of(PhoneMemory.POWER).size();
+        int beacons = memory.of(PhoneMemory.BEACON).size();
         boolean storage = memory.storage() != null;
         if (machines + power > 0 || storage) {
             tooltip.accept(Component.translatable("tooltip.factoryascent.phone.links", machines, power,
                     Component.translatable(storage ? "gui.yes" : "gui.no")).withStyle(ChatFormatting.DARK_AQUA));
+        }
+        if (beacons > 0) {
+            tooltip.accept(Component.translatable("tooltip.factoryascent.phone.beacons", beacons).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         tooltip.accept(Component.translatable("tooltip.factoryascent.phone.open").withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.phone.link").withStyle(ChatFormatting.DARK_GRAY));

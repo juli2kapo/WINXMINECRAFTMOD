@@ -67,6 +67,7 @@ public final class MachinesView extends PhoneAppView {
         PhoneUi.text(g, Component.translatable(m.getStringOr("name", "")), x + 23, y + 3, w - 26, PhoneUi.TEXT);
         Component status = m.contains("arg") ? Component.translatable(m.getStringOr("status", ""), m.getIntOr("arg", 0))
                 : Component.translatable(m.getStringOr("status", ""));
+        if (m.contains("statusc")) status = decodeStatus(m, status);
         PhoneUi.dot(g, x + 23, y + 14, PhoneUi.levelColor(level));
         PhoneUi.text(g, status, x + 31, y + 13, w - 34, PhoneUi.levelColor(level) == PhoneUi.OFF ? PhoneUi.MUTED : PhoneUi.levelColor(level));
         int by = y + 25;
@@ -85,14 +86,27 @@ public final class MachinesView extends PhoneAppView {
                 PhoneUi.bar(g, x + 4, by, (w - 50) / 2 - 1, 6, progress / 1000f, PhoneUi.GOOD);
                 PhoneUi.bar(g, x + 4 + (w - 50) / 2 + 1, by, (w - 50) / 2 - 1, 6, frac, 0xFFE0A030);
             } else {
-                PhoneUi.bar(g, x + 4, by, w - 50, 6, frac, 0xFFE0A030);
+                PhoneUi.bar(g, x + 4, by, w - 50, 6, frac, m.getBooleanOr("fluid", false) ? 0xFF3F7FD0 : 0xFFE0A030);
             }
-            int rate = m.getIntOr("rate", 0);
-            PhoneUi.textRight(g, Component.literal(PhoneUi.compact(rate) + " FE/t"), x + w - 3, by - 1, PhoneUi.MUTED);
+            if (m.getBooleanOr("fluid", false)) {
+                PhoneUi.textRight(g, Component.literal(PhoneUi.compact(m.getIntOr("energy", 0)) + " mB"), x + w - 3, by - 1, PhoneUi.MUTED);
+            } else {
+                int rate = m.getIntOr("rate", 0);
+                PhoneUi.textRight(g, Component.literal(PhoneUi.compact(rate) + " FE/t"), x + w - 3, by - 1, PhoneUi.MUTED);
+            }
         } else {
             Component where = Component.translatable("gui.factoryascent.phone.at", m.getIntOr("x", 0), m.getIntOr("y", 0), m.getIntOr("z", 0));
             PhoneUi.text(g, where, x + 4, by - 1, w - 8, PhoneUi.FAINT);
         }
+    }
+
+    /** A device's own status line, sent as a serialized component. */
+    static Component decodeStatus(CompoundTag m, Component fallback) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return fallback;
+        return net.minecraft.network.chat.ComponentSerialization.CODEC
+                .parse(mc.level.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), m.get("statusc"))
+                .result().map(c -> (Component) c).orElse(fallback);
     }
 
     @Override

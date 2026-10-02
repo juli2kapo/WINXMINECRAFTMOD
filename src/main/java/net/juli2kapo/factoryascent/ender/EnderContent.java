@@ -83,6 +83,14 @@ public final class EnderContent {
             "linked_beacon", b -> b.persistent(GlobalPos.CODEC).networkSynchronized(GlobalPos.STREAM_CODEC));
 
     /**
+     * Set on a Recall Charm whose last recall found its Ender Beacon destroyed: the link is kept (so
+     * the charm can say where it was, and works again if a beacon is rebuilt there) but shown broken.
+     */
+    public static final Supplier<DataComponentType<Boolean>> BEACON_BROKEN = COMPONENTS.registerComponentType(
+            "beacon_broken", b -> b.persistent(com.mojang.serialization.Codec.BOOL)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.BOOL));
+
+    /**
      * Owns every chunk an Ender Anchor keeps loaded. On world load, tickets of anchors that are no
      * longer in the ledger are dropped, so a chunk can never stay loaded forever by accident.
      */

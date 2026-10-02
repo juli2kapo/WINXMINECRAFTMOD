@@ -15,21 +15,21 @@ import org.jspecify.annotations.Nullable;
  * What a Factory Phone remembers (the {@code factoryascent:phone} item component): its linked
  * devices and its settings. Immutable; every change makes a new value.
  *
- * @param links     linked devices (one storage terminal, watched machines, energy networks)
+ * @param links     linked devices (one storage terminal, watched machines, energy networks, Ender Beacons)
  * @param sound     play the ringtone with notifications
  * @param alerts    push notifications at all (machine alerts and team chat)
  * @param wallpaper home-screen wallpaper index
  * @param ringtone  ringtone index ({@link PhoneSounds})
  */
 public record PhoneMemory(List<Link> links, boolean sound, boolean alerts, int wallpaper, int ringtone) {
-    public static final int STORAGE = 0, MACHINE = 1, POWER = 2;
+    public static final int STORAGE = 0, MACHINE = 1, POWER = 2, BEACON = 3;
     public static final int WALLPAPERS = 4;
     public static final PhoneMemory EMPTY = new PhoneMemory(List.of(), true, true, 0, 0);
 
     /**
      * One linked device.
      *
-     * @param kind  {@link #STORAGE}, {@link #MACHINE} or {@link #POWER}
+     * @param kind  {@link #STORAGE}, {@link #MACHINE}, {@link #POWER} or {@link #BEACON} (Recall app)
      * @param block the block's description id when it was linked (shown while it is out of reach)
      */
     public record Link(int kind, GlobalPos pos, String block) {

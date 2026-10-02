@@ -24,6 +24,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Recall Charm: sneak-use it on an Ender Beacon to link it, then hold use anywhere to channel a
@@ -53,6 +54,7 @@ public class RecallCharmItem extends Item {
                 return InteractionResult.FAIL;
             }
             context.getItemInHand().set(EnderContent.LINKED_BEACON.get(), GlobalPos.of(level.dimension(), context.getClickedPos()));
+            context.getItemInHand().remove(EnderContent.BEACON_BROKEN.get());
             refreshName(context.getItemInHand(), level.dimension(), context.getClickedPos(), beacon);
             player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_linked").withStyle(ChatFormatting.LIGHT_PURPLE));
             level.playSound(null, context.getClickedPos(), SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.PLAYERS, 1f, 1.4f);
@@ -84,10 +86,133 @@ public class RecallCharmItem extends Item {
             return InteractionResult.FAIL;
         }
         player.startUsingItem(hand);
-        if (!level.isClientSide()) {
+        if (player instanceof ServerPlayer sp) {
+            // The button that got the last failure is still held: stay quiet (its message stays on
+            // screen) until it is let go and pressed again. Stopping here also stops the client's channel.
+            if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(sp)) {
+                sp.stopUsingItem();
+                return InteractionResult.CONSUME;
+            }
+            // Check the beacon before channelling: no point waiting 5 s to hear it is gone.
+            Component problem = problem(sp, target);
+            if (problem == null && cooldownLeft(sp) > 0) {
+                problem = Component.translatable("gui.factoryascent.phone.recall.cooling", (cooldownLeft(sp) + 19) / 20)
+                        .withStyle(ChatFormatting.RED);
+            }
+            if (problem != null) {
+                fail(sp, stack, target, problem, true);
+                return InteractionResult.CONSUME;
+            }
+            stack.remove(EnderContent.BEACON_BROKEN.get());
             level.playSound(null, player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 0.4f, 1.6f);
         }
         return InteractionResult.CONSUME;
+    }
+
+    /** Ticks a failed recall blocks the charm, so the reason stays readable. */
+    public static final int FAIL_COOLDOWN = 40;
+
+    /**
+     * A recall that can't happen: shows why (and keeps showing it: nothing else is reported until the
+     * button is pressed again), marks the link broken if the beacon is gone, and blocks the charm briefly.
+     */
+    private static void fail(ServerPlayer player, ItemStack stack, GlobalPos target, Component why, boolean stopUsing) {
+        player.sendOverlayMessage(why);
+        if (beaconGone(player, target)) stack.set(EnderContent.BEACON_BROKEN.get(), true);
+        else stack.remove(EnderContent.BEACON_BROKEN.get());
+        if (stopUsing) player.stopUsingItem();
+        player.getCooldowns().addCooldown(stack, FAIL_COOLDOWN);
+        net.juli2kapo.factoryascent.util.HeldUse.hold(player, FAIL_COOLDOWN);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.ENDER_EYE_DEATH, SoundSource.PLAYERS, 0.6f, 1.4f);
+    }
+
+    // ---------------------------------------------------------------- the recall rules (charm and phone)
+
+    /** Server tick count at which each player may recall again (charm or phone: one shared cooldown). */
+    private static final java.util.Map<java.util.UUID, Integer> READY_AT = new java.util.HashMap<>();
+
+    /** Ticks until this player may recall again (0 = now). */
+    public static int cooldownLeft(ServerPlayer player) {
+        Integer at = READY_AT.get(player.getUUID());
+        if (at == null) return 0;
+        int left = at - player.level().getServer().getTickCount();
+        if (left <= 0) READY_AT.remove(player.getUUID());
+        return Math.max(0, left);
+    }
+
+    public static void forgetCooldown(java.util.UUID player) {
+        READY_AT.remove(player);
+    }
+
+    private static @Nullable EnderBeaconBlockEntity beacon(ServerPlayer player, GlobalPos target) {
+        ServerLevel destination = player.level().getServer().getLevel(target.dimension());
+        if (destination == null) return null;
+        destination.getChunk(target.pos()); // load it if needed, like the vanilla stasis chamber's pearl
+        return destination.getBlockEntity(target.pos()) instanceof EnderBeaconBlockEntity b ? b : null;
+    }
+
+    private static boolean beaconGone(ServerPlayer player, GlobalPos target) {
+        return player.level().getServer().getLevel(target.dimension()) != null && beacon(player, target) == null;
+    }
+
+    /** "Your Ender Beacon (name) at x, y, z (dimension) was destroyed". */
+    public static Component destroyedMessage(GlobalPos target, String name) {
+        BlockPos p = target.pos();
+        Component beacon = name == null || name.isEmpty() ? Component.translatable("block.factoryascent.ender_beacon")
+                : Component.literal(name);
+        return Component.translatable("message.factoryascent.charm_beacon_destroyed", beacon, p.getX(), p.getY(), p.getZ(),
+                target.dimension().identifier().getPath()).withStyle(ChatFormatting.RED);
+    }
+
+    /**
+     * Why a recall to {@code target} can't happen right now, or null if it can: the dimension rule,
+     * the beacon still standing, a pearl in it (creative players need none) and room on top.
+     * Loads the beacon's chunk to look. Changes nothing.
+     */
+    public static @Nullable Component problem(ServerPlayer player, GlobalPos target) {
+        if (!Config.RECALL_CROSS_DIMENSION.get() && !target.dimension().equals(player.level().dimension())) {
+            return Component.translatable("message.factoryascent.charm_other_dimension").withStyle(ChatFormatting.RED);
+        }
+        ServerLevel destination = player.level().getServer().getLevel(target.dimension());
+        if (destination == null) {
+            return Component.translatable("message.factoryascent.charm_beacon_gone").withStyle(ChatFormatting.RED);
+        }
+        EnderBeaconBlockEntity beacon = beacon(player, target);
+        if (beacon == null) return destroyedMessage(target, "");
+        BlockPos pos = target.pos();
+        if (!beacon.hasPearl() && !player.getAbilities().instabuild) {
+            return Component.translatable("message.factoryascent.charm_no_pearl_at", beacon.displayName()).withStyle(ChatFormatting.RED);
+        }
+        if (!destination.getBlockState(pos.above()).getCollisionShape(destination, pos.above()).isEmpty()
+                || !destination.getBlockState(pos.above(2)).getCollisionShape(destination, pos.above(2)).isEmpty()) {
+            return Component.translatable("message.factoryascent.charm_blocked").withStyle(ChatFormatting.RED);
+        }
+        return null;
+    }
+
+    /**
+     * The teleport itself (charm and phone): checks {@link #problem}, uses up the beacon's pearl,
+     * moves the player on top of it and starts the shared cooldown. Returns null on success, else why not.
+     */
+    public static @Nullable Component teleport(ServerPlayer player, GlobalPos target) {
+        Component problem = problem(player, target);
+        if (problem != null) return problem;
+        EnderBeaconBlockEntity beacon = beacon(player, target);
+        if (beacon == null) return destroyedMessage(target, "");
+        ServerLevel destination = (ServerLevel) beacon.getLevel();
+        BlockPos pos = target.pos();
+        // Like a vanilla stasis chamber: the recall triggers the pearl waiting in the beacon, and it is used up.
+        beacon.triggerPearl();
+        ServerLevel from = player.level();
+        from.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.9, 0.4, 0.2);
+        from.playSound(null, player.blockPosition(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1f, 1f);
+        player.teleport(new TeleportTransition(destination, Vec3.atBottomCenterOf(pos.above()), Vec3.ZERO,
+                player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
+        destination.playSound(null, pos.above(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1f, 1.2f);
+        destination.sendParticles(ParticleTypes.PORTAL, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 60, 0.4, 0.9, 0.4, 0.4);
+        player.resetFallDistance();
+        READY_AT.put(player.getUUID(), player.level().getServer().getTickCount() + Config.RECALL_COOLDOWN_SECONDS.get() * 20);
+        return null;
     }
 
     @Override
@@ -134,39 +259,17 @@ public class RecallCharmItem extends Item {
         return stack;
     }
 
-    /** The teleport itself, after the channel (public for GameTests). */
+    /** The end of the channel: the teleport, or the reason it can't happen (public for GameTests). */
     public void recall(ServerPlayer player, ItemStack stack) {
         GlobalPos target = stack.get(EnderContent.LINKED_BEACON.get());
         if (target == null) return;
-        ServerLevel destination = player.level().getServer().getLevel(target.dimension());
-        BlockPos pos = target.pos();
-        if (destination == null) return;
-        destination.getChunk(pos); // load it if needed
-        if (!(destination.getBlockEntity(pos) instanceof EnderBeaconBlockEntity beacon)) {
-            stack.remove(EnderContent.LINKED_BEACON.get());
-            player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_beacon_gone").withStyle(ChatFormatting.RED));
+        Component problem = teleport(player, target);
+        if (problem != null) {
+            fail(player, stack, target, problem, false);
             return;
         }
-        if (!destination.getBlockState(pos.above()).getCollisionShape(destination, pos.above()).isEmpty()
-                || !destination.getBlockState(pos.above(2)).getCollisionShape(destination, pos.above(2)).isEmpty()) {
-            player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_blocked").withStyle(ChatFormatting.RED));
-            return;
-        }
-        // Like a vanilla stasis chamber: the charm triggers the pearl waiting in the beacon, and it is used up.
-        if (!beacon.hasPearl() && !player.getAbilities().instabuild) {
-            player.sendOverlayMessage(Component.translatable("message.factoryascent.charm_no_pearl").withStyle(ChatFormatting.RED));
-            return;
-        }
-        beacon.triggerPearl();
-        refreshName(stack, target.dimension(), pos, beacon);
-        ServerLevel from = player.level();
-        from.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.9, 0.4, 0.2);
-        from.playSound(null, player.blockPosition(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1f, 1f);
-        player.teleport(new TeleportTransition(destination, Vec3.atBottomCenterOf(pos.above()), Vec3.ZERO,
-                player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
-        destination.playSound(null, pos.above(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1f, 1.2f);
-        destination.sendParticles(ParticleTypes.PORTAL, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 60, 0.4, 0.9, 0.4, 0.4);
-        player.resetFallDistance();
+        stack.remove(EnderContent.BEACON_BROKEN.get());
+        if (beacon(player, target) instanceof EnderBeaconBlockEntity beacon) refreshName(stack, target.dimension(), target.pos(), beacon);
         player.getCooldowns().addCooldown(stack, Config.RECALL_COOLDOWN_SECONDS.get() * 20);
     }
 
@@ -184,6 +287,9 @@ public class RecallCharmItem extends Item {
             }
             tooltip.accept(Component.translatable("tooltip.factoryascent.charm_linked", p.getX(), p.getY(), p.getZ(),
                     target.dimension().identifier().getPath()).withStyle(ChatFormatting.LIGHT_PURPLE));
+            if (stack.getOrDefault(EnderContent.BEACON_BROKEN.get(), false)) {
+                tooltip.accept(Component.translatable("tooltip.factoryascent.charm_broken").withStyle(ChatFormatting.RED));
+            }
         }
         tooltip.accept(Component.translatable("tooltip.factoryascent.charm_screen").withStyle(ChatFormatting.DARK_GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.charm_howto", Config.RECALL_SECONDS.get())
@@ -255,6 +361,7 @@ public class RecallCharmItem extends Item {
             done = stack.has(EnderContent.LINKED_BEACON.get());
             stack.remove(EnderContent.LINKED_BEACON.get());
             stack.remove(EnderContent.LINKED_BEACON_NAME.get());
+            stack.remove(EnderContent.BEACON_BROKEN.get());
             if (done) {
                 player.level().playSound(null, player.blockPosition(), SoundEvents.ENDER_EYE_DEATH, SoundSource.PLAYERS, 0.6f, 1.4f);
             }
