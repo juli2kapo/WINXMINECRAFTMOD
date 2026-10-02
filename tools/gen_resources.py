@@ -1171,6 +1171,60 @@ def advancements(storage_terminal_id):
       "Build a Quantum Energy Cell", "Rayos embotellados", "Construye una celda de energía cuántica")
 
 
+
+def open_faces():
+    """Blocks whose models leave part of an outer face open (recessed or partial faces).
+
+    Written to data/<mod>/dev/open_faces.json; a GameTest checks that none of these blocks still
+    claims to be a solid, occluding cube, which would hide the touching faces of its neighbours.
+    """
+    def load(ref):
+        if not ref.startswith(f"{MOD}:"):
+            return None
+        f = ASSETS / "models" / (ref.split(":", 1)[1] + ".json")
+        return json.loads(f.read_text()) if f.exists() else None
+
+    def elements(model, depth=0):
+        if model is None or depth > 8:
+            return None  # vanilla parent: cube_all and friends are full cubes
+        if "elements" in model:
+            return model["elements"]
+        parent = model.get("parent", "")
+        return elements(load(parent), depth + 1) if parent.startswith(f"{MOD}:") else None
+
+    def has_hole(els):
+        if els is None:
+            return False
+        for axis, edge in [(a, e) for a in range(3) for e in (0, 16)]:
+            u, v = [i for i in range(3) if i != axis]
+            covered = [[False] * 16 for _ in range(16)]
+            for el in els:
+                if el.get("rotation", {}).get("angle", 0):
+                    continue
+                f, t = el["from"], el["to"]
+                if (edge == 0 and f[axis] <= 0) or (edge == 16 and t[axis] >= 16):
+                    for a in range(max(0, int(f[u])), min(16, int(-(-t[u] // 1)))):
+                        for b in range(max(0, int(f[v])), min(16, int(-(-t[v] // 1)))):
+                            covered[a][b] = True
+            if not all(all(row) for row in covered):
+                return True
+        return False
+
+    found = []
+    for bs in sorted((ASSETS / "blockstates").glob("*.json")):
+        data = json.loads(bs.read_text())
+        models = set()
+        for v in data.get("variants", {}).values():
+            for x in (v if isinstance(v, list) else [v]):
+                models.add(x["model"])
+        for part in data.get("multipart", []):
+            a = part["apply"]
+            for x in (a if isinstance(a, list) else [a]):
+                models.add(x["model"])
+        if any(has_hole(elements(load(m))) for m in models):
+            found.append(f"{MOD}:{bs.stem}")
+    write(DATA / MOD / "dev" / "open_faces.json", {"blocks": found})
+
 def main():
     clean()
     storage = load_storage_module()
@@ -1198,6 +1252,7 @@ def main():
     tags(extra_pickaxe, extra_axe)
     flush_tag_extras()
     worldgen()
+    open_faces()
     count = sum(1 for _ in ROOT.rglob("*.json"))
     print(f"wrote resources, {count} json files under {ROOT} (storage module: {'yes' if storage else 'no'}, "
           f"features: {', '.join(f.__name__.removeprefix('feature_') for f in features) or 'none'})")

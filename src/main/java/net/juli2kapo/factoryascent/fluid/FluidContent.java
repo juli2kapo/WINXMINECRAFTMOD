@@ -121,7 +121,7 @@ public final class FluidContent {
             case FUELLING_PORT -> metal(MapColor.COLOR_ORANGE);
             default -> metal(MapColor.METAL);
         };
-        return m.fullBlock() ? p : p.noOcclusion();
+        return p.noOcclusion(); // shaped models (insets, pipes, gauges): never hide a neighbour's faces
     }
 
     static {

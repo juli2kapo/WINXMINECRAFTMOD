@@ -107,7 +107,7 @@ public final class PowerContent {
             case SOLAR_ARRAY -> metal(MapColor.COLOR_BLUE);
             default -> metal(MapColor.METAL);
         };
-        if (!g.fullBlock()) p = p.noOcclusion();
+        p = p.noOcclusion(); // shaped models: never hide a neighbour's faces
         if (g == Generator.STEAM_ENGINE || g == Generator.MAGMATIC_GENERATOR || g == Generator.BIOGAS_GENERATOR) {
             p = p.lightLevel(s -> s.getValue(PowerBlock.ACTIVE) ? 11 : 0);
         }
@@ -179,10 +179,10 @@ public final class PowerContent {
     public static final DeferredBlock<FusionPartBlock> FUSION_CASING = BLOCKS.registerBlock("fusion_casing",
             p -> new FusionPartBlock(false, p), PowerContent::fusion);
     public static final DeferredBlock<FusionPartBlock> FUSION_MAGNET = BLOCKS.registerBlock("fusion_magnet",
-            p -> new FusionPartBlock(true, p), () -> fusion().mapColor(MapColor.COLOR_ORANGE));
+            p -> new FusionPartBlock(true, p), () -> fusion().mapColor(MapColor.COLOR_ORANGE).noOcclusion());
     public static final DeferredBlock<FusionPortBlock> FUSION_PORT = BLOCKS.registerBlock("fusion_port", FusionPortBlock::new, PowerContent::fusion);
     public static final DeferredBlock<TokamakCoreBlock> TOKAMAK_CORE = BLOCKS.registerBlock("tokamak_core", TokamakCoreBlock::new,
-            () -> fusion().mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> s.getValue(TokamakCoreBlock.ACTIVE) ? 15 : 3));
+            () -> fusion().mapColor(MapColor.COLOR_PURPLE).noOcclusion().lightLevel(s -> s.getValue(TokamakCoreBlock.ACTIVE) ? 15 : 3));
 
     // ---------------------------------------------------------------- block items (tab order)
 

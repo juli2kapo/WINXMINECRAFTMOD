@@ -48,6 +48,7 @@ public final class ModGameTests {
 
     private static final List<Test> TESTS = List.of(
             new Test("quern_grinds_with_cranks", 200, ModGameTests::quernGrindsWithCranks),
+            new Test("open_models_do_not_occlude_neighbours", 20, OcclusionTests::openModelsDoNotOccludeNeighbours),
             new Test("burner_crusher_doubles_ore", 300, ModGameTests::burnerCrusherDoublesOre),
             new Test("crusher_doubles_ore", 200, ModGameTests::crusherDoublesOre),
             new Test("ore_washer_triples_ore", 200, ModGameTests::oreWasherTriplesOre),
