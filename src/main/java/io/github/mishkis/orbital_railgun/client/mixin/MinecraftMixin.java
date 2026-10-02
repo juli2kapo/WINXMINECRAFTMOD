@@ -1,5 +1,6 @@
 package io.github.mishkis.orbital_railgun.client.mixin;
 
+import net.minecraft.world.phys.Vec3;
 import io.github.mishkis.orbital_railgun.client.rendering.OrbitalRailgunGuiShader;
 import io.github.mishkis.orbital_railgun.client.rendering.OrbitalRailgunShader;
 import io.github.mishkis.orbital_railgun.item.OrbitalRailgunItem;
@@ -29,12 +30,14 @@ public class MinecraftMixin {
 
     @Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
     public void shootOnAttack(CallbackInfo ci) {
-        if (player.getUseItem().getItem() instanceof OrbitalRailgunItem orbitalRailgun && this.options.keyAttack.isDown() && OrbitalRailgunShader.INSTANCE.BlockPosition == null) {
+        // A second gun may fire while an earlier strike is still playing out: the effect follows the newest strike.
+        if (player.getUseItem().getItem() instanceof OrbitalRailgunItem orbitalRailgun && this.options.keyAttack.isDown()) {
+            net.minecraft.world.item.ItemStack gun = player.getUseItem();
             HitResult hitResult = OrbitalRailgunGuiShader.INSTANCE.hitResult;
             if (hitResult != null && hitResult.getType() != HitResult.Type.MISS && hitResult instanceof BlockHitResult blockHitResult) {
                 this.gameMode.releaseUsingItem(this.player);
-                orbitalRailgun.shoot(this.player);
-                OrbitalRailgunShader.INSTANCE.BlockPosition = blockHitResult.getBlockPos().getCenter().toVector3f();
+                orbitalRailgun.shoot(this.player, gun);
+                OrbitalRailgunShader.INSTANCE.BlockPosition = Vec3.atCenterOf(blockHitResult.getBlockPos()).toVector3f();
                 OrbitalRailgunShader.INSTANCE.Dimension = player.level().dimension();
 
                 ClientPacketDistributor.sendToServer(new ShootPayload(blockHitResult.getBlockPos()));

@@ -1,4 +1,4 @@
-#version 330 compatibility
+#version 330
 #define STEPS 500
 #define MIN_DIST 0.001
 #define MAX_DIST 250.
@@ -9,6 +9,7 @@ layout(std140) uniform RailgunConfig {
     mat4 InverseTransformMatrix;
     float iTime;
     float IsBlockHit;
+    float NearDepth;
     vec3 CameraPosition;
     vec3 BlockPosition;
 };
@@ -64,12 +65,14 @@ vec3 renderUi(vec3 original, float dist) {
     return mix(original, overlay, threshold);
 }
 
-vec2 raycast(vec3 point, vec3 dir) {
+// max_dist: anything hit past the depth-buffer surface is discarded by the
+// "cover by blocks" test anyway, so the march stops there.
+vec2 raycast(vec3 point, vec3 dir, float max_dist) {
     float traveled = 0.;
     int close_steps = 0;
     for (int i = 0; i < STEPS; i++) {
         float safe = sDist(point);
-        if (safe <= MIN_DIST || traveled >= MAX_DIST) {
+        if (safe <= MIN_DIST || traveled >= max_dist) {
             break;
         }
 
@@ -82,9 +85,13 @@ vec2 raycast(vec3 point, vec3 dir) {
     return vec2(traveled, close_steps);
 }
 
-vec3 worldPos(vec3 point) {
-    vec3 ndc = point * 2.0 - 1.0;
-    vec4 homPos = InverseTransformMatrix * vec4(ndc, 1.0);
+// InverseTransformMatrix maps (screen uv, raw depth-buffer value) straight to
+// camera-relative world space. The uv/depth -> NDC step is folded in on the
+// Java side, because since 26.2 the depth buffer is reversed (near = 1, far = 0)
+// and clip-space depth is [0, 1] whenever GL_ARB_clip_control is available.
+// NearDepth is the raw depth value of the near plane.
+vec3 worldPos(vec2 uv, float depth) {
+    vec4 homPos = InverseTransformMatrix * vec4(uv, depth, 1.0);
     vec3 viewPos = homPos.xyz / homPos.w;
 
     return viewPos + CameraPosition;
@@ -92,11 +99,11 @@ vec3 worldPos(vec3 point) {
 
 void main() {
     float depth = texture(DepthSampler, texCoord).r;
-    vec3 start_point = worldPos(vec3(texCoord, 0)) - BlockPosition;
-    vec3 end_point = worldPos(vec3(texCoord, depth)) - BlockPosition;
+    vec3 start_point = worldPos(texCoord, NearDepth) - BlockPosition;
+    vec3 end_point = worldPos(texCoord, depth) - BlockPosition;
     vec3 dir = normalize(end_point - start_point);
 
-    vec2 hit_result = raycast(start_point, dir);
+    vec2 hit_result = raycast(start_point, dir, min(MAX_DIST, distance(start_point, end_point) + 1.));
     vec3 hit_point = start_point + dir * hit_result.x;
 
     scale = vec2(min(pow(iTime * 1.5, 2.), 1.), pow(clamp(1.5 * iTime - 1., 0., 1.), 2.));

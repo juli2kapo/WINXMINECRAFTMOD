@@ -4,6 +4,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mishkis.orbital_railgun.client.mixin.PostChainAccessor;
 import io.github.mishkis.orbital_railgun.client.mixin.PostPassAccessor;
@@ -14,9 +15,12 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +38,7 @@ public abstract class AbstractOrbitalRailgunShader {
     // therefore go before the vectors so both layouts agree.
     private static final int UNIFORM_BLOCK_SIZE = new Std140SizeCalculator()
             .putMat4f()
+            .putFloat()
             .putFloat()
             .putFloat()
             .putVec3()
@@ -64,6 +69,29 @@ public abstract class AbstractOrbitalRailgunShader {
     /** The IsBlockHit value pushed into the uniform block. */
     protected float getIsBlockHitUniform() {
         return 0f;
+    }
+
+    /**
+     * Builds the matrix that takes (screen uv, raw depth sample) to camera-relative world space.
+     * Since 26.2 the level uses a reversed-Z projection (near maps to depth 1, far to 0) and, when
+     * GL_ARB_clip_control is present, clip-space depth in [0, 1] instead of [-1, 1]. The original
+     * shaders assumed ndc = depth * 2 - 1 with near = 0, which put every reconstructed position
+     * behind the camera: no rings, no beams, and a ray-march that never hit anything.
+     */
+    private static Matrix4f computeInverseTransformMatrix(Matrix4fc modelViewMatrix) {
+        boolean zZeroToOne = RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
+        Matrix4f uvDepthToNdc = new Matrix4f()
+                .translation(-1f, -1f, zZeroToOne ? 0f : -1f)
+                .scale(2f, 2f, zZeroToOne ? 1f : 2f);
+        return new Matrix4f(OrbitalRailgunMatrices.PROJECTION).mul(modelViewMatrix).invert().mul(uvDepthToNdc);
+    }
+
+    /** Raw depth-buffer value of the near plane: 1 with the reversed-Z projection, 0 with a classic one. */
+    private static float computeNearDepth() {
+        Matrix4f projection = OrbitalRailgunMatrices.PROJECTION;
+        Vector4f close = projection.transform(new Vector4f(0f, 0f, -1f, 1f));
+        Vector4f far = projection.transform(new Vector4f(0f, 0f, -100f, 1f));
+        return close.z / close.w > far.z / far.w ? 1f : 0f;
     }
 
     public final void onClientTick(ClientTickEvent.Post event) {
@@ -98,16 +126,18 @@ public abstract class AbstractOrbitalRailgunShader {
 
         prepareExtraUniforms(partialTick);
 
-        Matrix4f inverseTransformMatrix = new Matrix4f(OrbitalRailgunMatrices.PROJECTION).mul(event.getModelViewMatrix()).invert();
+        Matrix4f inverseTransformMatrix = computeInverseTransformMatrix(event.getModelViewMatrix());
+        float nearDepth = computeNearDepth();
         Vector3f cameraPosition = event.getLevelRenderState().cameraRenderState.pos.toVector3f();
         Vector3f blockPosition = getBlockPositionUniform();
         float time = (ticks + partialTick) / 20f;
         float isBlockHit = getIsBlockHitUniform();
 
+        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
         for (PostPass pass : ((PostChainAccessor) chain).orbital_railgun$getPasses()) {
             Map<String, GpuBuffer> customUniforms = ((PostPassAccessor) pass).orbital_railgun$getCustomUniforms();
-            GpuBuffer previous = customUniforms.get(UNIFORM_BLOCK);
-            if (previous == null) {
+            GpuBuffer current = customUniforms.get(UNIFORM_BLOCK);
+            if (current == null) {
                 // e.g. the final blit pass, which has no RailgunConfig block
                 continue;
             }
@@ -117,15 +147,23 @@ public abstract class AbstractOrbitalRailgunShader {
                 builder.putMat4f(inverseTransformMatrix);
                 builder.putFloat(time);
                 builder.putFloat(isBlockHit);
+                builder.putFloat(nearDepth);
                 builder.putVec3(cameraPosition);
                 builder.putVec3(blockPosition);
+                ByteBuffer data = builder.get();
 
-                customUniforms.put(UNIFORM_BLOCK, RenderSystem.getDevice().createBuffer(() -> "orbital_railgun " + UNIFORM_BLOCK, GpuBuffer.USAGE_UNIFORM, builder.get()));
+                if ((current.usage() & GpuBuffer.USAGE_COPY_DST) != 0 && current.size() >= data.remaining()) {
+                    // Our own buffer from a previous frame: update it in place.
+                    encoder.writeToBuffer(current.slice(0, data.remaining()), data);
+                } else {
+                    // The immutable buffer PostPass built from the JSON defaults: swap in a writable one once.
+                    customUniforms.put(UNIFORM_BLOCK, RenderSystem.getDevice().createBuffer(() -> "orbital_railgun " + UNIFORM_BLOCK,
+                            GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, data));
+                    current.close();
+                }
             }
-
-            previous.close();
         }
 
-        chain.process(client.getMainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
+        chain.process(client.gameRenderer.mainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
     }
 }

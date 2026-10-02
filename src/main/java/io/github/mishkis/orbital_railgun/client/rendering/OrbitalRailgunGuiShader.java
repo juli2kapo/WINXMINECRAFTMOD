@@ -1,5 +1,6 @@
 package io.github.mishkis.orbital_railgun.client.rendering;
 
+import net.minecraft.world.phys.Vec3;
 import io.github.mishkis.orbital_railgun.OrbitalRailgun;
 import io.github.mishkis.orbital_railgun.item.OrbitalRailgunItem;
 import io.github.mishkis.orbital_railgun.sound.OrbitalRailgunSounds;
@@ -36,9 +37,9 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
             if (ticks == 0) {
                 client.getSoundManager().play(SimpleSoundInstance.forUI(OrbitalRailgunSounds.SCOPE_ON.get(), 1.0f));
             }
-            this.client.options.hideGui = true;
+            if (!this.client.gui.hud.isHidden()) this.client.gui.hud.toggle();
         } else if (ticks != 0) {
-            this.client.options.hideGui = false;
+            if (this.client.gui.hud.isHidden()) this.client.gui.hud.toggle();
         }
     }
 
@@ -48,11 +49,11 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
         switch (hitResult.getType()) {
             case BLOCK:
                 isBlockHit = 1f;
-                hitPosition = ((BlockHitResult) hitResult).getBlockPos().getCenter().toVector3f();
+                hitPosition = Vec3.atCenterOf(((BlockHitResult) hitResult).getBlockPos()).toVector3f();
                 break;
             case ENTITY:
                 isBlockHit = 1f;
-                hitPosition = ((EntityHitResult) hitResult).getEntity().blockPosition().getCenter().toVector3f();
+                hitPosition = Vec3.atCenterOf(((EntityHitResult) hitResult).getEntity().blockPosition()).toVector3f();
                 break;
             case MISS:
                 isBlockHit = 0f;

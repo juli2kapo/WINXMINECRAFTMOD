@@ -4,7 +4,7 @@
 
 An **unofficial NeoForge port** of the [Orbital Railgun](https://modrinth.com/mod/orbital-railgun) mod by [Mishkis](https://github.com/Mishkis/orbital-railgun) (MIT).
 
-Craft the Orbital Railgun, aim anywhere within 300 blocks, and call down a devastating orbital strike: a full-screen targeting shader, a beam from the sky, and a 24-block-radius crater carved down to bedrock.
+Craft the Orbital Railgun, aim anywhere within 300 blocks, and call down a devastating orbital strike: a full-screen targeting shader, a beam from the sky, and a 24-block-radius crater carved down to (but not through) bedrock. It will still wreck End portals.
 
 ## Versions
 

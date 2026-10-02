@@ -1,10 +1,11 @@
-#version 330 compatibility
+#version 330
 
 uniform sampler2D DiffuseSampler;
 layout(std140) uniform RailgunConfig {
     mat4 InverseTransformMatrix;
     float iTime;
     float IsBlockHit;
+    float NearDepth;
     vec3 CameraPosition;
     vec3 BlockPosition;
 };

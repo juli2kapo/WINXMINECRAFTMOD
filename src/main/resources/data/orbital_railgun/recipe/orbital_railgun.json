@@ -2,18 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "B": "minecraft:netherite_block",
     "N": "minecraft:netherite_ingot",
-    "S": "minecraft:nether_star",
-    "R": "minecraft:redstone",
-    "E": "minecraft:emerald",
-    "L": "minecraft:lapis_lazuli",
-    "G": "minecraft:glass_pane"
+    "E": "minecraft:end_crystal",
+    "C": "minecraft:echo_shard",
+    "B": "minecraft:beacon",
+    "S": "minecraft:spyglass"
   },
   "pattern": [
-    "GNE",
-    "SBN",
-    "LR "
+    "NEN",
+    "CBC",
+    "NSN"
   ],
   "result": {
     "count": 1,

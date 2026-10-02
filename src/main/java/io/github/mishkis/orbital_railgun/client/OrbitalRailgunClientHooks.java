@@ -1,5 +1,6 @@
 package io.github.mishkis.orbital_railgun.client;
 
+import net.minecraft.world.phys.Vec3;
 import io.github.mishkis.orbital_railgun.client.rendering.OrbitalRailgunShader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -11,7 +12,7 @@ public class OrbitalRailgunClientHooks {
             return;
         }
 
-        OrbitalRailgunShader.INSTANCE.BlockPosition = blockPos.getCenter().toVector3f();
+        OrbitalRailgunShader.INSTANCE.BlockPosition = Vec3.atCenterOf(blockPos).toVector3f();
         OrbitalRailgunShader.INSTANCE.Dimension = minecraft.level.dimension();
     }
 }

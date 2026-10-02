@@ -26,8 +26,9 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
 
     @Override
     protected void tickExtra() {
-        // The pillar glow fades out ~25s after the explosion (~61s total); the original ran for 1600 ticks.
-        if (ticks >= 1300 || client.level == null || client.level.dimension() != Dimension) {
+        // The aftermath glow fades out 4 s after the explosion (36 s + 4 s, see afterTime in strike.fsh);
+        // the original faded over 25 s and ran for 1600 ticks.
+        if (ticks >= 820 || client.level == null || client.level.dimension() != Dimension) {
             BlockPosition = null;
             Dimension = null;
         }

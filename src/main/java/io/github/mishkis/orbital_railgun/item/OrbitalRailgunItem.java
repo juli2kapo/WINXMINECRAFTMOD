@@ -19,7 +19,16 @@ import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.renderer.GeoItemRenderer;
 import com.geckolib.util.GeckoLibUtil;
 
+import io.github.mishkis.orbital_railgun.OrbitalRailgun;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.component.UseCooldown;
 
 public class OrbitalRailgunItem extends Item implements GeoItem {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -47,8 +56,34 @@ public class OrbitalRailgunItem extends Item implements GeoItem {
         return InteractionResult.FAIL;
     }
 
-    public void shoot(Player player) {
-        player.getCooldowns().addCooldown(this.getDefaultInstance(), 2400);
+    /** Seconds between two shots of the same gun (the original was 120 s, shared by every railgun). */
+    public static final int COOLDOWN_SECONDS = 30;
+
+    /**
+     * Starts this gun's cooldown. Every railgun stack gets its own cooldown group (see
+     * {@link #inventoryTick}), so firing one gun doesn't lock the others.
+     */
+    public void shoot(Player player, ItemStack stack) {
+        player.getCooldowns().addCooldown(stack, COOLDOWN_SECONDS * 20);
+    }
+
+    /** The railgun in the player's hands that isn't cooling down (main hand first), or the main hand stack. */
+    public static ItemStack firingStack(Player player) {
+        for (InteractionHand hand : InteractionHand.values()) {
+            ItemStack stack = player.getItemInHand(hand);
+            if (stack.getItem() instanceof OrbitalRailgunItem && !player.getCooldowns().isOnCooldown(stack)) return stack;
+        }
+        return player.getMainHandItem();
+    }
+
+    /** Gives each railgun its own cooldown group the first time it sits in an inventory (synced to the client). */
+    @Override
+    public void inventoryTick(ItemStack stack, ServerLevel level, Entity entity, @Nullable EquipmentSlot slot) {
+        UseCooldown cooldown = stack.get(DataComponents.USE_COOLDOWN);
+        if (cooldown == null || cooldown.cooldownGroup().isEmpty()) {
+            stack.set(DataComponents.USE_COOLDOWN, new UseCooldown(COOLDOWN_SECONDS, Optional.of(Identifier.fromNamespaceAndPath(
+                    OrbitalRailgun.MOD_ID, "railgun/" + UUID.randomUUID()))));
+        }
     }
 
     @Override

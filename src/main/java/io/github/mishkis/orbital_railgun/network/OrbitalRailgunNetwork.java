@@ -1,10 +1,12 @@
 package io.github.mishkis.orbital_railgun.network;
 
+import net.minecraft.world.phys.Vec3;
 import io.github.mishkis.orbital_railgun.client.OrbitalRailgunClientHooks;
 import io.github.mishkis.orbital_railgun.item.OrbitalRailgunItems;
 import io.github.mishkis.orbital_railgun.sound.OrbitalRailgunSounds;
 import io.github.mishkis.orbital_railgun.util.OrbitalRailgunStrikeManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -32,11 +34,15 @@ public class OrbitalRailgunNetwork {
 
             BlockPos blockPos = payload.pos();
 
-            OrbitalRailgunItems.ORBITAL_RAILGUN.get().shoot(serverPlayer);
+            ItemStack gun = io.github.mishkis.orbital_railgun.item.OrbitalRailgunItem.firingStack(serverPlayer);
+            if (gun.getItem() instanceof io.github.mishkis.orbital_railgun.item.OrbitalRailgunItem item) {
+                if (serverPlayer.getCooldowns().isOnCooldown(gun)) return; // every gun in hand is still cooling down
+                item.shoot(serverPlayer, gun);
+            }
 
             serverPlayer.level().playSound(null, blockPos, OrbitalRailgunSounds.RAILGUN_SHOOT.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
 
-            List<Entity> nearby = serverPlayer.level().getEntities(serverPlayer, AABB.ofSize(blockPos.getCenter(), 500., 500., 500.));
+            List<Entity> nearby = serverPlayer.level().getEntities(serverPlayer, AABB.ofSize(Vec3.atCenterOf(blockPos), 500., 500., 500.));
             nearby.add(serverPlayer);
             OrbitalRailgunStrikeManager.activeStrikes.add(new OrbitalRailgunStrikeManager.Strike(blockPos, nearby, serverPlayer.level().getServer().getTickCount(), serverPlayer.level().dimension()));
 

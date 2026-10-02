@@ -15,6 +15,7 @@
           { "name": "InverseTransformMatrix", "type": "matrix4x4", "value": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
           { "name": "iTime", "type": "float", "value": 0.0 },
           { "name": "IsBlockHit", "type": "float", "value": 0.0 },
+          { "name": "NearDepth", "type": "float", "value": 1.0 },
           { "name": "CameraPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] },
           { "name": "BlockPosition", "type": "vec3", "value": [ 0.0, 0.0, 0.0 ] }
         ]

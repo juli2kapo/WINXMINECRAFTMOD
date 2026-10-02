@@ -8,7 +8,8 @@ modId = "orbital_railgun"
 version = "${file.jarVersion}"
 displayName = "Orbital Railgun: Renewed"
 description = '''Adds an Orbital Railgun to the game! Unofficial NeoForge port of the mod by Mishkis.'''
-logoFile = "assets/orbital_railgun/icon.png"
+bannerFile = "assets/orbital_railgun/icon.png"
+iconFile = "assets/orbital_railgun/icon.png"
 authors = "Mishkis"
 credits = "Original mod by Mishkis; unofficial NeoForge port by Rayness"
 displayURL = "https://github.com/Mishkis/orbital-railgun"
@@ -16,14 +17,14 @@ displayURL = "https://github.com/Mishkis/orbital-railgun"
 [[dependencies.orbital_railgun]]
 modId = "neoforge"
 type = "required"
-versionRange = "[26.1,)"
+versionRange = "[26.2,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.orbital_railgun]]
 modId = "minecraft"
 type = "required"
-versionRange = "[26.1,26.2)"
+versionRange = "[26.2,26.3)"
 ordering = "NONE"
 side = "BOTH"
 
