@@ -168,6 +168,10 @@ def lang(L):
       "Receptor Dyson: tu equipo aún no tiene colectores alrededor del sol")
     L(f"{M}.dyson_receiver.no_sun", "Dyson Receiver: %s collectors, but no sun here (night, or the sky is blocked)",
       "Receptor Dyson: %s colectores, pero aquí no hay sol (de noche, o el cielo está tapado)")
+    L(f"{M}.dyson_receiver.blocked", "Dyson Receiver: %s collectors, but %s at %s, %s, %s shades it from the sun",
+      "Receptor Dyson: %s colectores, pero %s en %s, %s, %s le tapa el sol")
+    L(f"{M}.dyson_receiver.night", "Dyson Receiver: %s collectors, but it's night: no sunlight to collect",
+      "Receptor Dyson: %s colectores, pero es de noche: no hay luz solar")
     L(f"{M}.dyson_receiver.status", "Dyson Receiver: %s FE/t from %s collectors · sun %s%%",
       "Receptor Dyson: %s FE/t de %s colectores · sol %s%%")
     L(f"{M}.dyson.first", "☀ Your first Solar Collector reached solar orbit! Look at the sun…",

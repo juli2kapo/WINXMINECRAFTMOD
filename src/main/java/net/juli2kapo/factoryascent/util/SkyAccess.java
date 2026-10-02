@@ -19,12 +19,17 @@ public final class SkyAccess {
     private SkyAccess() {}
 
     public static boolean canSeeSky(Level level, BlockPos pos) {
+        return blocker(level, pos) == null;
+    }
+
+    /** The first block from {@code pos} upwards that stops sky light, or null if the sky is open. */
+    public static @org.jspecify.annotations.Nullable BlockPos blocker(Level level, BlockPos pos) {
         int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
         BlockPos.MutableBlockPos p = pos.mutable();
         for (int y = pos.getY(); y < top; y++) {
             p.setY(y);
-            if (!level.getBlockState(p).propagatesSkylightDown()) return false;
+            if (!level.getBlockState(p).propagatesSkylightDown()) return p.immutable();
         }
-        return true;
+        return null;
     }
 }

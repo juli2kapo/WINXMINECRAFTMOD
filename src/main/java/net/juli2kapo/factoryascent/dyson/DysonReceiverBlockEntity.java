@@ -189,7 +189,19 @@ public class DysonReceiverBlockEntity extends BlockEntity {
         long collectors = DysonSwarm.get(server).collectors(DysonService.teamOf(server, owner));
         if (collectors == 0) return Component.translatable("message.factoryascent.dyson_receiver.no_swarm").withStyle(ChatFormatting.GOLD);
         int exp = Math.round(exposure(level, worldPosition) * 100);
-        if (exp == 0) return Component.translatable("message.factoryascent.dyson_receiver.no_sun", collectors).withStyle(ChatFormatting.GOLD);
+        if (exp == 0) {
+            // Say exactly why: night, or the first block that shades the receiver (and where).
+            BlockPos blocker = net.juli2kapo.factoryascent.util.SkyAccess.blocker(level, worldPosition.above());
+            if (blocker != null) {
+                return Component.translatable("message.factoryascent.dyson_receiver.blocked", collectors,
+                        level.getBlockState(blocker).getBlock().getName(), blocker.getX(), blocker.getY(), blocker.getZ())
+                        .withStyle(ChatFormatting.GOLD);
+            }
+            if (level.isDarkOutside()) {
+                return Component.translatable("message.factoryascent.dyson_receiver.night", collectors).withStyle(ChatFormatting.GOLD);
+            }
+            return Component.translatable("message.factoryascent.dyson_receiver.no_sun", collectors).withStyle(ChatFormatting.GOLD);
+        }
         return Component.translatable("message.factoryascent.dyson_receiver.status", EnergyUtil.format(lastIn), collectors, exp)
                 .withStyle(ChatFormatting.AQUA);
     }
