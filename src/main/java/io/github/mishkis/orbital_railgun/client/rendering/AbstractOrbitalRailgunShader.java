@@ -21,6 +21,7 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,6 +65,18 @@ public abstract class AbstractOrbitalRailgunShader {
     /** The BlockPosition value pushed into the uniform block. */
     protected Vector3f getBlockPositionUniform() {
         return ZERO;
+    }
+
+    /** One drawing of the effect: where it is and how far along (in ticks) it is. */
+    protected record Instance(Vector3f blockPosition, int ticks) {}
+
+    /**
+     * The drawings to make this frame, in order (each one is drawn over the previous). By default a
+     * single one with this shader's own position and timer while {@link #shouldRender()} holds;
+     * the strike shader overrides it to stack several strikes at once.
+     */
+    protected List<Instance> instances() {
+        return shouldRender() ? List.of(new Instance(getBlockPositionUniform(), ticks)) : List.of();
     }
 
     /** The IsBlockHit value pushed into the uniform block. */
@@ -113,7 +126,8 @@ public abstract class AbstractOrbitalRailgunShader {
             client = Minecraft.getInstance();
         }
 
-        if (!shouldRender()) {
+        List<Instance> instances = instances();
+        if (instances.isEmpty()) {
             return;
         }
 
@@ -129,9 +143,11 @@ public abstract class AbstractOrbitalRailgunShader {
         Matrix4f inverseTransformMatrix = computeInverseTransformMatrix(event.getModelViewMatrix());
         float nearDepth = computeNearDepth();
         Vector3f cameraPosition = event.getLevelRenderState().cameraRenderState.pos.toVector3f();
-        Vector3f blockPosition = getBlockPositionUniform();
-        float time = (ticks + partialTick) / 20f;
         float isBlockHit = getIsBlockHitUniform();
+
+        for (Instance instance : instances) {
+        Vector3f blockPosition = instance.blockPosition();
+        float time = (instance.ticks() + partialTick) / 20f;
 
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
         for (PostPass pass : ((PostChainAccessor) chain).orbital_railgun$getPasses()) {
@@ -165,5 +181,6 @@ public abstract class AbstractOrbitalRailgunShader {
         }
 
         chain.process(client.gameRenderer.mainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
+        }
     }
 }

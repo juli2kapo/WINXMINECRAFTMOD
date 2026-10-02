@@ -37,8 +37,7 @@ public class MinecraftMixin {
             if (hitResult != null && hitResult.getType() != HitResult.Type.MISS && hitResult instanceof BlockHitResult blockHitResult) {
                 this.gameMode.releaseUsingItem(this.player);
                 orbitalRailgun.shoot(this.player, gun);
-                OrbitalRailgunShader.INSTANCE.BlockPosition = Vec3.atCenterOf(blockHitResult.getBlockPos()).toVector3f();
-                OrbitalRailgunShader.INSTANCE.Dimension = player.level().dimension();
+                OrbitalRailgunShader.INSTANCE.start(Vec3.atCenterOf(blockHitResult.getBlockPos()).toVector3f(), player.level().dimension());
 
                 ClientPacketDistributor.sendToServer(new ShootPayload(blockHitResult.getBlockPos()));
             }

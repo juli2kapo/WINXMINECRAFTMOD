@@ -12,7 +12,6 @@ public class OrbitalRailgunClientHooks {
             return;
         }
 
-        OrbitalRailgunShader.INSTANCE.BlockPosition = Vec3.atCenterOf(blockPos).toVector3f();
-        OrbitalRailgunShader.INSTANCE.Dimension = minecraft.level.dimension();
+        OrbitalRailgunShader.INSTANCE.start(Vec3.atCenterOf(blockPos).toVector3f(), minecraft.level.dimension());
     }
 }
