@@ -51,9 +51,9 @@ public final class Config {
         b.pop();
         b.push("mob_tools");
         SIZE_RAY_MIN_SCALE = b.comment("Smallest size the Minimizer Ray can shrink a creature to (1.0 = normal; vanilla allows down to 0.0625).")
-                .defineInRange("sizeRayMinScale", 0.25, 0.0625, 1.0);
+                .defineInRange("sizeRayMinScale", 0.125, 0.0625, 1.0);
         SIZE_RAY_MAX_SCALE = b.comment("Largest size the Maximizer Ray can grow a creature to (1.0 = normal; vanilla allows up to 16).")
-                .defineInRange("sizeRayMaxScale", 4.0, 1.0, 16.0);
+                .defineInRange("sizeRayMaxScale", 8.0, 1.0, 16.0);
         b.pop();
         b.push("orbital");
         ASAT_ENABLED = b.comment("Whether Anti-Satellite missiles can be launched (false for PvE-only servers; radars still track).")

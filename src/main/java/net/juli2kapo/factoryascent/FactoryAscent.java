@@ -54,6 +54,8 @@ public final class FactoryAscent {
 
         modBus.addListener(FactoryAscent::registerCapabilities);
         NeoForge.EVENT_BUS.addListener(FactoryAscent::onLevelTick);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent e) ->
+                net.juli2kapo.factoryascent.command.ChargeCommand.register(e.getDispatcher()));
         NeoForge.EVENT_BUS.addListener(FactoryAscent::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(FactoryAscent::onDatapackSync);
     }
