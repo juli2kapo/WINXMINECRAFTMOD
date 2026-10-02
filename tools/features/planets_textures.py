@@ -90,15 +90,24 @@ def moon_rock():
 
 
 def helium_3_regolith():
-    rng = random.Random(3103)
+    """Moon regolith shot through with glowing He-3 crystal clusters: dark-rimmed so they read from afar."""
     c = moon_regolith()
-    for x, y in ((3, 3), (11, 5), (6, 10), (12, 12), (2, 13)):
+    rim = rgb("#3E4A56")
+    # each cluster: a diamond of crystal with a bright core, outlined against the grey dust
+    for cx, cy, big in ((4, 4, True), (11, 3, False), (12, 10, True), (5, 11, False), (8, 7, False)):
+        r = 2 if big else 1
+        for dy in range(-r - 1, r + 2):
+            for dx in range(-r - 1, r + 2):
+                d = abs(dx) + abs(dy)
+                if d == r + 1:
+                    c.put(cx + dx, cy + dy, rim)
+                elif d <= r:
+                    k = 0 if d == 0 else (1 if (dx < 0 or dy < 0) else 2)
+                    if big and d == r:
+                        k = 3 if (dx > 0 or dy > 0) else 2
+                    c.put(cx + dx, cy + dy, HE3[k])
+    for x, y in ((1, 8), (14, 14), (9, 13), (14, 6)):  # loose glints
         c.put(x, y, HE3[1])
-        c.put(x + 1, y, HE3[2])
-        c.put(x, y + 1, HE3[3])
-        c.put(x + 1, y + 1, HE3[0])
-        if rng.random() < 0.5:
-            c.put(x - 1, y, HE3[3])
     return c
 
 
@@ -127,14 +136,36 @@ def mars_rock():
     return c
 
 
+HEMATITE_METAL = [rgb(h) for h in ("#F2EEF4", "#B4ACB8", "#76707E", "#463E4C", "#221C26")]
+HEMATITE_STREAK = rgb("#C42A1C")
+
+
 def hematite_ore():
+    """Mars rock with irregular metallic steel-grey hematite lumps, each in a dark rust-stained halo."""
     rng = random.Random(3203)
     c = mars_rock()
-    for x, y in ((2, 3), (9, 2), (5, 9), (11, 10), (3, 13)):
-        for dx, dy, k in ((0, 0, 2), (1, 0, 1), (0, 1, 3), (1, 1, 2), (2, 1, 0), (1, 2, 3)):
-            c.put(x + dx, y + dy, HEMATITE[k])
-        if rng.random() < 0.6:
-            c.put(x + 2, y, HEMATITE[4])
+    stain = [rgb("#5C2418"), rgb("#43180F")]
+    lumps = (((2, 2), (3, 2), (4, 2), (2, 3), (3, 3), (4, 3), (5, 3), (3, 4), (4, 4)),
+             ((11, 1), (12, 1), (11, 2), (12, 2), (13, 2), (12, 3)),
+             ((7, 7), (8, 7), (9, 7), (6, 8), (7, 8), (8, 8), (9, 8), (10, 8), (7, 9), (8, 9), (9, 9), (8, 10)),
+             ((2, 11), (3, 11), (1, 12), (2, 12), (3, 12), (2, 13)),
+             ((12, 11), (13, 11), (11, 12), (12, 12), (13, 12), (14, 12), (12, 13), (13, 13)))
+    for lump in lumps:
+        cs = set(lump)
+        for x, y in lump:
+            for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1)):
+                if (nx, ny) not in cs:
+                    c.put(nx, ny, stain[0] if rng.random() < 0.6 else stain[1])
+        xs, ys = [x for x, _ in lump], [y for _, y in lump]
+        cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+        for x, y in lump:
+            lit = (cx - x) + (cy - y)
+            k = 1 if lit > 0.8 else 2 if lit > -0.6 else 3
+            c.put(x, y, HEMATITE_METAL[k])
+        hx, hy = min(lump, key=lambda q: q[0] + q[1])
+        c.put(hx, hy, HEMATITE_METAL[0])
+        lx, ly = max(lump, key=lambda q: q[0] + q[1])
+        c.put(lx, ly, HEMATITE_METAL[4])
     return c
 
 

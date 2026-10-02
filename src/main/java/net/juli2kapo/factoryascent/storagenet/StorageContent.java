@@ -38,15 +38,15 @@ public final class StorageContent {
 
     private static BlockBehaviour.Properties device() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6f)
-                .requiresCorrectToolForDrops().sound(SoundType.METAL);
+                .requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion();
     }
 
     public static final DeferredBlock<StorageCableBlock> CABLE = BLOCKS.registerBlock("storage_cable", StorageCableBlock::new,
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.8f).sound(SoundType.COPPER).noOcclusion());
     public static final DeferredBlock<StorageDeviceBlock> CONTROLLER = BLOCKS.registerBlock("storage_controller",
             p -> new StorageDeviceBlock(StorageDeviceBlock.Kind.CONTROLLER, p), () -> device().lightLevel(StorageDeviceBlock::light));
-    public static final DeferredBlock<StorageDeviceBlock> DRIVE = BLOCKS.registerBlock("storage_drive",
-            p -> new StorageDeviceBlock(StorageDeviceBlock.Kind.DRIVE, p), StorageContent::device);
+    public static final DeferredBlock<StorageDriveBlock> DRIVE = BLOCKS.registerBlock("storage_drive",
+            StorageDriveBlock::new, StorageContent::device);
     public static final DeferredBlock<StorageDeviceBlock> TERMINAL = BLOCKS.registerBlock("storage_terminal",
             p -> new StorageDeviceBlock(StorageDeviceBlock.Kind.TERMINAL, p), () -> device().lightLevel(StorageDeviceBlock::light));
     public static final DeferredBlock<StorageDeviceBlock> INTERFACE = BLOCKS.registerBlock("storage_interface",

@@ -2304,6 +2304,88 @@ def storage_block(pal, rng, glow=False):
     return t
 
 
+def _block_bevel(t, pal):
+    t.hline(0, 15, 0, pal[3]); t.vline(0, 0, 15, pal[3])
+    t.hline(0, 15, 15, pal[0]); t.vline(15, 0, 15, pal[0])
+    t.hline(1, 14, 1, pal[4]); t.vline(1, 1, 14, pal[4])
+    t.hline(1, 14, 14, pal[1]); t.vline(14, 1, 14, pal[1])
+    t.set(15, 0, pal[2]); t.set(0, 15, pal[2]); t.set(14, 1, pal[3]); t.set(1, 14, pal[3])
+
+
+# Block-only palettes: the metals look alike as ingots (fine), but their blocks must not.
+TIN_BLOCK = ramp("#5E6A78", "#8592A2", "#A3B0C0", "#B9C5D3", "#CCD6E2")       # soft pale silver-blue, dull
+TITANIUM_BLOCK = ramp("#24222E", "#3A3A4C", "#52546A", "#6C7088", "#8E92AE")  # dark cool grey
+TITANIUM_TINT = ramp("#3C3478", "#4E46A0", "#5C6AC4", "#7A92D8")              # anodised violet -> blue
+ALUMINUM_BLOCK = ramp("#7E8894", "#A8B2BE", "#CDD4DC", "#E2E7ED", "#FAFCFF")  # bright, white-silver
+
+
+def tin_block(rng):
+    """Cast tin: matte, low-contrast pale blue-silver with soft mottling, rounded cast edge, no sheen."""
+    pal = TIN_BLOCK
+    t = Tex(fill=pal[2])
+    for y in range(2, 14):
+        for x in range(2, 14):
+            r = rng.random()
+            if r < 0.16:
+                t.set(x, y, mix(pal[2], pal[1], 0.35))
+            elif r < 0.30:
+                t.set(x, y, mix(pal[2], pal[3], 0.5))
+    # soft dents (dull hammered look)
+    for (x, y) in [(4, 4), (10, 5), (6, 10), (11, 11), (3, 8)]:
+        t.set(x, y, pal[1]); t.set(x + 1, y, mix(pal[1], pal[2], 0.5)); t.set(x, y + 1, mix(pal[2], pal[3], 0.6))
+    # stamped "Sn" cartouche in the middle
+    t.rect(5, 6, 10, 9, mix(pal[2], pal[1], 0.25))
+    t.hline(5, 10, 6, pal[1]); t.vline(5, 6, 9, pal[1]); t.hline(5, 10, 9, pal[3]); t.vline(10, 6, 9, pal[3])
+    t.set(6, 7, pal[1]); t.set(7, 7, pal[1]); t.set(7, 8, pal[1]); t.set(6, 8, pal[3])
+    t.set(8, 8, pal[1]); t.set(9, 8, pal[1]); t.set(8, 7, pal[1])
+    # rounded edge: softer bevel, no bright highlight
+    t.hline(0, 15, 0, pal[3]); t.vline(0, 0, 15, pal[3])
+    t.hline(0, 15, 15, pal[0]); t.vline(15, 0, 15, pal[0])
+    t.hline(1, 14, 1, mix(pal[3], pal[4], 0.4)); t.vline(1, 1, 14, mix(pal[3], pal[4], 0.4))
+    t.hline(1, 14, 14, pal[1]); t.vline(14, 1, 14, pal[1])
+    for (x, y) in [(0, 0), (15, 0), (0, 15), (15, 15)]:
+        t.set(x, y, pal[1])
+    return t
+
+
+def titanium_block(rng):
+    """Brushed titanium: dark cool grey, horizontal brush lines, an anodised violet-blue heat-tint band and hex bolts."""
+    pal = TITANIUM_BLOCK
+    t = Tex(fill=pal[2])
+    for y in range(2, 14):
+        row = mix(pal[2], pal[1], 0.25) if y % 2 else pal[2]
+        for x in range(2, 14):
+            t.set(x, y, row)
+        x = rng.randrange(2, 9)   # brush streaks
+        t.hline(x, min(13, x + rng.randrange(3, 7)), y, mix(pal[2], pal[3], 0.55))
+    # anodised band: violet at the top fading to blue at the bottom, in the middle third
+    for y in range(5, 11):
+        tint = TITANIUM_TINT[min(3, (y - 5) * 4 // 6)]
+        for x in range(2, 14):
+            t.set(x, y, mix(t.get(x, y), tint, 0.62))
+    t.hline(2, 13, 4, pal[0]); t.hline(2, 13, 11, pal[4])
+    _block_bevel(t, pal)
+    for (x, y) in [(3, 2), (12, 2), (3, 12), (12, 12)]:  # hex bolts
+        t.set(x, y, pal[4]); t.set(x + 1, y, pal[3]); t.set(x, y + 1, pal[3]); t.set(x + 1, y + 1, pal[0])
+    return t
+
+
+def aluminum_block(rng):
+    """Aluminium tread plate: bright white-silver with a raised diagonal diamond pattern."""
+    pal = ALUMINUM_BLOCK
+    t = Tex(fill=pal[2])
+    dither(t, rng, 2, 2, 13, 13, pal[2], mix(pal[2], pal[1], 0.3), mix(pal[2], pal[3], 0.4), 0.10)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            u, v = (x + y) % 4, (x - y) % 4
+            if (y // 2) % 2 == 0 and u == 0 and (x // 2) % 2 == 0:
+                t.set(x, y, pal[4]); t.set(min(13, x + 1), y, pal[1])
+            elif (y // 2) % 2 == 1 and v == 0 and (x // 2) % 2 == 1:
+                t.set(x, y, pal[4]); t.set(min(13, x + 1), y, pal[1])
+    _block_bevel(t, pal)
+    return t
+
+
 # =============================================================================
 # 4. Items
 # =============================================================================
@@ -3239,6 +3321,9 @@ def build():
     blk("deepslate_titanium_ore", lambda r: ore_block("titanium", True))
     for metal in METALS:
         blk("%s_block" % metal, lambda r, metal=metal: storage_block(MAT[metal], r, glow=metal == "quantum_alloy"))
+    blk("tin_block", tin_block)
+    blk("titanium_block", titanium_block)
+    blk("aluminum_block", aluminum_block)
 
     # ---- items: raw materials
     itm("raw_tin", lambda r: raw_lump(ORES["tin"][0], r))

@@ -56,6 +56,23 @@ public class StorageDriveBlockEntity extends StorageNodeBlockEntity implements M
         cells[slot] = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
         bump();
         setChanged();
+        syncBays();
+    }
+
+    /** Mirrors the inserted cells into the block state so the model shows the cartridges. */
+    void syncBays() {
+        if (level == null || level.isClientSide()) return;
+        BlockState state = getBlockState();
+        if (!(state.getBlock() instanceof StorageDriveBlock)) return;
+        BlockState next = state;
+        for (int i = 0; i < SLOTS; i++) next = next.setValue(StorageDriveBlock.CELLS[i], StorageDriveBlock.shown(cells[i]));
+        if (next != state) level.setBlock(worldPosition, next, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+    }
+
+    @Override
+    public void serverTick(net.minecraft.server.level.ServerLevel level) {
+        super.serverTick(level);
+        if ((level.getGameTime() + worldPosition.hashCode()) % 20 == 0) syncBays();
     }
 
     /** The four cell slots, for the drive GUI. */
@@ -145,6 +162,7 @@ public class StorageDriveBlockEntity extends StorageNodeBlockEntity implements M
         @Override
         protected void onRootCommit(ItemStack[] originalState) {
             setChanged();
+            syncBays();
         }
     }
 

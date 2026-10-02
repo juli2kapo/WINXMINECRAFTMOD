@@ -50,20 +50,7 @@ def models(write, ASSETS):
     def item_def(name, model):
         write(ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": ns(model)}})
 
-    side, top = f"{MOD}:block/storage_casing_side", f"{MOD}:block/storage_casing_top"
-    for dev in DEVICES:
-        for suffix in ("", "_on"):
-            block_model(dev + suffix, {"parent": "minecraft:block/orientable", "textures": {
-                "front": f"{MOD}:block/{dev}_front{suffix}", "side": side, "top": top, "particle": side}})
-        variants = {}
-        for facing, rot in FACINGS.items():
-            for online in ("false", "true"):
-                v = {"model": f"{MOD}:block/{dev}" + ("_on" if online == "true" else "")}
-                if rot:
-                    v["y"] = rot
-                variants[f"facing={facing},online={online}"] = v
-        write(ASSETS / "blockstates" / f"{dev}.json", {"variants": variants})
-        item_def(dev, f"block/{dev}")
+    device_models(write, ASSETS, block_model, item_def)
 
     # Cable: a thin core plus one arm per connected side (same shape as the power cables).
     t = f"{MOD}:block/{CABLE}"
@@ -92,6 +79,152 @@ def models(write, ASSETS):
         write(ASSETS / "models" / "item" / f"{cell}.json",
               {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{cell}"}})
         item_def(cell, f"item/{cell}")
+
+
+# ------------------------------------------------------------ device models
+# Every device has its own shape (all face north in the model; the blockstate turns them).
+
+FACE_DIRS = ("north", "south", "west", "east", "up", "down")
+
+
+def _el(frm, to, faces, rotation=None):
+    """An element; faces maps direction -> texture key or (key, uv). Boundary faces get a cullface."""
+    out = {}
+    for d, spec in faces.items():
+        key, uv = (spec, None) if isinstance(spec, str) else spec
+        f = {"texture": "#" + key}
+        if uv:
+            f["uv"] = uv
+        cull = {"north": frm[2] == 0, "south": to[2] == 16, "west": frm[0] == 0, "east": to[0] == 16,
+                "down": frm[1] == 0, "up": to[1] == 16}[d]
+        if cull and rotation is None:
+            f["cullface"] = d
+        out[d] = f
+    e = {"from": list(frm), "to": list(to), "faces": out}
+    if rotation:
+        e["rotation"] = rotation
+    return e
+
+
+def _all(key, **over):
+    return {d: over.get(d, key) for d in FACE_DIRS}
+
+
+def _tex(**names):
+    t = {k: f"{MOD}:block/{v}" for k, v in names.items()}
+    return t
+
+
+def _controller_model(on):
+    s = "_on" if on else ""
+    tex = _tex(rack=f"storage_controller_rack{s}", side="storage_controller_side", top="storage_controller_top",
+               post="storage_controller_post", core=f"storage_controller_core{s}", core_side="storage_controller_core_side",
+               base="storage_controller_base", particle="storage_controller_side")
+    els = [
+        _el((0, 0, 0), (16, 1, 16), _all("base")),                                        # plinth
+        _el((1, 1, 2), (15, 15, 15), {"north": "rack", "south": "side", "west": "side", "east": "side"}),
+        _el((0, 15, 0), (16, 16, 16), _all("top", north="base", south="base", west="base", east="base", down="base")),
+    ]
+    for x0 in (0, 14):                                                                   # rack rails
+        for z0 in (0, 14):
+            els.append(_el((x0, 1, z0), (x0 + 2, 15, z0 + 2), _all("post")))
+    els.append(_el((5, 5, 0.5), (11, 11, 2), {"north": "core", "west": "core_side", "east": "core_side",
+                                               "up": "core_side", "down": "core_side"}))  # glowing core housing
+    return {"parent": "minecraft:block/block", "textures": tex, "elements": els}
+
+
+BAY_Y = (11, 8, 5, 2)   # bottom of bay 0..3 (top bay first)
+
+
+def _drive_model(on):
+    s = "_on" if on else ""
+    tex = _tex(bay=f"storage_drive_bays{s}", bezel="storage_drive_bezel", side="storage_drive_side",
+               top="storage_drive_top", particle="storage_drive_side")
+    els = [
+        _el((0, 0, 3), (16, 16, 16), {"north": "bay", "south": "side", "west": "side", "east": "side", "up": "top", "down": "top"}),
+        _el((0, 0, 0), (2, 16, 3), {"north": "bezel", "west": "bezel", "east": "bezel", "up": "bezel", "down": "bezel"}),
+        _el((14, 0, 0), (16, 16, 3), {"north": "bezel", "west": "bezel", "east": "bezel", "up": "bezel", "down": "bezel"}),
+        _el((2, 14, 0), (14, 16, 3), {"north": "bezel", "up": "bezel", "down": "bezel"}),
+        _el((2, 0, 0), (14, 2, 3), {"north": "bezel", "up": "bezel", "down": "bezel"}),
+    ]
+    for y in (5, 8, 11):                                                                 # shelves between bays
+        els.append(_el((2, y - 0.5, 1), (14, y + 0.5, 3), {"north": "bezel", "up": "bezel", "down": "bezel"}))
+    return {"parent": "minecraft:block/block", "textures": tex, "elements": els}
+
+
+def _drive_cell_model(slot, kind):
+    """A cell cartridge sitting in bay `slot`, sticking out of the drive front."""
+    y0 = BAY_Y[slot] + 0.5
+    t = f"{MOD}:block/storage_drive_cart_{'4k' if kind == 2 else '1k'}"
+    face = {"north": ("c", [0, 0, 10, 2]), "up": ("c", [0, 2, 10, 4]), "down": ("c", [0, 2, 10, 4]),
+            "west": ("c", [10, 0, 12, 2]), "east": ("c", [10, 0, 12, 2])}
+    return {"parent": "minecraft:block/block", "textures": {"c": t, "particle": t},
+            "elements": [_el((3, y0, 0.5), (13, y0 + 2, 3), face)]}
+
+
+def _terminal_model(on):
+    s = "_on" if on else ""
+    tex = _tex(cab="storage_terminal_cabinet", side="storage_terminal_side", keys="storage_terminal_keys",
+               screen=f"storage_terminal_screen{s}", shell="storage_terminal_shell", particle="storage_terminal_side")
+    els = [
+        _el((0, 0, 0), (16, 7, 16), {"north": "cab", "south": "side", "west": "side", "east": "side", "up": "shell", "down": "shell"}),
+        # slanted keyboard deck
+        _el((1, 6, 1), (15, 8, 8), {"up": "keys", "north": "shell", "west": "shell", "east": "shell", "south": "shell"},
+            rotation={"angle": 22.5, "axis": "x", "origin": [8, 7, 8]}),
+        # monitor
+        _el((1, 7, 9), (15, 16, 15), {"north": "screen", "south": "shell", "west": "shell", "east": "shell", "up": "shell"}),
+        _el((5, 9, 15), (11, 14, 16), _all("shell")),                                  # monitor back hump
+    ]
+    return {"parent": "minecraft:block/block", "textures": tex, "elements": els}
+
+
+def _interface_model(on):
+    s = "_on" if on else ""
+    tex = _tex(mouth=f"storage_interface_mouth{s}", side="storage_interface_side", top="storage_interface_top",
+               collar="storage_interface_collar", belt="storage_interface_belt", particle="storage_interface_side")
+    els = [
+        _el((0, 0, 3), (16, 16, 16), {"north": "mouth", "south": "side", "west": "side", "east": "side", "up": "top", "down": "top"}),
+        _el((2, 2, 0), (14, 4, 3), {"north": "collar", "up": "belt", "down": "collar", "west": "collar", "east": "collar"}),
+        _el((2, 12, 0), (14, 14, 3), {"north": "collar", "up": "collar", "down": "collar", "west": "collar", "east": "collar"}),
+        _el((2, 4, 0), (4, 12, 3), {"north": "collar", "west": "collar", "east": "collar"}),
+        _el((12, 4, 0), (14, 12, 3), {"north": "collar", "west": "collar", "east": "collar"}),
+    ]
+    return {"parent": "minecraft:block/block", "textures": tex, "elements": els}
+
+
+DEVICE_MODELS = {"storage_controller": _controller_model, "storage_drive": _drive_model,
+                 "storage_terminal": _terminal_model, "storage_interface": _interface_model}
+
+
+def device_models(write, ASSETS, block_model, item_def):
+    for dev, fn in DEVICE_MODELS.items():
+        for on in (False, True):
+            block_model(dev + ("_on" if on else ""), fn(on))
+        base = {}
+        for facing, rot in FACINGS.items():
+            for online in ("false", "true"):
+                v = {"model": f"{MOD}:block/{dev}" + ("_on" if online == "true" else "")}
+                if rot:
+                    v["y"] = rot
+                base[f"facing={facing},online={online}"] = v
+        if dev != "storage_drive":
+            write(ASSETS / "blockstates" / f"{dev}.json", {"variants": base})
+        else:
+            parts = []
+            for key, v in base.items():
+                facing, online = (kv.split("=")[1] for kv in key.split(","))
+                parts.append({"when": {"facing": facing, "online": online}, "apply": v})
+            for slot in range(4):
+                for kind in (1, 2):
+                    name = f"storage_drive_cell{slot}_{kind}"
+                    block_model(name, _drive_cell_model(slot, kind))
+                    for facing, rot in FACINGS.items():
+                        apply = {"model": f"{MOD}:block/{name}"}
+                        if rot:
+                            apply["y"] = rot
+                        parts.append({"when": {"facing": facing, f"cell{slot}": str(kind)}, "apply": apply})
+            write(ASSETS / "blockstates" / f"{dev}.json", {"multipart": parts})
+        item_def(dev, f"block/{dev}")
 
 
 def loot(write, DATA):
