@@ -42,7 +42,7 @@ public final class ChargeCommand {
         }
         boolean air = SuitItems.holdsOxygen(stack);
         if (air) SuitItems.setOxygen(stack, Integer.MAX_VALUE); // clamped to a full tank
-        EnergyHandler energy = ItemAccess.forPlayerInteraction(player, InteractionHand.MAIN_HAND).getCapability(Capabilities.Energy.ITEM);
+        EnergyHandler energy = ItemAccess.forPlayerSlot(player, player.getInventory().getSelectedSlot()).getCapability(Capabilities.Energy.ITEM);
         if (energy == null) {
             if (air) {
                 c.getSource().sendSuccess(() -> Component.translatable("message.factoryascent.charge.air", stack.getHoverName()), false);
@@ -60,17 +60,23 @@ public final class ChargeCommand {
         return (int) Math.min(Integer.MAX_VALUE, total);
     }
 
-    /** Inserts up to {@code amount} FE; an item may cap each insert, so it keeps going until it stops taking. */
+    /**
+     * Inserts up to {@code amount} FE. An item may cap each insert, so it inserts again while the
+     * stored amount keeps rising, but never more than a few rounds: if an insert reports success
+     * without the charge actually sticking, this must not spin forever.
+     */
     public static long fill(EnergyHandler energy, long amount) {
         long added = 0;
-        while (added < amount) {
-            int moved;
+        for (int round = 0; round < 256 && added < amount; round++) {
+            long before = energy.getAmountAsLong();
+            if (before >= energy.getCapacityAsLong()) break;
             try (Transaction tx = Transaction.openRoot()) {
-                moved = energy.insert((int) Math.min(Integer.MAX_VALUE, amount - added), tx);
+                energy.insert((int) Math.min(Integer.MAX_VALUE, amount - added), tx);
                 tx.commit();
             }
-            if (moved <= 0) break;
-            added += moved;
+            long gained = energy.getAmountAsLong() - before;
+            if (gained <= 0) break;
+            added += gained;
         }
         return added;
     }

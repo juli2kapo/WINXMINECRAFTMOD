@@ -19,11 +19,11 @@ public final class CommandTests {
         @SuppressWarnings("removal")
         ServerPlayer player = h.makeMockServerPlayerInLevel();
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(GearContent.ITEM_MAGNET.get()));
-        EnergyHandler energy = ItemAccess.forPlayerInteraction(player, InteractionHand.MAIN_HAND).getCapability(Capabilities.Energy.ITEM);
+        EnergyHandler energy = ItemAccess.forPlayerSlot(player, player.getInventory().getSelectedSlot()).getCapability(Capabilities.Energy.ITEM);
         h.assertTrue(energy != null, "the magnet must hold energy");
         long added = ChargeCommand.fill(energy, Long.MAX_VALUE);
         h.assertTrue(added == ItemMagnetItem.CAPACITY, "must add a full charge, added " + added);
-        EnergyHandler after = ItemAccess.forPlayerInteraction(player, InteractionHand.MAIN_HAND).getCapability(Capabilities.Energy.ITEM);
+        EnergyHandler after = ItemAccess.forPlayerSlot(player, player.getInventory().getSelectedSlot()).getCapability(Capabilities.Energy.ITEM);
         h.assertTrue(after.getAmountAsLong() == ItemMagnetItem.CAPACITY, "the held magnet must keep the charge, has " + after.getAmountAsLong());
         h.assertTrue(ChargeCommand.fill(after, 1000) == 0, "a full item takes nothing more");
         h.succeed();
