@@ -283,7 +283,7 @@ final class DysonRenderers {
                         quad(b, m, ax - w, ay, az, ax + w, ay, az, bx + w, by, bz, bx - w, by, bz, argb(a, 120, 220, 255));
                         quad(b, m, ax, ay, az - w, ax, ay, az + w, bx, by, bz + w, bx, by, bz - w, argb(a, 120, 220, 255));
                     }
-                }, 400, true, 32);
+                }, 200, true, 32); // capped: the hologram is rebuilt every frame
             });
             pose.popPose();
         }

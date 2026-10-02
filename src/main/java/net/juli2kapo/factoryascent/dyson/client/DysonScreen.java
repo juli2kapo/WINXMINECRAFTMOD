@@ -5,7 +5,9 @@ import java.util.List;
 import net.juli2kapo.factoryascent.dyson.DysonPayloads;
 import net.juli2kapo.factoryascent.util.EnergyUtil;
 import net.minecraft.ChatFormatting;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -26,6 +28,9 @@ public class DysonScreen extends Screen {
     private static final String[] MILESTONE_KEYS = {"first", "10", "25", "50", "100"};
 
     private DysonPayloads.MonitorView view;
+    private final int[] canvas = new int[PREVIEW * PREVIEW];
+    private DynamicTexture texture;
+    private long lastRaster;
     private int ticks;
 
     public DysonScreen(DysonPayloads.MonitorView view) {
@@ -68,14 +73,53 @@ public class DysonScreen extends Screen {
         g.fill(x + 3, y + 3, x + W - 3, y + 4, ACCENT);
         int px = x + 8, py = y + 22;
         g.fill(px - 1, py - 1, px + PREVIEW + 1, py + PREVIEW + 1, EDGE_LIGHT);
-        g.fill(px, py, px + PREVIEW, py + PREVIEW, INSET);
-        // a few fixed stars behind the preview
-        for (int i = 0; i < 60; i++) {
-            int sx = px + (int) (DysonShape.hash(i * 3L) * PREVIEW), sy = py + (int) (DysonShape.hash(i * 3L + 1) * PREVIEW);
-            int c = 0x40 + (int) (DysonShape.hash(i * 3L + 2) * 0x80);
-            g.fill(sx, sy, sx + 1, sy + 1, 0xFF000000 | c << 16 | c << 8 | c);
+        // The preview is rasterised into a texture (at most ~20 times a second) and drawn with one
+        // blit: drawing it pixel by pixel as GUI rectangles meant tens of thousands per frame.
+        long now = System.nanoTime();
+        if (texture == null || now - lastRaster > 50_000_000L) {
+            lastRaster = now;
+            raster(partial);
         }
-        preview(g, px + PREVIEW / 2, py + PREVIEW / 2, partial);
+        g.blit(texture.getTextureView(), texture.getSampler(), px, py, px + PREVIEW, py + PREVIEW, 0f, 1f, 0f, 1f);
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        if (texture != null) {
+            texture.close();
+            texture = null;
+        }
+    }
+
+    private void raster(float partial) {
+        if (texture == null) texture = new DynamicTexture(() -> "factoryascent dyson preview", PREVIEW, PREVIEW, true);
+        java.util.Arrays.fill(canvas, INSET);
+        // a few fixed stars behind the cube
+        for (int i = 0; i < 60; i++) {
+            int sx = (int) (DysonShape.hash(i * 3L) * PREVIEW), sy = (int) (DysonShape.hash(i * 3L + 1) * PREVIEW);
+            int c = 0x40 + (int) (DysonShape.hash(i * 3L + 2) * 0x80);
+            fill(sx, sy, sx + 1, sy + 1, 0xFF000000 | c << 16 | c << 8 | c);
+        }
+        preview(PREVIEW / 2, PREVIEW / 2, partial);
+        NativeImage image = texture.getPixels();
+        for (int y = 0; y < PREVIEW; y++) {
+            for (int x = 0; x < PREVIEW; x++) image.setPixel(x, y, canvas[y * PREVIEW + x]);
+        }
+        texture.upload();
+    }
+
+    /** Fills a rectangle of the preview canvas, blending by the colour's alpha. */
+    private void fill(int x0, int y0, int x1, int y1, int argb) {
+        int a = argb >>> 24;
+        if (a == 0) return;
+        x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(PREVIEW, x1); y1 = Math.min(PREVIEW, y1);
+        for (int y = y0; y < y1; y++) {
+            for (int x = x0; x < x1; x++) {
+                int i = y * PREVIEW + x;
+                canvas[i] = a == 255 ? argb : 0xFF000000 | mix(canvas[i] & 0xFFFFFF, argb & 0xFFFFFF, a / 255f);
+            }
+        }
     }
 
     // ---------------------------------------------------------------- the preview
@@ -83,7 +127,7 @@ public class DysonScreen extends Screen {
     private record Prim(float depth, int kind, float[] pts, int color) {}
 
     /** Draws the cube, depth-sorted (painter's algorithm), in pixel art. */
-    private void preview(GuiGraphicsExtractor g, int cx, int cy, float partial) {
+    private void preview(int cx, int cy, float partial) {
         float time = (ticks + partial) / 20f;
         float turn = time * 0.25f;
         float ct = (float) Math.cos(turn), st = (float) Math.sin(turn);
@@ -127,10 +171,10 @@ public class DysonScreen extends Screen {
         for (Prim prim : prims) {
             float[] q = prim.pts();
             switch (prim.kind()) {
-                case 0 -> g.fill((int) q[0], (int) q[1], (int) q[0] + 1, (int) q[1] + 1, prim.color());
-                case 1 -> fillQuad(g, q, prim.color());
-                case 2 -> dotted(g, q[0], q[1], q[2], q[3], prim.color());
-                default -> sun(g, (int) q[0], (int) q[1], time);
+                case 0 -> fill((int) q[0], (int) q[1], (int) q[0] + 1, (int) q[1] + 1, prim.color());
+                case 1 -> fillQuad(q, prim.color());
+                case 2 -> dotted(q[0], q[1], q[2], q[3], prim.color());
+                default -> sun((int) q[0], (int) q[1], time);
             }
         }
     }
@@ -142,26 +186,26 @@ public class DysonScreen extends Screen {
         return r << 16 | gg << 8 | bl;
     }
 
-    private static void sun(GuiGraphicsExtractor g, int cx, int cy, float time) {
+    private void sun(int cx, int cy, float time) {
         int r = 7;
-        g.fill(cx - r - 3, cy - r - 3, cx + r + 3, cy + r + 3, 0x40FFB030);
-        g.fill(cx - r - 1, cy - r - 1, cx + r + 1, cy + r + 1, 0xA0FFC040);
-        g.fill(cx - r, cy - r, cx + r, cy + r, 0xFFFFE070);
+        fill(cx - r - 3, cy - r - 3, cx + r + 3, cy + r + 3, 0x40FFB030);
+        fill(cx - r - 1, cy - r - 1, cx + r + 1, cy + r + 1, 0xA0FFC040);
+        fill(cx - r, cy - r, cx + r, cy + r, 0xFFFFE070);
         int f = (int) (2 + Math.sin(time * 3) * 1.5);
-        g.fill(cx - r + 2, cy - r + 2, cx + r - 2 - f, cy + r - 2 - f, 0xFFFFF6C0);
+        fill(cx - r + 2, cy - r + 2, cx + r - 2 - f, cy + r - 2 - f, 0xFFFFF6C0);
     }
 
-    private static void dotted(GuiGraphicsExtractor g, float x0, float y0, float x1, float y1, int color) {
+    private void dotted(float x0, float y0, float x1, float y1, int color) {
         float len = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
         int n = Math.max(1, (int) len);
         for (int i = 0; i <= n; i++) {
             int x = (int) (x0 + (x1 - x0) * i / n), y = (int) (y0 + (y1 - y0) * i / n);
-            g.fill(x, y, x + 1, y + 1, color);
+            fill(x, y, x + 1, y + 1, color);
         }
     }
 
     /** Fills a convex quad (screen points x0 y0 … x3 y3) row by row. */
-    private static void fillQuad(GuiGraphicsExtractor g, float[] q, int color) {
+    private void fillQuad(float[] q, int color) {
         float minY = Math.min(Math.min(q[1], q[3]), Math.min(q[5], q[7]));
         float maxY = Math.max(Math.max(q[1], q[3]), Math.max(q[5], q[7]));
         for (int y = (int) Math.floor(minY); y <= (int) Math.ceil(maxY); y++) {
@@ -174,7 +218,7 @@ public class DysonScreen extends Screen {
                     hi = Math.max(hi, x);
                 }
             }
-            if (hi >= lo) g.fill(Math.round(lo), y, Math.max(Math.round(lo) + 1, Math.round(hi)), y + 1, color);
+            if (hi >= lo) fill(Math.round(lo), y, Math.max(Math.round(lo) + 1, Math.round(hi)), y + 1, color);
         }
     }
 
