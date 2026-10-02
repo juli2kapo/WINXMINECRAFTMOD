@@ -466,11 +466,23 @@ entry("refinery", "Refinery", (
 entry("mobs", "Mob Tools", (
     "- [[mob_capsule]]: hold right-click on a mob for 3 s to trap it; right-click a block to release.\n"
     "- [[mob_farm]]: a filled capsule inside produces that mob's drops with power, no mob needed.\n"
-    "- [[minimizer_ray]] and [[maximizer_ray]]: shrink or grow creatures."),
+    "- [[minimizer_ray]] and [[maximizer_ray]]: shrink or grow creatures.\n"
+    "- [[size_chamber]]: put a filled capsule in, pick a target size (within the rays' limits): it resizes the mob "
+    "inside, then heals it to full, with FE. The mob keeps both when released.\n"
+    "- [[mob_releaser]]: nine capsule slots; a redstone pulse or **Release All** lets every mob out at once, at a point "
+    "you set in front of it.\n"
+    "# Bosses\nA Wither beaten below 10% health can be captured (the Ender Dragon and other bosses can't). Heal it in a "
+    "Size Chamber, shrink it, and release ten of them at once if you dare."),
     "Herramientas de criaturas", (
     "- [[mob_capsule]]: mantén clic derecho sobre una criatura 3 s para atraparla; clic derecho en un bloque para soltarla.\n"
     "- [[mob_farm]]: con una cápsula llena dentro produce lo que suelta esa criatura, con energía y sin la criatura.\n"
-    "- [[minimizer_ray]] y [[maximizer_ray]]: encogen o agrandan criaturas."))
+    "- [[minimizer_ray]] y [[maximizer_ray]]: encogen o agrandan criaturas.\n"
+    "- [[size_chamber]]: pon una cápsula llena y elige un tamaño (dentro de los límites de los rayos): cambia el tamaño "
+    "de la criatura y luego la cura por completo, con FE. Al soltarla conserva ambas cosas.\n"
+    "- [[mob_releaser]]: nueve ranuras de cápsula; un pulso de redstone o **Liberar todo** suelta a todas a la vez, en "
+    "un punto que eliges delante.\n"
+    "# Jefes\nUn Wither con menos del 10% de vida se puede capturar (el dragón del End y otros jefes no). Cúralo en una "
+    "cámara de tamaño, encógelo y suelta diez a la vez si te atreves."))
 
 # ---- Industrial
 entry("titanium", "Titanium", (
@@ -506,12 +518,14 @@ entry("launch_pad", "Launch Pad", (
     "y lanza con redstone o el botón Lanzar.\nLas tolvas y tuberías pueden meter cargas y combustible; lanzan en nombre "
     "de quien colocó el controlador."))
 entry("satellites", "Satellites", (
-    "- [[survey_satellite]]: your [[ground_station|Ground Stations]] map the land around them.\n"
+    "- [[survey_satellite]]: your [[ground_station|Ground Stations]] map the land around them, even land nobody has "
+    "explored yet (guessed from the terrain generator, then imaged for real once the chunks are generated).\n"
     "- [[uplink_satellite]]: signal everywhere in the dimension (phone, wireless terminal).\n"
     "- [[guardian_satellite]]: stops the next anti-satellite missile.\n- [[orbital_radar]]: lists every satellite overhead.\n"
     "A satellite covers the dimension it is launched from."),
     "Satélites", (
-    "- [[survey_satellite]]: tus [[ground_station|estaciones terrenas]] cartografían los alrededores.\n"
+    "- [[survey_satellite]]: tus [[ground_station|estaciones terrenas]] cartografían los alrededores, incluso tierras "
+    "sin explorar (estimadas con el generador de terreno y fotografiadas de verdad cuando se generan).\n"
     "- [[uplink_satellite]]: señal en toda la dimensión (teléfono, terminal inalámbrica).\n"
     "- [[guardian_satellite]]: detiene el próximo misil antisatélite.\n- [[orbital_radar]]: lista todos los satélites.\n"
     "Un satélite cubre la dimensión desde la que se lanza."))
@@ -812,10 +826,14 @@ entry("ender_anchor", "Ender Anchor", (
     "romperla se pierde la perla."))
 entry("recall", "Recall Charm", (
     "Sneak-use a [[recall_charm]] on an [[ender_beacon]] to link it. Hold use for a few seconds to be pulled home; "
-    "taking damage breaks the channel. Each recall uses up the beacon's pearl."),
+    "taking damage breaks the channel. Each recall uses up the beacon's pearl. If the beacon was destroyed or is empty "
+    "the charm says so and keeps the link (marked broken).\nThe [[factory_phone]]'s Recall app does the same without a "
+    "charm, for every beacon linked to the phone (see [[@phone]])."),
     "Amuleto de regreso", (
     "Agáchate y usa un [[recall_charm]] sobre una [[ender_beacon]] para enlazarlos. Mantén usar unos segundos para volver "
-    "a casa; recibir daño corta el canal. Cada regreso gasta la perla de la baliza."))
+    "a casa; recibir daño corta el canal. Cada regreso gasta la perla de la baliza. Si la baliza fue destruida o está "
+    "vacía, el amuleto lo dice y conserva el enlace (marcado como roto).\nLa app Regreso del [[factory_phone]] hace lo "
+    "mismo sin amuleto, para cada baliza enlazada al teléfono (mira [[@phone]])."))
 entry("links", "Cross-Dimension Links", (
     "An [[ender_link]] moves items and fluids to every other endpoint on its **channel**: within one dimension or "
     "Overworld ↔ Nether, free to run. A [[quantum_entangler]] also moves energy and reaches any two dimensions, orbit and "
@@ -851,11 +869,21 @@ entry("orbital_shuttle", "Shuttle Flight", (
 entry("phone", "Factory Phone", (
     "Right-click the [[factory_phone]] to open it; charge it in a Charger. Sneak-use it on a machine, cable or storage "
     "terminal to link it. Apps: map, storage, team chat, machines (alerts when one stops), power, recall and Dyson. "
-    "Away from your base the network apps need your team's [[uplink_satellite]] overhead."),
+    "Away from your base the network apps need your team's [[uplink_satellite]] overhead.\n# Linking with cards\n"
+    "Sneak-use a [[link_card]] on anything the phone can watch: machines, generators, reactors, tanks, power cables, "
+    "storage terminals, Ender Beacons, Dyson Receivers and Monitors, the orbital consoles, Ender Links… Put the phone "
+    "in a [[phone_dock]] and the card in its reader: the link is added and a blank card comes out. The dock lists "
+    "every link with a remove button and charges the phone.\n# Recall\nThe Recall app lists every linked Ender Beacon "
+    "(swipe or use the arrows) and recalls you without a charm."),
     "Teléfono de fábrica", (
     "Clic derecho con el [[factory_phone]] para abrirlo; cárgalo en un cargador. Agáchate y úsalo sobre una máquina, un "
     "cable o una terminal para enlazarlo. Apps: mapa, almacenamiento, chat de equipo, máquinas (avisa si una se para), "
-    "energía, regreso y Dyson. Lejos de la base las apps de red necesitan el [[uplink_satellite]] de tu equipo."))
+    "energía, regreso y Dyson. Lejos de la base las apps de red necesitan el [[uplink_satellite]] de tu equipo.\n"
+    "# Enlazar con tarjetas\nAgáchate y usa una [[link_card]] sobre lo que el teléfono pueda vigilar: máquinas, "
+    "generadores, reactores, tanques, cables, terminales, balizas de ender, receptores y monitores Dyson, consolas "
+    "orbitales, enlaces de ender… Pon el teléfono en una [[phone_dock]] y la tarjeta en su lector: se añade el enlace y "
+    "sale una tarjeta en blanco. La base lista todos los enlaces con un botón para quitarlos y carga el teléfono.\n"
+    "# Regreso\nLa app Regreso lista todas las balizas de ender enlazadas (desliza o usa las flechas) y te lleva sin amuleto."))
 
 # status lines that mention the Manual (they replace the shorter ones written elsewhere)
 INCOMPLETE = {

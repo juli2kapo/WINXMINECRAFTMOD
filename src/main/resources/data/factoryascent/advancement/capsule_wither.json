@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:automation_mob_capsule",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:nether_star"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.capsule_wither.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.capsule_wither.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

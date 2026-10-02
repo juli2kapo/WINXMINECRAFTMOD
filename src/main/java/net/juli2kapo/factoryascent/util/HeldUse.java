@@ -21,7 +21,7 @@ public final class HeldUse {
     private static final Map<UUID, Long> SERVER = new HashMap<>();
     private static final Map<UUID, Long> CLIENT = new HashMap<>();
     /** Extra ticks the first gap may last (an item cooldown set together with {@link #hold(Player, int)}). */
-    private static final Map<UUID, Integer> GRACE = new HashMap<>();
+    private static final Map<UUID, Integer> GRACE = new HashMap<>(), CLIENT_GRACE = new HashMap<>();
 
     private HeldUse() {}
 
@@ -36,11 +36,12 @@ public final class HeldUse {
 
     /**
      * Like {@link #hold(Player)}, for an action that also puts the item on a cooldown of
-     * {@code cooldownTicks}: no presses arrive during a cooldown, so the first gap may be that much longer.
+     * {@code cooldownTicks}: no presses arrive during a cooldown, so the first gap may be that much longer (also
+     * used for the lag between a server-side stop and the client's next repeated press).
      */
     public static void hold(Player player, int cooldownTicks) {
         map(player).put(player.getUUID(), player.level().getGameTime());
-        if (!player.level().isClientSide()) GRACE.put(player.getUUID(), cooldownTicks);
+        (player.level().isClientSide() ? CLIENT_GRACE : GRACE).put(player.getUUID(), cooldownTicks);
     }
 
     /**
@@ -52,14 +53,14 @@ public final class HeldUse {
         Long last = map.get(player.getUUID());
         if (last == null) return false;
         long now = player.level().getGameTime();
-        int grace = player.level().isClientSide() ? 0 : GRACE.getOrDefault(player.getUUID(), 0);
+        Map<UUID, Integer> graces = player.level().isClientSide() ? CLIENT_GRACE : GRACE;
+        int grace = graces.getOrDefault(player.getUUID(), 0);
+        graces.remove(player.getUUID());
         if (now >= last && now - last <= GAP + grace) {
             map.put(player.getUUID(), now);
-            GRACE.remove(player.getUUID());
             return true;
         }
         map.remove(player.getUUID());
-        GRACE.remove(player.getUUID());
         return false;
     }
 
@@ -67,5 +68,6 @@ public final class HeldUse {
         SERVER.remove(player);
         CLIENT.remove(player);
         GRACE.remove(player);
+        CLIENT_GRACE.remove(player);
     }
 }

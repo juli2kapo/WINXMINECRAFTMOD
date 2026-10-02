@@ -153,6 +153,14 @@ public class MobCapsuleItem extends Item {
      */
     public static ItemStack store(LivingEntity entity) {
         releaseHold(entity);
+        ItemStack full = new ItemStack(MobContent.MOB_CAPSULE.get());
+        fill(full, snapshot(entity));
+        entity.discard();
+        return full;
+    }
+
+    /** The entity's complete saved data as capsule contents (without where it was). Changes nothing. */
+    public static CapturedMob snapshot(LivingEntity entity) {
         CompoundTag data;
         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
             TagValueOutput out = TagValueOutput.createWithContext(reporter, entity.registryAccess());
@@ -160,12 +168,19 @@ public class MobCapsuleItem extends Item {
             data = out.buildResult();
         }
         for (String key : PLACE_KEYS) data.remove(key);
-        ItemStack full = new ItemStack(MobContent.MOB_CAPSULE.get());
-        full.set(MobContent.CAPTURED_MOB.get(), new CapturedMob(entity.getType(), data, entity.getHealth(),
-                entity.getMaxHealth(), Optional.ofNullable(entity.getCustomName())));
-        full.set(DataComponents.MAX_STACK_SIZE, 1);
-        entity.discard();
-        return full;
+        return new CapturedMob(entity.getType(), data, entity.getHealth(), entity.getMaxHealth(), Optional.ofNullable(entity.getCustomName()));
+    }
+
+    /** Puts a mob into a capsule stack (a full capsule doesn't stack). */
+    public static void fill(ItemStack capsule, CapturedMob mob) {
+        capsule.set(MobContent.CAPTURED_MOB.get(), mob);
+        capsule.set(DataComponents.MAX_STACK_SIZE, 1);
+    }
+
+    /** Empties a capsule after its mob was let out. */
+    public static void empty(ItemStack capsule) {
+        capsule.remove(MobContent.CAPTURED_MOB.get());
+        capsule.set(DataComponents.MAX_STACK_SIZE, EMPTY_STACK); // equal to the default, so the override goes away
     }
 
     /**
@@ -191,10 +206,18 @@ public class MobCapsuleItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        // Right after a capture (or any ended capture) the button may still be held: do nothing, say nothing
+        // (so "Captured!" stays readable) and claim the press, so it doesn't fall through to the other hand
+        // (a phone in the off hand would open). Both sides track this (see onStopUsing).
+        if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(player)) {
+            if (!level.isClientSide()) stillHeldFromCapture(player);
+            return InteractionResult.CONSUME;
+        }
         if (isFull(stack)) {
             if (!level.isClientSide()) stillHeldFromCapture(player); // a press at the air still counts as holding
             return InteractionResult.PASS;
         }
+        if (!level.isClientSide() && stillHeldFromCapture(player)) return InteractionResult.CONSUME;
         HitResult hit = ProjectileUtil.getHitResultOnViewVector(player, e -> e instanceof LivingEntity && e != player, RANGE);
         if (!(hit instanceof EntityHitResult eh)) {
             if (player instanceof ServerPlayer sp) sp.sendOverlayMessage(msg("no_target").withStyle(ChatFormatting.GRAY));
@@ -207,6 +230,11 @@ public class MobCapsuleItem extends Item {
     static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ItemStack stack = event.getItemStack();
         if (!stack.is(MobContent.MOB_CAPSULE.get()) || isFull(stack)) return;
+        if (!event.getEntity().level().isClientSide() && stillHeldFromCapture(event.getEntity())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.PASS);
+            return;
+        }
         InteractionResult result = tryStart(event.getEntity(), event.getHand(), event.getTarget());
         event.setCanceled(true);
         event.setCancellationResult(result);
@@ -299,6 +327,9 @@ public class MobCapsuleItem extends Item {
         ServerLevel level = player.level();
         Vec3 at = target.position().add(0, target.getBbHeight() / 2, 0);
         Component name = target.getName();
+        if (target instanceof net.minecraft.world.entity.boss.wither.WitherBoss) {
+            net.juli2kapo.factoryascent.phone.PhoneContent.award(player, "capsule_wither");
+        }
         ItemStack full = store(target);
         ItemStack held = player.getItemInHand(hand);
         if (held.getCount() <= 1) {
@@ -326,6 +357,7 @@ public class MobCapsuleItem extends Item {
     /** Called whenever the use ends (release, slot change, death…): anything still running failed. */
     @Override
     public void onStopUsing(ItemStack stack, LivingEntity entity, int count) {
+        if (entity instanceof Player player) net.juli2kapo.factoryascent.util.HeldUse.hold(player, 8); // the client hears of a server stop a few ticks late
         if (entity instanceof ServerPlayer player && CAPTURES.containsKey(player.getUUID())) {
             Capture capture = CAPTURES.get(player.getUUID());
             fail(player, player.level().getEntity(capture.target), "failed.released");
@@ -400,8 +432,7 @@ public class MobCapsuleItem extends Item {
         level.sendParticles(ParticleTypes.PORTAL, c.x, c.y, c.z, 50, 0.3, 0.4, 0.3, 0.5);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8f, 0.8f);
         if (player instanceof ServerPlayer sp) sp.sendOverlayMessage(msg("released", released.getName()).withStyle(ChatFormatting.GREEN));
-        stack.remove(MobContent.CAPTURED_MOB.get());
-        stack.set(DataComponents.MAX_STACK_SIZE, EMPTY_STACK); // equal to the default, so the override goes away
+        empty(stack);
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -425,6 +456,11 @@ public class MobCapsuleItem extends Item {
             tooltip.accept(Component.translatable("tooltip.factoryascent.mob_capsule.health",
                     String.format(Locale.ROOT, "%.1f", mob.health()), String.format(Locale.ROOT, "%.1f", mob.maxHealth()))
                     .withStyle(ChatFormatting.GRAY));
+            double size = net.juli2kapo.factoryascent.capsule.CapsuleOps.scaleOf(mob);
+            if (Math.abs(size - 1.0) > 1e-3) {
+                tooltip.accept(Component.translatable("tooltip.factoryascent.mob_capsule.size", Math.round(size * 100))
+                        .withStyle(ChatFormatting.AQUA));
+            }
             mob.customName().ifPresent(n -> tooltip.accept(
                     Component.translatable("tooltip.factoryascent.mob_capsule.custom_name", n).withStyle(ChatFormatting.GRAY)));
             tooltip.accept(Component.translatable("tooltip.factoryascent.mob_capsule.release").withStyle(ChatFormatting.DARK_GRAY));

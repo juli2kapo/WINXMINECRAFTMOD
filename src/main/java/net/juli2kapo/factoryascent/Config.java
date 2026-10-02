@@ -22,6 +22,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue SURVEY_RADIUS_CHUNKS;
     public static final ModConfigSpec.IntValue SURVEY_CHUNKS_PER_TICK;
     public static final ModConfigSpec.BooleanValue SURVEY_FROM_DISK;
+    public static final ModConfigSpec.BooleanValue SURVEY_APPROXIMATE;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -67,6 +68,9 @@ public final class Config {
         SURVEY_FROM_DISK = b.comment("Ground Station survey: also image already-generated chunks that aren't loaded by reading them from",
                         "the save (asynchronously; never generates or loads chunks into the world). If false, only loaded chunks are imaged.")
                 .define("surveyFromDisk", true);
+        SURVEY_APPROXIMATE = b.comment("Ground Station survey: image chunks that were never generated approximately, from the world generator",
+                        "(terrain height, sea level, biome colours; nothing is generated). They are re-imaged for real once generated.")
+                .define("surveyApproximate", true);
         b.pop();
         SPEC = b.build();
     }

@@ -27,6 +27,7 @@ import net.minecraft.world.level.chunk.storage.SerializableChunkData;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.MapColor;
+import net.neoforged.neoforge.common.Tags;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -61,7 +62,11 @@ public final class SurveyScanner {
                           long chunk, @Nullable Image image) {}
 
     /** The pixels of one chunk and the heights of its first and last rows. */
-    record Image(byte[] pixels, int[] north, int[] south, @Nullable String biome) {}
+    public record Image(byte[] pixels, int[] north, int[] south, @Nullable String biome, boolean approximate) {
+        Image(byte[] pixels, int[] north, int[] south, @Nullable String biome) {
+            this(pixels, north, south, biome, false);
+        }
+    }
 
     private static final ConcurrentLinkedQueue<Imaged> DONE = new ConcurrentLinkedQueue<>();
 
@@ -128,18 +133,28 @@ public final class SurveyScanner {
             int cx = centre.x() + ChunkPos.getX(offset), cz = centre.z() + ChunkPos.getZ(offset);
             long chunk = ChunkPos.pack(cx, cz);
             LevelChunk loaded = level.getChunkSource().getChunkNow(cx, cz);
+            boolean approximate = Config.SURVEY_APPROXIMATE.get();
             if (loaded != null) {
-                if (station.sweeps == 0 && data.has(chunk)) {
+                if (station.sweeps == 0 && data.has(chunk) && !data.approximate(chunk)) {
                     skips--;
                 } else {
                     store(level.getServer(), team, level.dimension(), data, chunk, image(level, loaded, data));
                     budget--;
                 }
-            } else if (data.has(chunk) || !fromDisk || station.missing.contains(chunk)) {
+            } else if (station.missing.contains(chunk) || (data.has(chunk) && !data.approximate(chunk))
+                    || (data.has(chunk) && (!fromDisk || station.sweeps == 0))) {
+                // imaged for real (or approximately, and nothing better to try this sweep): nothing to do
                 skips--;
-            } else {
-                readFromDisk(level, station, team, data, chunk);
+            } else if (fromDisk) {
+                // a saved chunk is imaged from disk; one that was never generated gets an approximate
+                // image from the world generator instead (only if it has none yet)
+                readFromDisk(level, station, team, data, chunk, approximate && !data.has(chunk));
                 budget--;
+            } else if (approximate) {
+                approximate(level, station, team, data, chunk);
+                budget--;
+            } else {
+                skips--;
             }
             station.index++;
             station.setChanged();
@@ -147,16 +162,34 @@ public final class SurveyScanner {
     }
 
     /** Starts an asynchronous read + imaging of a saved chunk; the result is stored in {@link #drain}. */
-    private static void readFromDisk(ServerLevel level, GroundStationBlockEntity station, String team, SurveyData data, long chunk) {
+    private static void readFromDisk(ServerLevel level, GroundStationBlockEntity station, String team, SurveyData data, long chunk,
+                                     boolean orApproximate) {
         station.reads++;
         ChunkPos pos = ChunkPos.unpack(chunk);
         int[] northEdge = northEdge(data, chunk);
         MinecraftServer server = level.getServer();
         ResourceKey<Level> dimension = level.dimension();
         level.getChunkSource().chunkMap.read(pos)
-                .thenApplyAsync(tag -> imageSaved(level, tag, northEdge), Util.backgroundExecutor())
+                .thenApplyAsync(tag -> {
+                    Image saved = imageSaved(level, tag, northEdge);
+                    return saved != null || !orApproximate ? saved : imageApproximate(level, pos, northEdge);
+                }, Util.backgroundExecutor())
                 .whenComplete((image, error) -> {
                     if (error != null) LOGGER.debug("Survey could not read chunk {}", pos, error);
+                    DONE.add(new Imaged(station, server, team, dimension, chunk, error == null ? image : null));
+                });
+    }
+
+    /** Starts an approximate imaging of a chunk that isn't loaded, from the world generator (never generates it). */
+    private static void approximate(ServerLevel level, GroundStationBlockEntity station, String team, SurveyData data, long chunk) {
+        station.reads++;
+        ChunkPos pos = ChunkPos.unpack(chunk);
+        int[] northEdge = northEdge(data, chunk);
+        MinecraftServer server = level.getServer();
+        ResourceKey<Level> dimension = level.dimension();
+        java.util.concurrent.CompletableFuture.supplyAsync(() -> imageApproximate(level, pos, northEdge), Util.backgroundExecutor())
+                .whenComplete((image, error) -> {
+                    if (error != null) LOGGER.debug("Survey could not approximate chunk {}", pos, error);
                     DONE.add(new Imaged(station, server, team, dimension, chunk, error == null ? image : null));
                 });
     }
@@ -180,7 +213,9 @@ public final class SurveyScanner {
     }
 
     private static void store(MinecraftServer server, String team, ResourceKey<Level> dimension, SurveyData data, long chunk, Image image) {
-        for (long changed : data.put(chunk, image.pixels(), image.north(), image.south(), image.biome())) {
+        // a real image never gets replaced by a guess (the chunk may have been imaged meanwhile)
+        if (image.approximate() && data.has(chunk) && !data.approximate(chunk)) return;
+        for (long changed : data.put(chunk, image.pixels(), image.north(), image.south(), image.biome(), image.approximate())) {
             SurveyService.chunkChanged(server, team, dimension, changed);
         }
     }
@@ -293,6 +328,133 @@ public final class SurveyScanner {
     static MapColor.Brightness relief(int height, int previousHeight, int x, int z) {
         double d = (height - previousHeight) * 4.0 / 5.0 + (((x + z) & 1) - 0.5) * 0.4;
         return d > 0.6 ? MapColor.Brightness.HIGH : d < -0.6 ? MapColor.Brightness.LOW : MapColor.Brightness.NORMAL;
+    }
+
+    // ---------------------------------------------------------------- approximate imaging
+
+    /** Samples per chunk side for approximate imaging (every 4 blocks, edges included). */
+    private static final int GRID = 5;
+
+    /**
+     * An approximate image of a chunk that was never generated, from the world generator alone:
+     * the terrain height ({@code getBaseHeight}, sampled every 4 blocks and interpolated), water
+     * below sea level, and the biome at the surface for the colour (forest, plains, desert, ocean,
+     * snow, badlands…), shaded like a vanilla map. Nothing is generated or loaded. Background thread.
+     */
+    static @Nullable Image imageApproximate(ServerLevel level, ChunkPos pos, int @Nullable [] northEdge) {
+        var source = level.getChunkSource();
+        return imageApproximate(source.getGenerator(), source.randomState(), level, level.dimensionType().hasCeiling(), pos, northEdge);
+    }
+
+    /** {@link #imageApproximate(ServerLevel, ChunkPos, int[])} for any generator (public for tools and tests). */
+    public static Image imageApproximate(net.minecraft.world.level.chunk.ChunkGenerator generator,
+                                         net.minecraft.world.level.levelgen.RandomState random,
+                                         net.minecraft.world.level.LevelHeightAccessor level, boolean ceiling, ChunkPos pos,
+                                         int @Nullable [] northEdge) {
+        int sea = generator.getSeaLevel();
+        int minY = level.getMinY();
+        int x0 = pos.getMinBlockX(), z0 = pos.getMinBlockZ();
+        int[][] floor = new int[GRID][GRID];
+        if (!ceiling) {
+            for (int i = 0; i < GRID; i++) {
+                for (int j = 0; j < GRID; j++) {
+                    floor[i][j] = generator.getBaseHeight(x0 + i * 4, z0 + j * 4, Heightmap.Types.OCEAN_FLOOR_WG, level, random);
+                }
+            }
+        }
+        // biomes per 4x4 cell, at the (interpolated) surface
+        @SuppressWarnings("unchecked")
+        Holder<Biome>[][] cells = new Holder[4][4];
+        var sampler = random.sampler();
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int y = ceiling ? 64 : Math.max(sea, (floor[i][j] + floor[i + 1][j + 1]) / 2);
+                cells[i][j] = generator.getBiomeSource().getNoiseBiome((x0 >> 2) + i, y >> 2, (z0 >> 2) + j, sampler);
+            }
+        }
+        byte[] pixels = new byte[256];
+        int[] north = new int[16], south = new int[16];
+        double[] previous = new double[16];
+        for (int z = 0; z < 16; z++) {
+            for (int x = 0; x < 16; x++) {
+                int wx = x0 + x, wz = z0 + z;
+                MapColor color;
+                int height;
+                MapColor.Brightness brightness;
+                if (ceiling) {
+                    int noise = wx + wz * 231871;
+                    noise = noise * noise * 31287121 + noise * 11;
+                    color = (noise >> 20 & 1) == 0 ? MapColor.DIRT : MapColor.STONE;
+                    height = 100;
+                } else {
+                    int gx = x >> 2, gz = z >> 2;
+                    double fx = (x & 3) / 4.0, fz = (z & 3) / 4.0;
+                    double h = floor[gx][gz] * (1 - fx) * (1 - fz) + floor[gx + 1][gz] * fx * (1 - fz)
+                            + floor[gx][gz + 1] * (1 - fx) * fz + floor[gx + 1][gz + 1] * fx * fz;
+                    height = (int) Math.round(h) - 1;
+                    Holder<Biome> biome = cells[gx][gz];
+                    if (height <= minY + 1) {
+                        color = MapColor.NONE;
+                    } else if (height < sea - 1) {
+                        color = biome.is(Tags.Biomes.IS_AQUATIC_ICY) || biome.is(Tags.Biomes.IS_ICY) ? MapColor.ICE : MapColor.WATER;
+                    } else {
+                        color = biomeColor(biome, height, sea, wx, wz);
+                    }
+                    if (color == MapColor.WATER) {
+                        double d = (sea - height) * 0.1 + ((wx + wz) & 1) * 0.2;
+                        brightness = d < 0.5 ? MapColor.Brightness.HIGH : d > 0.9 ? MapColor.Brightness.LOW : MapColor.Brightness.NORMAL;
+                        height = sea - 1;
+                    } else {
+                        brightness = null;
+                    }
+                    if (z == 0) {
+                        north[x] = height;
+                        previous[x] = northEdge != null && northEdge[x] != Integer.MIN_VALUE ? northEdge[x] : height;
+                    }
+                    if (z == 15) south[x] = height;
+                    if (brightness == null) brightness = relief(height, (int) previous[x], wx, wz);
+                    previous[x] = height;
+                    pixels[z * 16 + x] = color.getPackedId(brightness);
+                    continue;
+                }
+                if (z == 0) {
+                    north[x] = height;
+                    previous[x] = height;
+                }
+                if (z == 15) south[x] = height;
+                pixels[z * 16 + x] = color.getPackedId(relief(height, (int) previous[x], wx, wz));
+                previous[x] = height;
+            }
+        }
+        String biome = cells[2][2].unwrapKey().map(k -> k.identifier().toString()).orElse(null);
+        return new Image(pixels, north, south, biome, true);
+    }
+
+    /** What the top of a biome looks like on a vanilla map, roughly: grass, leaves, sand, snow, terracotta… */
+    static MapColor biomeColor(Holder<Biome> biome, int height, int sea, int wx, int wz) {
+        int h = wx * 0x9E3779B1 + wz * 0x85EBCA6B;
+        h ^= h >>> 15;
+        h *= 0x2C1B3C6D;
+        h ^= h >>> 12;
+        int speckle = h >>> 28; // 0..15, stable per block
+        if (biome.is(Tags.Biomes.IS_END)) return MapColor.SAND;
+        if (biome.is(Tags.Biomes.IS_NETHER)) return MapColor.NETHER;
+        if (biome.is(Tags.Biomes.IS_MUSHROOM)) return MapColor.COLOR_PURPLE;
+        if (biome.is(Tags.Biomes.IS_BADLANDS)) return speckle < 5 ? MapColor.TERRACOTTA_ORANGE : MapColor.COLOR_ORANGE;
+        if (biome.is(Tags.Biomes.IS_DESERT) || biome.is(Tags.Biomes.IS_BEACH) && !biome.is(Tags.Biomes.IS_SNOWY)) return MapColor.SAND;
+        if (biome.is(Tags.Biomes.IS_SNOWY) || biome.is(Tags.Biomes.IS_ICY)) {
+            return biome.is(Tags.Biomes.IS_CONIFEROUS_TREE) && speckle < 6 ? MapColor.PLANT : MapColor.SNOW;
+        }
+        if (biome.is(Tags.Biomes.IS_MOUNTAIN_PEAK) || height > sea + 90) return speckle < 9 ? MapColor.SNOW : MapColor.STONE;
+        if (biome.is(Tags.Biomes.IS_STONY_SHORES) || biome.is(Tags.Biomes.IS_MOUNTAIN_SLOPE) || height > sea + 60) {
+            return speckle < 10 ? MapColor.STONE : MapColor.GRASS;
+        }
+        if (biome.is(Tags.Biomes.IS_RIVER) || biome.is(Tags.Biomes.IS_OCEAN)) return MapColor.SAND; // shores of water biomes
+        if (biome.is(Tags.Biomes.IS_SWAMP)) return speckle < 4 ? MapColor.WATER : speckle < 9 ? MapColor.PLANT : MapColor.GRASS;
+        if (biome.is(Tags.Biomes.IS_JUNGLE) || biome.is(Tags.Biomes.IS_DARK_FOREST)) return speckle < 2 ? MapColor.GRASS : MapColor.PLANT;
+        if (biome.is(Tags.Biomes.IS_FOREST) || biome.is(Tags.Biomes.IS_TAIGA)) return speckle < 5 ? MapColor.GRASS : MapColor.PLANT;
+        if (biome.is(Tags.Biomes.IS_SAVANNA)) return speckle < 2 ? MapColor.PLANT : speckle < 4 ? MapColor.DIRT : MapColor.GRASS;
+        return speckle < 1 ? MapColor.PLANT : MapColor.GRASS;
     }
 
     /** A saved chunk's block sections as a read-only {@link BlockGetter} (no world access, safe off-thread). */

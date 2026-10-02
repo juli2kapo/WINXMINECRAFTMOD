@@ -118,6 +118,15 @@ public class SizeRayItem extends Item {
         return next;
     }
 
+    /**
+     * Sets the entity's ray size to {@code size} (clamped to [{@link #minSize()}, {@link #maxSize()}]),
+     * the same modifier a ray shot leaves. Returns the size applied. Used by the Size Chamber.
+     */
+    public static double setSize(LivingEntity entity, double size) {
+        double factor = sizeFactor(entity);
+        return applyShot(entity, size / factor);
+    }
+
     // ---------------------------------------------------------------- scope
 
     public static boolean isScoped(ItemStack stack) {

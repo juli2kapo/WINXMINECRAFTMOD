@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "PFP",
+    "PPP"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "C": "factoryascent:basic_circuit",
+    "P": "#c:plates/aluminum",
+    "F": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:phone_dock"
+  }
+}

@@ -77,6 +77,7 @@ public class GroundStationBlockEntity extends BlockEntity {
     void finishSweep(long now) {
         index = 0;
         sweeps++;
+        missing.clear(); // retry what couldn't be read (approximate chunks may have been generated since)
         pauseUntil = now + SurveyScanner.SWEEP_PAUSE;
         setChanged();
     }

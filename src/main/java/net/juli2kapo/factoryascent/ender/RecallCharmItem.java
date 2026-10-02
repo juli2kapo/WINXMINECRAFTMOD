@@ -117,9 +117,13 @@ public class RecallCharmItem extends Item {
      * button is pressed again), marks the link broken if the beacon is gone, and blocks the charm briefly.
      */
     private static void fail(ServerPlayer player, ItemStack stack, GlobalPos target, Component why, boolean stopUsing) {
+        if (beaconGone(player, target)) {
+            stack.set(EnderContent.BEACON_BROKEN.get(), true);
+            why = destroyedMessage(target, stack.getOrDefault(EnderContent.LINKED_BEACON_NAME.get(), "")); // with its name
+        } else {
+            stack.remove(EnderContent.BEACON_BROKEN.get());
+        }
         player.sendOverlayMessage(why);
-        if (beaconGone(player, target)) stack.set(EnderContent.BEACON_BROKEN.get(), true);
-        else stack.remove(EnderContent.BEACON_BROKEN.get());
         if (stopUsing) player.stopUsingItem();
         player.getCooldowns().addCooldown(stack, FAIL_COOLDOWN);
         net.juli2kapo.factoryascent.util.HeldUse.hold(player, FAIL_COOLDOWN);

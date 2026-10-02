@@ -139,7 +139,7 @@ public class ElectricDrillItem extends Item {
             return InteractionResult.SUCCESS;
         }
         // One mode step per press: holding the button must not spin through every mode.
-        if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(player)) return InteractionResult.FAIL;
+        if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(player)) return InteractionResult.CONSUME; // (not FAIL: that would try the other hand)
         net.juli2kapo.factoryascent.util.HeldUse.hold(player);
         if (!level.isClientSide()) {
             DrillMode next = mode(stack).next();

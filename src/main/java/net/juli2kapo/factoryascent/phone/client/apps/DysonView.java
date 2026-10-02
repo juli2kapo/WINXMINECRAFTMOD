@@ -83,9 +83,9 @@ public final class DysonView extends PhoneAppView {
         }
         int active = data.getIntOr("receiversActive", 0), formed = data.getIntOr("receiversFormed", 0);
         int color = active == n ? PhoneUi.GOOD : formed < n ? PhoneUi.BAD : PhoneUi.WARN;
-        PhoneUi.dot(g, 6, 157, color);
-        PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.dyson.receivers", active, n), 13, 155, W - 18, color);
+        PhoneUi.dot(g, 6, 155, color);
+        PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.dyson.receivers", active, n), 13, 153, W - 18, color);
         PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.dyson.receivers_out", PhoneUi.compact(data.getLongOr("receiversOut", 0))),
-                13, 164, W - 18, PhoneUi.MUTED);
+                13, 162, W - 18, PhoneUi.MUTED);
     }
 }

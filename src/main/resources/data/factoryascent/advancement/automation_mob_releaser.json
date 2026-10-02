@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:mob_releaser"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:mob_releaser"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_mob_releaser.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_mob_releaser.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_mob_capsule"
+}

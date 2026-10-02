@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ADA",
+    "EFE",
+    "ARA"
+  ],
+  "key": {
+    "A": "#c:plates/aluminum",
+    "D": "minecraft:dispenser",
+    "E": "factoryascent:ender_dust",
+    "F": "factoryascent:machine_frame",
+    "R": "minecraft:redstone"
+  },
+  "result": {
+    "id": "factoryascent:mob_releaser"
+  }
+}

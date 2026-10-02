@@ -110,7 +110,7 @@ public final class GuideEntries {
         e("automation_blocks", AU, "block_breaker", "age_automation", "block_breaker block_placer vacuum_hopper tree_farm", null);
         e("oil_derrick", AU, "oil_derrick", "age_automation", "oil_derrick derrick_base", "oil_derrick");
         e("refinery", AU, "refinery", "automation_oil", "refinery refinery_tower", "refinery");
-        e("mobs", AU, "mob_capsule", "age_automation", "mob_capsule mob_farm minimizer_ray maximizer_ray", null);
+        e("mobs", AU, "mob_capsule", "age_automation", "mob_capsule mob_farm minimizer_ray maximizer_ray size_chamber mob_releaser", null);
         // ---------------------------------------------------------------- Industrial
         Chapter IN = Chapter.INDUSTRIAL;
         e("titanium", IN, "titanium_ingot", "automation_induction", "titanium_ingot hydraulic_press titanium_plate", null);
@@ -179,7 +179,7 @@ public final class GuideEntries {
         e("orbital_shuttle", SH, "shuttle", "space_orbit", "shuttle docking_port", null);
         // ---------------------------------------------------------------- Phone
         Chapter PH = Chapter.PHONE;
-        e("phone", PH, "factory_phone", "age_automation", "factory_phone", null);
+        e("phone", PH, "factory_phone", "age_automation", "factory_phone link_card phone_dock", null);
     }
 
     public static List<Entry> all() {

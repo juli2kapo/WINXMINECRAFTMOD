@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GAG",
+    "DMD",
+    "CFC"
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "A": "#c:plates/aluminum",
+    "D": "factoryascent:ender_dust",
+    "M": "factoryascent:mob_capsule",
+    "C": "factoryascent:advanced_circuit",
+    "F": "factoryascent:machine_frame"
+  },
+  "result": {
+    "id": "factoryascent:size_chamber"
+  }
+}

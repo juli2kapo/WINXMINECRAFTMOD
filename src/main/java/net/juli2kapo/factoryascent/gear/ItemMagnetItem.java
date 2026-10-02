@@ -43,7 +43,7 @@ public class ItemMagnetItem extends PoweredItem {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         // One toggle per press: holding the button must not flip it on and off every 4 ticks.
-        if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(player)) return InteractionResult.FAIL;
+        if (net.juli2kapo.factoryascent.util.HeldUse.stillHeld(player)) return InteractionResult.CONSUME; // (not FAIL: that would try the other hand)
         net.juli2kapo.factoryascent.util.HeldUse.hold(player);
         boolean on = !enabled(stack);
         stack.set(GearContent.MAGNET_ON.get(), on);

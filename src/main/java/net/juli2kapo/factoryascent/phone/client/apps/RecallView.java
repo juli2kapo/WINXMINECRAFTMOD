@@ -18,7 +18,7 @@ import net.minecraft.util.Mth;
 public final class RecallView extends PhoneAppView {
     private static final int BX = 8, BY = 150, BW = 116, BH = 18;
     /** The beacon card and its arrows. */
-    private static final int CX = 16, CY = 50, CW = 100, CH = 58;
+    private static final int CX = 16, CY = 46, CW = 100, CH = 64;
     private static final int LX = 2, RX = W - 14, AY = CY + 18, AW = 12, AH = 20;
     /** Pixels a drag must cover to count as a swipe. */
     private static final int SWIPE = 18;
@@ -103,8 +103,7 @@ public final class RecallView extends PhoneAppView {
         PhoneUi.centered(g, Component.translatable("gui.factoryascent.phone.at", b.getIntOr("x", 0), b.getIntOr("y", 0),
                 b.getIntOr("z", 0)), W / 2 + off, CY + 15, CW - 6, PhoneUi.MUTED);
         String dim = b.getStringOr("dim", "minecraft:overworld");
-        PhoneUi.centered(g, Component.translatable("gui.factoryascent.phone.recall.dim", Identifier.parse(dim).getPath()),
-                W / 2 + off, CY + 25, CW - 6, PhoneUi.FAINT);
+        PhoneUi.centered(g, Component.literal(Identifier.parse(dim).getPath().replace('_', ' ')), W / 2 + off, CY + 25, CW - 6, PhoneUi.FAINT);
         String state = b.getStringOr("state", "unknown");
         int sc = switch (state) {
             case "ready" -> PhoneUi.GOOD;
@@ -112,10 +111,10 @@ public final class RecallView extends PhoneAppView {
             case "gone" -> PhoneUi.BAD;
             default -> PhoneUi.OFF;
         };
-        PhoneUi.dot(g, CX + 5 + off, CY + 39, sc);
-        PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.recall.state." + state), CX + 12 + off, CY + 37, CW - 16, sc);
+        PhoneUi.dot(g, CX + 5 + off, CY + 38, sc);
+        PhoneUi.wrapped(g, Component.translatable("gui.factoryascent.phone.recall.state." + state), CX + 12 + off, CY + 36, CW - 16, 2, sc);
         if (b.getBooleanOr("charm", false)) {
-            PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.recall.from_charm"), CX + 5 + off, CY + 47, CW - 10, PhoneUi.FAINT);
+            PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.recall.from_charm"), CX + 5 + off, CY + 54, CW - 10, PhoneUi.FAINT);
         }
         // arrows and page dots
         if (beacons.size() > 1) {
@@ -132,7 +131,8 @@ public final class RecallView extends PhoneAppView {
         if (!b.getBooleanOr("reachable", false)) {
             PhoneUi.wrapped(g, Component.translatable("message.factoryascent.charm_other_dimension"), 8, ly, W - 16, 2, PhoneUi.BAD);
         } else if ("gone".equals(state)) {
-            PhoneUi.wrapped(g, Component.translatable("gui.factoryascent.phone.recall.gone_hint"), 8, ly, W - 16, 2, PhoneUi.BAD);
+            PhoneUi.wrapped(g, Component.translatable(b.getBooleanOr("charm", false) ? "gui.factoryascent.phone.recall.gone_hint_charm"
+                    : "gui.factoryascent.phone.recall.gone_hint"), 8, ly, W - 16, 3, PhoneUi.BAD);
         } else if (data.getIntOr("cooldown", 0) > 0) {
             PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.recall.cooling", data.getIntOr("cooldown", 0)), 8, ly, W - 16, PhoneUi.WARN);
         } else {

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:paper",
+    "minecraft:paper",
+    "minecraft:redstone",
+    "factoryascent:basic_circuit"
+  ],
+  "result": {
+    "id": "factoryascent:link_card",
+    "count": 8
+  }
+}

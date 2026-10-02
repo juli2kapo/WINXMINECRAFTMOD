@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:size_chamber"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:size_chamber"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.automation_size_chamber.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.automation_size_chamber.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:automation_mob_capsule"
+}
