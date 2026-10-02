@@ -30,7 +30,8 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 
 /**
  * A 7×7 tree plantation in front of it: nine planting spots three blocks apart, level with the
- * machine, on dirt or grass. It plants saplings from its input slots, feeds them bone meal if it
+ * machine, on dirt or grass. It replants with the saplings it harvested (output slots) before
+ * using the ones in its input slots, feeds them bone meal if it
  * has any, and fells every tree that grows there: the whole trunk and its leaves, up to
  * {@link #MAX_BLOCKS} blocks, drops (logs, saplings, sticks, apples) into its outputs.
  */
@@ -148,21 +149,34 @@ public class TreeFarmBlockEntity extends AbstractMachineBlockEntity {
         return !found.isEmpty();
     }
 
+    /**
+     * Replants with the saplings the farm harvested itself (its output slots) first, then from the
+     * input slots; any extra saplings stay in the outputs.
+     */
     private boolean plant(ServerLevel level, BlockPos pos) {
-        // Each sapling's own rule decides the soil (26.x's #dirt no longer contains grass blocks).
-        for (int i = 0; i < slots.inputs(); i++) {
-            ItemStack stack = inventory.stack(slots.firstInput() + i);
+        for (int slot : plantingOrder(slots)) {
+            ItemStack stack = inventory.stack(slot);
             if (!stack.is(ItemTags.SAPLINGS) || !(stack.getItem() instanceof BlockItem bi)) continue;
+            // Each sapling's own rule decides the soil (26.x's #dirt no longer contains grass blocks).
             BlockState sapling = bi.getBlock().defaultBlockState();
             if (!sapling.canSurvive(level, pos)) continue;
             level.setBlock(pos, sapling, Block.UPDATE_ALL);
             stack.shrink(1);
-            inventory.changed(slots.firstInput() + i);
+            inventory.changed(slot);
             energy.consume(ENERGY_PER_PLANT);
             lastEnergyRate = ENERGY_PER_PLANT;
             return true;
         }
         return false;
+    }
+
+    /** Slots searched for a sapling to plant: every output slot, then every input slot. */
+    public static int[] plantingOrder(net.juli2kapo.factoryascent.machine.MachineSlots slots) {
+        int[] order = new int[slots.outputs() + slots.inputs()];
+        int n = 0;
+        for (int i = 0; i < slots.outputs(); i++) order[n++] = slots.firstOutput() + i;
+        for (int i = 0; i < slots.inputs(); i++) order[n++] = slots.firstInput() + i;
+        return order;
     }
 
     private boolean feed(ServerLevel level, BlockPos pos, BlockState state) {

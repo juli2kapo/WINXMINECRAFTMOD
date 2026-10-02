@@ -2,7 +2,6 @@
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "minecraft:block/oak_planks",
-    "handle": "factoryascent:block/quern_handle",
     "leg": "minecraft:block/stripped_oak_log",
     "mesh": "factoryascent:block/sieve_mesh",
     "plank": "minecraft:block/oak_planks"
@@ -526,119 +525,60 @@
     },
     {
       "from": [
-        14.5,
-        12.0,
-        7.25
+        16.0,
+        8.5,
+        6.5
       ],
       "to": [
-        15.5,
-        13.0,
-        8.75
+        16.5,
+        11.5,
+        9.5
       ],
       "faces": {
         "north": {
           "uv": [
+            0,
+            0,
             0.5,
-            3.0,
-            1.5,
-            4.0
+            3.0
           ],
-          "texture": "#handle"
+          "texture": "#leg"
         },
         "south": {
           "uv": [
-            14.5,
-            3.0,
-            15.5,
-            4.0
+            0,
+            0,
+            0.5,
+            3.0
           ],
-          "texture": "#handle"
-        },
-        "west": {
-          "uv": [
-            7.25,
-            3.0,
-            8.75,
-            4.0
-          ],
-          "texture": "#handle"
+          "texture": "#leg"
         },
         "east": {
           "uv": [
-            7.25,
+            0,
+            0,
             3.0,
-            8.75,
-            4.0
+            3.0
           ],
-          "texture": "#handle"
+          "texture": "#leg"
         },
         "up": {
           "uv": [
-            14.5,
-            7.25,
-            15.5,
-            8.75
-          ],
-          "texture": "#handle"
-        }
-      }
-    },
-    {
-      "from": [
-        14.5,
-        13.0,
-        7.25
-      ],
-      "to": [
-        15.5,
-        15.5,
-        8.25
-      ],
-      "faces": {
-        "north": {
-          "uv": [
+            0,
+            0,
             0.5,
-            0.5,
-            1.5,
             3.0
           ],
-          "texture": "#handle"
+          "texture": "#leg"
         },
-        "south": {
+        "down": {
           "uv": [
-            14.5,
+            0,
+            0,
             0.5,
-            15.5,
             3.0
           ],
-          "texture": "#handle"
-        },
-        "west": {
-          "uv": [
-            7.25,
-            0.5,
-            8.25,
-            3.0
-          ],
-          "texture": "#handle"
-        },
-        "east": {
-          "uv": [
-            7.75,
-            0.5,
-            8.75,
-            3.0
-          ],
-          "texture": "#handle"
-        },
-        "up": {
-          "uv": [
-            14.5,
-            7.25,
-            15.5,
-            8.25
-          ],
-          "texture": "#handle"
+          "texture": "#leg"
         }
       }
     }

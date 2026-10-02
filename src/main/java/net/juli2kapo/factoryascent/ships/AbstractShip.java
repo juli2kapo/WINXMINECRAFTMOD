@@ -322,7 +322,10 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
         return seat.yRot(-getYRot() * Mth.DEG_TO_RAD);
     }
 
-    /** Boarding faces you the way the ship points. */
+    /**
+     * Boarding faces you the way the ship points (once). After that the view is the rider's own:
+     * the mouse looks around freely (first and third person) and the ship is steered only by keys.
+     */
     @Override
     protected void addPassenger(Entity passenger) {
         super.addPassenger(passenger);
@@ -331,10 +334,15 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
         passenger.setXRot(Math.min(passenger.getXRot(), 20f));
     }
 
+    /**
+     * Seats follow the hull, but a player's view does not turn with it: unlike a boat, the heading
+     * (A/D) and the camera (mouse) are independent, so you can look out of the side or back while
+     * flying straight. Creatures aboard keep facing the bow.
+     */
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
         super.positionRider(passenger, moveFunction);
-        if (deltaRotation != 0) {
+        if (deltaRotation != 0 && !(passenger instanceof Player)) {
             passenger.setYRot(passenger.getYRot() + deltaRotation);
             passenger.setYHeadRot(passenger.getYHeadRot() + deltaRotation);
         }

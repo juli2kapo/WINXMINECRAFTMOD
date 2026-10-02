@@ -380,91 +380,273 @@ def _noise(im, name, amount=6):
                 im.putpixel((x, y), (max(0, min(255, r + d)), max(0, min(255, g + d)), max(0, min(255, b + d)), a))
 
 
-def _casing(name):
-    """Bevelled steel plate with a teal trim line: the shared side of every storage device."""
+GUN = (52, 56, 66)
+GUN_L = (78, 84, 98)
+GUN_D = (30, 32, 38)
+AMBER = (240, 168, 48)
+AMBER_DARK = (110, 70, 20)
+GREEN = (90, 220, 110)
+GREEN_DARK = (40, 80, 50)
+
+
+def _put(im, x, y, c):
+    im.putpixel((x, y), c + (255,) if len(c) == 3 else c)
+
+
+def _plate(name, fill, light, dark, noise=5):
+    im = _img()
+    _rect(im, 0, 0, 15, 15, fill)
+    _rect(im, 0, 0, 15, 0, light)
+    _rect(im, 0, 0, 0, 15, light)
+    _rect(im, 0, 15, 15, 15, dark)
+    _rect(im, 15, 0, 15, 15, dark)
+    _noise(im, name, noise)
+    return im
+
+
+# ---- controller: dark server rack on rails with a glowing core
+
+def _ctl_rack(on):
+    """Front of the rack: five server blades, each with a status LED and an activity bar."""
+    im = _img()
+    _rect(im, 0, 0, 15, 15, GUN_D)
+    rnd = random.Random("ctl_rack")
+    for i, y in enumerate((1, 4, 7, 10, 13)):
+        _rect(im, 1, y, 14, y + 1, GUN)
+        _rect(im, 1, y, 14, y, GUN_L)
+        _put(im, 2, y + 1, GREEN if on else LED_OFF)
+        _put(im, 3, y + 1, (AMBER if (on and i % 2) else GREEN_DARK if on else LED_OFF))
+        for x in range(10, 14):  # activity bar
+            lit = on and rnd.random() < 0.6
+            _put(im, x, y + 1, TEAL_LIGHT if lit else (24, 28, 34))
+    _noise(im, "ctl_rack", 3)
+    return im
+
+
+def _ctl_side():
+    im = _plate("ctl_side", GUN, GUN_L, GUN_D)
+    for x in range(3, 13, 3):          # vertical vent slots
+        _rect(im, x, 2, x, 13, GUN_D)
+        _rect(im, x + 1, 2, x + 1, 13, GUN_L)
+    return im
+
+
+def _ctl_top():
+    im = _plate("ctl_top", GUN, GUN_L, GUN_D)
+    for x in range(16):                 # round fan grille
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if 2 <= d <= 5.6:
+                _put(im, x, y, GUN_D if (x + y) % 2 else (40, 44, 52))
+            elif d < 2:
+                _put(im, x, y, CASE_LIGHT)
+    return im
+
+
+def _ctl_post():
+    im = _plate("ctl_post", CASE, CASE_LIGHT, CASE_DARK, 4)
+    for y in range(1, 16, 3):           # rack-mount holes
+        for x in (4, 11):
+            _put(im, x, y, OUTLINE)
+    return im
+
+
+def _ctl_base():
+    im = _plate("ctl_base", CASE_DARK, CASE, OUTLINE, 4)
+    for x in range(0, 16, 4):
+        _put(im, x, 8, (240, 200, 60))
+    return im
+
+
+def _ctl_core(on):
+    """The core window: steel ring around a teal crystal that glows while the network is online."""
     im = _img()
     _rect(im, 0, 0, 15, 15, CASE)
+    for x in range(16):
+        for y in range(16):
+            d = max(abs(x - 7.5), abs(y - 7.5))
+            if d < 6.5:
+                _put(im, x, y, OUTLINE)
+            r = abs(x - 7.5) + abs(y - 7.5)
+            if r <= 5.5:
+                c = (TEAL_DARK if not on else TEAL) if r > 3 else ((40, 60, 66) if not on else TEAL_LIGHT)
+                if r <= 1.5 and on:
+                    c = (230, 255, 255)
+                _put(im, x, y, c)
     _rect(im, 0, 0, 15, 0, CASE_LIGHT)
-    _rect(im, 0, 0, 0, 15, CASE_LIGHT)
     _rect(im, 0, 15, 15, 15, CASE_DARK)
-    _rect(im, 15, 0, 15, 15, CASE_DARK)
-    for x, y in ((2, 2), (13, 2), (2, 13), (13, 13)):
-        im.putpixel((x, y), CASE_LIGHT + (255,))
-    _noise(im, name)
     return im
 
 
-def _side():
-    im = _casing("storage_casing_side")
-    _rect(im, 1, 7, 14, 8, TEAL_DARK)
-    _rect(im, 1, 7, 14, 7, TEAL)
+def _ctl_core_side():
+    im = _plate("ctl_core_side", CASE, CASE_LIGHT, CASE_DARK, 3)
+    _rect(im, 0, 7, 15, 8, TEAL_DARK)
     return im
 
 
-def _top():
-    im = _casing("storage_casing_top")
-    _rect(im, 4, 4, 11, 11, CASE_DARK)
-    _rect(im, 5, 5, 10, 10, TEAL_DARK)
-    _rect(im, 6, 6, 9, 9, TEAL)
+# ---- drive: light chassis with four bays; the cartridges are separate model parts
+
+def _drv_bays(on):
+    im = _img()
+    _rect(im, 0, 0, 15, 15, CASE)
+    for top in (2, 5, 8, 11):            # texture rows of each bay opening (model y 11..14 -> v 2..5)
+        _rect(im, 2, top, 13, top + 2, (20, 22, 26))
+        _rect(im, 4, top + 1, 11, top + 1, (40, 44, 52))   # connector
+        for x in range(5, 11, 2):
+            _put(im, x, top + 1, (200, 170, 70))           # gold pins
+        _put(im, 13, top + 1, LED_ON if on else LED_OFF)
+    _noise(im, "drv_bays", 3)
     return im
 
 
-def _frame(name):
-    im = _casing(name)
-    _rect(im, 2, 2, 13, 13, OUTLINE)
+def _drv_bezel():
+    im = _plate("drv_bezel", CASE_LIGHT, (170, 180, 192), CASE, 4)
     return im
 
 
-def _controller(on):
-    im = _frame("storage_controller_front")
-    _rect(im, 3, 3, 12, 12, TEAL_DARK if not on else TEAL)
-    _rect(im, 5, 5, 10, 10, SCREEN_OFF if not on else TEAL_LIGHT)
-    _rect(im, 7, 3, 8, 12, TEAL_DARK)
-    _rect(im, 3, 7, 12, 8, TEAL_DARK)
-    _rect(im, 6, 6, 9, 9, (200, 250, 250) if on else (40, 60, 66))
+def _drv_side():
+    im = _plate("drv_side", CASE_LIGHT, (170, 180, 192), CASE)
+    for y in (3, 6, 9, 12):             # drive rails seen through the side
+        _rect(im, 2, y, 13, y, CASE_DARK)
+        _rect(im, 2, y + 1, 13, y + 1, (170, 180, 192))
+    _rect(im, 1, 14, 14, 14, TEAL_DARK)
     return im
 
 
-def _drive(on):
-    im = _frame("storage_drive_front")
-    for i in range(4):
-        y = 3 + i * 3
-        _rect(im, 3, y, 12, y + 1, CASE_DARK)
-        _rect(im, 4, y, 10, y, (24, 26, 30))
-        im.putpixel((12, y), (LED_ON if on else LED_OFF) + (255,))
+def _drv_top():
+    im = _plate("drv_top", CASE_LIGHT, (170, 180, 192), CASE)
+    for x in range(2, 14, 2):
+        _rect(im, x, 3, x, 12, CASE)
     return im
 
 
-def _terminal(on):
-    im = _frame("storage_terminal_front")
-    _rect(im, 3, 3, 12, 10, SCREEN_OFF)
+def _drv_cart(big):
+    """Cartridge: row 0-1 = its 10x2 front (label, grip, LED), rows 2-3 = top/bottom, cols 10-11 = ends."""
+    im = _img()
+    body = (150, 158, 170)
+    label = (216, 160, 40) if big else TEAL
+    _rect(im, 0, 0, 11, 3, body)
+    _rect(im, 0, 0, 9, 0, (196, 204, 214))
+    _rect(im, 1, 0, 4, 1, label)
+    _rect(im, 6, 1, 8, 1, (60, 66, 76))     # grip
+    _put(im, 9, 0, LED_ON)
+    _rect(im, 0, 2, 9, 3, (120, 128, 140))
+    _rect(im, 0, 2, 3, 2, label)
+    _rect(im, 10, 0, 11, 1, (92, 100, 112))
+    return im
+
+
+# ---- terminal: cabinet, slanted keyboard and a monitor
+
+def _term_cabinet():
+    im = _plate("term_cab", CASE, CASE_LIGHT, CASE_DARK)
+    _rect(im, 2, 10, 13, 13, CASE_DARK)    # drawer (model y 0..7 -> rows 9..15)
+    _rect(im, 6, 11, 9, 11, CASE_LIGHT)
+    _rect(im, 0, 9, 15, 9, TEAL_DARK)
+    return im
+
+
+def _term_side():
+    im = _plate("term_side", CASE, CASE_LIGHT, CASE_DARK)
+    _rect(im, 0, 9, 15, 9, TEAL_DARK)
+    return im
+
+
+def _term_shell():
+    return _plate("term_shell", GUN, GUN_L, GUN_D, 3)
+
+
+def _term_keys():
+    im = _img()
+    _rect(im, 0, 0, 15, 15, GUN_D)
+    for y in range(1, 15, 2):               # key rows (rows 8..15 used by the deck top)
+        for x in range(1, 15, 2):
+            _put(im, x, y, (186, 192, 200))
+            _put(im, x + 1, y, (120, 126, 136))
+    _rect(im, 4, 13, 11, 13, (186, 192, 200))   # space bar
+    _rect(im, 12, 9, 13, 11, TEAL)              # enter key
+    return im
+
+
+def _term_screen(on):
+    """Monitor face: bezel (rows 0-8, cols 1-14 are the front) with a search bar and an item grid."""
+    im = _img()
+    _rect(im, 0, 0, 15, 15, GUN)
+    _rect(im, 2, 1, 13, 7, SCREEN_OFF)
     if on:
-        rnd = random.Random("terminal")
-        for y in (4, 6, 8):
-            for x in range(4, 12, 2):
-                if rnd.random() < 0.8:
-                    im.putpixel((x, y), TEAL_LIGHT + (255,))
-                    im.putpixel((x, y + 1), TEAL + (255,))
-    _rect(im, 3, 12, 12, 12, CASE_DARK)
-    for x in (4, 6, 8, 10):
-        im.putpixel((x, 12), CASE_LIGHT + (255,))
+        _rect(im, 3, 2, 10, 2, (200, 230, 236))          # search bar
+        _put(im, 12, 2, TEAL_LIGHT)
+        cols = [(220, 80, 70), (90, 200, 100), (230, 200, 70), (90, 140, 230), (200, 200, 210), (170, 110, 220)]
+        rnd = random.Random("terminal_grid")
+        for y in (4, 6):
+            for x in range(3, 13, 2):
+                _put(im, x, y, cols[rnd.randrange(len(cols))])
+    else:
+        _put(im, 7, 4, (40, 52, 60))
+    _rect(im, 1, 8, 14, 8, GUN_D)
+    _put(im, 13, 8, LED_ON if on else LED_OFF)
     return im
 
 
-def _interface(on):
-    im = _frame("storage_interface_front")
+# ---- interface: a port with an amber collar, conveyor floor and in/out arrows
+
+def _ifc_mouth(on):
+    im = _img()
+    _rect(im, 0, 0, 15, 15, CASE)
+    _rect(im, 2, 2, 13, 13, (20, 22, 26))
+    g = GREEN if on else GREEN_DARK
+    a = AMBER if on else AMBER_DARK
+    # arrows: "<" in green (items in) on the left, ">" in amber (items out) on the right
+    for i in range(3):
+        _put(im, 6 - i, 6 + i, g); _put(im, 6 - i, 8 - i + 2 * i, g)
+        _put(im, 9 + i, 6 + i, a); _put(im, 9 + i, 8 - i + 2 * i, a)
+    for i in range(3):
+        _put(im, 4 + i, 7, g)
+        _put(im, 4 + i, 8, g)
+    for i in range(3):
+        _put(im, 9 + i, 7, a)
+        _put(im, 9 + i, 8, a)
+    _rect(im, 0, 0, 15, 0, CASE_LIGHT)
+    _rect(im, 0, 15, 15, 15, CASE_DARK)
+    return im
+
+
+def _ifc_collar():
+    im = _plate("ifc_collar", (196, 140, 40), (236, 184, 80), (130, 88, 24), 4)
+    for x in range(16):                      # hazard stripes
+        for y in range(16):
+            if (x + y) % 6 < 2:
+                _put(im, x, y, (44, 40, 36))
+    return im
+
+
+def _ifc_belt():
+    im = _img()
+    _rect(im, 0, 0, 15, 15, (36, 38, 44))
+    for y in range(0, 16, 3):                # rubber belt ridges
+        _rect(im, 0, y, 15, y, (70, 74, 82))
+    _rect(im, 0, 0, 0, 15, (120, 126, 136))
+    _rect(im, 15, 0, 15, 15, (120, 126, 136))
+    return im
+
+
+def _ifc_side():
+    im = _plate("ifc_side", CASE, CASE_LIGHT, CASE_DARK)
+    _rect(im, 2, 5, 13, 10, CASE_DARK)
+    for i in range(3):                       # double arrow: green in, amber out
+        _put(im, 3 + i, 7 - i, GREEN); _put(im, 3 + i, 8 + i, GREEN)
+        _put(im, 12 - i, 7 - i, AMBER); _put(im, 12 - i, 8 + i, AMBER)
+    _rect(im, 3, 7, 7, 8, GREEN)
+    _rect(im, 8, 7, 12, 8, AMBER)
+    return im
+
+
+def _ifc_top():
+    im = _plate("ifc_top", CASE, CASE_LIGHT, CASE_DARK)
     _rect(im, 3, 3, 12, 12, CASE_DARK)
-    ring = TEAL_LIGHT if on else TEAL_DARK
-    for x in range(4, 12):
-        for y in range(4, 12):
-            dx, dy = x - 7.5, y - 7.5
-            d = (dx * dx + dy * dy) ** 0.5
-            if 2.6 <= d <= 4.0:
-                im.putpixel((x, y), ring + (255,))
-            elif d < 2.6:
-                im.putpixel((x, y), (24, 26, 30, 255))
-    for x, y in ((7, 1), (8, 1), (7, 14), (8, 14), (1, 7), (1, 8), (14, 7), (14, 8)):
-        im.putpixel((x, y), TEAL + (255,))
+    _rect(im, 4, 4, 11, 11, (20, 22, 26))
+    for x in range(4, 12, 2):
+        _rect(im, x, 4, x, 11, (60, 64, 72))
     return im
 
 
@@ -505,18 +687,40 @@ def textures():
     block.mkdir(parents=True, exist_ok=True)
     item.mkdir(parents=True, exist_ok=True)
     out = {
-        block / "storage_casing_side.png": _side(),
-        block / "storage_casing_top.png": _top(),
         block / f"{CABLE}.png": _cable(),
         item / "storage_cell_1k.png": _cell(False),
         item / "storage_cell_4k.png": _cell(True),
+        block / "storage_controller_side.png": _ctl_side(),
+        block / "storage_controller_top.png": _ctl_top(),
+        block / "storage_controller_post.png": _ctl_post(),
+        block / "storage_controller_base.png": _ctl_base(),
+        block / "storage_controller_core_side.png": _ctl_core_side(),
+        block / "storage_drive_bezel.png": _drv_bezel(),
+        block / "storage_drive_side.png": _drv_side(),
+        block / "storage_drive_top.png": _drv_top(),
+        block / "storage_drive_cart_1k.png": _drv_cart(False),
+        block / "storage_drive_cart_4k.png": _drv_cart(True),
+        block / "storage_terminal_cabinet.png": _term_cabinet(),
+        block / "storage_terminal_side.png": _term_side(),
+        block / "storage_terminal_shell.png": _term_shell(),
+        block / "storage_terminal_keys.png": _term_keys(),
+        block / "storage_interface_collar.png": _ifc_collar(),
+        block / "storage_interface_belt.png": _ifc_belt(),
+        block / "storage_interface_side.png": _ifc_side(),
+        block / "storage_interface_top.png": _ifc_top(),
     }
     for on in (False, True):
         s = "_on" if on else ""
-        out[block / f"storage_controller_front{s}.png"] = _controller(on)
-        out[block / f"storage_drive_front{s}.png"] = _drive(on)
-        out[block / f"storage_terminal_front{s}.png"] = _terminal(on)
-        out[block / f"storage_interface_front{s}.png"] = _interface(on)
+        out[block / f"storage_controller_rack{s}.png"] = _ctl_rack(on)
+        out[block / f"storage_controller_core{s}.png"] = _ctl_core(on)
+        out[block / f"storage_drive_bays{s}.png"] = _drv_bays(on)
+        out[block / f"storage_terminal_screen{s}.png"] = _term_screen(on)
+        out[block / f"storage_interface_mouth{s}.png"] = _ifc_mouth(on)
+    stale = [block / f"storage_casing_{k}.png" for k in ("side", "top")] + [
+        block / f"{d}_front{s}.png" for d in DEVICES for s in ("", "_on")]
+    for path in stale:
+        if path.exists():
+            path.unlink()
     for path, im in out.items():
         im.save(path)
     print(f"wrote {len(out)} storage textures")

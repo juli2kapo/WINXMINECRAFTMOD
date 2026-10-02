@@ -59,6 +59,8 @@ public final class MobContent {
         event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new ItemAccessEnergyHandler(access,
                         ModComponents.ENERGY.get(), SizeRayItem.CAPACITY, SizeRayItem.CAPACITY / 50, 0),
                 MINIMIZER_RAY.get(), MAXIMIZER_RAY.get());
+        event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new ItemAccessEnergyHandler(access,
+                ModComponents.ENERGY.get(), MobCapsuleItem.CAPACITY, MobCapsuleItem.CAPACITY / 20, 0), MOB_CAPSULE.get());
     }
 
     /** Items for the Utility creative tab, in order. */

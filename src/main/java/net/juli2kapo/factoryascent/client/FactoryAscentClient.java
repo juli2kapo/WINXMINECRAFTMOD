@@ -14,9 +14,13 @@ public final class FactoryAscentClient {
     public FactoryAscentClient(IEventBus modBus) {
         modBus.addListener(FactoryAscentClient::registerScreens);
         modBus.addListener(QuernRenderer::registerModel);
+        modBus.addListener(SieveRenderer::registerModel);
         modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerBlockEntityRenderer(net.juli2kapo.factoryascent.registry.ModBlockEntities.machine(
                         net.juli2kapo.factoryascent.machine.MachineType.QUERN).get(), QuernRenderer::new));
+        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
+                e.registerBlockEntityRenderer(net.juli2kapo.factoryascent.registry.ModBlockEntities.machine(
+                        net.juli2kapo.factoryascent.machine.MachineType.SIEVE).get(), SieveRenderer::new));
         net.juli2kapo.factoryascent.storagenet.StorageNetworkClient.register(modBus);
         net.juli2kapo.factoryascent.ender.EnderContentClient.register(modBus);
         net.juli2kapo.factoryascent.gear.client.GearClient.register(modBus);

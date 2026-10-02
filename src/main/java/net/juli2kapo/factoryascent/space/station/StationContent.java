@@ -112,6 +112,7 @@ public final class StationContent {
         BLOCK_ENTITIES.register(modBus);
         modBus.addListener(StationPayloads::register);
         NeoForge.EVENT_BUS.addListener(StationContent::onBreak);
+        MagneticBoots.register();
     }
 
     /** For the Orbital creative tab: hulls, window, airlock, port, core, boots. */

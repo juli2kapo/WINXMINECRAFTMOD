@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "factoryascent:block/sieve"
+    "model": "factoryascent:item/sieve"
   }
 }

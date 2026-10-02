@@ -60,6 +60,11 @@ import org.slf4j.Logger;
  * Automation Age: traps a living mob. Hold right-click on it for 3 seconds (keep looking at it, stay
  * within 6 blocks) and it is stored, with all its data, in the capsule. Right-click a block to let it out.
  *
+ * <p>The capsule is an FE item ({@link #CAPACITY}, charged in a Charger or any FE item charger):
+ * a capture costs {@link #CAPTURE_COST} and a release {@link #RELEASE_COST}, so one full charge is
+ * one capture and one release. Creative players don't pay. The Mob Releaser lets mobs out with its
+ * own FE, so capsules in it need no charge.
+ *
  * <p>The capture runs on the server: a map from player to target, advanced from {@link #onUseTick}
  * and cancelled from {@link #onStopUsing}. While it runs the target is held in place by transient
  * (never saved) speed modifiers, removed whatever way the capture ends.
@@ -69,7 +74,11 @@ public class MobCapsuleItem extends Item {
 
     public static final int CAPTURE_TICKS = 60;
     public static final double RANGE = 6.0;
-    public static final int EMPTY_STACK = 16;
+    /** Capsules hold FE (one capsule per slot: the charge belongs to the capsule). */
+    public static final int EMPTY_STACK = 1;
+    /** FE a full charge holds: a capture costs half of it, a release the other half. */
+    public static final int CAPACITY = 20_000;
+    public static final int CAPTURE_COST = CAPACITY / 2, RELEASE_COST = CAPACITY - CAPTURE_COST;
     /** A Wither can be captured at or below this share of its health. */
     public static final float WITHER_HEALTH_FRACTION = 0.10f;
     /** Ticks the player may aim off the target before the capture fails (keeps small mobs fair). */
@@ -124,6 +133,34 @@ public class MobCapsuleItem extends Item {
 
     public static @Nullable CapturedMob captured(ItemStack stack) {
         return stack.get(MobContent.CAPTURED_MOB.get());
+    }
+
+    public static int energy(ItemStack stack) {
+        return stack.getOrDefault(net.juli2kapo.factoryascent.registry.ModComponents.ENERGY.get(), 0);
+    }
+
+    public static void setEnergy(ItemStack stack, int fe) {
+        stack.set(net.juli2kapo.factoryascent.registry.ModComponents.ENERGY.get(), Mth.clamp(fe, 0, CAPACITY));
+    }
+
+    /** Whether a capsule holding {@code energy} FE can pay {@code cost} (creative players always can). */
+    public static boolean canPay(int energy, int cost, boolean creative) {
+        return creative || energy >= cost;
+    }
+
+    /** Charge left after paying {@code cost} (creative players keep theirs). */
+    public static int afterPaying(int energy, int cost, boolean creative) {
+        return creative ? energy : Math.max(0, energy - cost);
+    }
+
+    private static boolean refuseNoEnergy(Player player, ItemStack stack, int cost, String key) {
+        if (canPay(energy(stack), cost, player.hasInfiniteMaterials())) return false;
+        if (player instanceof ServerPlayer sp) {
+            sp.sendOverlayMessage(msg(key, net.juli2kapo.factoryascent.util.EnergyUtil.format(cost),
+                    net.juli2kapo.factoryascent.util.EnergyUtil.format(energy(stack))).withStyle(ChatFormatting.RED));
+            sp.level().playSound(null, sp.getX(), sp.getY(), sp.getZ(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.5f, 1.6f);
+        }
+        return true;
     }
 
     public static boolean isFull(ItemStack stack) {
@@ -242,6 +279,7 @@ public class MobCapsuleItem extends Item {
 
     private static InteractionResult tryStart(Player player, InteractionHand hand, Entity target) {
         if (player.isUsingItem()) return InteractionResult.CONSUME;
+        if (refuseNoEnergy(player, player.getItemInHand(hand), CAPTURE_COST, "no_energy_capture")) return InteractionResult.FAIL;
         Optional<Component> refused = refusal(target);
         if (refused.isPresent()) {
             if (player instanceof ServerPlayer sp) {
@@ -330,8 +368,10 @@ public class MobCapsuleItem extends Item {
         if (target instanceof net.minecraft.world.entity.boss.wither.WitherBoss) {
             net.juli2kapo.factoryascent.phone.PhoneContent.award(player, "capsule_wither");
         }
-        ItemStack full = store(target);
         ItemStack held = player.getItemInHand(hand);
+        int charge = afterPaying(energy(held), CAPTURE_COST, player.hasInfiniteMaterials());
+        ItemStack full = store(target);
+        setEnergy(full, charge);
         if (held.getCount() <= 1) {
             player.setItemInHand(hand, full);
         } else {
@@ -419,6 +459,9 @@ public class MobCapsuleItem extends Item {
         if (mob == null) return InteractionResult.PASS;
         if (!(context.getLevel() instanceof ServerLevel level)) return InteractionResult.SUCCESS;
         if (context.getPlayer() != null && stillHeldFromCapture(context.getPlayer())) return InteractionResult.FAIL;
+        if (context.getPlayer() != null && refuseNoEnergy(context.getPlayer(), stack, RELEASE_COST, "no_energy_release")) {
+            return InteractionResult.FAIL;
+        }
         BlockPos pos = context.getClickedPos();
         BlockPos at = level.getBlockState(pos).getCollisionShape(level, pos).isEmpty() ? pos : pos.relative(context.getClickedFace());
         Player player = context.getPlayer();
@@ -433,6 +476,7 @@ public class MobCapsuleItem extends Item {
         level.playSound(null, c.x, c.y, c.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8f, 0.8f);
         if (player instanceof ServerPlayer sp) sp.sendOverlayMessage(msg("released", released.getName()).withStyle(ChatFormatting.GREEN));
         empty(stack);
+        if (player != null) setEnergy(stack, afterPaying(energy(stack), RELEASE_COST, player.hasInfiniteMaterials()));
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -446,8 +490,29 @@ public class MobCapsuleItem extends Item {
     }
 
     @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        return Math.round(13f * energy(stack) / CAPACITY);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        return Mth.hsvToRgb(0.08f + 0.25f * energy(stack) / CAPACITY, 0.9f, 1f);
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.factoryascent.stored_energy",
+                net.juli2kapo.factoryascent.util.EnergyUtil.format(energy(stack)),
+                net.juli2kapo.factoryascent.util.EnergyUtil.format(CAPACITY)).withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.mob_capsule.energy",
+                net.juli2kapo.factoryascent.util.EnergyUtil.format(CAPTURE_COST),
+                net.juli2kapo.factoryascent.util.EnergyUtil.format(RELEASE_COST)).withStyle(ChatFormatting.DARK_GRAY));
         CapturedMob mob = captured(stack);
         if (mob != null) {
             Component type = mob.type().getDescription();

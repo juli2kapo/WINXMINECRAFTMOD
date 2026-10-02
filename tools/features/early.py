@@ -120,11 +120,20 @@ def m_sieve():
     b += [B((0, 8, 0), (16, 12, 2), "plank"), B((0, 8, 14), (16, 12, 16), "plank"),
           B((0, 8, 2), (2, 12, 14), "plank"), B((14, 8, 2), (16, 12, 14), "plank"),
           B((2, 9, 2), (14, 9.5, 14), "mesh", skip=("north", "south", "east", "west")),
-          # the crank on the east rail
-          B((14.5, 12, 7.25), (15.5, 13, 8.75), "handle"), B((14.5, 13, 7.25), (15.5, 15.5, 8.25), "handle")]
+          # bearing block for the crank on the east rail (the crank itself is m_sieve_crank)
+          B((16, 8.5, 6.5), (16.5, 11.5, 9.5), "leg")]
     on = b + [B((4, 9.5, 4), (12, 11, 12), "gravel"), B((5, 11, 5), (11, 11.75, 11), "gravel"),
               B((5, 0, 5), (11, 0.75, 11), "sand")]
     return M("sieve", tx, b, boxes_on=on, particle="plank", desc="oak tray on legs, string mesh, crank; gravel on it when working")
+
+
+def m_sieve_crank():
+    """The sieve's crank, turned about the x axis through (y 10, z 8) by client/SieveRenderer.java."""
+    tx = {"handle": "quern_handle", "arm": STRIPPED}
+    b = [B((15.5, 9.25, 7.25), (17.75, 10.75, 8.75), "handle"),     # axle out of the east rail
+         B((17.75, 8.75, 6.75), (19, 15.5, 9.25), "arm"),           # crank arm
+         B((19, 13.5, 7.25), (21.5, 15, 8.75), "handle")]           # grip
+    return M("sieve_crank", tx, b, particle="arm", desc="sieve crank: axle, arm and grip")
 
 
 def m_drying_rack():
@@ -293,7 +302,7 @@ def m_mob_farm():
 
 MODELS = [m_sieve, m_drying_rack, m_water_wheel, m_windmill, m_charger, m_floodlight, m_block_breaker,
           m_block_placer, m_vacuum_hopper, m_tree_farm, m_industrial_grinder, m_recycler, m_mob_farm]
-ROTORS = {"water_wheel": m_water_wheel_rotor, "windmill": m_windmill_rotor}
+ROTORS = {"water_wheel": m_water_wheel_rotor, "windmill": m_windmill_rotor, "sieve": m_sieve_crank}
 
 
 def write_models(ctx):

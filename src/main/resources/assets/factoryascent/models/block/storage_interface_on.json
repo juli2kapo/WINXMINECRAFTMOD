@@ -1,9 +1,158 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/block",
   "textures": {
-    "front": "factoryascent:block/storage_interface_front_on",
-    "side": "factoryascent:block/storage_casing_side",
-    "top": "factoryascent:block/storage_casing_top",
-    "particle": "factoryascent:block/storage_casing_side"
-  }
+    "mouth": "factoryascent:block/storage_interface_mouth_on",
+    "side": "factoryascent:block/storage_interface_side",
+    "top": "factoryascent:block/storage_interface_top",
+    "collar": "factoryascent:block/storage_interface_collar",
+    "belt": "factoryascent:block/storage_interface_belt",
+    "particle": "factoryascent:block/storage_interface_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        3
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mouth"
+        },
+        "south": {
+          "texture": "#side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#side",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#side",
+          "cullface": "east"
+        },
+        "up": {
+          "texture": "#top",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#top",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        0
+      ],
+      "to": [
+        14,
+        4,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#collar",
+          "cullface": "north"
+        },
+        "up": {
+          "texture": "#belt"
+        },
+        "down": {
+          "texture": "#collar"
+        },
+        "west": {
+          "texture": "#collar"
+        },
+        "east": {
+          "texture": "#collar"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        12,
+        0
+      ],
+      "to": [
+        14,
+        14,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#collar",
+          "cullface": "north"
+        },
+        "up": {
+          "texture": "#collar"
+        },
+        "down": {
+          "texture": "#collar"
+        },
+        "west": {
+          "texture": "#collar"
+        },
+        "east": {
+          "texture": "#collar"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        4,
+        0
+      ],
+      "to": [
+        4,
+        12,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#collar",
+          "cullface": "north"
+        },
+        "west": {
+          "texture": "#collar"
+        },
+        "east": {
+          "texture": "#collar"
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        4,
+        0
+      ],
+      "to": [
+        14,
+        12,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#collar",
+          "cullface": "north"
+        },
+        "west": {
+          "texture": "#collar"
+        },
+        "east": {
+          "texture": "#collar"
+        }
+      }
+    }
+  ]
 }

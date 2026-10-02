@@ -1,0 +1,68 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "c": "factoryascent:block/storage_drive_cart_1k",
+    "particle": "factoryascent:block/storage_drive_cart_1k"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        2.5,
+        0.5
+      ],
+      "to": [
+        13,
+        4.5,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            0,
+            2,
+            10,
+            4
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            0,
+            2,
+            10,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#c",
+          "uv": [
+            10,
+            0,
+            12,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            10,
+            0,
+            12,
+            2
+          ]
+        }
+      }
+    }
+  ]
+}
