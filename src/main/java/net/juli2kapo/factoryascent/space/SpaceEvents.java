@@ -79,6 +79,7 @@ public final class SpaceEvents {
         Orbit.applyGravity(player);
         Jetpack.serverTick(player);
         Orbit.tickReentry(player);
+        Orbit.fallOutOfOrbit(player);
         boolean airless = SpaceRules.isAirless(player.level());
         SpaceRules.Breath breath = tickBreathing(player, airless);
         net.juli2kapo.factoryascent.space.planet.PlanetHazards.tickPlayer(player, breath);

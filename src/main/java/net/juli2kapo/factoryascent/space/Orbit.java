@@ -132,6 +132,27 @@ public final class Orbit {
         startReentry(player);
     }
 
+    /**
+     * Falling out of orbit: anyone who drops below the bottom of the orbit dimension (stepping off
+     * a station, leaving a shuttle) re-enters the Overworld straight below where they fell, burning
+     * through the atmosphere like a Return Pod ride instead of dying in the void.
+     */
+    public static void fallOutOfOrbit(ServerPlayer player) {
+        if (!player.level().dimension().equals(SpaceRules.ORBIT) || player.isPassenger() || player.isSpectator()) return;
+        if (player.getY() > player.level().getMinY() + FALL_OUT_MARGIN) return;
+        ServerLevel target = player.level().getServer().overworld();
+        int x = player.getBlockX(), z = player.getBlockZ();
+        target.getChunk(x >> 4, z >> 4);
+        int ground = target.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        double y = Math.min(ground + 90, target.getMaxY() - 4);
+        player.teleport(new TeleportTransition(target, new Vec3(player.getX(), y, player.getZ()), Vec3.ZERO,
+                player.getYRot(), 35f, TeleportTransition.DO_NOTHING));
+        startReentry(player);
+    }
+
+    /** How far above the orbit dimension's floor a falling player is sent back down (well before the void). */
+    static final int FALL_OUT_MARGIN = 8;
+
     static void startReentry(ServerPlayer player) {
         player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20 * 120, 0, false, false, true));
         player.resetFallDistance();
