@@ -44,7 +44,7 @@ public final class MultiblockPip extends PictureInPictureRenderer<MultiblockPip.
     /** The model part of the transform (applied after the GUI's translate + scale(s, s, -s)). */
     static void orient(Matrix4f m, GuideMultiblocks.Layout layout, float yaw, float pitch) {
         m.rotateZ((float) Math.PI);
-        m.rotateX((float) Math.toRadians(pitch));
+        m.rotateX((float) Math.toRadians(-pitch));
         m.rotateY((float) Math.toRadians(yaw));
         m.translate(-layout.width / 2f, -layout.height / 2f, -layout.depth / 2f);
     }

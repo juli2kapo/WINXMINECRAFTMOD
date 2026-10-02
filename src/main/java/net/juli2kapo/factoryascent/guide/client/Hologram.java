@@ -208,7 +208,7 @@ public final class Hologram {
     static void hud(GuiGraphicsExtractor g, net.minecraft.client.DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         GuideMultiblocks.Layout l = layout;
-        if (l == null) return;
+        if (l == null || mc.gui.hud.isHidden()) return;
         Component line = Component.translatable("guide.factoryascent.holo.hud", Component.translatable(l.nameKey),
                 layer + 1, l.height, missing);
         Component keys = Component.translatable("guide.factoryascent.holo.keys",

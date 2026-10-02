@@ -1245,6 +1245,9 @@ def main():
         feature.generate(ctx)
         extra_pickaxe += list(getattr(feature, "PICKAXE_BLOCKS", []))
         extra_axe += list(getattr(feature, "AXE_BLOCKS", []))
+    for feature in features:  # second pass: a feature may adjust what the others wrote (lang only)
+        if hasattr(feature, "finalize"):
+            feature.finalize(ctx)
     extra_en.update(ctx.en)
     extra_es.update(ctx.es)
     lang(extra_en, extra_es, ADV)

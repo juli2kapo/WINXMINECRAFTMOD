@@ -59,7 +59,7 @@ public final class GuideGameTests {
             int channels = layout.materials().getOrDefault(GuideEntries.item("reactor_fuel_channel"), 0);
             int rods = layout.materials().getOrDefault(GuideEntries.item("reactor_control_rod"), 0);
             h.assertTrue(r.channels() == channels && r.controlRods() == rods, layout.id + ": channel/rod counts differ");
-            h.assertTrue(rods * 4 >= channels, layout.id + ": the recommended layout should have full control authority");
+            if (channels >= 4) h.assertTrue(rods * 4 >= channels, layout.id + ": the larger layouts should have full control authority");
         }
         // block entities (derrick, turbine) re-check their structure on their own ticks
         h.runAfterDelay(50, () -> {

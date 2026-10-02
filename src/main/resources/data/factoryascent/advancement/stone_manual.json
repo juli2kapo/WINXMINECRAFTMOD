@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "got": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:factory_manual"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:factory_manual"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.stone_manual.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.stone_manual.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "got"
+    ]
+  ],
+  "parent": "factoryascent:root"
+}

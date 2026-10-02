@@ -85,7 +85,7 @@ public final class GuideClient {
         GuideBookItem.hooks = new GuideBookItem.ClientHooks() {
             @Override
             public boolean useOn(UseOnContext context) {
-                if (!Hologram.active()) return false;
+                if (!Hologram.active() || context.getPlayer() == null || !context.getPlayer().isShiftKeyDown()) return false;
                 Hologram.moveTo(context.getClickedPos().relative(context.getClickedFace()));
                 return true;
             }

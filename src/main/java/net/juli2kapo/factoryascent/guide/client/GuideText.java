@@ -126,7 +126,7 @@ public final class GuideText {
                     } else {
                         Item item = GuideEntries.item(target);
                         link = item == Items.AIR ? null : new Link(item, null);
-                        if (label == null) label = item == Items.AIR ? target : item.getName().getString();
+                        if (label == null) label = item == Items.AIR ? target : new net.minecraft.world.item.ItemStack(item).getHoverName().getString();
                     }
                     Style ls = (bold ? base.withBold(true) : base).withUnderlined(link != null);
                     out.add(new Token(label, ls, link, link != null ? linkColor : color));

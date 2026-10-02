@@ -295,8 +295,9 @@ public class GuideScreen extends Screen {
 
     private void openItem(Item item) {
         Entry e = GuideEntries.forItem(item);
+        // its entry, unless that is the page we are on: then the item's own page (description, recipes, uses)
         if (e != null && unlocked(e) && !e.id().equals(page.entry)) go(new Page(Kind.ENTRY, e.chapter(), e.id(), null));
-        else if (e == null || !e.id().equals(page.entry)) go(new Page(Kind.ITEM, null, null, item));
+        else go(new Page(Kind.ITEM, null, null, item));
     }
 
     private void jei(ItemStack stack, boolean uses) {
@@ -383,7 +384,7 @@ public class GuideScreen extends Screen {
             if (hover) g.fill(cx, cy, cx + colW - 2, cy + rowH, 0x30000000);
             g.fill(cx, cy + 2, cx + 2, cy + rowH - 2, c.color);
             g.item(new ItemStack(GuideEntries.item(c.icon)), cx + 4, cy + (rowH - 16) / 2);
-            g.text(font, FactoryGui.fit(font, Component.translatable(c.key()), colW - 26), cx + 22, cy + (rowH - 8) / 2, INK, false);
+            g.text(font, FactoryGui.fit(font, Component.translatable(c.key() + ".short"), colW - 26), cx + 22, cy + (rowH - 8) / 2, INK, false);
             hits.add(new Hit(cx, cy, colW - 2, rowH, () -> go(new Page(Kind.CHAPTER, c, null, null)), null, null, null));
         }
     }
@@ -406,7 +407,7 @@ public class GuideScreen extends Screen {
         for (Item item : BuiltInRegistries.ITEM) {
             Identifier id = BuiltInRegistries.ITEM.getKey(item);
             if (!id.getNamespace().equals(FactoryAscent.MOD_ID)) continue;
-            Component name = item.getName();
+            Component name = new ItemStack(item).getHoverName();
             if (!name.getString().toLowerCase(Locale.ROOT).contains(q)) continue;
             labels.add(name);
             icons.add(new ItemStack(item));
@@ -517,7 +518,8 @@ public class GuideScreen extends Screen {
         int r = rx();
         if (!layouts.isEmpty()) {
             int tw = (pw() - 4) / 3;
-            button(g, mx, my, r, y - 2, tw, 12, Component.translatable("guide.factoryascent.tab.structure"), tab == Tab.STRUCTURE, () -> tab = Tab.STRUCTURE, null);
+            button(g, mx, my, r, y - 2, tw, 12, Component.translatable("guide.factoryascent.tab.structure"), tab == Tab.STRUCTURE, () -> tab = Tab.STRUCTURE,
+                    List.of(Component.translatable("guide.factoryascent.viewer_hint")));
             button(g, mx, my, r + tw + 2, y - 2, tw, 12, Component.translatable("guide.factoryascent.tab.materials"), tab == Tab.MATERIALS, () -> tab = Tab.MATERIALS, null);
             button(g, mx, my, r + 2 * tw + 4, y - 2, tw, 12, Component.translatable("guide.factoryascent.tab.recipes"), tab == Tab.RECIPES, () -> tab = Tab.RECIPES, null);
             int ty = y + 13;
@@ -571,7 +573,7 @@ public class GuideScreen extends Screen {
         Component layerText = layer < 0 ? Component.translatable("guide.factoryascent.all_layers", l.height)
                 : Component.translatable("guide.factoryascent.layer", layer + 1, l.height);
         g.text(font, layerText, vx + 4, vy + 4, 0xFFE4E8EE, true);
-        g.text(font, Component.translatable("guide.factoryascent.size", l.width, l.height, l.depth), vx + 4, vy + vh - 12, 0xFF9AA4B0, true);
+        g.text(font, Component.translatable("guide.factoryascent.size", l.width, l.depth, l.height), vx + 4, vy + vh - 12, 0xFF9AA4B0, true);
         if (hover != null) {
             BlockState s = l.at(hover[0], hover[1], hover[2]);
             if (s != null) {
@@ -598,10 +600,6 @@ public class GuideScreen extends Screen {
         int pwid = x + w - cx;
         button(g, mx, my, cx, cy, pwid, 13, project, false, () -> project(l),
                 List.of(Component.translatable("guide.factoryascent.project_tip")));
-        // drag & zoom hint
-        if (FactoryGui.inside(mx, my, vx, vy, vw, vh) && hover == null) {
-            hits.add(new Hit(vx, vy, vw, vh, null, null, List.of(Component.translatable("guide.factoryascent.viewer_hint").withStyle(ChatFormatting.GRAY)), null));
-        }
     }
 
     /** The block under the mouse in the viewer: {x, y, z} or null (ray cast through the inverse view). */
