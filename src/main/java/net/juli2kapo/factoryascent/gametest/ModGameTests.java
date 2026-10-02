@@ -190,7 +190,21 @@ public final class ModGameTests {
             new Test("phone_link_and_unlink", 40, net.juli2kapo.factoryascent.phone.PhoneGameTests::linkAndUnlink),
             new Test("phone_alerts_when_watched_machine_stops", 400, net.juli2kapo.factoryascent.phone.PhoneGameTests::alertsWhenWatchedMachineStops),
             new Test("phone_team_chat_delivery", 60, net.juli2kapo.factoryascent.phone.PhoneGameTests::teamChatDelivery),
-            new Test("phone_battery_drain_and_charge", 200, net.juli2kapo.factoryascent.phone.PhoneGameTests::batteryDrainAndCharge)
+            new Test("phone_battery_drain_and_charge", 200, net.juli2kapo.factoryascent.phone.PhoneGameTests::batteryDrainAndCharge),
+            new Test("guide_entries_resolve", 20, net.juli2kapo.factoryascent.guide.GuideGameTests::entriesResolve),
+            new Test("guide_builds_coke_oven_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("coke_oven", 0)),
+            new Test("guide_builds_blast_furnace_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("blast_furnace", 0)),
+            new Test("guide_builds_fission_reactor_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("fission_reactor", 0)),
+            new Test("guide_builds_fission_reactor_1", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("fission_reactor", 1)),
+            new Test("guide_builds_fission_reactor_2", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("fission_reactor", 2)),
+            new Test("guide_builds_tokamak_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("tokamak", 0)),
+            new Test("guide_builds_oil_derrick_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("oil_derrick", 0)),
+            new Test("guide_builds_refinery_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("refinery", 0)),
+            new Test("guide_builds_launch_pad_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("launch_pad", 0)),
+            new Test("guide_builds_mass_driver_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("mass_driver", 0)),
+            new Test("guide_builds_dyson_receiver_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("dyson_receiver", 0)),
+            new Test("guide_builds_wind_turbine_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("wind_turbine", 0)),
+            new Test("guide_builds_ender_anchor_0", 120, net.juli2kapo.factoryascent.guide.GuideGameTests.builds("ender_anchor", 0))
     );
 
     private ModGameTests() {}
