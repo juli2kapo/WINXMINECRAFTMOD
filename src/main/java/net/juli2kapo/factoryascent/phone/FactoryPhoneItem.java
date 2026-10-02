@@ -97,9 +97,9 @@ public class FactoryPhoneItem extends PoweredItem {
         if (kind == PhoneMemory.POWER) {
             // one link per network: a second cable of an already linked network adds nothing
             ServerLevel level = server.getLevel(link.pos().dimension());
-            var net = level == null ? null : net.juli2kapo.factoryascent.energy.EnergyNetworkManager.get(level).networkAt(link.pos().pos());
+            var network = level == null ? null : net.juli2kapo.factoryascent.energy.EnergyNetworkManager.get(level).networkAt(link.pos().pos());
             for (PhoneMemory.Link l : memory.of(PhoneMemory.POWER)) {
-                if (net != null && l.pos().dimension().equals(link.pos().dimension()) && net.cables().contains(l.pos().pos())) {
+                if (network != null && l.pos().dimension().equals(link.pos().dimension()) && network.cables().contains(l.pos().pos())) {
                     return Component.translatable("message.factoryascent.phone.network_already").withStyle(ChatFormatting.YELLOW);
                 }
             }

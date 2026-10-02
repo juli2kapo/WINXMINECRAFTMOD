@@ -48,6 +48,25 @@ public final class DysonApp implements PhoneApp {
         int[] milestones = new int[DysonService.milestoneCount()];
         for (int i = 0; i < milestones.length; i++) milestones[i] = DysonService.milestonePercent(i);
         tag.putIntArray("milestones", milestones);
+        // The team's Dyson Receivers linked to this phone (Link Card + Phone Dock, or sneak-use).
+        int linked = 0, formed = 0, active = 0;
+        long out = 0;
+        for (var link : ctx.memory().of(net.juli2kapo.factoryascent.phone.PhoneMemory.MACHINE)) {
+            var level = ctx.server().getLevel(link.pos().dimension());
+            if (level == null || !level.isLoaded(link.pos().pos())) {
+                if (link.block().contains("dyson_receiver")) linked++;
+                continue;
+            }
+            if (!(level.getBlockEntity(link.pos().pos()) instanceof net.juli2kapo.factoryascent.dyson.DysonReceiverBlockEntity r)) continue;
+            linked++;
+            if (r.isFormed()) formed++;
+            if (r.active()) active++;
+            out += r.lastOut();
+        }
+        tag.putInt("receivers", linked);
+        tag.putInt("receiversFormed", formed);
+        tag.putInt("receiversActive", active);
+        tag.putLong("receiversOut", out);
         return tag;
     }
 }

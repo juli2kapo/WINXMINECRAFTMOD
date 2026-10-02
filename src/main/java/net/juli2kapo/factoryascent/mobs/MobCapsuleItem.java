@@ -70,6 +70,8 @@ public class MobCapsuleItem extends Item {
     public static final int CAPTURE_TICKS = 60;
     public static final double RANGE = 6.0;
     public static final int EMPTY_STACK = 16;
+    /** A Wither can be captured at or below this share of its health. */
+    public static final float WITHER_HEALTH_FRACTION = 0.10f;
     /** Ticks the player may aim off the target before the capture fails (keeps small mobs fair). */
     private static final int AIM_GRACE = 4;
 
@@ -131,8 +133,15 @@ public class MobCapsuleItem extends Item {
     /** Why this entity can't be captured, or empty if it can. */
     public static Optional<Component> refusal(Entity entity) {
         if (!(entity instanceof Mob mob) || !mob.isAlive()) return Optional.of(msg("refused.not_mob"));
-        if (entity.is(BLACKLIST) || entity.is(Tags.EntityTypes.BOSSES) || entity.is(Tags.EntityTypes.CAPTURING_NOT_SUPPORTED))
+        if (entity instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
+            // The one boss a capsule can hold: once it is beaten down below 10% health (and done with its
+            // spawning invulnerability). The Ender Dragon and the rest stay out.
+            if (wither.getInvulnerableTicks() > 0 || wither.getHealth() > wither.getMaxHealth() * WITHER_HEALTH_FRACTION) {
+                return Optional.of(msg("refused.wither_health", Math.round(WITHER_HEALTH_FRACTION * 100)));
+            }
+        } else if (entity.is(BLACKLIST) || entity.is(Tags.EntityTypes.BOSSES) || entity.is(Tags.EntityTypes.CAPTURING_NOT_SUPPORTED)) {
             return Optional.of(msg("refused.blacklist", entity.getName()));
+        }
         if (entity.isPassenger() || entity.isVehicle()) return Optional.of(msg("refused.riding", entity.getName()));
         if (entity instanceof Leashable l && l.isLeashed()) return Optional.of(msg("refused.leashed", entity.getName()));
         return Optional.empty();

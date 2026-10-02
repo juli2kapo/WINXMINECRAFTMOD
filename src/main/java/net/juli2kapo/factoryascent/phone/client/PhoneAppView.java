@@ -61,6 +61,16 @@ public abstract class PhoneAppView {
         return false;
     }
 
+    /** The mouse moved with a button held after a click in the app area (swipes); true if handled. */
+    public boolean drag(double mx, double my, int button) {
+        return false;
+    }
+
+    /** The button of a click in the app area was let go (ends a swipe); true if handled. */
+    public boolean release(double mx, double my, int button) {
+        return false;
+    }
+
     public boolean key(KeyEvent event) {
         return false;
     }

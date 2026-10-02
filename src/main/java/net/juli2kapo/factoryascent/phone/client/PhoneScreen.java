@@ -492,6 +492,21 @@ public class PhoneScreen extends Screen {
     }
 
     @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (view != null && view.loaded && view.drag(localX(event.x()) - APP_X, localY(event.y()) - APP_Y, event.button())) return true;
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (view != null && view.loaded && view.release(localX(event.x()) - APP_X, localY(event.y()) - APP_Y, event.button())) {
+            click(1.8f);
+            return true;
+        }
+        return super.mouseReleased(event);
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         double x = localX(mouseX), y = localY(mouseY);
         if (view != null && view.loaded && scrollY != 0) {

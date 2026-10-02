@@ -44,9 +44,10 @@ public final class DysonView extends PhoneAppView {
             g.fill(px - 2, py - 2, px + 3, py + 3, i < lit ? 0xFF3A5AD8 : 0xFF1C2232);
             if (i < lit) g.fill(px - 1, py - 1, px + 1, py, 0xFF9AB0FF);
         }
+        receivers(g);
         if (collectors <= 0) {
             PhoneUi.centered(g, Component.translatable("gui.factoryascent.phone.dyson.none"), W / 2, 86, W - 8, PhoneUi.TEXT);
-            PhoneUi.wrapped(g, Component.translatable("gui.factoryascent.phone.dyson.how"), 8, 100, W - 16, 6, PhoneUi.MUTED);
+            PhoneUi.wrapped(g, Component.translatable("gui.factoryascent.phone.dyson.how"), 8, 100, W - 16, 5, PhoneUi.MUTED);
             return;
         }
         String pct = String.format(java.util.Locale.ROOT, "%.1f%%", completion * 100);
@@ -70,5 +71,21 @@ public final class DysonView extends PhoneAppView {
                 6, 128, W - 10, PhoneUi.MUTED);
         PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.dyson.received", PhoneUi.compact(data.getLongOr("received", 0))),
                 6, 140, W - 10, PhoneUi.MUTED);
+    }
+
+    /** The linked Dyson Receivers, along the bottom. */
+    private void receivers(GuiGraphicsExtractor g) {
+        int n = data.getIntOr("receivers", 0);
+        g.fill(6, 151, W - 6, 152, PhoneUi.LINE);
+        if (n <= 0) {
+            PhoneUi.wrapped(g, Component.translatable("gui.factoryascent.phone.dyson.no_receivers"), 6, 155, W - 12, 2, PhoneUi.FAINT);
+            return;
+        }
+        int active = data.getIntOr("receiversActive", 0), formed = data.getIntOr("receiversFormed", 0);
+        int color = active == n ? PhoneUi.GOOD : formed < n ? PhoneUi.BAD : PhoneUi.WARN;
+        PhoneUi.dot(g, 6, 157, color);
+        PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.dyson.receivers", active, n), 13, 155, W - 18, color);
+        PhoneUi.text(g, Component.translatable("gui.factoryascent.phone.dyson.receivers_out", PhoneUi.compact(data.getLongOr("receiversOut", 0))),
+                13, 164, W - 18, PhoneUi.MUTED);
     }
 }
