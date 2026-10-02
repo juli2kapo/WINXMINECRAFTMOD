@@ -170,7 +170,7 @@ def _terminal_model(on):
         _el((0, 0, 0), (16, 7, 16), {"north": "cab", "south": "side", "west": "side", "east": "side", "up": "shell", "down": "shell"}),
         # slanted keyboard deck
         _el((1, 6, 1), (15, 8, 8), {"up": "keys", "north": "shell", "west": "shell", "east": "shell", "south": "shell"},
-            rotation={"angle": 22.5, "axis": "x", "origin": [8, 7, 8]}),
+            rotation={"angle": -22.5, "axis": "x", "origin": [8, 7, 8]}),
         # monitor
         _el((1, 7, 9), (15, 16, 15), {"north": "screen", "south": "shell", "west": "shell", "east": "shell", "up": "shell"}),
         _el((5, 9, 15), (11, 14, 16), _all("shell")),                                  # monitor back hump
@@ -459,20 +459,21 @@ def _ctl_base():
 
 
 def _ctl_core(on):
-    """The core window: steel ring around a teal crystal that glows while the network is online."""
+    """The core lens: steel bezel, dark ring and a teal crystal that glows while the network is online."""
     im = _img()
     _rect(im, 0, 0, 15, 15, CASE)
     for x in range(16):
         for y in range(16):
-            d = max(abs(x - 7.5), abs(y - 7.5))
-            if d < 6.5:
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 6.6:
                 _put(im, x, y, OUTLINE)
-            r = abs(x - 7.5) + abs(y - 7.5)
-            if r <= 5.5:
-                c = (TEAL_DARK if not on else TEAL) if r > 3 else ((40, 60, 66) if not on else TEAL_LIGHT)
-                if r <= 1.5 and on:
-                    c = (230, 255, 255)
-                _put(im, x, y, c)
+            if d < 5.2:
+                _put(im, x, y, TEAL if on else TEAL_DARK)
+            if d < 3.4:
+                _put(im, x, y, TEAL_LIGHT if on else (52, 120, 130))
+            if d < 1.6:
+                _put(im, x, y, (235, 255, 255) if on else (80, 150, 158))
+    _put(im, 5, 5, (255, 255, 255) if on else (120, 170, 176))   # glint
     _rect(im, 0, 0, 15, 0, CASE_LIGHT)
     _rect(im, 0, 15, 15, 15, CASE_DARK)
     return im
@@ -591,32 +592,32 @@ def _term_screen(on):
 # ---- interface: a port with an amber collar, conveyor floor and in/out arrows
 
 def _ifc_mouth(on):
+    """Back of the port: an import arrow (green, pointing in) over an export arrow (amber, pointing out)."""
     im = _img()
     _rect(im, 0, 0, 15, 15, CASE)
     _rect(im, 2, 2, 13, 13, (20, 22, 26))
     g = GREEN if on else GREEN_DARK
     a = AMBER if on else AMBER_DARK
-    # arrows: "<" in green (items in) on the left, ">" in amber (items out) on the right
+    # top: green arrow pointing right
+    _rect(im, 4, 6, 9, 6, g)
     for i in range(3):
-        _put(im, 6 - i, 6 + i, g); _put(im, 6 - i, 8 - i + 2 * i, g)
-        _put(im, 9 + i, 6 + i, a); _put(im, 9 + i, 8 - i + 2 * i, a)
+        _rect(im, 9 + i, 4 + i, 9 + i, 8 - i, g)
+    # bottom: amber arrow pointing left
+    _rect(im, 6, 10, 11, 10, a)
     for i in range(3):
-        _put(im, 4 + i, 7, g)
-        _put(im, 4 + i, 8, g)
-    for i in range(3):
-        _put(im, 9 + i, 7, a)
-        _put(im, 9 + i, 8, a)
+        _rect(im, 6 - i, 8 + i, 6 - i, 12 - i, a)
     _rect(im, 0, 0, 15, 0, CASE_LIGHT)
     _rect(im, 0, 15, 15, 15, CASE_DARK)
     return im
 
 
 def _ifc_collar():
-    im = _plate("ifc_collar", (196, 140, 40), (236, 184, 80), (130, 88, 24), 4)
-    for x in range(16):                      # hazard stripes
+    """Amber port collar with dark chevron stripes and a bright lip."""
+    im = _plate("ifc_collar", (204, 146, 44), (244, 196, 96), (132, 90, 26), 3)
+    for x in range(16):
         for y in range(16):
-            if (x + y) % 6 < 2:
-                _put(im, x, y, (44, 40, 36))
+            if (x + y) % 8 in (0, 1):
+                _put(im, x, y, (150, 102, 30))
     return im
 
 

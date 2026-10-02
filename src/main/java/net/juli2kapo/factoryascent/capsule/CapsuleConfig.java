@@ -10,6 +10,7 @@ public final class CapsuleConfig {
     public static final ModConfigSpec.DoubleValue HEAL_PER_SECOND;
     public static final ModConfigSpec.IntValue HEAL_FE_PER_HEALTH;
     public static final ModConfigSpec.IntValue RELEASER_MAX_DISTANCE;
+    public static final ModConfigSpec.IntValue RELEASER_FE_PER_MOB;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -26,6 +27,8 @@ public final class CapsuleConfig {
         b.push("mob_releaser");
         RELEASER_MAX_DISTANCE = b.comment("Mob Releaser: farthest the release point can be set in front of it, in blocks.")
                 .defineInRange("maxDistance", 16, 1, 64);
+        RELEASER_FE_PER_MOB = b.comment("Mob Releaser: FE taken from its own buffer for each mob it lets out (capsules in it need no charge).")
+                .defineInRange("energyPerMob", 10_000, 0, 1_000_000);
         b.pop();
         SPEC = b.build();
     }

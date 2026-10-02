@@ -214,6 +214,11 @@ def lang(L):
     L(f"{G}.mob_releaser.farther", "Release point one block farther", "Punto de salida un bloque más lejos")
     L(f"{G}.mob_releaser.lower", "Release point one block lower", "Punto de salida un bloque más abajo")
     L(f"{G}.mob_releaser.higher", "Release point one block higher", "Punto de salida un bloque más arriba")
+    L(f"{G}.mob_releaser.no_power", "Needs %s FE per mob", "Necesita %s FE por criatura")
+    L(f"{G}.mob_releaser.cost", "%s FE per mob released (capsules need no charge here)",
+      "%s FE por criatura liberada (aquí las cápsulas no necesitan carga)")
+    L(f"{T}.mob_releaser.energy", "Runs on FE: each mob it releases takes FE from its own buffer",
+      "Funciona con FE: cada criatura que libera gasta FE de su propia reserva")
     # ---- Mob Capsule additions
     L(f"{M}.mob_capsule.refused.wither_health", "The Wither is too strong: weaken it below %s%% health first",
       "El Wither es demasiado fuerte: bájale la vida por debajo del %s%% primero")

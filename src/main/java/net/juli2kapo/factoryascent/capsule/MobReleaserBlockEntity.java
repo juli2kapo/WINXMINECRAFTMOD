@@ -28,17 +28,23 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
  * every captured mob out at once, around a release point a set distance in front of it and a set
  * height above it. Each mob comes out exactly as it was stored: size, health, name, boss bar and
  * all. The emptied capsules stay in their slots (a hopper or pipe can take them out).
+ *
+ * <p>It releases with its own FE ({@link #CAPACITY} buffer, {@link CapsuleConfig#RELEASER_FE_PER_MOB}
+ * per mob), so the capsules in it don't need any charge of their own.
  */
 public class MobReleaserBlockEntity extends DeviceBlockEntity {
     public static final int SLOTS = 9, MAX_HEIGHT = 16;
+    public static final int CAPACITY = 100_000, MAX_INSERT = 2_000;
 
     private int distance = 3;
     private int height = 0;
     private boolean powered;
     private int lastReleased = -1;
+    /** The last release stopped for lack of FE. */
+    private boolean noPower;
 
     public MobReleaserBlockEntity(BlockPos pos, BlockState state) {
-        super(CapsuleContent.MOB_RELEASER_BE.get(), pos, state, SLOTS, 0, 0);
+        super(CapsuleContent.MOB_RELEASER_BE.get(), pos, state, SLOTS, CAPACITY, MAX_INSERT);
     }
 
     @Override
@@ -67,6 +73,19 @@ public class MobReleaserBlockEntity extends DeviceBlockEntity {
     public void setHeight(int h) {
         height = Mth.clamp(h, 0, MAX_HEIGHT);
         setChanged();
+    }
+
+    public static int costPerMob() {
+        return CapsuleConfig.RELEASER_FE_PER_MOB.get();
+    }
+
+    /** How many mobs a buffer of {@code energy} FE can let out at {@code cost} each (no limit when free). */
+    public static int affordable(int energy, int cost) {
+        return cost <= 0 ? Integer.MAX_VALUE : energy / cost;
+    }
+
+    public boolean noPower() {
+        return noPower;
     }
 
     public int lastReleased() {
@@ -121,10 +140,15 @@ public class MobReleaserBlockEntity extends DeviceBlockEntity {
         Direction facing = getBlockState().getValue(DeviceBlock.FACING);
         float yaw = facing.toYRot();
         int released = 0, next = 0;
+        boolean lowPower = false;
         for (int i = 0; i < SLOTS; i++) {
             ItemStack capsule = inventory.stack(i);
             CapturedMob mob = MobCapsuleItem.captured(capsule);
             if (mob == null) continue;
+            if (affordable(energyStored(), costPerMob()) <= 0) {
+                lowPower = true;
+                break; // the rest wait for power
+            }
             Entity out = null;
             while (out == null && next < spots.size()) {
                 BlockPos at = spots.get(next++);
@@ -133,6 +157,7 @@ public class MobReleaserBlockEntity extends DeviceBlockEntity {
             }
             if (out == null) break; // no room left anywhere near the point
             MobCapsuleItem.empty(capsule);
+            pay(costPerMob());
             released++;
             Vec3 c = out.position().add(0, out.getBbHeight() / 2, 0);
             level.sendParticles(ParticleTypes.PORTAL, c.x, c.y, c.z, 40, 0.3, 0.4, 0.3, 0.5);
@@ -147,6 +172,7 @@ public class MobReleaserBlockEntity extends DeviceBlockEntity {
             level.playSound(null, worldPosition, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 1f, 1.2f);
         }
         lastReleased = released;
+        noPower = lowPower;
         setChanged();
         return released;
     }

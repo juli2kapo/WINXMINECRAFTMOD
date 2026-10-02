@@ -11,7 +11,8 @@ import net.minecraft.world.inventory.SimpleContainerData;
 public class MobReleaserMenu extends DeviceMenu<MobReleaserBlockEntity> {
     public static final int WIDTH = 176, HEIGHT = 186, INV_Y = 104;
     public static final int GRID_X = 12, GRID_Y = 26;
-    public static final int D_DISTANCE = 0, D_HEIGHT = 1, D_FILLED = 2, D_LAST = 3, D_MAX_DISTANCE = 4, D_COUNT = 5;
+    public static final int D_DISTANCE = 0, D_HEIGHT = 1, D_FILLED = 2, D_LAST = 3, D_MAX_DISTANCE = 4,
+            D_ENERGY_LO = 5, D_ENERGY_HI = 6, D_CAP_LO = 7, D_CAP_HI = 8, D_COST = 9, D_NO_POWER = 10, D_COUNT = 11;
     public static final int B_RELEASE = 0, B_FARTHER = 1, B_NEARER = 2, B_UP = 3, B_DOWN = 4;
 
     MobReleaserMenu(int id, Inventory inventory, MobReleaserBlockEntity be) {
@@ -43,6 +44,12 @@ public class MobReleaserMenu extends DeviceMenu<MobReleaserBlockEntity> {
                     case D_FILLED -> be.filled();
                     case D_LAST -> be.lastReleased();
                     case D_MAX_DISTANCE -> CapsuleConfig.RELEASER_MAX_DISTANCE.get();
+                    case D_ENERGY_LO -> be.energyStored() & 0xFFFF;
+                    case D_ENERGY_HI -> be.energyStored() >>> 16;
+                    case D_CAP_LO -> be.energyCapacity() & 0xFFFF;
+                    case D_CAP_HI -> be.energyCapacity() >>> 16;
+                    case D_COST -> Math.min(32_000, MobReleaserBlockEntity.costPerMob() / 10);
+                    case D_NO_POWER -> be.noPower() ? 1 : 0;
                     default -> 0;
                 };
             }
@@ -55,6 +62,19 @@ public class MobReleaserMenu extends DeviceMenu<MobReleaserBlockEntity> {
                 return D_COUNT;
             }
         };
+    }
+
+    public int energy() {
+        return (get(D_ENERGY_LO) & 0xFFFF) | (get(D_ENERGY_HI) << 16);
+    }
+
+    public int capacity() {
+        return (get(D_CAP_LO) & 0xFFFF) | (get(D_CAP_HI) << 16);
+    }
+
+    /** FE per mob (sent in tens of FE to fit a short). */
+    public int costPerMob() {
+        return get(D_COST) * 10;
     }
 
     @Override

@@ -20,6 +20,13 @@ public class MobReleaserBlock extends DeviceBlock {
     }
 
     @Override
+    public void describe(java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip) {
+        super.describe(tooltip);
+        tooltip.accept(net.minecraft.network.chat.Component.translatable("tooltip.factoryascent.mob_releaser.energy")
+                .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+    }
+
+    @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new MobReleaserBlockEntity(pos, state);
     }

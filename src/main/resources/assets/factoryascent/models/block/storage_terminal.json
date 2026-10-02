@@ -75,7 +75,7 @@
         }
       },
       "rotation": {
-        "angle": 22.5,
+        "angle": -22.5,
         "axis": "x",
         "origin": [
           8,

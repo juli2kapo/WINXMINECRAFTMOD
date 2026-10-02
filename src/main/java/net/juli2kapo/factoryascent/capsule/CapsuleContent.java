@@ -77,6 +77,7 @@ public final class CapsuleContent {
             e.registerBlockEntity(Capabilities.Item.BLOCK, SIZE_CHAMBER_BE.get(), (be, side) -> be.inventory);
             e.registerBlockEntity(Capabilities.Energy.BLOCK, SIZE_CHAMBER_BE.get(), (be, side) -> be.energy());
             e.registerBlockEntity(Capabilities.Item.BLOCK, MOB_RELEASER_BE.get(), (be, side) -> be.inventory);
+            e.registerBlockEntity(Capabilities.Energy.BLOCK, MOB_RELEASER_BE.get(), (be, side) -> be.energy());
         });
         modBus.addListener((BuildCreativeModeTabContentsEvent e) -> {
             if (e.getTabKey().equals(UTILITY_TAB)) creativeItems().forEach(i -> e.accept(i.get()));
