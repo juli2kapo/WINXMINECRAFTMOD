@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The seat inside a crew pod (a Return Pod floating in orbit): an invisible entity the astronaut
  * rides. Riding it is being inside the capsule, with cabin air ({@link SealedCabin}); sneak to
- * climb out onto the pod, sneak-use the pod to climb back in. Not saved: it lives while someone sits in it.
+ * climb out onto the pod, use the pod to climb back in. Not saved: it lives while someone sits in it.
  */
 public class PodSeatEntity extends Entity implements SealedCabin {
     private static final EntityDataAccessor<BlockPos> POD = SynchedEntityData.defineId(PodSeatEntity.class, EntityDataSerializers.BLOCK_POS);

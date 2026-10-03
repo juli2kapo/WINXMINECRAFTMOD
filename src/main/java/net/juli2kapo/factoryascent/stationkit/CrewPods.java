@@ -15,8 +15,8 @@ import net.minecraft.world.level.Level;
 /**
  * The crew pod: a Crew Capsule (or an Ascent Module) that reaches orbit where nobody has built a
  * station stays up there as a small floating pod (a {@link ReturnPodBlock}) with the astronaut
- * sitting inside it ({@link PodSeatEntity}, cabin air). Sneak to climb out and stand on it,
- * sneak-use it to climb back in, use it to go home. There is no free floor: build from the pod,
+ * sitting inside it ({@link PodSeatEntity}, cabin air). Sneak to climb out and stand on it, use
+ * it to climb back in, and use it from inside to go home. There is no free floor: build from the pod,
  * or launch a Station Kit.
  */
 public final class CrewPods {
@@ -54,7 +54,12 @@ public final class CrewPods {
         return true;
     }
 
-    /** Sneak-use on a pod in orbit: climb in. */
+    /** Whether the player sits in the pod at {@code pod}. */
+    public static boolean seatedIn(ServerPlayer player, BlockPos pod) {
+        return player.getVehicle() instanceof PodSeatEntity seat && seat.pod().equals(pod);
+    }
+
+    /** Using a pod in orbit from outside: climb in. */
     public static void climbIn(ServerPlayer player, BlockPos pod) {
         if (!seat(player.level(), player, pod)) {
             player.sendOverlayMessage(Component.translatable("message.factoryascent.crew_full").withStyle(ChatFormatting.RED));

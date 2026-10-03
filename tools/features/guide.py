@@ -764,14 +764,15 @@ entry("rockets", "Going to Orbit", (
     "Astronaut Suit**: there is no air up there. Use a [[return_pod]] in orbit to come back down over your launch site.\n"
     "# Arriving\nYou come down at your team's station above the pad, if there is one. If nothing is built up there, "
     "your capsule stays in orbit as a small floating **pod** with you inside (it has air): sneak to climb out and stand "
-    "on it, sneak-use it to climb back in, use it to go home. There is no free platform: build out from the pod, or "
+    "on it, use it to climb back in, and use it from inside to go home (every Return Pod works like this in orbit). There is no free platform: build out from the pod, or "
     "launch a [[station_kit]] first (see Space Stations)."),
     "Ir a la órbita", (
     "Monta una [[crew_capsule]] en la [[@launch_pad]], cárgale combustible y súbete desde el controlador. **Ponte el traje "
     "de astronauta completo**: allí no hay aire. Usa una [[return_pod]] en órbita para volver sobre tu sitio de lanzamiento.\n"
     "# Llegada\nLlegas a la estación de tu equipo sobre la plataforma, si la hay. Si allí no hay nada construido, tu "
     "cápsula se queda en órbita como una pequeña **cápsula flotante** contigo dentro (tiene aire): agáchate para salir y "
-    "quedarte de pie encima, úsala agachado para volver a entrar y úsala para volver a casa. No hay plataforma gratis: "
+    "quedarte de pie encima, úsala para volver a entrar y úsala desde dentro para volver a casa (todas las cápsulas de "
+    "retorno funcionan así en órbita). No hay plataforma gratis: "
     "construye desde la cápsula o lanza antes un [[station_kit]] (ver Estaciones espaciales)."))
 entry("suits_oxygen", "Suits and Oxygen", (
     "Wear all four Astronaut Suit pieces to breathe in space; the chest piece holds the air. Fill it in an "

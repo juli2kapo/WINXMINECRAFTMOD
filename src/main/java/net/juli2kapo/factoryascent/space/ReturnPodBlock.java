@@ -24,7 +24,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Return Pod: a one-seat re-entry capsule with a heat shield and a parachute. Use it in orbit
  * to go home (see {@link Orbit#reenter}); it stays where it is, ready for the next trip down.
- * Sneak-use it in orbit to sit inside (its cabin has air): a capsule that reaches orbit with no
+ * In orbit, use it to climb in (its cabin has air), use it again from inside to go down; sneak to
+ * climb out. A capsule that reaches orbit with no
  * station to land on stays up as one of these, the astronaut inside
  * ({@link net.juli2kapo.factoryascent.stationkit.CrewPods}).
  */
@@ -70,11 +71,11 @@ public class ReturnPodBlock extends HorizontalDirectionalBlock implements Descri
             return InteractionResult.SUCCESS;
         }
         if (player instanceof ServerPlayer sp) {
-            if (sp.isSecondaryUseActive()) {
-                net.juli2kapo.factoryascent.stationkit.CrewPods.climbIn(sp, pos); // sit inside: cabin air
-            } else {
-                if (sp.isPassenger()) sp.stopRiding();
+            if (net.juli2kapo.factoryascent.stationkit.CrewPods.seatedIn(sp, pos)) {
+                sp.stopRiding(); // strapped in: down we go
                 Orbit.reenter(sp);
+            } else {
+                net.juli2kapo.factoryascent.stationkit.CrewPods.climbIn(sp, pos); // sit inside first: cabin air
             }
         }
         return InteractionResult.SUCCESS;

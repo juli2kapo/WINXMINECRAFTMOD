@@ -347,8 +347,8 @@ def lang(L):
       "Sin traje no hay aire: sin el traje de astronauta completo no sobrevivirás allá arriba")
     L(f"{T}.return_pod", "Use it in orbit to go back down over your launch site",
       "Úsala en la órbita para volver sobre tu sitio de lanzamiento")
-    L(f"{T}.return_pod_how", "Heat shield and parachute included. Every station deck starts with one",
-      "Con escudo térmico y paracaídas. Toda cubierta de estación empieza con una")
+    L(f"{T}.return_pod_how", "Heat shield and parachute included. Every Station Kit and crew pod brings one",
+      "Con escudo térmico y paracaídas. Cada kit de estación y cápsula tripulada trae una")
     L(f"{T}.oxygen_compressor", "Fills Astronaut Suits with air: one in its slot, or worn by players standing on or next to it",
       "Llena de aire los trajes de astronauta: uno en su ranura, o los que llevan los jugadores encima o al lado")
     L(f"{T}.oxygen_compressor_use", "%s FE per second of air", "%s FE por segundo de aire")

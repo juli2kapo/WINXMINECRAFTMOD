@@ -52,8 +52,8 @@ def generate(ctx):
     L(f"{T}.cargo_pod_how", "Right-click to load it. Launched from a pad, it is unloaded into the Station Core above the pad",
       "Clic derecho para cargarla. Lanzada desde una plataforma, se descarga en el núcleo de estación de encima")
     L(f"{T}.cargo_pod_load", "Loaded: %s / %s stacks", "Carga: %s / %s montones")
-    L(f"{T}.return_pod_cabin", "Sneak-use in orbit to sit inside: its cabin has air",
-      "Úsala agachado en órbita para sentarte dentro: su cabina tiene aire")
+    L(f"{T}.return_pod_cabin", "In orbit: use it to climb in (its cabin has air), use it again from inside to go down",
+      "En órbita: úsala para entrar (su cabina tiene aire) y úsala otra vez desde dentro para bajar")
     L(f"{T}.station_core_cargo", "Sneak-use (empty hand) for the cargo hold, where Cargo Pods are unloaded",
       "Úsalo agachado (mano vacía) para abrir la bodega, donde se descargan las cápsulas de carga")
     L(f"{T}.crew_capsule_arrive", "In orbit you land at your team's station above the pad; with none, the capsule "
@@ -62,17 +62,17 @@ def generate(ctx):
       "(no hay plataforma gratis: lanza un kit de estación)")
     L(f"{G}.station.cargo", "%s: cargo hold", "%s: bodega")
     L(f"{M}.crew_pod_arrived", "In orbit, with no station above your launch site: your capsule floats here as a pod. "
-      "Sneak to climb out, sneak-use the pod to climb back in (it has air), use it to go home. "
+      "Sneak to climb out, use the pod to climb back in (it has air), use it from inside to go home. "
       "Launch a Station Kit from the same pad to build a station here.",
       "En órbita, sin estación sobre tu sitio de lanzamiento: tu cápsula flota aquí. Agáchate para salir, "
-      "úsala agachado para volver a entrar (tiene aire) y úsala para volver a casa. Lanza un kit de estación "
+      "úsala para volver a entrar (tiene aire) y úsala desde dentro para volver a casa. Lanza un kit de estación "
       "desde la misma plataforma para construir aquí una estación.")
-    L(f"{M}.crew_pod_in", "Inside the pod: cabin air. Sneak to climb out.",
-      "Dentro de la cápsula: aire de cabina. Agáchate para salir.")
+    L(f"{M}.crew_pod_in", "Inside the pod: cabin air. Use it again to go home, sneak to climb out.",
+      "Dentro de la cápsula: aire de cabina. Úsala otra vez para volver a casa, agáchate para salir.")
     L(f"{M}.kit_earth_only", "Station Kits and Cargo Pods fly to Earth orbit: launch them from the Overworld",
       "Los kits de estación y las cápsulas de carga van a la órbita terrestre: lánzalos desde el mundo normal")
-    L(f"{M}.kit_occupied", "Something is already built in orbit above this pad (at %s, %s, %s): the kit needs empty space",
-      "Ya hay algo construido en órbita sobre esta plataforma (en %s, %s, %s): el kit necesita espacio vacío")
+    L(f"{M}.kit_occupied", "Orbit above this pad is taken (%s, %s, %s): a kit needs empty space",
+      "La órbita sobre esta plataforma está ocupada (%s, %s, %s): el kit necesita espacio libre")
     L(f"{M}.kit_aborted", "The Station Kit found its spot taken and came back down",
       "El kit de estación encontró su sitio ocupado y volvió a bajar")
     L(f"{M}.kit_deployed", "Station Kit deployed: %s is ready in orbit at %s, %s, %s",
