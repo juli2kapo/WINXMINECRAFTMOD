@@ -22,7 +22,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * The in-world hologram projector (client side only, nothing is placed): ghost blocks show where
  * each block of a multiblock goes, one layer at a time. The current layer pulses, the next one is
- * a faint preview, blocks in the way are tinted red. When a layer is complete it moves on by
+ * a faint preview, blocks in the way are tinted red. Blocks whose facing the structure check needs
+ * (the controllers) only count when they face the right way: turned wrong, they show red with the
+ * right facing ghosted inside and a hint on the HUD; rotating the projection rotates the facings. When a layer is complete it moves on by
  * itself; when the whole structure stands it disappears with a fanfare.
  */
 public final class Hologram {
@@ -31,6 +33,9 @@ public final class Hologram {
     private static Rotation rotation = Rotation.NONE;
     private static int layer;
     private static int missing, wrong;
+    /** The first block of the layer that stands but faces the wrong way (null: none), and where it should face. */
+    private static @Nullable BlockState turnBlock;
+    private static @Nullable Direction turnTo;
     private static @Nullable String dimension;
 
     private Hologram() {}
@@ -93,8 +98,14 @@ public final class Hologram {
         return base.offset(new BlockPos(x - cx, y, z).rotate(rotation));
     }
 
+    /** What the cell wants, turned with the projection (facings rotate too). */
+    private static BlockState expected(GuideMultiblocks.Cell c) {
+        return c.state().rotate(rotation);
+    }
+
+    /** The right block there, and facing the right way where the structure check needs it. */
     private static boolean correct(ClientLevel level, GuideMultiblocks.Cell c) {
-        return level.getBlockState(world(c.x(), c.y(), c.z())).getBlock() == c.state().getBlock();
+        return GuideMultiblocks.matches(expected(c), level.getBlockState(world(c.x(), c.y(), c.z())), c.strict());
     }
 
     /** Counts what's left on the current layer; moves up when it is done (with {@code advance}). */
@@ -106,11 +117,17 @@ public final class Hologram {
         while (true) {
             missing = 0;
             wrong = 0;
+            turnBlock = null;
+            turnTo = null;
             for (GuideMultiblocks.Cell c : l.layer(layer)) {
                 if (correct(level, c)) continue;
                 missing++;
                 BlockState s = level.getBlockState(world(c.x(), c.y(), c.z()));
                 if (!s.isAir() && !s.canBeReplaced()) wrong++;
+                if (turnBlock == null && GuideMultiblocks.wrongFacing(expected(c), s, c.strict())) {
+                    turnBlock = s;
+                    turnTo = GuideMultiblocks.facingOf(expected(c));
+                }
             }
             for (int z = 0; z < l.depth; z++) {
                 for (int x = 0; x < l.width; x++) {
@@ -170,10 +187,19 @@ public final class Hologram {
             for (GuideMultiblocks.Cell c : l.layer(y)) {
                 BlockPos p = world(c.x(), c.y(), c.z());
                 BlockState actual = level.getBlockState(p);
-                if (actual.getBlock() == c.state().getBlock()) continue;
+                BlockState want = expected(c);
+                if (GuideMultiblocks.matches(want, actual, c.strict())) continue;
+                boolean turned = GuideMultiblocks.wrongFacing(want, actual, c.strict());
+                if (actual.getBlock() == want.getBlock() && !turned) continue;
                 boolean blocked = !actual.isAir() && !actual.canBeReplaced();
                 if (blocked && y > layer) continue;
-                BlockState shown = blocked ? actual : c.state().rotate(rotation);
+                if (turned) {
+                    // the right block turned the wrong way: red, with the right facing ghosted inside it
+                    draw(pose, collector, type, p, cam, actual, 0x96FF3030, light, 0.03f);
+                    draw(pose, collector, type, p, cam, want, ((int) (90 + 70 * pulse) << 24) | 0xB8E8FF, light, -0.08f);
+                    continue;
+                }
+                BlockState shown = blocked ? actual : want;
                 int alpha = blocked ? 150 : y == layer ? (int) (90 + 70 * pulse) : y < layer ? 110 : 40;
                 int rgb = blocked ? 0xFF3030 : y == layer ? 0xB8E8FF : 0xFFFFFF;
                 float grow = blocked ? 0.02f : y == layer ? -0.04f : -0.1f;
@@ -214,11 +240,14 @@ public final class Hologram {
         Component keys = Component.translatable("guide.factoryascent.holo.keys",
                 GuideClient.NEXT_LAYER.getTranslatedKeyMessage(), GuideClient.PREV_LAYER.getTranslatedKeyMessage(),
                 GuideClient.CLEAR.getTranslatedKeyMessage());
+        Component hint = turnBlock == null || turnTo == null ? null : Component.translatable("guide.factoryascent.holo.turn",
+                turnBlock.getBlock().getName(), Component.translatable("guide.factoryascent.holo.dir." + turnTo.getSerializedName()));
         int w = g.guiWidth();
-        int lw = mc.font.width(line), kw = mc.font.width(keys);
-        int bw = Math.max(lw, kw) + 10;
-        g.fill(w / 2 - bw / 2, 4, w / 2 + bw / 2, 30, 0x90000000);
-        g.text(mc.font, line, w / 2 - lw / 2, 7, wrong > 0 ? 0xFFFF8080 : 0xFFB8E8FF, true);
+        int lw = mc.font.width(line), kw = mc.font.width(keys), hw = hint == null ? 0 : mc.font.width(hint);
+        int bw = Math.max(Math.max(lw, kw), hw) + 10;
+        g.fill(w / 2 - bw / 2, 4, w / 2 + bw / 2, hint == null ? 30 : 41, 0x90000000);
+        g.text(mc.font, line, w / 2 - lw / 2, 7, wrong > 0 || hint != null ? 0xFFFF8080 : 0xFFB8E8FF, true);
         g.text(mc.font, keys, w / 2 - kw / 2, 18, 0xFFA0A0A0, true);
+        if (hint != null) g.text(mc.font, hint, w / 2 - hw / 2, 29, 0xFFFFB040, true);
     }
 }

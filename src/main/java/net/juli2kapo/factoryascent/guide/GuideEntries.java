@@ -155,10 +155,10 @@ public final class GuideEntries {
         e("waste", NU, "depleted_fuel_rod", "industrial_fuel_rod", "centrifuge waste_barrel radioisotope_pellet", null);
         // ---------------------------------------------------------------- Space
         Chapter SP = Chapter.SPACE;
-        e("rockets", SP, "crew_capsule", "orbital_pad", "crew_capsule rocket_fuel return_pod", null);
+        e("rockets", SP, "crew_capsule", "orbital_pad", "crew_capsule rocket_fuel return_pod station_kit", null);
         e("suits_oxygen", SP, "astronaut_helmet", "orbital_pad", "astronaut_helmet astronaut_suit astronaut_leggings astronaut_boots oxygen_compressor oxygen_cell", null);
         e("sealed_rooms", SP, "oxygen_sealer", "space_orbit", "oxygen_sealer air_vent airlock_door", null);
-        e("stations", SP, "station_core", "space_orbit", "station_core docking_port magnetic_boots", null);
+        e("stations", SP, "station_core", "space_orbit", "station_core station_kit cargo_pod docking_port magnetic_boots", null);
         e("shuttle", SP, "shuttle", "space_orbit", "shuttle fuelling_port ion_drive star_chart", null);
         e("planets", SP, "mars_rock", "orbital_shuttle_orbit", "fuel_synthesizer ascent_module thermal_lining distress_beacon", null);
         e("jetpacks", SP, "electric_jetpack", "age_automation", "electric_jetpack advanced_jetpack jet_suit", null);

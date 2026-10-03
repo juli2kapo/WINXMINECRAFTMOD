@@ -801,6 +801,10 @@ def build():
         anim["block/fluid/%s_flow.png" % fid] = 2
     for name, n in PIPE_TIERS.items():
         blk(name, fluid_pipe(TIERS[n], R("block/" + name)))
+    # flanges in the pipe's own metal (stage colours read as iron on bronze and copper on aluminium)
+    blk("bronze_fluid_pipe", fluid_pipe(G.Tier(1, "bronze", list(reversed(BRONZE)), [], "#D09E4E"), R("block/bronze_fluid_pipe")))
+    blk("aluminum_fluid_pipe", fluid_pipe(G.Tier(3, "aluminum", list(reversed(G.ALUMINUM_BLOCK)), [], "#E2E7ED"),
+                                          R("block/aluminum_fluid_pipe")))
     blk("fluid_pipe_extract", fluid_pipe_extract(R("fluid_pipe_extract")))
     for size in ("bronze", "steel", "titanium"):
         blk(f"{size}_fluid_tank_frame", tank_frame(size, R(f"{size}_tank_frame")))

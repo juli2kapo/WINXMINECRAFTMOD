@@ -90,7 +90,8 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     public static boolean isPayload(ItemStack stack) {
         return stack.getItem() instanceof SatelliteItem || stack.getItem() instanceof AsatMissileItem
                 || net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(stack) // [space hook] crew capsules ride too
-                || net.juli2kapo.factoryascent.dyson.DysonLaunch.isCollector(stack); // [dyson hook] a Solar Collector for the swarm
+                || net.juli2kapo.factoryascent.dyson.DysonLaunch.isCollector(stack) // [dyson hook] a Solar Collector for the swarm
+                || net.juli2kapo.factoryascent.stationkit.StationKits.isPayload(stack); // [station kit hook] Station Kit, Cargo Pod
     }
 
     /** [space hook] Fuel units the mounted payload needs (a crew capsule may need more). */
@@ -117,6 +118,11 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
     public @Nullable UUID owner() {
         return owner;
+    }
+
+    /** Who mounted the payload (null: nobody known). */
+    public @Nullable UUID launcher() {
+        return launcher;
     }
 
     public void setOwner(@Nullable UUID owner) {
@@ -261,6 +267,8 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         if (pathBlocked()) return Component.translatable("message.factoryascent.pad_blocked").withStyle(ChatFormatting.RED);
         Component crew = net.juli2kapo.factoryascent.space.CrewLaunch.launchProblem(this); // [space hook] capsules need a crew
         if (crew != null) return crew;
+        Component kit = net.juli2kapo.factoryascent.stationkit.StationKits.launchProblem(this); // [station kit hook] room in orbit, a station for cargo
+        if (kit != null) return kit;
         fuel -= fuelCost();
         launchTick = 0;
         launchStart = level.getGameTime();
@@ -371,6 +379,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         if (hasMissile()) strike(level, who);
         if (net.juli2kapo.factoryascent.space.CrewLaunch.isCapsule(satellite)) net.juli2kapo.factoryascent.space.CrewLaunch.arrive(level, this); // [space hook]
         if (net.juli2kapo.factoryascent.dyson.DysonLaunch.isCollector(satellite)) net.juli2kapo.factoryascent.dyson.DysonLaunch.arrive(level, who); // [dyson hook]
+        if (net.juli2kapo.factoryascent.stationkit.StationKits.isPayload(satellite)) net.juli2kapo.factoryascent.stationkit.StationKits.arrive(level, this, who); // [station kit hook]
         if (type != null) {
             FactoryTeams teams = FactoryTeams.get(server);
             String team = teams.teamOf(who);
@@ -469,12 +478,13 @@ public class LaunchControllerBlockEntity extends BlockEntity {
     /**
      * Insert-only view for automation. Slot 0 is the payload (one satellite or missile, only while
      * the pad could take one by hand, and only once the controller has an owner); slot 1 is the fuel
-     * tank, which takes Blaze Powder or Rocket Fuel while whole items fit.
+     * tank, which takes Blaze Powder or Rocket Fuel while whole items fit; slot 2 loads anything
+     * else into a mounted Cargo Pod (until it launches).
      */
     private final class PadItems implements ResourceHandler<ItemResource> {
         @Override
         public int size() {
-            return 2;
+            return 3; // [station kit hook] slot 2: cargo for a mounted Cargo Pod
         }
 
         @Override
@@ -489,12 +499,14 @@ public class LaunchControllerBlockEntity extends BlockEntity {
 
         @Override
         public long getCapacityAsLong(int index, ItemResource resource) {
-            return index == 0 ? 1 : FUEL_MAX;
+            return index == 0 ? 1 : index == 1 ? FUEL_MAX : 64;
         }
 
         @Override
         public boolean isValid(int index, ItemResource resource) {
             ItemStack stack = resource.toStack(1);
+            if (index == 2) return net.juli2kapo.factoryascent.stationkit.StationKits.isPod(satellite) && !launching()
+                    && net.juli2kapo.factoryascent.stationkit.CargoPodItem.accepts(stack);
             return index == 0 ? isPayload(stack) : fuelValue(stack) > 0;
         }
 
@@ -502,6 +514,17 @@ public class LaunchControllerBlockEntity extends BlockEntity {
         public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
             TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
             if (amount == 0 || !isValid(index, resource)) return 0;
+            if (index == 2) { // [station kit hook] load the mounted Cargo Pod
+                var contents = net.juli2kapo.factoryascent.stationkit.CargoPodItem.contents(satellite);
+                int fits = Math.min(amount, net.juli2kapo.factoryascent.stationkit.CargoPodItem.room(contents, resource.toStack(1)));
+                if (fits <= 0) return 0;
+                net.juli2kapo.factoryascent.stationkit.CargoPodItem.add(contents, resource.toStack(1), fits);
+                journal.updateSnapshots(tx);
+                ItemStack loaded = satellite.copy();
+                net.juli2kapo.factoryascent.stationkit.CargoPodItem.setContents(loaded, contents);
+                satellite = loaded;
+                return fits;
+            }
             if (index == 0) {
                 if (owner == null || mountProblem() != null) return 0;
                 journal.updateSnapshots(tx);

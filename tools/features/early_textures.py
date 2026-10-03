@@ -665,7 +665,9 @@ def goggles_layer():
 
 
 def bronze_layer(which):
-    return lambda: retone(vanilla(f"assets/minecraft/textures/entity/equipment/{which}/iron.png"), BRONZE_RAMP)
+    # The worn layer skips the two darkest stops: the full ramp made the armour read as dark leather
+    # next to the pale-gold bronze items.
+    return lambda: retone(vanilla(f"assets/minecraft/textures/entity/equipment/{which}/iron.png"), BRONZE_RAMP[2:])
 
 
 BLOCKS = {

@@ -327,15 +327,4 @@ public final class SpaceGameTests {
         h.assertTrue(!recipe.matches(wrong, h.getLevel()), "an Electric Jetpack is not enough");
         h.succeed();
     }
-
-    /** The starter deck: 5x5 of steel with lit corners and a Return Pod at the north edge. */
-    public static void starterDeck(GameTestHelper h) {
-        BlockPos centre = h.absolutePos(new BlockPos(4, 1, 4));
-        Orbit.buildDeck(h.getLevel(), centre);
-        h.assertTrue(h.getLevel().getBlockState(centre).is(ModBlocks.SIMPLE.get("steel_block").get()), "the deck is steel");
-        h.assertTrue(h.getLevel().getBlockState(centre.offset(0, 1, -2)).is(SpaceContent.RETURN_POD.get()), "the Return Pod is on it");
-        h.assertTrue(Orbit.deckCentre(new BlockPos(123, 64, -456)).equals(new BlockPos(123, Orbit.DECK_Y, -456)),
-                "each launch site has its own spot straight above it");
-        h.succeed();
-    }
 }

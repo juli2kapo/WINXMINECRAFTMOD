@@ -55,6 +55,17 @@ public class StationCoreBlock extends BaseEntityBlock implements DescribedBlock 
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level instanceof ServerLevel server && player instanceof ServerPlayer sp && level.getBlockEntity(pos) instanceof StationCoreBlockEntity core) {
             if (core.team().isEmpty()) core.claim(sp, ItemStack.EMPTY); // placed by a machine or command: the first user claims it
+            if (sp.isSecondaryUseActive()) {
+                // the cargo hold: the station's own team only
+                String team = net.juli2kapo.factoryascent.orbital.FactoryTeams.get(server.getServer()).teamOf(sp.getUUID());
+                if (!team.equals(core.team()) && !sp.isCreative()) {
+                    sp.sendOverlayMessage(Component.translatable("message.factoryascent.station_protected", core.name()).withStyle(ChatFormatting.RED));
+                    return InteractionResult.SUCCESS;
+                }
+                sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> net.minecraft.world.inventory.ChestMenu.threeRows(id, inv, core.cargo()),
+                        Component.translatable("gui.factoryascent.station.cargo", core.name())));
+                return InteractionResult.SUCCESS;
+            }
             core.sendView(server, sp, true);
         }
         return InteractionResult.SUCCESS;
@@ -64,5 +75,6 @@ public class StationCoreBlock extends BaseEntityBlock implements DescribedBlock 
     public void describe(Consumer<Component> tooltip) {
         tooltip.accept(Component.translatable("tooltip.factoryascent.station_core").withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.station_core_claim").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.station_core_cargo").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

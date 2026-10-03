@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "ACA",
+    "AFA"
+  ],
+  "key": {
+    "T": "#c:plates/titanium",
+    "A": "#c:plates/aluminum",
+    "C": "minecraft:chest",
+    "F": "factoryascent:fire_bricks"
+  },
+  "result": {
+    "id": "factoryascent:cargo_pod"
+  }
+}

@@ -46,6 +46,10 @@ import org.jspecify.annotations.Nullable;
  * <p>Layouts are in a canonical orientation: the controller faces NORTH (towards -z, the first row
  * of each layer). Layers go bottom to top; each layer is a list of rows north to south, each row a
  * string west to east. {@code ' '} is "anything", {@code '_'} must be air.
+ *
+ * <p>Blocks whose facing the structure check depends on (the controllers, which face out of the
+ * structure) are marked {@linkplain Builder#strict strict}: the hologram then accepts them only when
+ * they face the right way ({@link #matches}); for every other block any facing is fine.
  */
 public final class GuideMultiblocks {
     private GuideMultiblocks() {}
@@ -56,8 +60,32 @@ public final class GuideMultiblocks {
         boolean formed(ServerLevel level, BlockPos controller);
     }
 
-    /** One block of a layout, in grid coordinates (x east, y up, z south). */
-    public record Cell(int x, int y, int z, BlockState state) {}
+    /**
+     * One block of a layout, in grid coordinates (x east, y up, z south). {@code strict}: the real
+     * structure check needs it facing exactly as {@code state} says.
+     */
+    public record Cell(int x, int y, int z, BlockState state, boolean strict) {}
+
+    /** The facing a state has (horizontal or full), or null if it has none. */
+    public static @Nullable Direction facingOf(BlockState state) {
+        if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) return state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+        if (state.hasProperty(BlockStateProperties.FACING)) return state.getValue(BlockStateProperties.FACING);
+        return null;
+    }
+
+    /**
+     * Whether {@code actual} satisfies a cell that wants {@code expected} (already turned to the
+     * projection's rotation): the same block, and for a strict cell the same facing too.
+     */
+    public static boolean matches(BlockState expected, BlockState actual, boolean strict) {
+        if (actual.getBlock() != expected.getBlock()) return false;
+        return !strict || facingOf(expected) == facingOf(actual);
+    }
+
+    /** The right block, but turned the wrong way (only strict cells can be). */
+    public static boolean wrongFacing(BlockState expected, BlockState actual, boolean strict) {
+        return actual.getBlock() == expected.getBlock() && !matches(expected, actual, strict);
+    }
 
     /** One multiblock layout (a variant of an entry's structure). */
     public static final class Layout {
@@ -67,13 +95,15 @@ public final class GuideMultiblocks {
         public final int width, height, depth;
         private final BlockState[][][] grid; // [y][z][x], null = anything
         private final boolean[][][] air;
+        private final boolean[][][] strict;
         public final BlockPos controller;
         public final Validator validator;
         /** Extra note keys shown under the viewer (open sky, oil underground...). */
         public final List<String> notes;
 
-        Layout(String id, int w, int h, int d, BlockState[][][] grid, boolean[][][] air, BlockPos controller,
+        Layout(String id, int w, int h, int d, BlockState[][][] grid, boolean[][][] air, boolean[][][] strict, BlockPos controller,
                Validator validator, List<String> notes) {
+            this.strict = strict;
             this.id = id;
             this.nameKey = "guide.factoryascent.mb." + id;
             this.width = w;
@@ -108,7 +138,7 @@ public final class GuideMultiblocks {
             for (int z = 0; z < depth; z++) {
                 for (int x = 0; x < width; x++) {
                     BlockState s = grid[y][z][x];
-                    if (s != null) out.add(new Cell(x, y, z, s));
+                    if (s != null) out.add(new Cell(x, y, z, s, strict[y][z][x]));
                 }
             }
             return out;
@@ -139,6 +169,7 @@ public final class GuideMultiblocks {
         final List<String[]> layers = new ArrayList<>();
         Validator validator = (l, p) -> false;
         final List<String> notes = new ArrayList<>();
+        final java.util.Set<Character> strictKeys = new java.util.HashSet<>();
 
         Builder(String id) {
             this.id = id;
@@ -146,6 +177,12 @@ public final class GuideMultiblocks {
 
         Builder key(char c, Supplier<BlockState> state) {
             legend.put(c, state);
+            return this;
+        }
+
+        /** These keys must face exactly as in the layout (the structure check reads their facing). */
+        Builder strict(char... keys) {
+            for (char c : keys) strictKeys.add(c);
             return this;
         }
 
@@ -168,6 +205,7 @@ public final class GuideMultiblocks {
             int h = layers.size(), d = layers.get(0).length, w = layers.get(0)[0].length();
             BlockState[][][] grid = new BlockState[h][d][w];
             boolean[][][] air = new boolean[h][d][w];
+            boolean[][][] strict = new boolean[h][d][w];
             BlockPos controller = null;
             for (int y = 0; y < h; y++) {
                 String[] rows = layers.get(y);
@@ -184,17 +222,18 @@ public final class GuideMultiblocks {
                         Supplier<BlockState> s = legend.get(c);
                         if (s == null) throw new IllegalStateException(id + ": unknown key '" + c + "'");
                         grid[y][z][x] = s.get();
+                        strict[y][z][x] = strictKeys.contains(c);
                         if (c == '@') controller = new BlockPos(x, y, z);
                     }
                 }
             }
             if (controller == null) throw new IllegalStateException(id + ": no controller '@'");
-            return new Layout(id, w, h, d, grid, air, controller, validator, List.copyOf(notes));
+            return new Layout(id, w, h, d, grid, air, strict, controller, validator, List.copyOf(notes));
         }
     }
 
     /** The block's default state turned to face {@code dir} (horizontal or full facing, if it has one). */
-    static BlockState facing(Block block, Direction dir) {
+    public static BlockState facing(Block block, Direction dir) {
         BlockState s = block.defaultBlockState();
         if (s.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && dir.getAxis().isHorizontal()) {
             s = s.setValue(BlockStateProperties.HORIZONTAL_FACING, dir);
@@ -239,12 +278,14 @@ public final class GuideMultiblocks {
                 .key('#', plain(ModBlocks.COKE_OVEN_BRICKS))
                 .key('@', facing(() -> ModBlocks.machine(MachineType.COKE_OVEN).get(), Direction.NORTH))
                 .layer("#@#", "###", "###").layer("###", "###", "###").layer("###", "###", "###")
+                .strict('@')
                 .check((l, p) -> Multiblocks.missing(MachineType.COKE_OVEN, l, p, facingOf(l, p)) == 0).build()));
         m.put("blast_furnace", List.of(new Builder("blast_furnace")
                 .key('#', plain(ModBlocks.FIRE_BRICKS))
                 .key('@', facing(() -> ModBlocks.machine(MachineType.BLAST_FURNACE).get(), Direction.NORTH))
                 .layer("#@#", "###", "###").layer("###", "#_#", "###").layer("###", "###", "###")
                 .note("hollow")
+                .strict('@')
                 .check((l, p) -> Multiblocks.missing(MachineType.BLAST_FURNACE, l, p, facingOf(l, p)) == 0).build()));
         m.put("fission_reactor", List.of(
                 reactor(5, new String[]{"CRC", "CCC", "CRC"}),
@@ -292,6 +333,7 @@ public final class GuideMultiblocks {
                 .layer("_____", "     ")
                 .layer(" ___ ", "     ")
                 .note("rotor").note("mast_power")
+                .strict('@')
                 .check((l, p) -> WindTurbineBlockEntity.countMasts(l, p) >= WindTurbineBlockEntity.MIN_MAST
                         && l.getBlockEntity(p) instanceof PowerBlockEntity be && be.status() != PowerBlockEntity.ST_BLOCKED
                         && be.status() != PowerBlockEntity.ST_NO_MAST).build()));
@@ -352,6 +394,7 @@ public final class GuideMultiblocks {
             b.layer(rows);
         }
         b.note("reactor_" + size);
+        b.strict('@');
         b.check((l, p) -> ReactorStructure.scan(l, p, facingOf(l, p)).valid());
         return b.build();
     }

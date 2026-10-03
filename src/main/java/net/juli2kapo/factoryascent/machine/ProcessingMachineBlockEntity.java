@@ -124,6 +124,8 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
     }
 
     private float kineticPoints;
+    /** Game time a Water Wheel / Windmill last turned this machine (so its screen says "Working", not "Turn the crank!"). */
+    private long lastKinetic = Long.MIN_VALUE / 2;
 
     /**
      * Mechanical rotation from a Water Wheel or Windmill next to a hand-cranked machine: every
@@ -137,6 +139,7 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             return;
         }
         kineticPoints += points;
+        lastKinetic = level.getGameTime();
         while (kineticPoints >= CRANK_POINTS) {
             kineticPoints -= CRANK_POINTS;
             if (crankPoints + CRANK_POINTS > CRANK_POINTS * 4) {
@@ -219,7 +222,8 @@ public class ProcessingMachineBlockEntity extends AbstractMachineBlockEntity {
             case MANUAL -> {
                 float points = Math.min(crankPoints, wanted * 2);
                 crankPoints -= points;
-                status = points > 0 ? STATUS_WORKING : STATUS_NEEDS_CRANK;
+                boolean driven = level != null && level.getGameTime() - lastKinetic <= 5;
+                status = points > 0 || driven ? STATUS_WORKING : STATUS_NEEDS_CRANK;
                 return points;
             }
             case FUEL -> {

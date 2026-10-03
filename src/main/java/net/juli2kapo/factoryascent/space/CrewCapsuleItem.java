@@ -20,5 +20,6 @@ public class CrewCapsuleItem extends Item {
         tooltip.accept(Component.translatable("tooltip.factoryascent.crew_capsule").withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.crew_capsule_fuel", SpaceConfig.crewFuel()).withStyle(ChatFormatting.DARK_AQUA));
         tooltip.accept(Component.translatable("tooltip.factoryascent.crew_capsule_suit").withStyle(ChatFormatting.RED));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.crew_capsule_arrive").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

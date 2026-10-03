@@ -3305,6 +3305,10 @@ def build():
         blk(name, lambda r, n=n: power_cable(TIERS[n], r))
     for name, n in PIPE_TIERS.items():
         blk(name, lambda r, n=n: item_pipe(TIERS[n], r))
+    # item pipes are named after their metal: bronze rims on the bronze pipe, bright silver on the
+    # aluminium one (the stage colours made them read as iron and copper)
+    blk("bronze_item_pipe", lambda r: item_pipe(Tier(1, "bronze", list(reversed(MAT["bronze"])), [], "#D09E4E"), r))
+    blk("aluminum_item_pipe", lambda r: item_pipe(Tier(3, "aluminum", list(reversed(ALUMINUM_BLOCK)), [], "#E2E7ED"), r))
     blk("item_pipe_extract", item_pipe_extract)
 
     # ---- ender anchor / beacon

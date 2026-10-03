@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "minecraft:block/oak_planks",
-    "arm": "minecraft:block/stripped_oak_log",
+    "arm": "minecraft:block/stripped_dark_oak_log",
     "handle": "factoryascent:block/quern_handle",
     "leg": "minecraft:block/stripped_oak_log",
     "mesh": "factoryascent:block/sieve_mesh",

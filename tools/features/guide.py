@@ -66,6 +66,14 @@ UI = {
     "holo.keys": ("%s / %s: layer · %s: stop · sneak-use Manual: on a block move, in the air turn",
                   "%s / %s: capa · %s: quitar · Manual agachado: en un bloque mover, en el aire girar"),
     "holo.stop": ("Stop hologram", "Quitar holograma"),
+    "holo.turn": ("Wrong way: turn the %s to face %s (place it looking the other way)",
+                  "Mal orientado: gira el %s para que mire al %s (colócalo mirando hacia el otro lado)"),
+    "holo.dir.north": ("north", "norte"),
+    "holo.dir.south": ("south", "sur"),
+    "holo.dir.east": ("east", "este"),
+    "holo.dir.west": ("west", "oeste"),
+    "holo.dir.up": ("up", "arriba"),
+    "holo.dir.down": ("down", "abajo"),
     "home.text": (
         "Welcome, engineer. This book follows you from a hand-cranked mill to a swarm around the sun.\n"
         "# How to use it\n"
@@ -267,6 +275,9 @@ entry("hologram", "Building with Holograms", (
     "you were looking, its front facing you.\n"
     "- The layer to build glows and pulses; the next one is a faint preview.\n"
     "- Blocks in the way are tinted **red**.\n"
+    "- Controllers must **face out** of the structure: one placed the wrong way turns red, shows the right facing "
+    "inside it and the HUD says which way to turn it; the layer only counts once it faces right. Turning the "
+    "hologram turns the facings too.\n"
     "- When a layer is complete the hologram moves up by itself; when the structure stands it disappears with a fanfare.\n"
     "- Sneak-use the Manual on a block to move the hologram there, or in the air to turn it 90°.\n"
     "- **]** and **[** change the layer, **\\** removes the hologram (Controls → Factory Ascent: Manual).\n"
@@ -276,6 +287,9 @@ entry("hologram", "Building with Holograms", (
     "estructura donde mirabas, con el frente hacia ti.\n"
     "- La capa a construir brilla y late; la siguiente se ve tenue.\n"
     "- Los bloques que estorban se tiñen de **rojo**.\n"
+    "- Los controladores deben **mirar hacia fuera** de la estructura: uno mal orientado se ve rojo, con la "
+    "orientación correcta dentro, y el HUD dice hacia dónde girarlo; la capa solo cuenta cuando mira bien. Al girar "
+    "el holograma también giran las orientaciones.\n"
     "- Al completar una capa el holograma sube solo; cuando la estructura está en pie desaparece con una fanfarria.\n"
     "- Agáchate y usa el Manual sobre un bloque para mover el holograma allí, o en el aire para girarlo 90°.\n"
     "- **]** y **[** cambian de capa, **\\** quita el holograma (Controles → Factory Ascent: Manual).\n"
@@ -442,11 +456,13 @@ entry("ore_washer", "Ore Washer and Induction Smelter", (
 entry("automation_blocks", "Automation Blocks", (
     "- [[block_breaker]]: breaks the block in front and keeps the drops (a tool lends its enchantments).\n"
     "- [[block_placer]]: places blocks from its inventory.\n- [[vacuum_hopper]]: pulls dropped items within 6 blocks.\n"
-    "- [[tree_farm]]: plants saplings in a 7×7 field and fells the trees."),
+    "- [[tree_farm]]: plants saplings in a 7×7 field and fells the trees. It replants with the saplings it harvested "
+    "(from its outputs) before using the ones you put in; spare saplings stay in the outputs."),
     "Bloques de automatización", (
     "- [[block_breaker]]: rompe el bloque de delante y guarda lo que suelta (una herramienta le presta sus encantamientos).\n"
     "- [[block_placer]]: coloca bloques de su inventario.\n- [[vacuum_hopper]]: atrae objetos sueltos a 6 bloques.\n"
-    "- [[tree_farm]]: planta brotes en un campo de 7×7 y tala los árboles."))
+    "- [[tree_farm]]: planta brotes en un campo de 7×7 y tala los árboles. Replanta con los brotes que cosechó "
+    "(de sus salidas) antes de usar los que pongas tú; los que sobran se quedan en las salidas."))
 entry("oil_derrick", "Oil Derrick", (
     "A pumpjack: the [[oil_derrick]] in the middle of a 3×3 platform of [[derrick_base|Derrick Bases]]. Once formed "
     "it drills straight down to the oil pocket under it and pumps 1000 mB of crude every 2 s for 60 FE/t. Pipes on "
@@ -464,23 +480,28 @@ entry("refinery", "Refinery", (
     "de combustible de cohete, un [[plastic]] y dos [[tar]]. Mete el crudo por cualquier sección y saca los productos por "
     "cualquiera."))
 entry("mobs", "Mob Tools", (
-    "- [[mob_capsule]]: hold right-click on a mob for 3 s to trap it; right-click a block to release.\n"
+    "- [[mob_capsule]]: hold right-click on a mob for 3 s to trap it; right-click a block to release. It runs on FE "
+    "(charge it in a [[charger]]): a capture takes half a full charge and a release the other half, so a full capsule "
+    "does one of each. Without enough charge it refuses and says how much it needs.\n"
     "- [[mob_farm]]: a filled capsule inside produces that mob's drops with power, no mob needed.\n"
     "- [[minimizer_ray]] and [[maximizer_ray]]: shrink or grow creatures.\n"
     "- [[size_chamber]]: put a filled capsule in, pick a target size (within the rays' limits): it resizes the mob "
     "inside, then heals it to full, with FE. The mob keeps both when released.\n"
     "- [[mob_releaser]]: nine capsule slots; a redstone pulse or **Release All** lets every mob out at once, at a point "
-    "you set in front of it.\n"
+    "you set in front of it. It pays with its own FE (10 kFE per mob by default), so the capsules in it need no charge.\n"
     "# Bosses\nA Wither beaten below 10% health can be captured (the Ender Dragon and other bosses can't). Heal it in a "
     "Size Chamber, shrink it, and release ten of them at once if you dare."),
     "Herramientas de criaturas", (
-    "- [[mob_capsule]]: mantén clic derecho sobre una criatura 3 s para atraparla; clic derecho en un bloque para soltarla.\n"
+    "- [[mob_capsule]]: mantén clic derecho sobre una criatura 3 s para atraparla; clic derecho en un bloque para soltarla. "
+    "Funciona con FE (cárgala en un [[charger]]): capturar gasta media carga y liberar la otra mitad, así que una cápsula "
+    "llena hace una de cada. Sin carga suficiente se niega y dice cuánta necesita.\n"
     "- [[mob_farm]]: con una cápsula llena dentro produce lo que suelta esa criatura, con energía y sin la criatura.\n"
     "- [[minimizer_ray]] y [[maximizer_ray]]: encogen o agrandan criaturas.\n"
     "- [[size_chamber]]: pon una cápsula llena y elige un tamaño (dentro de los límites de los rayos): cambia el tamaño "
     "de la criatura y luego la cura por completo, con FE. Al soltarla conserva ambas cosas.\n"
     "- [[mob_releaser]]: nueve ranuras de cápsula; un pulso de redstone o **Liberar todo** suelta a todas a la vez, en "
-    "un punto que eliges delante.\n"
+    "un punto que eliges delante. Paga con su propia FE (10 kFE por criatura por defecto), así que las cápsulas que "
+    "tiene dentro no necesitan carga.\n"
     "# Jefes\nUn Wither con menos del 10% de vida se puede capturar (el dragón del End y otros jefes no). Cúralo en una "
     "cámara de tamaño, encógelo y suelta diez a la vez si te atreves."))
 
@@ -740,10 +761,18 @@ entry("waste", "Spent Fuel and Waste", (
 # ---- Space
 entry("rockets", "Going to Orbit", (
     "Mount a [[crew_capsule]] on the [[@launch_pad]], fuel it and Board from the Launch Controller. **Wear a full "
-    "Astronaut Suit**: there is no air up there. Use a [[return_pod]] in orbit to come back down over your launch site."),
+    "Astronaut Suit**: there is no air up there. Use a [[return_pod]] in orbit to come back down over your launch site.\n"
+    "# Arriving\nYou come down at your team's station above the pad, if there is one. If nothing is built up there, "
+    "your capsule stays in orbit as a small floating **pod** with you inside (it has air): sneak to climb out and stand "
+    "on it, sneak-use it to climb back in, use it to go home. There is no free platform: build out from the pod, or "
+    "launch a [[station_kit]] first (see Space Stations)."),
     "Ir a la órbita", (
     "Monta una [[crew_capsule]] en la [[@launch_pad]], cárgale combustible y súbete desde el controlador. **Ponte el traje "
-    "de astronauta completo**: allí no hay aire. Usa una [[return_pod]] en órbita para volver sobre tu sitio de lanzamiento."))
+    "de astronauta completo**: allí no hay aire. Usa una [[return_pod]] en órbita para volver sobre tu sitio de lanzamiento.\n"
+    "# Llegada\nLlegas a la estación de tu equipo sobre la plataforma, si la hay. Si allí no hay nada construido, tu "
+    "cápsula se queda en órbita como una pequeña **cápsula flotante** contigo dentro (tiene aire): agáchate para salir y "
+    "quedarte de pie encima, úsala agachado para volver a entrar y úsala para volver a casa. No hay plataforma gratis: "
+    "construye desde la cápsula o lanza antes un [[station_kit]] (ver Estaciones espaciales)."))
 entry("suits_oxygen", "Suits and Oxygen", (
     "Wear all four Astronaut Suit pieces to breathe in space; the chest piece holds the air. Fill it in an "
     "[[oxygen_compressor]] (in its slot, or standing next to it) or with an [[oxygen_cell]] anywhere. The HUD shows how "
@@ -762,19 +791,44 @@ entry("sealed_rooms", "Sealed Rooms", (
     "silbido y un aviso. Un [[air_vent]] hace lo mismo en salas pequeñas."))
 entry("stations", "Space Stations", (
     "A [[station_core]] claims the station around it for your team (others can't break blocks there) and reports "
-    "modules, power and air. [[docking_port|Docking Ports]] hold shuttles; [[magnetic_boots]] keep you on the deck."),
+    "modules, power and air. [[docking_port|Docking Ports]] hold shuttles.\n"
+    "# Sending a station up\nCraft a [[station_kit]], mount it on the [[@launch_pad]] and launch it from the Overworld: "
+    "it unfolds in orbit straight above the pad (y 100) as a sealed 7×7 module with a Station Core claimed for your team, "
+    "a charged Oxygen Sealer, windows, an Airlock, a porch and a Return Pod. The space there must be empty, or the "
+    "launch is refused. Crew Capsules and Ascent Modules launched from that pad then land inside it.\n"
+    "# Shipping materials\nLoad a [[cargo_pod]] (right-click, 27 slots, or mount it empty and let hoppers or pipes "
+    "fill it through the Launch Controller) and launch it: it is unloaded into the **cargo hold** of your team's Station "
+    "Core above the pad (sneak-use the core with an empty hand; pipes work too). Without a station there it won't launch.\n"
+    "# Magnetic Boots\n[[magnetic_boots]] hold you to the deck at normal gravity. In low gravity they also stick to walls "
+    "and ceilings: walk into a wall to climb it (forward up, back down, no keys: stay put), jump into a ceiling to hang "
+    "under it and walk with the normal keys. Your view stays upright. Sneak to let go."),
     "Estaciones espaciales", (
     "Un [[station_core]] reclama la estación a su alrededor para tu equipo (otros no pueden romper bloques allí) e informa "
-    "de módulos, energía y aire. Los [[docking_port|puertos de atraque]] sujetan lanzaderas; las [[magnetic_boots]] te "
-    "mantienen en la cubierta."))
+    "de módulos, energía y aire. Los [[docking_port|puertos de atraque]] sujetan lanzaderas.\n"
+    "# Enviar una estación\nFabrica un [[station_kit]], móntalo en la [[@launch_pad]] y lánzalo desde el mundo normal: se "
+    "despliega en órbita justo encima de la plataforma (y 100) como un módulo sellado de 7×7 con un núcleo de estación de "
+    "tu equipo, un sellador de oxígeno cargado, ventanas, una esclusa, un porche y una cápsula de retorno. Ese espacio "
+    "debe estar vacío o el lanzamiento se rechaza. Las cápsulas tripuladas y módulos de ascenso lanzados desde esa "
+    "plataforma llegan luego dentro.\n"
+    "# Enviar materiales\nCarga una [[cargo_pod]] (clic derecho, 27 huecos, o móntala vacía y deja que tolvas o tuberías "
+    "la llenen por el controlador de lanzamiento) y lánzala: se descarga en la **bodega** del núcleo de estación de tu "
+    "equipo sobre la plataforma (úsalo agachado con la mano vacía; también con tuberías). Sin estación allí no despega.\n"
+    "# Botas magnéticas\nLas [[magnetic_boots]] te sujetan a la cubierta con gravedad normal. En baja gravedad también se "
+    "pegan a paredes y techos: camina contra una pared para trepar (adelante sube, atrás baja, sin teclas te quedas "
+    "quieto), salta contra un techo para colgarte y camina con las teclas normales. La vista sigue derecha. Agáchate para "
+    "soltarte."))
 entry("shuttle", "Orbital Shuttle", (
     "The [[shuttle]] carries two and burns Rocket Fuel: climb above the sky to reach orbit, dive back to re-enter. The "
     "cabin is sealed. Refuel at a [[fuelling_port]]; an [[ion_drive]] in the hold halves fuel and time; the "
-    "[[star_chart]] shows planets and stations."),
+    "[[star_chart]] shows planets and stations.\n"
+    "Steer with the keys only (W/S thrust, A/D turn, Space/Shift up and down): the mouse looks around freely, in first "
+    "and third person, without turning the ship. The same goes for the sea ships."),
     "Lanzadera orbital", (
     "La [[shuttle]] lleva a dos y quema combustible de cohete: sube por encima del cielo para llegar a la órbita y "
     "desciende para reentrar. La cabina está sellada. Reposta en un [[fuelling_port]]; un [[ion_drive]] en la bodega reduce "
-    "a la mitad combustible y tiempo; la [[star_chart]] muestra planetas y estaciones."))
+    "a la mitad combustible y tiempo; la [[star_chart]] muestra planetas y estaciones.\n"
+    "Se pilota solo con teclas (W/S empuje, A/D girar, Espacio/Mayús subir y bajar): el ratón mira libremente, en primera "
+    "y tercera persona, sin girar la nave. Lo mismo vale para los barcos."))
 entry("planets", "Planets", (
     "The **Moon** (Helium-3 regolith), **Mars** (ice, hematite) and **Io** (sulfur, scorching: sew [[thermal_lining]] into "
     "your suit). The [[fuel_synthesizer]] makes fuel where there is none; an [[ascent_module]] takes you back to orbit; "

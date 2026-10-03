@@ -24,6 +24,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Return Pod: a one-seat re-entry capsule with a heat shield and a parachute. Use it in orbit
  * to go home (see {@link Orbit#reenter}); it stays where it is, ready for the next trip down.
+ * Sneak-use it in orbit to sit inside (its cabin has air): a capsule that reaches orbit with no
+ * station to land on stays up as one of these, the astronaut inside
+ * ({@link net.juli2kapo.factoryascent.stationkit.CrewPods}).
  */
 public class ReturnPodBlock extends HorizontalDirectionalBlock implements DescribedBlock {
     public static final MapCodec<ReturnPodBlock> CODEC = simpleCodec(ReturnPodBlock::new);
@@ -66,7 +69,14 @@ public class ReturnPodBlock extends HorizontalDirectionalBlock implements Descri
             player.sendOverlayMessage(Component.translatable("message.factoryascent.return_pod_planet").withStyle(ChatFormatting.YELLOW));
             return InteractionResult.SUCCESS;
         }
-        if (player instanceof ServerPlayer sp) Orbit.reenter(sp);
+        if (player instanceof ServerPlayer sp) {
+            if (sp.isSecondaryUseActive()) {
+                net.juli2kapo.factoryascent.stationkit.CrewPods.climbIn(sp, pos); // sit inside: cabin air
+            } else {
+                if (sp.isPassenger()) sp.stopRiding();
+                Orbit.reenter(sp);
+            }
+        }
         return InteractionResult.SUCCESS;
     }
 
@@ -74,5 +84,6 @@ public class ReturnPodBlock extends HorizontalDirectionalBlock implements Descri
     public void describe(Consumer<Component> tooltip) {
         tooltip.accept(Component.translatable("tooltip.factoryascent.return_pod").withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.factoryascent.return_pod_how").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.accept(Component.translatable("tooltip.factoryascent.return_pod_cabin").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

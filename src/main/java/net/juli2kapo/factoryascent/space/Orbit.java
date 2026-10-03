@@ -36,8 +36,9 @@ import org.jspecify.annotations.Nullable;
  * Getting to orbit and back.
  *
  * <p>Orbit ({@link SpaceRules#ORBIT}) is a void over the planet. Each launch site has its own spot
- * up there, straight above it (same x and z, at {@link #DECK_Y}); the first arrival finds a 5×5
- * steel starter deck with a Return Pod on it, later arrivals land on whatever was built there.
+ * up there, straight above it (same x and z, at {@link #DECK_Y}). Nothing is built for you: an
+ * arrival lands at the team's station there (a Station Kit launched from the same pad builds one),
+ * on whatever else stands there, or stays up in its capsule as a floating crew pod.
  * Gravity is a fraction of normal ({@link SpaceConfig#ORBIT_GRAVITY}) and falls hurt less.
  *
  * <p>Coming back ({@link #reenter}): the Return Pod drops the player back over their launch site
@@ -65,48 +66,80 @@ public final class Orbit {
 
     /**
      * Puts a player who rode a rocket from {@code site} into orbit above it. Returns false (and
-     * leaves the player alone) if the orbit dimension isn't loaded.
+     * leaves the player alone) if the orbit dimension isn't loaded. They land at their team's
+     * station above the site, or on whatever is built there; with nothing there the capsule stays
+     * up as a floating crew pod with them inside ({@link net.juli2kapo.factoryascent.stationkit.CrewPods}).
      */
     public static boolean arrive(ServerPlayer player, ResourceKey<Level> fromDimension, BlockPos site) {
         ServerLevel orbit = level(player.level().getServer());
         if (orbit == null) return false;
         BlockPos centre = deckCentre(site);
         orbit.getChunk(centre.getX() >> 4, centre.getZ() >> 4);
-        BlockPos spot = landingSpot(orbit, centre);
+        String team = net.juli2kapo.factoryascent.orbital.FactoryTeams.get(orbit.getServer()).teamOf(player.getUUID());
+        BlockPos spot = landingSpot(orbit, centre, team);
+        boolean pod = spot == null;
+        if (pod) spot = net.juli2kapo.factoryascent.stationkit.CrewPods.podSpot(orbit, centre);
         player.setData(SpaceContent.RETURN_POINT.get(), GlobalPos.of(fromDimension, site));
         player.teleport(new TeleportTransition(orbit, Vec3.atBottomCenterOf(spot), Vec3.ZERO, 180f, 10f,
                 TeleportTransition.DO_NOTHING));
         orbit.playSound(null, spot, SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1f, 0.6f);
-        player.sendSystemMessage(Component.translatable("message.factoryascent.orbit_arrived").withStyle(ChatFormatting.AQUA));
-        if (SpaceRules.breathing(player, true) == SpaceRules.Breath.NONE) {
+        if (pod) {
+            net.juli2kapo.factoryascent.stationkit.CrewPods.arrive(orbit, player, spot);
+        } else {
+            player.sendSystemMessage(Component.translatable("message.factoryascent.orbit_arrived").withStyle(ChatFormatting.AQUA));
+        }
+        if (!pod && SpaceRules.breathing(player, true) == SpaceRules.Breath.NONE) {
             player.sendSystemMessage(Component.translatable("message.factoryascent.orbit_no_suit").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         }
         SpaceContent.award(player, "space_orbit");
         return true;
     }
 
-    /** Where an arrival stands: on the station built here, or on a fresh starter deck. */
-    static BlockPos landingSpot(ServerLevel orbit, BlockPos centre) {
+    /**
+     * Where an arrival stands, or null if nothing is built above the launch site: inside the team's
+     * station claiming that spot (next to its Station Core), else on whatever stands in the column
+     * above the site.
+     */
+    public static @Nullable BlockPos landingSpot(ServerLevel orbit, BlockPos centre, String team) {
+        var station = net.juli2kapo.factoryascent.space.station.StationRegistry.get(orbit.getServer())
+                .claiming(orbit.dimension(), centre, SpaceConfig.get(SpaceConfig.STATION_RADIUS));
+        if (station != null && station.team().equals(team)) {
+            BlockPos inside = standingSpotNear(orbit, station.pos());
+            if (inside != null) return inside;
+        }
+        return columnSpot(orbit, centre);
+    }
+
+    /** The first floor with two blocks of air above it in the column through {@code centre} (±24 blocks), or null. */
+    public static @Nullable BlockPos columnSpot(Level orbit, BlockPos centre) {
         for (int y = DECK_Y + 24; y >= DECK_Y - 24; y--) {
             BlockPos p = new BlockPos(centre.getX(), y, centre.getZ());
             if (!orbit.getBlockState(p).isAir() && orbit.getBlockState(p.above()).isAir() && orbit.getBlockState(p.above(2)).isAir()) {
                 return p.above();
             }
         }
-        buildDeck(orbit, centre);
-        return centre.above();
+        return null;
     }
 
-    /** The 5×5 steel starter deck, lit at the corners, with a Return Pod at its north edge. */
-    public static void buildDeck(Level level, BlockPos centre) {
-        BlockState steel = ModBlocks.SIMPLE.get("steel_block").get().defaultBlockState();
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dz = -2; dz <= 2; dz++) {
-                boolean corner = Math.abs(dx) == 2 && Math.abs(dz) == 2;
-                level.setBlock(centre.offset(dx, 0, dz), corner ? Blocks.SEA_LANTERN.defaultBlockState() : steel, 3);
+    /** A spot to stand near a block (a Station Core): nearest floor with two air blocks above, within 4 blocks. */
+    public static @Nullable BlockPos standingSpotNear(Level level, BlockPos core) {
+        for (int r = 0; r <= 4; r++) {
+            for (int dy = -1; dy >= -3; dy--) {
+                for (int dx = -r; dx <= r; dx++) {
+                    for (int dz = -r; dz <= r; dz++) {
+                        if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                        BlockPos floor = core.offset(dx, dy, dz);
+                        if (!level.getBlockState(floor).getCollisionShape(level, floor).isEmpty()
+                                && level.getBlockState(floor.above()).getCollisionShape(level, floor.above()).isEmpty()
+                                && level.getBlockState(floor.above(2)).getCollisionShape(level, floor.above(2)).isEmpty()
+                                && !level.getBlockState(floor.above()).isSolid()) {
+                            return floor.above();
+                        }
+                    }
+                }
             }
         }
-        level.setBlock(centre.offset(0, 1, -2), SpaceContent.RETURN_POD.get().defaultBlockState(), 3);
+        return null;
     }
 
     // ---------------------------------------------------------------- coming back

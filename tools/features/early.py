@@ -129,7 +129,7 @@ def m_sieve():
 
 def m_sieve_crank():
     """The sieve's crank, turned about the x axis through (y 10, z 8) by client/SieveRenderer.java."""
-    tx = {"handle": "quern_handle", "arm": STRIPPED}
+    tx = {"handle": "quern_handle", "arm": "minecraft:block/stripped_dark_oak_log"}
     b = [B((15.5, 9.25, 7.25), (17.75, 10.75, 8.75), "handle"),     # axle out of the east rail
          B((17.75, 8.75, 6.75), (19, 15.5, 9.25), "arm"),           # crank arm
          B((19, 13.5, 7.25), (21.5, 15, 8.75), "handle")]           # grip
@@ -586,6 +586,9 @@ LANG = [
     ("message.factoryascent.magnet_on", "Item Magnet on", "Imán de objetos encendido"),
     ("message.factoryascent.magnet_off", "Item Magnet off", "Imán de objetos apagado"),
     ("gui.factoryascent.kinetic_info", "Turning at %s%% · drives %s", "Gira al %s%% · mueve %s"),
+    ("gui.factoryascent.kinetic_blocked", "Sails blocked: needs open air", "Aspas trabadas: sin aire libre"),
+    ("gui.factoryascent.kinetic_no_water", "No water touching it", "Sin agua que la toque"),
+    ("gui.factoryascent.kinetic_nothing", "Turning %s%% · nothing to drive", "Gira al %s%% · no mueve nada"),
     ("gui.factoryascent.floodlight_info", "Lighting %s spots", "Iluminando %s puntos"),
     ("gui.factoryascent.mob_farm_info", "Farming: %s", "Produce: %s"),
     ("gui.factoryascent.mob_farm_empty", "Insert a filled capsule", "Pon una cápsula llena"),

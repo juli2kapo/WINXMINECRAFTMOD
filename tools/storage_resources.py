@@ -560,10 +560,10 @@ def _term_shell():
 def _term_keys():
     im = _img()
     _rect(im, 0, 0, 15, 15, GUN_D)
-    for y in range(1, 15, 2):               # key rows (rows 8..15 used by the deck top)
+    for y in range(1, 14, 3):               # key rows (rows 8..15 used by the deck top)
         for x in range(1, 15, 2):
-            _put(im, x, y, (186, 192, 200))
-            _put(im, x + 1, y, (120, 126, 136))
+            _put(im, x, y, (196, 202, 210))
+            _put(im, x, y + 1, (110, 116, 126))
     _rect(im, 4, 13, 11, 13, (186, 192, 200))   # space bar
     _rect(im, 12, 9, 13, 11, TEAL)              # enter key
     return im

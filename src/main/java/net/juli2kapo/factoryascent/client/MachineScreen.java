@@ -499,7 +499,13 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             case GEOTHERMAL_GENERATOR -> Component.translatable("gui.factoryascent.lava", d.extraA()).getString();
             case MINER -> Component.translatable("gui.factoryascent.miner_info", d.extraA(), d.extraB()).getString();
             case AUTO_FARMER, TREE_FARM -> Component.translatable("gui.factoryascent.farm_info", d.extraA()).getString();
-            case WATER_WHEEL, WINDMILL -> Component.translatable("gui.factoryascent.kinetic_info", d.extraA() / 10, d.extraB()).getString();
+            case WATER_WHEEL, WINDMILL -> {
+                // Say why it isn't turning, or what it is missing, instead of a bare "0%".
+                if (d.extraA() == 0) yield Component.translatable(type() == MachineType.WINDMILL
+                        ? "gui.factoryascent.kinetic_blocked" : "gui.factoryascent.kinetic_no_water").getString();
+                if (d.extraB() == 0) yield Component.translatable("gui.factoryascent.kinetic_nothing", d.extraA() / 10).getString();
+                yield Component.translatable("gui.factoryascent.kinetic_info", d.extraA() / 10, d.extraB()).getString();
+            }
             case FLOODLIGHT -> Component.translatable("gui.factoryascent.floodlight_info", d.extraA()).getString();
             case MOB_FARM -> {
                 var mob = net.juli2kapo.factoryascent.mobs.MobCapsuleItem.captured(menu.machine().inventory().stack(0));

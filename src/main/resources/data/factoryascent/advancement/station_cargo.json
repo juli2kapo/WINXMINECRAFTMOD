@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:station_kit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:cargo_pod"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.station_cargo.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.station_cargo.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

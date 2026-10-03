@@ -47,7 +47,8 @@ import org.jspecify.annotations.Nullable;
  *       ({@link SatelliteSkyClient}).</li>
  * </ul>
  *
- * Then, in orbit and on the planets, the {@link SkyHooks} sun decorators.
+ * Then, in orbit and on the planets, the {@link SkyHooks} sun decorators, and last, on the
+ * planets, the ground disc that hides whatever is below the horizon (see {@link #groundDisc}).
  */
 final class SpaceSkies {
     private static final Identifier EARTH = tex("earth"), MOON = tex("moon_disc"), PHOBOS = tex("phobos"), DEIMOS = tex("deimos"),
@@ -67,7 +68,7 @@ final class SpaceSkies {
     /** Half-size of Earth under the orbit dimension at distance 100 (it fills most of the view straight down). */
     private static final float EARTH_BELOW = 150f;
 
-    private static @Nullable GpuBuffer quad;
+    private static @Nullable GpuBuffer quad, ground;
 
     private SpaceSkies() {}
 
@@ -89,6 +90,57 @@ final class SpaceSkies {
             }
         }
         return quad;
+    }
+
+    /** A disc under the camera, like vanilla's bottom sky disc: the planet's surface below the horizon. */
+    private static GpuBuffer ground() {
+        if (ground == null) {
+            try (ByteBufferBuilder bytes = ByteBufferBuilder.exactlySized(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
+                BufferBuilder b = new BufferBuilder(bytes, PrimitiveTopology.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+                b.addVertex(0f, -16f, 0f);
+                for (int i = -180; i <= 180; i += 45) {
+                    float a = (float) Math.toRadians(i);
+                    b.addVertex(-512f * (float) Math.cos(a), -16f, 512f * (float) Math.sin(a));
+                }
+                try (MeshData mesh = b.buildOrThrow()) {
+                    ground = RenderSystem.getDevice().createBuffer(() -> "Planet ground disc", GpuBuffer.USAGE_VERTEX, mesh.vertexBuffer());
+                }
+            }
+        }
+        return ground;
+    }
+
+    /**
+     * Hides everything below the horizon of a planet: the planet itself is there. Without it the
+     * sun, the moons and the rest of the sky went on under your feet, so a shuttle coming down from
+     * high above the terrain saw pictures of moons and planets (and the vanilla moon, parked at the
+     * nadir) beneath it. Drawn in the fog colour, like the planet's surface fading into haze.
+     */
+    private static void groundDisc(Matrix4f modelView, ClientLevel level, float partial) {
+        int fog;
+        try {
+            fog = Minecraft.getInstance().gameRenderer.mainCamera().attributeProbe().getValue(EnvironmentAttributes.FOG_COLOR, partial);
+        } catch (RuntimeException e) {
+            fog = 0;
+        }
+        Vector4f color = new Vector4f(((fog >> 16) & 0xFF) / 255f, ((fog >> 8) & 0xFF) / 255f, (fog & 0xFF) / 255f, 1f);
+        Matrix4f pose = new Matrix4f(modelView).translate(0f, 12f, 0f);
+        GpuBufferSlice transforms = RenderSystem.getDynamicUniforms().writeTransform(pose, color);
+        RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+        try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Planet ground",
+                target.getColorTextureView(), Optional.empty(), target.getDepthTextureView(), OptionalDouble.empty())) {
+            pass.setPipeline(RenderPipelines.SKY);
+            RenderSystem.bindDefaultUniforms(pass);
+            pass.setUniform("DynamicTransforms", transforms);
+            pass.setVertexBuffer(0, ground().slice());
+            pass.draw(10, 1, 0, 0);
+        }
+    }
+
+    /** Whether a disc of half-size {@code size} (at distance 100) in direction {@code dir} shows above the horizon. */
+    static boolean aboveHorizon(Vector3f dir, float size) {
+        Vector3f d = new Vector3f(dir).normalize();
+        return d.y > -size / 100f;
     }
 
     /** Draws a textured disc (a quad at distance 100 facing the camera's origin) with the given transform. */
@@ -116,6 +168,7 @@ final class SpaceSkies {
      * texture's rows stay level with the horizon) and then turned by {@code roll} about its own axis.
      */
     static void disc(Matrix4f modelView, Vector3f dir, float size, float roll, Identifier texture, Vector4f color) {
+        if (!aboveHorizon(dir, size) && Planet.of(Minecraft.getInstance().level.dimension()) != null) return; // inside the planet
         Vector3f d = new Vector3f(dir).normalize();
         float yaw = (float) Math.atan2(d.x, d.z);
         float tilt = (float) Math.acos(Math.max(-1f, Math.min(1f, d.y)));
@@ -167,6 +220,7 @@ final class SpaceSkies {
         }
         SatelliteSkyClient.afterSky(mv, level, partial);
         if (SkyHooks.any() && (dim == SpaceRules.ORBIT || planet != null)) sunDecorations(mv, level, partial, dim);
+        if (planet != null) groundDisc(mv, level, partial);
     }
 
     /** A moon crossing the sky on a great circle tilted by {@code tilt} degrees; {@code angle} along it. */

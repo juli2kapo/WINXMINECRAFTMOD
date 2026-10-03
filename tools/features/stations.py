@@ -190,8 +190,8 @@ def lang(L):
         ("station_core", "Claims the station around it for your team. Right-click: modules, power and air",
          "Reclama la estación que lo rodea para tu equipo. Clic derecho: módulos, energía y aire"),
         ("station_core_claim", "Other teams can't break blocks inside the claim", "Otros equipos no pueden romper bloques dentro"),
-        ("magnetic_boots", "Hold you to the floor in low gravity: walk station decks like on Earth",
-         "Te sujetan al suelo en baja gravedad: camina por la estación como en la Tierra"),
+        ("magnetic_boots", "Hold you to the floor in low gravity; walk into a wall to climb it, jump into a ceiling to hang from it",
+         "Te sujetan al suelo en baja gravedad; camina contra una pared para trepar, salta contra un techo para colgarte"),
         ("magnetic_boots_sneak", "Count as Astronaut Boots. Sneak to switch the magnets off",
          "Cuentan como botas de astronauta. Agáchate para apagar los imanes"),
     ]:

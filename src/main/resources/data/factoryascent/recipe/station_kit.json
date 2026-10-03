@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "HWH",
+    "ACO",
+    "HHH"
+  ],
+  "key": {
+    "H": "factoryascent:station_hull_white",
+    "W": "factoryascent:station_window",
+    "A": "factoryascent:airlock_door",
+    "C": "factoryascent:station_core",
+    "O": "factoryascent:oxygen_sealer"
+  },
+  "result": {
+    "id": "factoryascent:station_kit"
+  }
+}

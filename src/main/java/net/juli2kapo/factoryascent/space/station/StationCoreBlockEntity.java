@@ -31,13 +31,30 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
  * The Station Core's data: which team owns the station and what it is called. Its report walks the
  * station (every block connected to the core, within the claim radius) and counts its modules, the
  * energy stored in it and the state of its air.
+ *
+ * <p>It also keeps the station's cargo hold ({@link #CARGO_SLOTS} slots, sneak-use the core or
+ * pipe/hopper it): Cargo Pods launched from the ground are unloaded into it.
  */
 public class StationCoreBlockEntity extends BlockEntity {
     /** Most blocks a report walks (a big station, but a bounded amount of work). */
     public static final int SCAN_LIMIT = 40_000;
 
+    public static final int CARGO_SLOTS = 27;
+
     private String team = "";
     private String name = "";
+    private final net.minecraft.world.SimpleContainer cargo = new net.minecraft.world.SimpleContainer(CARGO_SLOTS) {
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            StationCoreBlockEntity.this.setChanged();
+        }
+
+        @Override
+        public boolean stillValid(net.minecraft.world.entity.player.Player player) {
+            return !isRemoved() && player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) < 64;
+        }
+    };
 
     public StationCoreBlockEntity(BlockPos pos, BlockState state) {
         super(StationContent.STATION_CORE_BE.get(), pos, state);
@@ -49,6 +66,28 @@ public class StationCoreBlockEntity extends BlockEntity {
 
     public String name() {
         return name;
+    }
+
+    /** The station's cargo hold (what Cargo Pods deliver into). */
+    public net.minecraft.world.SimpleContainer cargo() {
+        return cargo;
+    }
+
+    /** Puts a stack into the hold; returns what did not fit. */
+    public ItemStack store(ItemStack stack) {
+        return cargo.addItem(stack);
+    }
+
+    /**
+     * Claims the station for a team without a player at hand (a Station Kit deployed from a launch);
+     * the station is named "&lt;team&gt; Station n".
+     */
+    public void claimFor(ServerLevel level, String team) {
+        this.team = team;
+        int n = (int) StationRegistry.get(level.getServer()).all().stream().filter(s -> s.team().equals(team)).count() + 1;
+        this.name = FactoryTeams.get(level.getServer()).displayName(team) + " Station " + n;
+        setChanged();
+        StationRegistry.get(level.getServer()).put(new StationRegistry.Station(level.dimension(), worldPosition, team, name));
     }
 
     /** Claims the station for the placer's team (named after the item's custom name, if any). */
@@ -72,6 +111,7 @@ public class StationCoreBlockEntity extends BlockEntity {
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
+        if (level != null) net.minecraft.world.Containers.dropContents(level, pos, cargo);
         if (level instanceof ServerLevel server) StationRegistry.get(server.getServer()).remove(server.dimension(), pos);
     }
 
@@ -176,6 +216,9 @@ public class StationCoreBlockEntity extends BlockEntity {
         super.loadAdditional(input);
         team = input.getStringOr("team", "");
         name = input.getStringOr("name", "");
+        net.minecraft.core.NonNullList<ItemStack> items = net.minecraft.core.NonNullList.withSize(CARGO_SLOTS, ItemStack.EMPTY);
+        net.minecraft.world.ContainerHelper.loadAllItems(input.childOrEmpty("cargo"), items);
+        for (int i = 0; i < CARGO_SLOTS; i++) cargo.setItem(i, items.get(i));
     }
 
     @Override
@@ -183,5 +226,8 @@ public class StationCoreBlockEntity extends BlockEntity {
         super.saveAdditional(output);
         output.putString("team", team);
         output.putString("name", name);
+        net.minecraft.core.NonNullList<ItemStack> items = net.minecraft.core.NonNullList.withSize(CARGO_SLOTS, ItemStack.EMPTY);
+        for (int i = 0; i < CARGO_SLOTS; i++) items.set(i, cargo.getItem(i));
+        net.minecraft.world.ContainerHelper.saveAllItems(output.child("cargo"), items);
     }
 }

@@ -88,8 +88,14 @@ public final class CapsuleGameTests {
         releaser.inventory.setStack(4, capsuleOf(h, wither));
         h.assertTrue(releaser.filled() == 3, "three capsules loaded");
         releaser.redstone(h.getLevel(), true);
+        h.assertTrue(releaser.filled() == 3 && releaser.noPower(), "without FE the releaser lets nobody out");
+        releaser.redstone(h.getLevel(), false);
+        releaser.energy().set(MobReleaserBlockEntity.CAPACITY); // the releaser pays from its own buffer: the capsules have no charge
+        releaser.redstone(h.getLevel(), true);
         h.assertTrue(releaser.filled() == 0, "a redstone pulse must release every capsule, " + releaser.filled() + " left");
         h.assertTrue(releaser.lastReleased() == 3, "three mobs released");
+        h.assertTrue(releaser.energyStored() == MobReleaserBlockEntity.CAPACITY - 3 * MobReleaserBlockEntity.costPerMob(),
+                "each mob costs the releaser " + MobReleaserBlockEntity.costPerMob() + " FE");
         AABB area = new AABB(h.absolutePos(new BlockPos(0, 0, 0))).expandTowards(9, 12, 9);
         var zombies = h.getLevel().getEntitiesOfClass(Zombie.class, area, Entity::isAlive);
         h.assertTrue(zombies.size() == 2, "two zombies out, found " + zombies.size());
