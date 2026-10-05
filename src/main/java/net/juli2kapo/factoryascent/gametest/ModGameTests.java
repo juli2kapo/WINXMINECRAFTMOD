@@ -148,6 +148,7 @@ public final class ModGameTests {
             new Test("ship_motor_uses_power", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::motorUsesPower),
             new Test("ship_cargo_persists", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::cargoPersists),
             new Test("ship_shuttle_climbs_on_fuel", 100, net.juli2kapo.factoryascent.ships.ShipGameTests::shuttleClimbs),
+            new Test("ship_rider_view_kept", 20, net.juli2kapo.factoryascent.ships.ShipRiderGameTests::riderViewKept),
             new Test("ship_orbit_transfer_thresholds", 20, net.juli2kapo.factoryascent.ships.ShipGameTests::transferThresholds),
             new Test("train_track_walker", 20, net.juli2kapo.factoryascent.trains.TrainGameTests::trackWalker),
             new Test("train_runs_loop_with_wagons", 400, net.juli2kapo.factoryascent.trains.TrainGameTests::trainRunsLoop),

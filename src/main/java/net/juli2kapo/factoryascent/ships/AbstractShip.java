@@ -323,15 +323,23 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
     }
 
     /**
-     * Boarding faces you the way the ship points (once). After that the view is the rider's own:
-     * the mouse looks around freely (first and third person) and the ship is steered only by keys.
+     * Creatures aboard face the bow. A player's view is never touched here: this also runs on every
+     * re-mount the client is sent, and while a shuttle refuses a Shift dismount in flight (Shift is
+     * "descend") the server re-sends the passenger list every tick, so resetting the view here held
+     * the camera on the bow and at most 20° down while descending. Players are faced once, when they
+     * board ({@link #faceBow}); after that the mouse looks around freely and the ship is steered by keys.
      */
     @Override
     protected void addPassenger(Entity passenger) {
         super.addPassenger(passenger);
+        if (passenger instanceof Player) return;
         passenger.setYRot(getYRot());
         passenger.setYHeadRot(getYRot());
-        passenger.setXRot(Math.min(passenger.getXRot(), 20f));
+    }
+
+    /** Boarding: the player faces the way the ship points, looking no further down than 20° (sent to their client). */
+    protected void faceBow(Player player) {
+        player.forceSetRotation(getYRot(), false, Math.min(player.getXRot(), 20f), false);
     }
 
     /**
@@ -393,7 +401,10 @@ public abstract class AbstractShip extends VehicleEntity implements HasCustomInv
             return InteractionResult.SUCCESS;
         }
         if (!canAddPassenger(player)) return InteractionResult.PASS;
-        if (!level().isClientSide()) return player.startRiding(this) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        if (!level().isClientSide()) {
+            if (!player.startRiding(this)) return InteractionResult.PASS;
+            faceBow(player);
+        }
         return InteractionResult.SUCCESS;
     }
 
