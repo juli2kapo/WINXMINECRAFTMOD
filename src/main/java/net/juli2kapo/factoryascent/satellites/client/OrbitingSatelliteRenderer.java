@@ -25,19 +25,21 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Draws a satellite flying in Earth orbit with the same 3D model as in the sky
- * ({@link SatelliteSkyClient}), {@link #SCALE} times its item size (about seven blocks across the
+ * ({@link SatelliteSkyClient}), {@link #SCALE} times its item size (about nine blocks across the
  * solar wings), sunlit, facing along its track and rocking a little. Far ones are drawn nearer and
  * smaller (same size on screen) so the black fog of orbit never swallows them. Its name and
  * distance show within {@link #LABEL_RANGE} blocks (or through a spyglass).
  */
 public class OrbitingSatelliteRenderer extends EntityRenderer<OrbitingSatellite, OrbitingSatelliteRenderer.State> {
     /** How many blocks one item-model block becomes. */
-    public static final float SCALE = 3f;
+    public static final float SCALE = 4f;
     private static final double DRAW_DISTANCE = 64, LABEL_RANGE = 160;
 
     public static final class State extends EntityRenderState {
         SatelliteType type = SatelliteType.SURVEY;
         float yaw, wobble, roll;
+        /** From the camera to the satellite's centre. */
+        double offX, offY, offZ;
         @Nullable Component label;
     }
 
@@ -72,6 +74,10 @@ public class OrbitingSatelliteRenderer extends EntityRenderer<OrbitingSatellite,
         s.lightCoords = LightCoordsUtil.FULL_BRIGHT;
         s.label = null;
         Minecraft mc = Minecraft.getInstance();
+        Vec3 cam = mc.gameRenderer.mainCamera().position();
+        s.offX = s.x - cam.x;
+        s.offY = s.y + 1.75 - cam.y;
+        s.offZ = s.z - cam.z;
         if (mc.player != null) {
             double d = Math.sqrt(s.distanceToCameraSq);
             if (d < LABEL_RANGE || mc.player.isScoping()) {
@@ -86,14 +92,14 @@ public class OrbitingSatelliteRenderer extends EntityRenderer<OrbitingSatellite,
     @Override
     public void submit(State s, PoseStack pose, SubmitNodeCollector c, CameraRenderState camera) {
         var part = Minecraft.getInstance().getModelManager().getStandaloneModel(SatelliteSkyClient.model(s.type));
-        Vec3 off = new Vec3(s.x - camera.pos.x, s.y + 1.5 - camera.pos.y, s.z - camera.pos.z);
+        Vec3 off = new Vec3(s.offX, s.offY, s.offZ);
         double dist = off.length();
         double k = dist > DRAW_DISTANCE ? DRAW_DISTANCE / dist : 1.0;
         pose.pushPose();
         if (k < 1) pose.translate(-off.x * (1 - k), -off.y * (1 - k), -off.z * (1 - k));
-        pose.translate(0, 1.5, 0);
+        pose.translate(0, 1.75, 0);
         if (s.label != null) {
-            c.submitNameTag(pose, new Vec3(0, 2.6 * k, 0), 0, s.label, true, LightCoordsUtil.FULL_BRIGHT, camera);
+            c.submitNameTag(pose, new Vec3(0, 3.2 * k, 0), 0, s.label, true, LightCoordsUtil.FULL_BRIGHT, camera);
         }
         if (part != null) {
             float sc = (float) (SCALE * k);

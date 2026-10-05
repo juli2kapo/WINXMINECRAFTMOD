@@ -23,7 +23,7 @@ public final class SatellitesContent {
     /** Not saved, not summonable: bodies only exist while {@link SatelliteBodies} keeps them. */
     public static final DeferredHolder<EntityType<?>, EntityType<OrbitingSatellite>> ORBITING_SATELLITE = ENTITIES.registerEntityType(
             "orbiting_satellite", OrbitingSatellite::new, MobCategory.MISC,
-            b -> b.sized(5.0f, 3.0f).clientTrackingRange(16).updateInterval(20).noSave().noSummon().fireImmune());
+            b -> b.sized(6.0f, 3.5f).clientTrackingRange(16).updateInterval(20).noSave().noSummon().fireImmune());
 
     private SatellitesContent() {}
 

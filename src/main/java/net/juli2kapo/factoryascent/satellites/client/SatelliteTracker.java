@@ -38,7 +38,7 @@ final class SatelliteTracker {
         SatelliteSky.Entry nearest = null;
         Vec3 to = null;
         for (SatelliteSky.Entry e : list) {
-            Vec3 d = SatelliteSkyClient.orbitPosition(e, time).add(0, 1.5, 0).subtract(eye);
+            Vec3 d = SatelliteSkyClient.orbitPosition(e, time).add(0, 1.75, 0).subtract(eye);
             if (to == null || d.lengthSqr() < to.lengthSqr()) {
                 nearest = e;
                 to = d;

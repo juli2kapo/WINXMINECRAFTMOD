@@ -88,12 +88,12 @@ public final class SatelliteGameTests {
         OrbitingSatellite body = SatellitesContent.ORBITING_SATELLITE.get().create(h.getLevel(), EntitySpawnReason.EVENT);
         check(h, body != null, "the body must be created");
         body.link(sat.id(), sat.type(), sat.launchTime(), BlockPos.ZERO, 320);
-        Vec3 at = h.absoluteVec(new Vec3(4.5, 2, 6.5));
+        Vec3 at = h.absoluteVec(new Vec3(4.5, 2, 7.5));
         body.setPos(at.x, at.y, at.z); // outside Earth orbit a body holds still
         h.getLevel().addFreshEntity(body);
         h.runAfterDelay(2, () -> check(h, !ship.isRemoved() && OrbitRegistry.get(server).find(sat.id()).isPresent(),
                 "nothing may happen before they touch"));
-        h.runAfterDelay(3, () -> ship.setPos(h.absoluteVec(new Vec3(4.5, 2, 3.9)))); // drifts into it
+        h.runAfterDelay(3, () -> ship.setPos(h.absoluteVec(new Vec3(4.5, 2, 4.9)))); // drifts into it
         h.succeedWhen(() -> {
             check(h, OrbitRegistry.get(server).find(sat.id()).isEmpty(), "the satellite must leave the registry");
             check(h, OrbitRegistry.changes() > changes, "the sky sync must be bumped");
