@@ -30,7 +30,9 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * Satellites you can see: every client gets the list of satellites over the sky it is under
  * (Earth orbit and the Overworld show the Overworld's, a planet its own), so it can draw them
  * passing overhead (3D models in orbit and on the planets, moving dots in the Overworld's night
- * sky). They are out of reach: drawn in the sky, never entities. Your team's satellites come with
+ * sky). Over the planets they are out of reach, only drawn in the sky; the Overworld's also fly in
+ * Earth orbit as real bodies ({@code satellites.SatelliteBodies}), and orbit draws them where they
+ * really are. Your team's satellites come with
  * their names; other teams' stay "unidentified" until one of your team's Orbital Radars has locked
  * them.
  *
@@ -38,8 +40,12 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * whenever a satellite is launched or removed.
  */
 public final class SatelliteSky {
-    /** One satellite as a client sees it. */
-    public record Entry(UUID id, int type, String name, String owner, boolean own, boolean identified) {
+    /**
+     * One satellite as a client sees it; {@code launchTime} and the spot it circles over
+     * ({@code centerX}, {@code centerZ}) place it in Earth orbit ({@code satellites.SatelliteOrbit}).
+     */
+    public record Entry(UUID id, int type, String name, String owner, boolean own, boolean identified,
+                        long launchTime, int centerX, int centerZ) {
         public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC, Entry::id,
                 ByteBufCodecs.VAR_INT, Entry::type,
@@ -47,7 +53,14 @@ public final class SatelliteSky {
                 ByteBufCodecs.stringUtf8(64), Entry::owner,
                 ByteBufCodecs.BOOL, Entry::own,
                 ByteBufCodecs.BOOL, Entry::identified,
+                ByteBufCodecs.VAR_LONG, Entry::launchTime,
+                ByteBufCodecs.VAR_INT, Entry::centerX,
+                ByteBufCodecs.VAR_INT, Entry::centerZ,
                 Entry::new);
+
+        public Entry(UUID id, int type, String name, String owner, boolean own, boolean identified) {
+            this(id, type, name, owner, own, identified, 0L, 0, 0);
+        }
 
         public SatelliteType satelliteType() {
             SatelliteType[] all = SatelliteType.values();
@@ -55,12 +68,17 @@ public final class SatelliteSky {
         }
     }
 
-    /** Server → client: the satellites over the sky the player is under ({@code sky} = the player's dimension). */
-    public record Payload(Identifier sky, List<Entry> satellites) implements CustomPacketPayload {
+    /**
+     * Server → client: the satellites over the sky the player is under ({@code sky} = the player's
+     * dimension); {@code altitude} is their orbit height in Earth orbit, 0 when they don't fly there
+     * as bodies (config off): then orbit draws them in the sky like the planets do.
+     */
+    public record Payload(Identifier sky, List<Entry> satellites, int altitude) implements CustomPacketPayload {
         public static final Type<Payload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "satellite_sky"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Payload> STREAM_CODEC = StreamCodec.composite(
                 Identifier.STREAM_CODEC, Payload::sky,
                 Entry.STREAM_CODEC.apply(ByteBufCodecs.list(512)), Payload::satellites,
+                ByteBufCodecs.VAR_INT, Payload::altitude,
                 Payload::new);
 
         @Override
@@ -111,13 +129,21 @@ public final class SatelliteSky {
      */
     public static List<Entry> entriesFor(List<OrbitRegistry.Owned> satellites, String team, Set<UUID> identified,
                                          Function<String, String> teamName) {
+        return entriesFor(satellites, team, identified, teamName, s -> net.minecraft.core.BlockPos.ZERO);
+    }
+
+    /** As above, with the spot each satellite circles over in Earth orbit. */
+    public static List<Entry> entriesFor(List<OrbitRegistry.Owned> satellites, String team, Set<UUID> identified,
+                                         Function<String, String> teamName, Function<Satellite, net.minecraft.core.BlockPos> center) {
         List<Entry> out = new ArrayList<>();
         for (OrbitRegistry.Owned o : satellites) {
             if (out.size() >= 512) break;
             Satellite s = o.satellite();
             boolean own = o.team().equals(team);
             boolean known = own || identified.contains(s.id());
-            out.add(new Entry(s.id(), s.type().ordinal(), known ? s.name() : "", known ? teamName.apply(o.team()) : "", own, known));
+            var c = center.apply(s);
+            out.add(new Entry(s.id(), s.type().ordinal(), known ? s.name() : "", known ? teamName.apply(o.team()) : "", own, known,
+                    s.launchTime(), c.getX(), c.getZ()));
         }
         return out;
     }
@@ -129,8 +155,11 @@ public final class SatelliteSky {
         FactoryTeams teams = FactoryTeams.get(server);
         String team = teams.teamOf(player.getUUID());
         List<Entry> list = entriesFor(OrbitRegistry.get(server).everyOver(satelliteDimension(sky)), team,
-                LOCKS.getOrDefault(team, Set.of()), teams::displayName);
-        PacketDistributor.sendToPlayer(player, new Payload(sky.identifier(), list));
+                LOCKS.getOrDefault(team, Set.of()), teams::displayName,
+                s -> net.juli2kapo.factoryascent.satellites.SatelliteOrbit.center(server, s));
+        int altitude = net.juli2kapo.factoryascent.satellites.SatelliteConfig.physical()
+                ? net.juli2kapo.factoryascent.satellites.SatelliteConfig.altitude() : 0;
+        PacketDistributor.sendToPlayer(player, new Payload(sky.identifier(), list, altitude));
     }
 
     /**
@@ -172,7 +201,7 @@ public final class SatelliteSky {
         for (int i = 0; i < count; i++) {
             int n = orbit.count(team, type) + 1;
             orbit.add(team, new Satellite(type, over, server.overworld().getGameTime(), type.shortName().getString() + "-" + n,
-                    foreign ? new UUID(0, 0) : p.getUUID()));
+                    foreign ? new UUID(0, 0) : p.getUUID(), over == Level.OVERWORLD ? p.blockPosition() : null));
         }
         c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("Added " + count + " " + typeName
                 + " satellites" + (foreign ? " (team Rivals)" : "")), true);

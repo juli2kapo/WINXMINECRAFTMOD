@@ -41,9 +41,9 @@ import org.joml.Vector4f;
  * </ul>
  */
 public final class SatelliteSkyClient {
-    static final StandaloneModelKey<BlockStateModelPart> SURVEY = key("survey_satellite_3d");
-    static final StandaloneModelKey<BlockStateModelPart> UPLINK = key("uplink_satellite_3d");
-    static final StandaloneModelKey<BlockStateModelPart> GUARDIAN = key("guardian_satellite_3d");
+    public static final StandaloneModelKey<BlockStateModelPart> SURVEY = key("survey_satellite_3d");
+    public static final StandaloneModelKey<BlockStateModelPart> UPLINK = key("uplink_satellite_3d");
+    public static final StandaloneModelKey<BlockStateModelPart> GUARDIAN = key("guardian_satellite_3d");
     private static final Identifier DOT = Identifier.fromNamespaceAndPath(FactoryAscent.MOD_ID, "textures/environment/satellite_dot.png");
     /** How big a satellite looks: as if it were this many times its item model, at its true distance. */
     private static final float SCALE = 9f;
@@ -52,6 +52,8 @@ public final class SatelliteSkyClient {
 
     private static Identifier sky = Identifier.withDefaultNamespace("overworld");
     private static List<SatelliteSky.Entry> satellites = List.of();
+    /** Height of the satellites' real orbits in Earth orbit, or 0 when they don't fly there (config off). */
+    private static int orbitAltitude;
 
     private SatelliteSkyClient() {}
 
@@ -67,6 +69,26 @@ public final class SatelliteSkyClient {
     static void receive(SatelliteSky.Payload payload) {
         sky = payload.sky();
         satellites = List.copyOf(payload.satellites());
+        orbitAltitude = payload.altitude();
+    }
+
+    /** Height of the real orbits in Earth orbit, 0 if the satellites only appear in the sky there. */
+    public static int orbitAltitude() {
+        return orbitAltitude;
+    }
+
+    /** Where a satellite really flies in Earth orbit at {@code time} (only meaningful with {@link #orbitAltitude} &gt; 0). */
+    public static Vec3 orbitPosition(SatelliteSky.Entry e, double time) {
+        return net.juli2kapo.factoryascent.satellites.SatelliteOrbit.position(e.id(), e.launchTime(), e.centerX() + 0.5,
+                e.centerZ() + 0.5, orbitAltitude, time);
+    }
+
+    /** The known entry of a satellite, if the sky list has it. */
+    public static SatelliteSky.@org.jspecify.annotations.Nullable Entry entry(java.util.UUID id) {
+        for (SatelliteSky.Entry e : current()) {
+            if (e.id().equals(id)) return e;
+        }
+        return null;
     }
 
     /** The satellites known for the sky the player is under now (empty if the list is for another sky). */
@@ -83,7 +105,7 @@ public final class SatelliteSkyClient {
         return new double[] {170, 90};
     }
 
-    private static StandaloneModelKey<BlockStateModelPart> model(SatelliteType type) {
+    public static StandaloneModelKey<BlockStateModelPart> model(SatelliteType type) {
         return switch (type) {
             case SURVEY -> SURVEY;
             case UPLINK -> UPLINK;
@@ -106,8 +128,18 @@ public final class SatelliteSkyClient {
         var collector = event.getSubmitNodeCollector();
         Vec3 look = mc.player.getViewVector(1f);
         boolean scoping = mc.player.isScoping();
+        // Earth orbit with flying satellites: each one where it really is (its body draws it when near)
+        boolean real = dim == SpaceRules.ORBIT && orbitAltitude > 0;
+        Vec3 cam = event.getLevelRenderState().cameraRenderState.pos;
         for (SatelliteSky.Entry e : list) {
-            double[] off = SatelliteTrack.offset(e.id(), time, h[0], h[1]);
+            double[] off;
+            if (real) {
+                if (net.juli2kapo.factoryascent.satellites.SatelliteBodies.presentOnClient(e.id(), level.getGameTime())) continue;
+                Vec3 at = orbitPosition(e, time).subtract(cam);
+                off = new double[] {at.x, at.y, at.z};
+            } else {
+                off = SatelliteTrack.offset(e.id(), time, h[0], h[1]);
+            }
             double dist = Math.sqrt(off[0] * off[0] + off[1] * off[1] + off[2] * off[2]);
             if (dist < 1) continue;
             double k = Math.min(1.0, DRAW_DISTANCE / dist);
@@ -116,7 +148,7 @@ public final class SatelliteSkyClient {
             pose.translate(off[0] * k, off[1] * k, off[2] * k);
             if (part != null) {
                 pose.pushPose();
-                float s = (float) (SCALE * k);
+                float s = (float) ((real ? net.juli2kapo.factoryascent.satellites.client.OrbitingSatelliteRenderer.SCALE : SCALE) * k);
                 pose.mulPose(Axis.YP.rotation((float) SatelliteTrack.spin(e.id(), time)));
                 pose.mulPose(Axis.XP.rotationDegrees(15f));
                 pose.scale(s, s, s);
@@ -136,7 +168,7 @@ public final class SatelliteSkyClient {
         }
     }
 
-    static Component label(SatelliteSky.Entry e) {
+    public static Component label(SatelliteSky.Entry e) {
         if (!e.identified()) {
             return Component.translatable("sky.factoryascent.unidentified", e.satelliteType().shortName()).withStyle(ChatFormatting.RED);
         }

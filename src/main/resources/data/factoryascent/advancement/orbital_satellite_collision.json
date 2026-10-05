@@ -1,0 +1,25 @@
+{
+  "parent": "factoryascent:orbital_shuttle_orbit",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "factoryascent:uplink_satellite"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.orbital_satellite_collision.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.orbital_satellite_collision.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

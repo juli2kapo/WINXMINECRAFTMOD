@@ -548,13 +548,21 @@ entry("satellites", "Satellites", (
     "explored yet (guessed from the terrain generator, then imaged for real once the chunks are generated).\n"
     "- [[uplink_satellite]]: signal everywhere in the dimension (phone, wireless terminal).\n"
     "- [[guardian_satellite]]: stops the next anti-satellite missile.\n- [[orbital_radar]]: lists every satellite overhead.\n"
-    "A satellite covers the dimension it is launched from."),
+    "A satellite covers the dimension it is launched from.\n"
+    "The Overworld's satellites really fly in Earth orbit, a few hundred blocks above the stations, circling over the "
+    "pad that launched them. A [[shuttle]] can reach them (its HUD tracks the nearest one), but touching one destroys "
+    "both: the satellite is lost to its team and the shuttle breaks apart, its crew thrown clear and its cargo left "
+    "floating among the scrap."),
     "Satélites", (
     "- [[survey_satellite]]: tus [[ground_station|estaciones terrenas]] cartografían los alrededores, incluso tierras "
     "sin explorar (estimadas con el generador de terreno y fotografiadas de verdad cuando se generan).\n"
     "- [[uplink_satellite]]: señal en toda la dimensión (teléfono, terminal inalámbrica).\n"
     "- [[guardian_satellite]]: detiene el próximo misil antisatélite.\n- [[orbital_radar]]: lista todos los satélites.\n"
-    "Un satélite cubre la dimensión desde la que se lanza."))
+    "Un satélite cubre la dimensión desde la que se lanza.\n"
+    "Los satélites del mundo principal vuelan de verdad en la órbita terrestre, unos cientos de bloques sobre las "
+    "estaciones, girando sobre la plataforma que los lanzó. Un [[shuttle|transbordador]] puede alcanzarlos (su HUD "
+    "rastrea el más cercano), pero tocar uno destruye a ambos: el equipo pierde el satélite y el transbordador se hace "
+    "pedazos, la tripulación sale despedida y la carga queda flotando entre la chatarra."))
 entry("plasma_forge", "Plasma Forge", (
     "The [[plasma_forge]] forges quantum alloy in a plasma arc. Your first [[orbital_targeting_core]] opens the "
     "Orbital Age; the forge opens the Quantum Age."),

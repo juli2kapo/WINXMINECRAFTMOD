@@ -387,7 +387,7 @@ public class LaunchControllerBlockEntity extends BlockEntity {
             Component custom = satellite.get(DataComponents.CUSTOM_NAME);
             String name = custom != null ? custom.getString()
                     : type.shortName().getString() + "-" + (orbit.count(team, type) + 1);
-            Satellite sat = new Satellite(type, level.dimension(), server.overworld().getGameTime(), name, who);
+            Satellite sat = new Satellite(type, level.dimension(), server.overworld().getGameTime(), name, who, worldPosition);
             orbit.add(team, sat);
             OrbitalText.tellTeam(server, team, Component.translatable("message.factoryascent.reached_orbit",
                     type.displayName(), name, OrbitalText.dimensionName(level.dimension())).withStyle(ChatFormatting.AQUA));

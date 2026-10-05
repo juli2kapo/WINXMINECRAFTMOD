@@ -95,6 +95,8 @@ public final class ModGameTests {
             new Test("sneak_use_returns_payload", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::sneakUseReturnsPayload),
             new Test("breaking_controller_drops_payload", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::breakingControllerDropsPayload),
             new Test("launch_button_launches", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::launchButtonLaunches),
+            new Test("satellite_orbit_math", 20, net.juli2kapo.factoryascent.satellites.SatelliteGameTests::orbitMath),
+            new Test("satellite_collision_destroys_both", 100, net.juli2kapo.factoryascent.satellites.SatelliteGameTests::collisionDestroysBoth),
             new Test("deorbit_removes_satellite", 20, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::deorbitRemovesSatellite),
             new Test("asat_destroys_foreign_satellite", 800, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::asatDestroysForeignSatellite),
             new Test("asat_destroys_own_satellite", 300, net.juli2kapo.factoryascent.orbital.OrbitalGameTests::asatDestroysOwnSatellite),
