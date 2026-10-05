@@ -1,0 +1,110 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "fan": "factoryascent:block/train_fan",
+    "steel": "factoryascent:block/train_steel",
+    "particle": "factoryascent:block/train_fan"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        7.85,
+        5
+      ],
+      "to": [
+        11,
+        8.15,
+        11
+      ],
+      "faces": {
+        "up": {
+          "texture": "#fan",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#fan",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        7.6,
+        7.5
+      ],
+      "to": [
+        8.5,
+        8.4,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            1.0,
+            0.8
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            1.0,
+            0.8
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            1.0,
+            0.8
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            1.0,
+            0.8
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    }
+  ]
+}

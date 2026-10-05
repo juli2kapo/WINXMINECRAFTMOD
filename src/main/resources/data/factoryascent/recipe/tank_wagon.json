@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "PMP"
+  ],
+  "key": {
+    "T": "factoryascent:bronze_fluid_tank",
+    "M": "minecraft:minecart",
+    "P": "#c:plates/bronze"
+  },
+  "result": {
+    "id": "factoryascent:tank_wagon"
+  }
+}

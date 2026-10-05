@@ -25,6 +25,7 @@ public final class SpaceConfig {
     public static final ModConfigSpec.IntValue SEALER_ENERGY;
     public static final ModConfigSpec.IntValue COMPRESSOR_ENERGY_PER_SECOND;
     public static final ModConfigSpec.DoubleValue JETPACK_ENERGY;
+    public static final ModConfigSpec.BooleanValue BOOTS_ROTATE_GRAVITY;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -68,6 +69,10 @@ public final class SpaceConfig {
                 .defineInRange("stationRadius", 32, 4, 128);
         STATION_PROTECTION = b.comment("Only the Station Core owner's team may break blocks inside a claimed station.")
                 .define("stationProtection", true);
+        BOOTS_ROTATE_GRAVITY = b.comment("Magnetic Boots really turn your gravity in low gravity: walk into a wall and it becomes",
+                        "your floor (view, movement and body turn with it). false = the old behaviour: climb walls and hang",
+                        "from ceilings with an upright view.")
+                .define("magneticBootsRotateGravity", true);
         b.pop();
         SPEC = b.build();
     }

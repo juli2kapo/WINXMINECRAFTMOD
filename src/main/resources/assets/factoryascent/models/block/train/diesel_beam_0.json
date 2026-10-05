@@ -1,0 +1,111 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "beam": "factoryascent:block/train_beam",
+    "particle": "factoryascent:block/train_beam"
+  },
+  "elements": [
+    {
+      "from": [
+        6.2,
+        7.32,
+        1.8
+      ],
+      "to": [
+        9.8,
+        9.48,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            12.2,
+            2.16
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            12.2,
+            2.16
+          ]
+        },
+        "up": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            3.6,
+            12.2
+          ]
+        },
+        "down": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            3.6,
+            12.2
+          ]
+        }
+      },
+      "light_emission": 15
+    },
+    {
+      "from": [
+        4.8,
+        6.48,
+        14
+      ],
+      "to": [
+        11.2,
+        10.32,
+        30
+      ],
+      "faces": {
+        "east": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            16,
+            3.84
+          ]
+        },
+        "west": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            16,
+            3.84
+          ]
+        },
+        "up": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            6.4,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#beam",
+          "uv": [
+            0,
+            0,
+            6.4,
+            16
+          ]
+        }
+      },
+      "light_emission": 15
+    }
+  ]
+}

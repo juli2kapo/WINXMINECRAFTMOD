@@ -1,0 +1,681 @@
+{
+  "parts": {
+    "steam_body": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_body_0",
+          "offset": [
+            -4,
+            -3,
+            -8
+          ]
+        }
+      ]
+    },
+    "steam_lamp_on": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_lamp_on_0",
+          "offset": [
+            -8,
+            13,
+            12
+          ]
+        }
+      ]
+    },
+    "steam_lamp_off": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_lamp_off_0",
+          "offset": [
+            -8,
+            13,
+            12
+          ]
+        }
+      ]
+    },
+    "steam_rod_l": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_rod_l_0",
+          "offset": [
+            -1,
+            -8,
+            -10
+          ]
+        }
+      ]
+    },
+    "steam_rod_r": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_rod_r_0",
+          "offset": [
+            -15,
+            -8,
+            -10
+          ]
+        }
+      ]
+    },
+    "steam_mainrod_l": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_mainrod_l_0",
+          "offset": [
+            0,
+            -8,
+            0
+          ]
+        }
+      ]
+    },
+    "steam_mainrod_r": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_mainrod_r_0",
+          "offset": [
+            -16,
+            -8,
+            0
+          ]
+        }
+      ]
+    },
+    "steam_piston_l": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_piston_l_0",
+          "offset": [
+            0,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "steam_piston_r": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_piston_r_0",
+          "offset": [
+            -16,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "wheel_big": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/wheel_big_0",
+          "offset": [
+            -2,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "wheel_small": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/wheel_small_0",
+          "offset": [
+            -2,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "bogie_7": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/bogie_7_0",
+          "offset": [
+            -1,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "bogie_6": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/bogie_6_0",
+          "offset": [
+            -1,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "diesel_body": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/diesel_body_0",
+          "offset": [
+            -8,
+            0,
+            -24
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/diesel_body_1",
+          "offset": [
+            -8,
+            0,
+            8
+          ]
+        }
+      ]
+    },
+    "diesel_glass": {
+      "translucent": true,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/diesel_glass_0",
+          "offset": [
+            -12,
+            13,
+            9
+          ]
+        }
+      ]
+    },
+    "diesel_lamp_on": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/diesel_lamp_on_0",
+          "offset": [
+            -8,
+            8,
+            16
+          ]
+        }
+      ]
+    },
+    "diesel_lamp_off": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/diesel_lamp_off_0",
+          "offset": [
+            -8,
+            8,
+            16
+          ]
+        }
+      ]
+    },
+    "diesel_beam": {
+      "translucent": true,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/diesel_beam_0",
+          "offset": [
+            -8,
+            8,
+            22
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/diesel_beam_1",
+          "offset": [
+            -8,
+            8,
+            54
+          ]
+        }
+      ]
+    },
+    "diesel_fan": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/diesel_fan_0",
+          "offset": [
+            -8,
+            -8,
+            -8
+          ]
+        }
+      ]
+    },
+    "coach_body": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/coach_body_0",
+          "offset": [
+            -8,
+            -1,
+            -21
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/coach_body_1",
+          "offset": [
+            -8,
+            -1,
+            5
+          ]
+        }
+      ]
+    },
+    "coach_glass": {
+      "translucent": true,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/coach_glass_0",
+          "offset": [
+            -1,
+            9,
+            -24
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/coach_glass_1",
+          "offset": [
+            -1,
+            9,
+            0
+          ]
+        }
+      ]
+    },
+    "boxcar_body": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/boxcar_body_0",
+          "offset": [
+            -8,
+            -1,
+            -19
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/boxcar_body_1",
+          "offset": [
+            -8,
+            -1,
+            3
+          ]
+        }
+      ]
+    },
+    "tank_body": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/tank_body_0",
+          "offset": [
+            -8,
+            0,
+            -19
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/tank_body_1",
+          "offset": [
+            -8,
+            0,
+            3
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/tank_body_2",
+          "offset": [
+            -4,
+            12,
+            -8
+          ]
+        }
+      ]
+    },
+    "hopper_body": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/hopper_body_0",
+          "offset": [
+            -8,
+            -1,
+            -15
+          ]
+        },
+        {
+          "model": "factoryascent:block/train/hopper_body_1",
+          "offset": [
+            -4,
+            -2,
+            9
+          ]
+        }
+      ]
+    },
+    "hopper_doors_open": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/hopper_doors_open_0",
+          "offset": [
+            -6,
+            -3,
+            -15
+          ]
+        }
+      ]
+    },
+    "hopper_doors_closed": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/hopper_doors_closed_0",
+          "offset": [
+            -8,
+            -2,
+            -15
+          ]
+        }
+      ]
+    },
+    "hopper_load": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/hopper_load_0",
+          "offset": [
+            -8,
+            -11,
+            -8
+          ]
+        }
+      ]
+    },
+    "coupler": {
+      "translucent": false,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/coupler_0",
+          "offset": [
+            -8,
+            -2,
+            -8
+          ]
+        }
+      ]
+    }
+  },
+  "layout": {
+    "steam_locomotive": {
+      "body": [
+        "steam_body"
+      ],
+      "wheels": [
+        [
+          "wheel_big",
+          4,
+          -11
+        ],
+        [
+          "wheel_big",
+          4,
+          -1.5
+        ],
+        [
+          "wheel_big",
+          4,
+          8
+        ]
+      ],
+      "bogies": [],
+      "half": 23
+    },
+    "diesel_locomotive": {
+      "body": [
+        "diesel_body"
+      ],
+      "glass": [
+        "diesel_glass"
+      ],
+      "wheels": [
+        [
+          "wheel_small",
+          2.8,
+          -18.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          -11.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          11.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          18.0
+        ]
+      ],
+      "bogies": [
+        [
+          "bogie_7",
+          2.8,
+          -14.5
+        ],
+        [
+          "bogie_7",
+          2.8,
+          14.5
+        ]
+      ],
+      "half": 26
+    },
+    "passenger_car": {
+      "body": [
+        "coach_body"
+      ],
+      "glass": [
+        "coach_glass"
+      ],
+      "wheels": [
+        [
+          "wheel_small",
+          2.8,
+          -16.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          -10.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          10.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          16.0
+        ]
+      ],
+      "bogies": [
+        [
+          "bogie_6",
+          2.8,
+          -13
+        ],
+        [
+          "bogie_6",
+          2.8,
+          13
+        ]
+      ],
+      "half": 22
+    },
+    "cargo_wagon": {
+      "body": [
+        "boxcar_body"
+      ],
+      "wheels": [
+        [
+          "wheel_small",
+          2.8,
+          -13.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          -7.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          7.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          13.0
+        ]
+      ],
+      "bogies": [
+        [
+          "bogie_6",
+          2.8,
+          -10
+        ],
+        [
+          "bogie_6",
+          2.8,
+          10
+        ]
+      ],
+      "half": 19
+    },
+    "tank_wagon": {
+      "body": [
+        "tank_body"
+      ],
+      "wheels": [
+        [
+          "wheel_small",
+          2.8,
+          -13.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          -7.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          7.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          13.0
+        ]
+      ],
+      "bogies": [
+        [
+          "bogie_6",
+          2.8,
+          -10
+        ],
+        [
+          "bogie_6",
+          2.8,
+          10
+        ]
+      ],
+      "half": 19
+    },
+    "hopper_wagon": {
+      "body": [
+        "hopper_body"
+      ],
+      "wheels": [
+        [
+          "wheel_small",
+          2.8,
+          -12.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          -6.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          6.0
+        ],
+        [
+          "wheel_small",
+          2.8,
+          12.0
+        ]
+      ],
+      "bogies": [
+        [
+          "bogie_6",
+          2.8,
+          -9
+        ],
+        [
+          "bogie_6",
+          2.8,
+          9
+        ]
+      ],
+      "half": 17
+    }
+  },
+  "motion": {
+    "crank": 2.2,
+    "cylinder_y": 5.0,
+    "mainrod": 6.0,
+    "fans": [
+      [
+        24.2,
+        -16
+      ],
+      [
+        24.2,
+        -7
+      ]
+    ],
+    "hopper_floor": 12.5,
+    "hopper_top": 21.8
+  }
+}

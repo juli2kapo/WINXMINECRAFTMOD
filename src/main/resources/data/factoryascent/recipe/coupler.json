@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "  C",
+    " R ",
+    "R  "
+  ],
+  "key": {
+    "C": "minecraft:chain",
+    "R": "#c:rods/iron"
+  },
+  "result": {
+    "id": "factoryascent:coupler"
+  }
+}

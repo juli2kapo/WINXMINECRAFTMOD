@@ -149,6 +149,11 @@ CHAPTERS = {
     "ships": ("Ships", "Barcos",
               "Sailing ships, motor ships and the orbital shuttle.",
               "Veleros, barcos a motor y la lanzadera orbital."),
+    "trains": ("Trains", "Trenes",
+               "Locomotives and wagons on minecart rails: couple them into trains, stop them at stations and load them "
+               "automatically.",
+               "Locomotoras y vagones sobre rieles de vagoneta: engánchalos en trenes, detenlos en estaciones y cárgalos "
+               "automáticamente."),
     "phone": ("Factory Phone", "Teléfono de fábrica",
               "Your factory in your pocket.",
               "Tu fábrica en el bolsillo."),
@@ -800,9 +805,8 @@ entry("stations", "Space Stations", (
     "# Shipping materials\nLoad a [[cargo_pod]] (right-click, 27 slots, or mount it empty and let hoppers or pipes "
     "fill it through the Launch Controller) and launch it: it is unloaded into the **cargo hold** of your team's Station "
     "Core above the pad (sneak-use the core with an empty hand; pipes work too). Without a station there it won't launch.\n"
-    "# Magnetic Boots\n[[magnetic_boots]] hold you to the deck at normal gravity. In low gravity they also stick to walls "
-    "and ceilings: walk into a wall to climb it (forward up, back down, no keys: stay put), jump into a ceiling to hang "
-    "under it and walk with the normal keys. Your view stays upright. Sneak to let go."),
+    "# Magnetic Boots\n[[magnetic_boots]] hold you to the deck at normal gravity, and in low gravity let you walk on "
+    "walls and ceilings: see **Walking on Walls**."),
     "Estaciones espaciales", (
     "Un [[station_core]] reclama la estación a su alrededor para tu equipo (otros no pueden romper bloques allí) e informa "
     "de módulos, energía y aire. Los [[docking_port|puertos de atraque]] sujetan lanzaderas.\n"
@@ -814,10 +818,38 @@ entry("stations", "Space Stations", (
     "# Enviar materiales\nCarga una [[cargo_pod]] (clic derecho, 27 huecos, o móntala vacía y deja que tolvas o tuberías "
     "la llenen por el controlador de lanzamiento) y lánzala: se descarga en la **bodega** del núcleo de estación de tu "
     "equipo sobre la plataforma (úsalo agachado con la mano vacía; también con tuberías). Sin estación allí no despega.\n"
-    "# Botas magnéticas\nLas [[magnetic_boots]] te sujetan a la cubierta con gravedad normal. En baja gravedad también se "
-    "pegan a paredes y techos: camina contra una pared para trepar (adelante sube, atrás baja, sin teclas te quedas "
-    "quieto), salta contra un techo para colgarte y camina con las teclas normales. La vista sigue derecha. Agáchate para "
-    "soltarte."))
+    "# Botas magnéticas\nLas [[magnetic_boots]] te sujetan a la cubierta con gravedad normal y en baja gravedad te "
+    "dejan caminar por paredes y techos: mira **Caminar por las paredes**."))
+entry("magnetic_boots", "Walking on Walls", (
+    "In low gravity (orbit, the Moon, Mars, Io) [[magnetic_boots]] turn **your own gravity**: whatever surface the soles "
+    "stand on becomes your floor. They hold you to it at normal gravity, so walking, jumping and building feel like home.\n"
+    "# Getting on a wall\nWalk into a wall (at least two blocks high) and you step onto it: the view swings round, the "
+    "wall is now the floor and the room is lying on its side. Walk up it into the ceiling and the ceiling becomes your "
+    "floor; walk down a wall back onto the deck and you are the right way up again. Jump into a ceiling to flip onto it.\n"
+    "# Up there\nEverything turns with you: the mouse looks around your new up, WASD walks along the surface, jumping "
+    "pushes off it, you place, break and use blocks from where your eyes are, and other players see you standing on the wall. "
+    "You walk through doorways and over small steps as usual; walls bending outwards (an outside corner) can't be followed.\n"
+    "# Letting go\nSneak to switch the magnets off and drift down. You also let go when the boots come off, gravity is "
+    "normal, you leave every surface for a moment, or you fly, ride, swim, glide or sleep. Falls are forgiven while the "
+    "boots hold you.\n"
+    "# Config\n**magneticBootsRotateGravity** (space server config, on by default). Off: the boots climb walls and hang from "
+    "ceilings with an upright view instead (forward climbs, back climbs down)."),
+    "Caminar por las paredes", (
+    "En baja gravedad (órbita, la Luna, Marte, Ío) las [[magnetic_boots]] giran **tu propia gravedad**: la superficie que "
+    "pisan las suelas pasa a ser tu suelo. Te sujetan a ella con gravedad normal, así que caminar, saltar y construir es "
+    "como en casa.\n"
+    "# Subir a una pared\nCamina contra una pared (de al menos dos bloques de alto) y te subes a ella: la vista gira, la "
+    "pared es ahora el suelo y la sala queda de lado. Sube por ella hasta el techo y el techo será tu suelo; baja por una "
+    "pared hasta la cubierta y vuelves a estar derecho. Salta contra un techo para darte la vuelta sobre él.\n"
+    "# Allí arriba\nTodo gira contigo: el ratón mira alrededor de tu nuevo arriba, WASD camina por la superficie, saltar te "
+    "separa de ella, colocas, rompes y usas bloques desde tus ojos, y los demás jugadores te ven de pie en la pared. Pasas "
+    "por puertas y pequeños escalones como siempre; las esquinas exteriores (paredes que se doblan hacia fuera) no se pueden "
+    "seguir.\n"
+    "# Soltarse\nAgáchate para apagar los imanes y bajar flotando. También te sueltas si te quitas las botas, la gravedad es "
+    "normal, te alejas de toda superficie un momento, o vuelas, montas, nadas, planeas o duermes. Mientras las botas te "
+    "sujetan no hay daño por caída.\n"
+    "# Configuración\n**magneticBootsRotateGravity** (configuración espacial del servidor, activada por defecto). Desactivada: "
+    "las botas trepan paredes y cuelgan de techos con la vista derecha (adelante sube, atrás baja)."))
 entry("shuttle", "Orbital Shuttle", (
     "The [[shuttle]] carries two and burns Rocket Fuel: climb above the sky to reach orbit, dive back to re-enter. The "
     "cabin is sealed. Refuel at a [[fuelling_port]]; an [[ion_drive]] in the hold halves fuel and time; the "
@@ -919,6 +951,71 @@ entry("orbital_shuttle", "Shuttle Flight", (
     "Vuelo en lanzadera", (
     "Mira [[@shuttle]]. W/S empuje, A/D giro, Espacio subir, Mayús bajar, K abre la escotilla. Desciende con cuidado sobre "
     "un [[docking_port]] para atracar y repostar."))
+
+# ---- Trains
+entry("steam_locomotive", "Steam Locomotive", (
+    "The [[steam_locomotive]] runs on ordinary minecart rails: straights, curves, slopes, junctions, powered, detector "
+    "and activator rails. Right-click a rail to set it down (its front toward where you look) and right-click it to "
+    "climb into the cab.\n# Driving\n**W/S** move the throttle lever (it stays where you leave it; past zero is "
+    "reverse), **Space** brakes, **H** blows the whistle, **J** lights the lamp, **E** opens the cab, Shift gets off. "
+    "The mouse looks around freely. Speed builds up gradually, more slowly the heavier the train.\n# Fuel and water\n"
+    "The firebox burns furnace fuel from the four bunker slots (hoppers above the rails can top them up) and boils "
+    "water from a 10,000 mB tank: fill it with water buckets or at a [[train_station]]. Pressure has to build before it "
+    "pulls; out of water or fuel it coasts. Up to 36 km/h.\n# Rails\nUnpowered powered rails stop it, powered ones "
+    "speed up slow trains, like minecarts. A locomotive left with its throttle open keeps going on its own."),
+    "Locomotora de vapor", (
+    "La [[steam_locomotive]] va por rieles de vagoneta normales: rectas, curvas, pendientes, cruces y rieles propulsores, "
+    "detectores y activadores. Clic derecho en un riel para colocarla (el frente hacia donde miras) y clic derecho sobre "
+    "ella para subir a la cabina.\n# Conducir\n**W/S** mueven el regulador (se queda donde lo dejas; pasado el cero es "
+    "marcha atrás), **Espacio** frena, **H** hace sonar el silbato, **J** enciende el farol, **E** abre la cabina, Mayús "
+    "para bajar. El ratón mira libremente. La velocidad sube poco a poco, más despacio cuanto más pesa el tren.\n"
+    "# Combustible y agua\nEl hogar quema combustible de horno de las cuatro casillas de la carbonera (las tolvas sobre "
+    "los rieles pueden rellenarlas) y hierve el agua de un tanque de 10.000 mB: llénalo con cubos de agua o en una "
+    "[[train_station]]. Hay que levantar presión antes de tirar; sin agua o sin fuego avanza por inercia. Hasta 36 km/h.\n"
+    "# Rieles\nLos rieles propulsores apagados la detienen y los encendidos aceleran trenes lentos, como a las vagonetas. "
+    "Una locomotora con el regulador abierto sigue sola."))
+entry("wagons", "Wagons and Coupling", (
+    "Wagons go on rails like minecarts. Join them with a [[coupler]]: right-click one vehicle, then the one next to it; "
+    "sneak-right-click a vehicle to uncouple the end you clicked. A coupled train keeps its spacing on curves and slopes "
+    "and follows the locomotive (pushing works too); it never derails. A coupling breaks only if the track under a "
+    "wagon disappears or one of them is destroyed. Trains have at most 12 vehicles (config).\n"
+    "- [[passenger_car]]: four seats.\n- [[cargo_wagon]]: 54 slots; hoppers above or below the rails load and unload "
+    "it like a chest minecart.\n- [[tank_wagon]]: 32,000 mB of any fluid, filled and emptied at a station or by bucket.\n"
+    "- [[hopper_wagon]]: open top, catches items dropped into it, dumps its load on a powered activator rail.\n"
+    "Breaking a vehicle drops it with its cargo, tank and charge inside."),
+    "Vagones y enganches", (
+    "Los vagones van por los rieles como vagonetas. Únelos con un [[coupler]]: clic derecho en un vehículo y luego en el "
+    "de al lado; agáchate y haz clic derecho para desenganchar el extremo que tocaste. Un tren enganchado mantiene la "
+    "distancia en curvas y pendientes y sigue a la locomotora (también empujando); nunca descarrila. Un enganche solo se "
+    "rompe si desaparece la vía bajo un vagón o se destruye uno de ellos. Los trenes tienen como máximo 12 vehículos "
+    "(configurable).\n- [[passenger_car]]: cuatro asientos.\n- [[cargo_wagon]]: 54 casillas; las tolvas encima o debajo "
+    "de los rieles lo cargan y descargan como una vagoneta con cofre.\n- [[tank_wagon]]: 32.000 mB de cualquier fluido, "
+    "se llena y vacía en una estación o con cubos.\n- [[hopper_wagon]]: abierto, recoge los objetos que caen dentro y "
+    "descarga sobre un riel activador encendido.\nAl romper un vehículo cae con su carga, su tanque y su energía dentro."))
+entry("train_station", "Train Stations", (
+    "Place a [[train_station]] next to the rails. A train arriving on the rails beside it brakes and stops (always, only "
+    "while the station gets redstone, or never), waits (a set time, or until nothing more moves) and leaves.\n"
+    "# Loading\nWhile a train stands there, the station moves items, fluids and FE between the stopped vehicles and the "
+    "chests, tanks and batteries touching the station: **Load** fills wagons, locomotive bunkers, water and diesel tanks "
+    "and batteries; **Unload** empties wagons and tank wagons. Pipes connected to the station itself reach the docked "
+    "vehicles. Its lamp turns green while it holds a train."),
+    "Estaciones de tren", (
+    "Coloca una [[train_station]] junto a los rieles. Un tren que llega a los rieles de al lado frena y se detiene "
+    "(siempre, solo mientras la estación recibe redstone, o nunca), espera (un tiempo fijo o hasta que no se mueva nada "
+    "más) y sigue.\n# Carga\nMientras el tren está detenido, la estación mueve objetos, fluidos y FE entre los vehículos "
+    "y los cofres, tanques y baterías que la tocan: **Cargar** llena vagones, carboneras, tanques de agua y diésel y "
+    "baterías; **Descargar** vacía vagones y cisternas. Las tuberías conectadas a la estación llegan a los vehículos "
+    "detenidos. Su luz se pone verde mientras retiene un tren."))
+entry("diesel_locomotive", "Diesel-Electric Locomotive", (
+    "The [[diesel_locomotive]] drives like the steam engine but pulls harder and reaches 65 km/h. Its traction motors "
+    "run from a 200k FE battery that an on-board diesel generator recharges from a 16,000 mB diesel tank. Fill it with "
+    "diesel buckets or at a [[train_station]] (which can also charge the battery from an energy cell next to it), or put "
+    "a charged item in its power slot. **J** switches the headlight, **H** sounds the horn."),
+    "Locomotora diésel-eléctrica", (
+    "La [[diesel_locomotive]] se conduce como la de vapor pero tira más fuerte y llega a 65 km/h. Sus motores de tracción "
+    "usan una batería de 200k FE que un generador diésel a bordo recarga desde un tanque de 16.000 mB. Llénala con cubos "
+    "de diésel o en una [[train_station]] (que también carga la batería desde una celda de energía al lado), o pon un "
+    "objeto cargado en su casilla de energía. **J** enciende el faro, **H** toca la bocina."))
 
 # ---- Phone
 entry("phone", "Factory Phone", (

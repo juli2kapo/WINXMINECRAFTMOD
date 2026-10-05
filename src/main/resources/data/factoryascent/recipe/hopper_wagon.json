@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PHP",
+    " M "
+  ],
+  "key": {
+    "H": "minecraft:hopper",
+    "M": "minecraft:minecart",
+    "P": "#c:plates/bronze"
+  },
+  "result": {
+    "id": "factoryascent:hopper_wagon"
+  }
+}

@@ -31,7 +31,8 @@ public final class GuideEntries {
         QUANTUM("quantum_alloy_ingot", 0xFF2FD5CF), POWER("combustion_generator", 0xFFE0A030),
         FLUIDS("bronze_fluid_pipe", 0xFF3F7FD0), LOGISTICS("bronze_item_pipe", 0xFF8A8A50),
         NUCLEAR("reactor_controller", 0xFF6FCF3F), SPACE("shuttle", 0xFF5060C0), DYSON("dyson_collector", 0xFFF0B020),
-        ENDER("ender_anchor", 0xFF8E4FD6), SHIPS("bronze_cog", 0xFF2E8FB0), PHONE("factory_phone", 0xFF3FA7B5);
+        ENDER("ender_anchor", 0xFF8E4FD6), SHIPS("bronze_cog", 0xFF2E8FB0), TRAINS("steam_locomotive", 0xFFB0703A),
+        PHONE("factory_phone", 0xFF3FA7B5);
 
         public final String icon;
         public final int color;
@@ -158,7 +159,8 @@ public final class GuideEntries {
         e("rockets", SP, "crew_capsule", "orbital_pad", "crew_capsule rocket_fuel return_pod station_kit", null);
         e("suits_oxygen", SP, "astronaut_helmet", "orbital_pad", "astronaut_helmet astronaut_suit astronaut_leggings astronaut_boots oxygen_compressor oxygen_cell", null);
         e("sealed_rooms", SP, "oxygen_sealer", "space_orbit", "oxygen_sealer air_vent airlock_door", null);
-        e("stations", SP, "station_core", "space_orbit", "station_core station_kit cargo_pod docking_port magnetic_boots", null);
+        e("stations", SP, "station_core", "space_orbit", "station_core station_kit cargo_pod docking_port", null);
+        e("magnetic_boots", SP, "magnetic_boots", "station_boots", "magnetic_boots", null);
         e("shuttle", SP, "shuttle", "space_orbit", "shuttle fuelling_port ion_drive star_chart", null);
         e("planets", SP, "mars_rock", "orbital_shuttle_orbit", "fuel_synthesizer ascent_module thermal_lining distress_beacon", null);
         e("jetpacks", SP, "electric_jetpack", "age_automation", "electric_jetpack advanced_jetpack jet_suit", null);
@@ -177,6 +179,12 @@ public final class GuideEntries {
         e("sailing", SH, "bronze_cog", "age_bronze", "bronze_cog", null);
         e("motor_ship", SH, "motor_ship", "electric_circuit", "motor_ship", null);
         e("orbital_shuttle", SH, "shuttle", "space_orbit", "shuttle docking_port", null);
+        // ---------------------------------------------------------------- Trains
+        Chapter TR = Chapter.TRAINS;
+        e("steam_locomotive", TR, "steam_locomotive", "age_bronze", "steam_locomotive", null);
+        e("wagons", TR, "cargo_wagon", "bronze_steam_locomotive", "coupler passenger_car cargo_wagon tank_wagon hopper_wagon", null);
+        e("train_station", TR, "train_station", "bronze_coupler", "train_station", null);
+        e("diesel_locomotive", TR, "diesel_locomotive", "automation_diesel", "diesel_locomotive", null);
         // ---------------------------------------------------------------- Phone
         Chapter PH = Chapter.PHONE;
         e("phone", PH, "factory_phone", "age_automation", "factory_phone link_card phone_dock", null);

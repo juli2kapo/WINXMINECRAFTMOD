@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " X ",
+    "PMP"
+  ],
+  "key": {
+    "X": "factoryascent:bronze_crate",
+    "M": "minecraft:minecart",
+    "P": "#c:plates/bronze"
+  },
+  "result": {
+    "id": "factoryascent:cargo_wagon"
+  }
+}

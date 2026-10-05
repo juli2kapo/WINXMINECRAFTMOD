@@ -19,12 +19,12 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * at normal gravity instead of floating off with every step and jump. Sneaking switches the magnets
  * off (to drift free, or climb onto a ledge); far from any floor they do nothing.
  *
- * <p>They also hold on to walls and ceilings in low gravity ({@link Hold}): walk into a wall and
+ * <p>In low gravity they also take you onto walls and ceilings. By default (config
+ * {@code magneticBootsRotateGravity}) they really turn your gravity: walk into a wall and it
+ * becomes your floor, view and all ({@link net.juli2kapo.factoryascent.space.gravity.Gravity}).
+ * With that off they fall back to the older, upright version ({@link Hold}): walk into a wall and
  * you climb it like a spider (forward or jump climbs, back climbs down, no keys: you stay put);
- * jump into a ceiling and you hang under it, walking with the normal keys. Minecraft has no way to
- * turn a player's "down" (the camera, the hitbox and the movement code all assume it is -Y), so
- * this is the robust version of wall walking: the view stays upright while the boots pin you to
- * the surface. Sneak to let go.
+ * jump into a ceiling and you hang under it, walking with the normal keys. Sneak to let go.
  */
 public final class MagneticBoots {
     /** How far below the feet a floor still holds the boots. */
@@ -45,9 +45,12 @@ public final class MagneticBoots {
         return entity.getItemBySlot(EquipmentSlot.FEET).is(StationContent.MAGNETIC_BOOTS.get());
     }
 
-    /** A block with a collision shape within {@link #REACH} below the feet. */
+    /** A block with a collision shape within {@link #REACH} below the feet (along a turned gravity, if turned). */
     public static boolean floorNear(Level level, LivingEntity entity) {
         if (entity.onGround()) return true;
+        if (net.juli2kapo.factoryascent.space.gravity.Gravity.isTurned(entity)) {
+            return net.juli2kapo.factoryascent.space.gravity.Gravity.surfaceNear(level, entity, REACH);
+        }
         double feet = entity.getY();
         for (double dy = 0.05; dy <= REACH; dy += 0.4) {
             BlockPos p = BlockPos.containing(entity.getX(), feet - dy, entity.getZ());
@@ -116,7 +119,8 @@ public final class MagneticBoots {
     private static void onPlayerTick(PlayerTickEvent.Pre event) {
         Player player = event.getEntity();
         Map<UUID, Boolean> onCeiling = player.level().isClientSide() ? ON_CEILING_CLIENT : ON_CEILING_SERVER;
-        if (player.isSpectator() || player.getAbilities().flying || player.isPassenger() || !wearing(player)) {
+        // the real thing (turned gravity) replaces the upright climbing unless configured off
+        if (net.juli2kapo.factoryascent.space.gravity.Gravity.enabled() || player.isSpectator() || player.getAbilities().flying || player.isPassenger() || !wearing(player)) {
             onCeiling.remove(player.getUUID());
             return;
         }

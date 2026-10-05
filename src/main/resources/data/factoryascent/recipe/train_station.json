@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PXP",
+    "RCR",
+    "SSS"
+  ],
+  "key": {
+    "P": "#c:plates/bronze",
+    "X": "minecraft:hopper",
+    "R": "minecraft:rail",
+    "C": "minecraft:comparator",
+    "S": "minecraft:stone_bricks"
+  },
+  "result": {
+    "id": "factoryascent:train_station"
+  }
+}

@@ -6,7 +6,7 @@
   Docking Port        a shuttle parked on it refuels from containers touching it
   Station Core        claims the station for a team; status screen (modules, power, air)
   Air Vent            a small Oxygen Sealer (a quarter of the volume and energy)
-  Magnetic Boots      Astronaut Boots that hold you to the floor in low gravity
+  Magnetic Boots      Astronaut Boots that hold you to the floor in low gravity and turn your gravity onto walls/ceilings
 Models, blockstates, loot, tags, recipes, advancements, lang (English + Spanish).
 """
 
@@ -190,10 +190,10 @@ def lang(L):
         ("station_core", "Claims the station around it for your team. Right-click: modules, power and air",
          "Reclama la estación que lo rodea para tu equipo. Clic derecho: módulos, energía y aire"),
         ("station_core_claim", "Other teams can't break blocks inside the claim", "Otros equipos no pueden romper bloques dentro"),
-        ("magnetic_boots", "Hold you to the floor in low gravity; walk into a wall to climb it, jump into a ceiling to hang from it",
-         "Te sujetan al suelo en baja gravedad; camina contra una pared para trepar, salta contra un techo para colgarte"),
-        ("magnetic_boots_sneak", "Count as Astronaut Boots. Sneak to switch the magnets off",
-         "Cuentan como botas de astronauta. Agáchate para apagar los imanes"),
+        ("magnetic_boots", "Hold you to the floor in low gravity. Walk into a wall or ceiling and it becomes your floor",
+         "Te sujetan al suelo en baja gravedad. Camina contra una pared o techo y será tu suelo"),
+        ("magnetic_boots_sneak", "Count as Astronaut Boots. Sneak to let go (switch the magnets off)",
+         "Cuentan como botas de astronauta. Agáchate para soltarte (apagar los imanes)"),
     ]:
         L(f"{T}.{key}", en, es)
     for key, en, es in [

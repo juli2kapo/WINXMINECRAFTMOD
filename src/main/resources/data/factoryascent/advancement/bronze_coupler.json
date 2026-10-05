@@ -1,0 +1,32 @@
+{
+  "parent": "factoryascent:bronze_steam_locomotive",
+  "display": {
+    "icon": {
+      "id": "factoryascent:coupler"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_coupler.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_coupler.description"
+    },
+    "frame": "task"
+  },
+  "criteria": {
+    "get": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:coupler"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ]
+}

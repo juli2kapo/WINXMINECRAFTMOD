@@ -169,6 +169,7 @@
     "factoryascent:docking_port",
     "factoryascent:station_core",
     "factoryascent:air_vent",
+    "factoryascent:train_station",
     "factoryascent:ender_link",
     "factoryascent:quantum_entangler"
   ]

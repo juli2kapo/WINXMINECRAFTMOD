@@ -1,0 +1,32 @@
+{
+  "parent": "factoryascent:bronze_coupler",
+  "display": {
+    "icon": {
+      "id": "factoryascent:train_station"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_train_station.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_train_station.description"
+    },
+    "frame": "task"
+  },
+  "criteria": {
+    "get": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:train_station"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ]
+}

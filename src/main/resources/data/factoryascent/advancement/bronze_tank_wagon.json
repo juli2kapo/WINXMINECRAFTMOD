@@ -1,0 +1,32 @@
+{
+  "parent": "factoryascent:bronze_coupler",
+  "display": {
+    "icon": {
+      "id": "factoryascent:tank_wagon"
+    },
+    "title": {
+      "translate": "advancements.factoryascent.bronze_tank_wagon.title"
+    },
+    "description": {
+      "translate": "advancements.factoryascent.bronze_tank_wagon.description"
+    },
+    "frame": "task"
+  },
+  "criteria": {
+    "get": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "factoryascent:tank_wagon"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.juli2kapo.factoryascent.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "EntityMixin",
+    "LivingEntityMixin",
+    "PlayerMixin",
+    "ProjectileMixin"
+  ],
+  "client": [
+    "client.CameraMixin",
+    "client.EntityRenderDispatcherMixin",
+    "client.LocalPlayerMixin",
+    "client.ScreenEffectRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

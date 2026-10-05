@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "SMS",
+    "PPP"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "S": "#minecraft:wooden_slabs",
+    "M": "minecraft:minecart",
+    "P": "#c:plates/bronze"
+  },
+  "result": {
+    "id": "factoryascent:passenger_car"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BCP",
+    "PFP",
+    "GMG"
+  ],
+  "key": {
+    "B": "minecraft:bucket",
+    "C": "minecraft:bell",
+    "P": "#c:plates/bronze",
+    "F": "minecraft:furnace",
+    "G": "#c:gears/bronze",
+    "M": "minecraft:minecart"
+  },
+  "result": {
+    "id": "factoryascent:steam_locomotive"
+  }
+}

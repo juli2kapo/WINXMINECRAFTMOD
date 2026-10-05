@@ -30,3 +30,7 @@ type="optional"
 versionRange="*"
 ordering="AFTER"
 side="BOTH"
+
+# Mixins (kept few and small): turned gravity for Magnetic Boots (space/gravity).
+[[mixins]]
+config="${mod_id}.mixins.json"

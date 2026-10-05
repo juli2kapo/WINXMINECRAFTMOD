@@ -1,0 +1,142 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "iron": "factoryascent:block/train_iron",
+    "wheel_big": "factoryascent:block/train_wheel_big",
+    "particle": "factoryascent:block/train_iron"
+  },
+  "elements": [
+    {
+      "from": [
+        6.8,
+        4,
+        4
+      ],
+      "to": [
+        8.2,
+        12,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wheel_big",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wheel_big",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -4.2,
+        4,
+        4
+      ],
+      "to": [
+        -2.8,
+        12,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wheel_big",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wheel_big",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -3.5,
+        7.4,
+        7.4
+      ],
+      "to": [
+        7.5,
+        8.6,
+        8.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            11.0,
+            1.2
+          ]
+        },
+        "south": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            11.0,
+            1.2
+          ]
+        },
+        "east": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            1.2,
+            1.2
+          ]
+        },
+        "west": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            1.2,
+            1.2
+          ]
+        },
+        "up": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            11.0,
+            1.2
+          ]
+        },
+        "down": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            11.0,
+            1.2
+          ]
+        }
+      }
+    }
+  ]
+}

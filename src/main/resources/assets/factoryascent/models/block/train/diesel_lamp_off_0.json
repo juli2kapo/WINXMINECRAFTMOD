@@ -1,0 +1,145 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "lamp_off": "factoryascent:block/train_lamp_off",
+    "particle": "factoryascent:block/train_lamp_off"
+  },
+  "elements": [
+    {
+      "from": [
+        6.7,
+        7.2,
+        7.4
+      ],
+      "to": [
+        9.3,
+        9.6,
+        7.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.6,
+            2.4
+          ]
+        },
+        "south": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.6,
+            2.4
+          ]
+        },
+        "east": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            0.3,
+            2.4
+          ]
+        },
+        "west": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            0.3,
+            2.4
+          ]
+        },
+        "up": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.6,
+            0.3
+          ]
+        },
+        "down": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.6,
+            0.3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.6,
+        17.2,
+        1.6
+      ],
+      "to": [
+        9.4,
+        18.4,
+        1.9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.8,
+            1.2
+          ]
+        },
+        "south": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.8,
+            1.2
+          ]
+        },
+        "east": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            0.3,
+            1.2
+          ]
+        },
+        "west": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            0.3,
+            1.2
+          ]
+        },
+        "up": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.8,
+            0.3
+          ]
+        },
+        "down": {
+          "texture": "#lamp_off",
+          "uv": [
+            0,
+            0,
+            2.8,
+            0.3
+          ]
+        }
+      }
+    }
+  ]
+}

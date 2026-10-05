@@ -1,0 +1,281 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "glass": "factoryascent:block/train_glass",
+    "particle": "factoryascent:block/train_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        5.8,
+        5,
+        7.5
+      ],
+      "to": [
+        11.2,
+        11,
+        7.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.3,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.3,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            0.3
+          ]
+        },
+        "down": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            0.3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12.8,
+        5,
+        7.5
+      ],
+      "to": [
+        18.2,
+        11,
+        7.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.3,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.3,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            0.3
+          ]
+        },
+        "down": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            5.4,
+            0.3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        18.5,
+        5,
+        1
+      ],
+      "to": [
+        18.7,
+        11,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5.3,
+        5,
+        1
+      ],
+      "to": [
+        5.5,
+        11,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            0.2,
+            6
+          ]
+        }
+      }
+    }
+  ]
+}

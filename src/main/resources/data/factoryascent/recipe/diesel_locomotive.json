@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LAH",
+    "MDM",
+    "GXG"
+  ],
+  "key": {
+    "L": "minecraft:redstone_lamp",
+    "A": "factoryascent:advanced_circuit",
+    "H": "minecraft:note_block",
+    "M": "factoryascent:motor",
+    "D": "factoryascent:diesel_generator",
+    "G": "#c:gears/steel",
+    "X": "minecraft:minecart"
+  },
+  "result": {
+    "id": "factoryascent:diesel_locomotive"
+  }
+}
