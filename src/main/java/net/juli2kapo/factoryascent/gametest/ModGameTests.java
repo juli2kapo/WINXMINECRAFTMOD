@@ -166,6 +166,7 @@ public final class ModGameTests {
             new Test("dyson_mass_driver_launches", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::massDriverLaunches),
             new Test("dyson_mass_driver_needs_rails_and_sky", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::massDriverNeedsRailsAndSky),
             new Test("dyson_receiver_scales_with_swarm_and_sky", 100, net.juli2kapo.factoryascent.dyson.DysonGameTests::receiverScalesWithSwarmAndSky),
+            new Test("dyson_beam_burns_what_stands_in_it", 200, net.juli2kapo.factoryascent.dyson.DysonGameTests::beamBurnsWhatStandsInIt),
             new Test("dyson_milestones_fire", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::milestonesFire),
             new Test("dyson_swarm_is_per_team", 60, net.juli2kapo.factoryascent.dyson.DysonGameTests::swarmIsPerTeam),
             new Test("dyson_saves_and_loads", 20, net.juli2kapo.factoryascent.dyson.DysonGameTests::savesAndLoads),

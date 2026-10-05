@@ -654,6 +654,7 @@
   "message.factoryascent.dyson_receiver.no_sun": "Receptor Dyson: %s colectores, pero aquí no hay sol (de noche, o el cielo está tapado)",
   "message.factoryascent.dyson_receiver.blocked": "Receptor Dyson: %s colectores, pero %s en %s, %s, %s le tapa el sol",
   "message.factoryascent.dyson_receiver.night": "Receptor Dyson: %s colectores, pero es de noche: no hay luz solar",
+  "message.factoryascent.dyson_beam_burn": "¡Estás dentro de un rayo Dyson!",
   "message.factoryascent.dyson_receiver.status": "Receptor Dyson: %s FE/t de %s colectores · sol %s%%",
   "message.factoryascent.dyson.first": "☀ ¡Tu primer colector solar llegó a la órbita solar! Mira al sol…",
   "message.factoryascent.dyson.milestone": "☀ Cubo Dyson completo al %s%% (%s/%s colectores)",

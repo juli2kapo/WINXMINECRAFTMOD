@@ -29,6 +29,11 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -56,6 +61,8 @@ public class DysonReceiverBlockEntity extends BlockEntity {
     private int lastIn, lastOut;
     /** Whether the swarm shines on it: clients show the beam (synced when it flips). */
     private boolean active;
+    /** Something stood in the beam on the last check: it shades the receiver and gets burned. */
+    private boolean shaded;
     private boolean awarded;
     @SuppressWarnings("unchecked")
     private final BlockCapabilityCache<EnergyHandler, @Nullable Direction>[] outputs = new BlockCapabilityCache[OUTPUTS.length];
@@ -131,6 +138,8 @@ public class DysonReceiverBlockEntity extends BlockEntity {
     // ---------------------------------------------------------------- tick
 
     public void serverTick(ServerLevel level) {
+        if (active && level.getGameTime() % 5 == 0) shaded = scorchBeam(level);
+        else if (!active) shaded = false;
         MinecraftServer server = level.getServer();
         exposure = Math.round(exposure(level, worldPosition) * 100);
         lastIn = 0;
@@ -139,6 +148,7 @@ public class DysonReceiverBlockEntity extends BlockEntity {
             String team = DysonService.teamOf(server, owner);
             DysonSwarm swarm = DysonSwarm.get(server);
             long budget = swarm.swarmPower(team) * exposure / 100;
+            if (shaded) budget /= 4; // a body in the beam blocks most of the light
             lit = budget > 0;
             long want = Math.min(DysonConfig.RECEIVER_MAX_OUTPUT.get(), energy.getCapacityAsLong() - energy.getAmountAsLong());
             long got = swarm.take(team, server.overworld().getGameTime(), budget, Math.min(budget, want));
@@ -161,6 +171,48 @@ public class DysonReceiverBlockEntity extends BlockEntity {
             double x = worldPosition.getX() + 0.5, y = worldPosition.getY() + 1.6, z = worldPosition.getZ() + 0.5;
             level.sendParticles(ParticleTypes.END_ROD, x, y, z, 2, 0.8, 0.2, 0.8, 0.01);
         }
+    }
+
+    /** How far up the beam is dangerous, in blocks. */
+    private static final double BEAM_LENGTH = 256;
+
+    /**
+     * The beam between the dish and the sun: anything alive standing in it catches fire and takes
+     * damage that grows with the power coming down (2 to 12 per hit, every quarter second), and its
+     * body shades the receiver. Returns whether anything was in the way.
+     */
+    private boolean scorchBeam(ServerLevel level) {
+        Vec3 origin = new Vec3(worldPosition.getX() + 0.5, worldPosition.getY() + 10 / 16.0, worldPosition.getZ() + 0.5);
+        Vec3 dir = beamDirection(level, origin);
+        Vec3 end = origin.add(dir.scale(BEAM_LENGTH));
+        AABB box = new AABB(origin, end).inflate(1.0);
+        boolean hit = false;
+        float damage = (float) Math.max(2.0, Math.min(12.0, lastIn / 2048.0));
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (entity.isSpectator() || (entity instanceof Player p && p.isCreative())) continue;
+            if (entity.getBoundingBox().inflate(0.25).clip(origin, end).isEmpty()) continue;
+            hit = true;
+            entity.igniteForSeconds(4f);
+            entity.hurtServer(level, level.damageSources().inFire(), damage);
+            level.sendParticles(ParticleTypes.FLAME, entity.getX(), entity.getY() + entity.getBbHeight() * 0.6, entity.getZ(),
+                    6, 0.25, 0.4, 0.25, 0.02);
+            if (entity instanceof ServerPlayer sp) {
+                sp.sendOverlayMessage(Component.translatable("message.factoryascent.dyson_beam_burn").withStyle(ChatFormatting.GOLD));
+            }
+        }
+        return hit;
+    }
+
+    /**
+     * Where the beam points: the same tilt the dish shows (towards the sun, clamped to ±72° from
+     * straight up, and straight up at night), around the north-south axis like the sun's path.
+     */
+    static Vec3 beamDirection(ServerLevel level, Vec3 at) {
+        float sun = level.environmentAttributes().getValue(net.minecraft.world.attribute.EnvironmentAttributes.SUN_ANGLE, at);
+        sun = ((sun % 360f) + 540f) % 360f - 180f; // (-180, 180], 0 = noon
+        float tilt = Math.abs(sun) > 95f ? 0f : Math.max(-72f, Math.min(72f, sun));
+        double r = Math.toRadians(tilt);
+        return new Vec3(-Math.sin(r), Math.cos(r), 0);
     }
 
     /** Pushes the buffer into the cable below the centre block; returns FE moved. */

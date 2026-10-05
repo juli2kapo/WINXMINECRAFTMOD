@@ -172,6 +172,7 @@ def lang(L):
       "Receptor Dyson: %s colectores, pero %s en %s, %s, %s le tapa el sol")
     L(f"{M}.dyson_receiver.night", "Dyson Receiver: %s collectors, but it's night: no sunlight to collect",
       "Receptor Dyson: %s colectores, pero es de noche: no hay luz solar")
+    L(f"{M}.dyson_beam_burn", "You're standing in a Dyson beam!", "¡Estás dentro de un rayo Dyson!")
     L(f"{M}.dyson_receiver.status", "Dyson Receiver: %s FE/t from %s collectors · sun %s%%",
       "Receptor Dyson: %s FE/t de %s colectores · sol %s%%")
     L(f"{M}.dyson.first", "☀ Your first Solar Collector reached solar orbit! Look at the sun…",

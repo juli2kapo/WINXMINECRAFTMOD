@@ -240,4 +240,30 @@ public final class DysonGameTests {
             h.assertTrue(pad.satellite().isEmpty() && !pad.launching(), "the pad must be empty after the launch");
         });
     }
+
+    /** A creature standing in the beam between the dish and the sun burns, and shades the receiver. */
+    public static void beamBurnsWhatStandsInIt(GameTestHelper h) {
+        ServerPlayer owner = player(h);
+        String team = team(h, owner);
+        MinecraftServer server = h.getLevel().getServer();
+        BlockPos pos = new BlockPos(4, 1, 4);
+        DysonReceiverBlockEntity receiver = receiver(h, pos, owner);
+        daytime(h);
+        DysonService.setCollectors(server, team, 400);
+        net.minecraft.world.phys.Vec3 origin = h.absoluteVec(new net.minecraft.world.phys.Vec3(4.5, 1 + 10 / 16.0, 4.5));
+        net.minecraft.world.phys.Vec3 spot = origin.add(DysonReceiverBlockEntity.beamDirection(h.getLevel(), origin).scale(4));
+        var cow = net.minecraft.world.entity.EntityTypes.COW.create(h.getLevel(),
+                net.minecraft.world.entity.EntitySpawnReason.EVENT);
+        h.assertTrue(cow != null, "a cow");
+        cow.setNoAi(true);
+        cow.setNoGravity(true);
+        cow.setPos(spot.x, spot.y - cow.getBbHeight() / 2, spot.z);
+        h.getLevel().addFreshEntity(cow);
+        float full = cow.getHealth();
+        h.succeedWhen(() -> {
+            h.assertTrue(receiver.active(), "the receiver must be beaming");
+            h.assertTrue(cow.getHealth() < full || cow.isDeadOrDying(), "the cow in the beam must be hurt");
+            h.assertTrue(receiver.lastIn() < expected(h, team, receiver), "a body in the beam must shade the receiver, got " + receiver.lastIn());
+        });
+    }
 }
