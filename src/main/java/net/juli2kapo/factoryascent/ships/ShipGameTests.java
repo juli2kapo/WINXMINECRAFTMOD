@@ -242,6 +242,10 @@ public final class ShipGameTests {
                 net.juli2kapo.factoryascent.space.planet.Planet.ORBIT_LINE), "climbing through the line leaves");
         check(h, !ShipMath.leavesPlanet(net.juli2kapo.factoryascent.space.planet.Planet.ARRIVAL_Y, -0.3,
                 net.juli2kapo.factoryascent.space.planet.Planet.ORBIT_LINE), "arriving below the line, falling, stays");
+        check(h, net.juli2kapo.factoryascent.space.planet.Planet.arrivalY(70) == 126, "arrives 56 above the ground");
+        check(h, net.juli2kapo.factoryascent.space.planet.Planet.arrivalY(300) == net.juli2kapo.factoryascent.space.planet.Planet.ARRIVAL_Y,
+                "never above the cap under the leaving line");
+        check(h, ShipConfig.thresholds().arrivalInOrbit() < 130, "orbit arrival is close to the y = 100 stations");
         check(h, ShipMath.planetFuelPerTick(true, true, false, false, 1, 0.166) < ShipMath.shuttleFuelPerTick(false, true, true, false, false, 1),
                 "climbing on the Moon burns less than on Earth");
         check(h, ShipMath.planetFuelPerTick(false, false, false, false, 1, 0.38) == 0, "parked on Mars burns nothing");

@@ -261,6 +261,7 @@ public class Shuttle extends AbstractShip implements SealedCabin {
                         homing.pos().getX(), homing.pos().getZ()).withStyle(ChatFormatting.RED));
             }
         }
+        if (planet) y = Planet.arrivalY(target, x, z);
         OrbitTransfer.travel(this, target, new Vec3(x, y, z), arrive, "message.factoryascent.nav.arrived", to.displayName());
     }
 

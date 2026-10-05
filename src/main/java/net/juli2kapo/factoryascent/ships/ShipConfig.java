@@ -47,8 +47,9 @@ public final class ShipConfig {
         ORBIT_MARGIN = b.comment("Blocks above the Overworld's build limit at which a climbing shuttle leaves for orbit",
                         "(the build limit is 320 in a default world, so 100 means y = 420).")
                 .defineInRange("orbitMargin", 100, 0, 2000);
-        ORBIT_ARRIVAL_Y = b.comment("Height at which a shuttle arrives in the factoryascent:orbit dimension.")
-                .defineInRange("orbitArrivalY", 160, -2000, 4000);
+        ORBIT_ARRIVAL_Y = b.comment("Height at which a shuttle arrives in the factoryascent:orbit dimension",
+                        "(stations unfold at y = 100, so the default arrives just above them).")
+                .defineInRange("orbitArrivalHeight", 112, -2000, 4000);
         ORBIT_REENTRY_Y = b.comment("Descending below this height in orbit re-enters the Overworld above the same x/z.")
                 .defineInRange("orbitReentryY", 16, -2000, 4000);
         REENTRY_DROP = b.comment("Blocks below the orbit threshold at which a re-entering shuttle appears in the Overworld.")

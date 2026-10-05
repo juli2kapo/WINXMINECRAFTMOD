@@ -89,6 +89,21 @@ public enum Planet {
      * tall; the line is well above anything built).
      */
     public static final int ORBIT_LINE = 330;
-    /** Where an arriving shuttle appears, below the line and falling towards the surface. */
+    /** The highest an arriving shuttle appears, below the line and falling towards the surface. */
     public static final int ARRIVAL_Y = 290;
+    /** How far above the ground an arriving shuttle appears: close enough to see it with a short render distance. */
+    public static final int ARRIVAL_ABOVE_GROUND = 56;
+
+    /** Where a shuttle arriving over {@code x, z} appears: a little above the terrain there (generated or not). */
+    public static int arrivalY(net.minecraft.server.level.ServerLevel level, double x, double z) {
+        var source = level.getChunkSource();
+        int ground = source.getGenerator().getBaseHeight((int) Math.floor(x), (int) Math.floor(z),
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, level, source.randomState());
+        return arrivalY(ground);
+    }
+
+    /** {@link #arrivalY(net.minecraft.server.level.ServerLevel, double, double)} for a known ground height. */
+    public static int arrivalY(int ground) {
+        return Math.min(ARRIVAL_Y, Math.max(0, ground) + ARRIVAL_ABOVE_GROUND);
+    }
 }

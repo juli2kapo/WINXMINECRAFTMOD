@@ -119,7 +119,7 @@ public final class ShipMath {
      * @param reentryDrop   blocks below the orbit threshold where a re-entering shuttle appears
      */
     public record Thresholds(int orbitMargin, int orbitArrivalY, int reentryY, int reentryDrop) {
-        public static final Thresholds DEFAULT = new Thresholds(100, 160, 16, 40);
+        public static final Thresholds DEFAULT = new Thresholds(100, 112, 16, 40);
 
         /** Height (inclusive) above which a climbing shuttle leaves the Overworld. */
         public int orbitY(int overworldTop) {
