@@ -345,7 +345,8 @@ def star_chart():
 # ============================================================ sky textures (bigger, PIL)
 
 def _disc(size, colour_at, seed):
-    """A lit disc: colour_at(u, v, rng) gives the surface colour at (u, v) in -1..1; limb darkening added."""
+    """A lit square (sky bodies are square, like vanilla's sun and moon): colour_at(u, v, rng) gives the
+    surface colour at (u, v) in -1..1; darkened towards the edges."""
     from PIL import Image
     rng = random.Random(seed)
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -353,12 +354,12 @@ def _disc(size, colour_at, seed):
     for y in range(size):
         for x in range(size):
             u, v = (x - size / 2 + 0.5) / r, (y - size / 2 + 0.5) / r
-            d = u * u + v * v
+            d = max(abs(u), abs(v))
             if d > 1:
                 continue
             col = colour_at(u, v, rng)
-            limb = 0.55 + 0.45 * math.sqrt(max(0.0, 1 - d))
-            a = 255 if d < 0.93 else int(255 * (1 - (d - 0.93) / 0.07))
+            limb = 0.7 + 0.3 * (1 - d ** 6)
+            a = 255
             img.putpixel((x, y), (int(col[0] * limb), int(col[1] * limb), int(col[2] * limb), max(0, a)))
     return img
 
@@ -387,7 +388,7 @@ def moon_disc():
 
 
 def lumpy(size, seed, pal):
-    """An irregular little moon (Phobos, Deimos): a disc with a bumpy outline, craters and a grooved face."""
+    """An irregular little moon (Phobos, Deimos): a square with blocky bites out of its edges, craters and a grooved face."""
     from PIL import Image
     rng = random.Random(seed)
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -396,10 +397,10 @@ def lumpy(size, seed, pal):
     for y in range(size):
         for x in range(size):
             u, v = (x - size / 2 + 0.5) / (size / 2), (y - size / 2 + 0.5) / (size / 2)
-            a = math.atan2(v, u) / (2 * math.pi) * 12 % 12
-            i = int(a)
-            edge = bumps[i] + (bumps[(i + 1) % 12] - bumps[i]) * (a - i)
-            d = math.sqrt(u * u + v * v)
+            # a square with blocky bites out of its edges (an irregular little moon, Minecraft-style)
+            i = int((math.atan2(v, u) / (2 * math.pi) * 12) % 12)
+            edge = 1.0 if bumps[i] > 0.86 else 0.82
+            d = max(abs(u), abs(v))
             if d > edge * 0.95:
                 continue
             k = 1
@@ -463,7 +464,7 @@ def satellite_dot():
     img = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
     for y in range(8):
         for x in range(8):
-            d = math.hypot(x - 3.5, y - 3.5)
+            d = max(abs(x - 3.5), abs(y - 3.5))
             a = max(0.0, 1 - d / 3.8)
             img.putpixel((x, y), (255, 255, 255, int(255 * min(1.0, a * 1.6))))
     return img

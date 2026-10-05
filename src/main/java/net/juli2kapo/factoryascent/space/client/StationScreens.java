@@ -113,10 +113,7 @@ final class StationScreens {
         }
 
         private static void dot(GuiGraphicsExtractor g, int cx, int cy, int r, int color) {
-            for (int dy = -r; dy <= r; dy++) {
-                int half = (int) Math.round(Math.sqrt(r * r - dy * dy + 0.3));
-                g.fill(cx - half, cy + dy, cx + half + 1, cy + dy + 1, color);
-            }
+            g.fill(cx - r, cy - r, cx + r + 1, cy + r + 1, color); // square, like the bodies in the sky
         }
 
         private static void ring(GuiGraphicsExtractor g, int cx, int cy, int r, int color) {

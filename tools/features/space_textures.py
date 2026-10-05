@@ -186,8 +186,9 @@ def harness():
 
 
 def earth():
-    """The planet seen from orbit: oceans, continents with deserts and ice caps, swirling clouds,
-    lit from one side, with a thin blue atmosphere at the rim. Transparent outside."""
+    """The planet seen from orbit, square like vanilla's sun and moon: oceans, continents with deserts
+    and ice caps, swirling clouds, lit from one side, with a thin blue atmosphere around the edge.
+    Transparent outside."""
     size, r = 256, 112
     rng = random.Random(7)
 
@@ -225,20 +226,19 @@ def earth():
     for py in range(size):
         for px in range(size):
             dx, dy = (px + 0.5 - cx) / r, (py + 0.5 - cy) / r
-            d2 = dx * dx + dy * dy
-            if d2 > 1.0:
-                dist = math.sqrt(d2)
-                if dist < 1.10:  # atmosphere glow
+            # a square planet, like vanilla's square sun and moon: Chebyshev distance from the centre
+            dist = max(abs(dx), abs(dy))
+            if dist > 1.0:
+                if dist < 1.10:  # atmosphere glow, a square halo
                     a = (1 - (dist - 1) / 0.10) ** 2
                     lit = max(0.25, 0.5 - 0.5 * (dx * light[0] + dy * light[1]) / dist)
                     c.put(px, py, (90, 170, 255, int(200 * a * lit)))
                 continue
-            dz = math.sqrt(1 - d2)
-            # sphere coordinates -> map the noise on the sphere so continents curve with it
-            u, v = math.atan2(dx, dz) * 2.2 + 4.0, math.asin(dy) * 2.6 + 3.0
+            dz = 1.0 - 0.35 * dist ** 4  # flat face, only darkening towards the edges
+            u, v = dx * 2.2 + 4.0, dy * 2.6 + 3.0
             h = fbm(u * 1.4, v * 1.4, 5, 0)
             lat = abs(dy)
-            if lat > 0.86 - 0.05 * fbm(u * 3, v * 3, 2, 30):
+            if lat > 0.84 + 0.30 * (fbm(u * 3, v * 3, 3, 30) - 0.5):  # ragged ice caps
                 col = (236, 242, 250)
             elif h > 0.54:
                 dry = fbm(u * 2.3, v * 2.3, 3, 10)
@@ -254,7 +254,7 @@ def earth():
             col = tuple(round(a + (245 - a) * cloud * 0.9) for a in col)
             # lighting: lambert with a dim night side, rim towards the atmosphere colour
             nd = dx * light[0] + dy * light[1] + dz * light[2]
-            lum = 0.18 + 0.95 * max(0.0, nd)
+            lum = 0.35 + 0.8 * max(0.0, nd)
             rim = (1 - dz) ** 3
             out = []
             for i, ch in enumerate(col):
