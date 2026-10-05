@@ -37,7 +37,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 public class SteamLocomotive extends Locomotive implements Container {
     public static final int WATER_CAPACITY = 10_000;
     public static final int FUEL_SLOTS = 4;
-    private static final Vec3 CAB = new Vec3(0, 6 / 16.0, -14 / 16.0);
+    private static final Vec3 CAB = new Vec3(0, 6 / 16.0, -12 / 16.0);
 
     private final FluidTank water = new FluidTank(WATER_CAPACITY, FluidTank.only(Fluids.WATER), () -> {});
     private double burnLeft, burnTotal = 1;
@@ -187,7 +187,7 @@ public class SteamLocomotive extends Locomotive implements Container {
         // chimney smoke: heavy when pulling, a wisp when standing in steam
         Vec3 chimney = position().add(f.scale(17 / 16.0)).add(0, 33 / 16.0, 0);
         if (gaugeC() > 0 || working) {
-            int every = working ? 1 : 6;
+            int every = working ? 2 : 6;
             if (tickCount % every == 0) {
                 level().addParticle(working ? ParticleTypes.LARGE_SMOKE : ParticleTypes.SMOKE, chimney.x + (random.nextDouble() - 0.5) * 0.15,
                         chimney.y, chimney.z + (random.nextDouble() - 0.5) * 0.15, -f.x * speed * 0.5, 0.06 + 0.04 * Math.abs(throttle()), -f.z * speed * 0.5);

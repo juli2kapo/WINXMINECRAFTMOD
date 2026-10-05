@@ -94,6 +94,7 @@ public final class TrainPhysics {
         for (RollingStock r : m) if (r instanceof Locomotive l && l.driver() != null) { driver = l; break; }
         if (driver == null) for (RollingStock r : m) if (r instanceof Locomotive l) { driver = l; break; }
         double cap = 1.0;
+        double[] efforts = new double[n];
         boolean held = false;
         for (RollingStock r : m) held |= r.stationHold > 0;
         if (driver != null) {
@@ -105,8 +106,7 @@ public final class TrainPhysics {
                 top = Math.max(top, l.topSpeed());
                 double traction = l.traction();
                 power += l.power() * traction;
-                double effort = Math.abs(throttle) * traction;
-                if (effort > 0.001 && !driver.braking()) l.burn(effort);
+                efforts[i] = driver.braking() ? 0 : Math.abs(throttle) * traction;
                 l.setStatus(held ? Locomotive.STATUS_STATION : !l.fuelled() && Math.abs(l.throttle()) > 0.001
                         ? Locomotive.STATUS_NO_FUEL : Locomotive.STATUS_OK);
             }
@@ -204,6 +204,11 @@ public final class TrainPhysics {
         if (plan.breakAt >= 0) m.get(plan.breakAt - 1).uncouple(m.get(plan.breakAt));
         if (plan.breakFrom > 0) m.get(plan.breakFrom).uncouple(m.get(plan.breakFrom - 1));
         if (v != 0) shove(level, consist, m, plan);
+        // fuel is only used while the locomotives actually work against the train (not against a buffer stop)
+        boolean stuck = endOfTrack || driver != null && driver.status() == Locomotive.STATUS_BLOCKED;
+        for (int i = 0; i < n; i++) {
+            if (efforts[i] > 0.001 && m.get(i) instanceof Locomotive l) l.burn(stuck ? efforts[i] * 0.1 : efforts[i]);
+        }
         if (driver != null) driver.setCars(n);
     }
 

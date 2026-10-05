@@ -2208,6 +2208,7 @@
   "gui.factoryascent.station.mode.2": "Sin transferencias",
   "gui.factoryascent.station.no_track": "¡No hay rieles junto a la estación!",
   "gui.factoryascent.station.empty": "Sin tren",
+  "gui.factoryascent.station.departing": "Tren saliendo",
   "gui.factoryascent.station.arriving": "Tren llegando: frenando",
   "gui.factoryascent.station.docked": "%s vehículos detenidos",
   "gui.factoryascent.station.leaves": "Sale en %s s",

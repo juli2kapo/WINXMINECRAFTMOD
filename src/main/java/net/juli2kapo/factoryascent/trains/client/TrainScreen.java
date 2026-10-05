@@ -59,6 +59,7 @@ public class TrainScreen extends AbstractContainerScreen<TrainMenu> {
         int x = leftPos, y = topPos;
         FactoryGui.panel(g, x, y, 178, imageHeight, ACCENT);
         FactoryGui.panel(g, x + 174, y, TrainMenu.PANEL_W + 2, imageHeight, ACCENT);
+        FactoryGui.playerInventory(g, x, y, menu.playerInvY());
         int n = menu.slotCount();
         if (n >= 9) {
             for (int i = 0; i < n; i++) FactoryGui.slot(g, x + TrainMenu.GRID_X + (i % 9) * 18, y + TrainMenu.GRID_Y + (i / 9) * 18);

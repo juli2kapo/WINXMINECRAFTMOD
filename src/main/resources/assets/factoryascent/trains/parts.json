@@ -13,6 +13,19 @@
         }
       ]
     },
+    "steam_glass": {
+      "translucent": true,
+      "cells": [
+        {
+          "model": "factoryascent:block/train/steam_glass_0",
+          "offset": [
+            -5,
+            11,
+            -14
+          ]
+        }
+      ]
+    },
     "steam_lamp_on": {
       "translucent": false,
       "cells": [
@@ -433,6 +446,9 @@
     "steam_locomotive": {
       "body": [
         "steam_body"
+      ],
+      "glass": [
+        "steam_glass"
       ],
       "wheels": [
         [

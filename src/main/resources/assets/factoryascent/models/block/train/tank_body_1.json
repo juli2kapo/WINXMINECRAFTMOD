@@ -1,13 +1,13 @@
 {
   "ambientocclusion": false,
   "textures": {
+    "black": "factoryascent:block/train_black",
     "iron": "factoryascent:block/train_iron",
     "red": "factoryascent:block/train_red",
     "rod": "factoryascent:block/train_rod",
     "steel": "factoryascent:block/train_steel",
-    "tank": "factoryascent:block/train_tank",
     "wood": "factoryascent:block/train_wood",
-    "particle": "factoryascent:block/train_iron"
+    "particle": "factoryascent:block/train_black"
   },
   "elements": [
     {
@@ -431,7 +431,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -440,7 +440,7 @@
           ]
         },
         "down": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -449,7 +449,7 @@
           ]
         },
         "north": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -458,7 +458,7 @@
           ]
         },
         "south": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -467,7 +467,7 @@
           ]
         },
         "east": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -476,7 +476,7 @@
           ]
         },
         "west": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -508,7 +508,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -517,7 +517,7 @@
           ]
         },
         "down": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -526,7 +526,7 @@
           ]
         },
         "north": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -535,7 +535,7 @@
           ]
         },
         "south": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -544,7 +544,7 @@
           ]
         },
         "east": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -553,7 +553,7 @@
           ]
         },
         "west": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -586,7 +586,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -595,7 +595,7 @@
           ]
         },
         "down": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -604,7 +604,7 @@
           ]
         },
         "north": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -613,7 +613,7 @@
           ]
         },
         "south": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -622,7 +622,7 @@
           ]
         },
         "east": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -631,7 +631,7 @@
           ]
         },
         "west": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -664,7 +664,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -673,7 +673,7 @@
           ]
         },
         "down": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -682,7 +682,7 @@
           ]
         },
         "north": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -691,7 +691,7 @@
           ]
         },
         "south": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -700,7 +700,7 @@
           ]
         },
         "east": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -709,7 +709,7 @@
           ]
         },
         "west": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -742,7 +742,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -751,7 +751,7 @@
           ]
         },
         "down": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -760,7 +760,7 @@
           ]
         },
         "north": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -769,7 +769,7 @@
           ]
         },
         "south": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -778,7 +778,7 @@
           ]
         },
         "east": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -787,7 +787,7 @@
           ]
         },
         "west": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -820,7 +820,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -829,7 +829,7 @@
           ]
         },
         "down": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -838,7 +838,7 @@
           ]
         },
         "north": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -847,7 +847,7 @@
           ]
         },
         "south": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -856,7 +856,7 @@
           ]
         },
         "east": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,
@@ -865,7 +865,7 @@
           ]
         },
         "west": {
-          "texture": "#tank",
+          "texture": "#black",
           "uv": [
             1.7,
             6.3119,

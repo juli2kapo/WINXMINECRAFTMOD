@@ -153,8 +153,14 @@ def steam_body():
         els.append(box(4 * s, 16, -4, 7.2 * s, 16.5, 10.5, "brass"))
         els.append(box(6.8 * s, 15.7, 1, 7.4 * s, 17.4, 2.5, "brass"))  # filler cap
     # cab: spectacle plate with windows, side sheets with an opening, back wall, roof
-    els.append(box(-7, 9, -6, 7, 23, -5, {"south": "cabwin", "north": "cabwin", "east": "green", "west": "green",
-                                         "up": "green", "down": "black"}))
+    # spectacle plate: solid below, two windows either side of the firebox top (glass is the steam_glass part)
+    els.append(box(-7, 9, -6, 7, 16, -5, "green"))
+    for s in (1, -1):
+        els.append(box(4.6 * s, 16, -6, 7 * s, 23, -5, "green"))
+        els.append(box(4.4 * s, 16, -6.2, 4.7 * s, 21.6, -4.8, "brass"))
+        els.append(box(1.3 * s, 16, -6.2, 1.6 * s, 21.6, -4.8, "brass"))
+    els.append(box(-1.4, 16, -6, 1.4, 23, -5, "green"))
+    els.append(box(-7, 21.5, -6, 7, 23, -5, "green"))
     for s in (1, -1):
         els.append(box(6.2 * s, 9, -17, 7 * s, 15, -6, "green"))
         els.append(box(6.2 * s, 15, -7.5, 7 * s, 23, -6, "green"))
@@ -178,6 +184,10 @@ def steam_body():
         els += rod([5.6 * s, 13, -4], [5.6 * s, 13, 19.5], 0.3, "brass")
         els.append(box(3 * s, 19, 6, 4.6 * s, 20.5, 9, "green"))
     return els
+
+
+def steam_glass():
+    return [box(1.4 * s, 16, -5.6, 4.6 * s, 21.5, -5.4, "glass") for s in (1, -1)]
 
 
 def steam_lamp(lit):
@@ -387,7 +397,7 @@ def tank_body():
         els.append(box(-5, 9, z - 1.5, 5, 11.5, z + 1.5, "black"))
     els += tube_z(0, 16, -14, 14, 6.5, 6.5, "tank", n=12, caps=False, th=0.8)
     for z in (-14.6, 14):
-        els += disc_z(0, 16, z + 0.6, 6.3, "tank", th=0.6, n=12)
+        els += disc_z(0, 16, z + 0.6, 6.3, "black", th=0.6, n=12)
     for z in (-7.5, 0, 7.5):
         els += tube_z(0, 16, z - 0.5, z + 0.5, 6.75, 6.75, "iron", n=12, caps=False, th=0.3)
     # dome, valves, walkway, ladder
@@ -489,6 +499,7 @@ STATION_TEX = {"top": "train_station_top", "side": "train_station_side", "post":
 def parts():
     p = {
         "steam_body": (steam_body(), False),
+        "steam_glass": (steam_glass(), True),
         "steam_lamp_on": (steam_lamp(True), False),
         "steam_lamp_off": (steam_lamp(False), False),
         "steam_rod_l": (steam_rod(1), False),
@@ -529,7 +540,7 @@ def _bogie_axles(bogies, gap):
 
 # per vehicle: static parts, wheelsets [(part, y, z)], bogies [(part, y, z)], half length (px) for the couplers
 LAYOUT = {
-    "steam_locomotive": {"body": ["steam_body"], "wheels": [["wheel_big", y, z] for y, z in ST_AXLES], "bogies": [],
+    "steam_locomotive": {"body": ["steam_body"], "glass": ["steam_glass"], "wheels": [["wheel_big", y, z] for y, z in ST_AXLES], "bogies": [],
                          "half": 23},
     "diesel_locomotive": {"body": ["diesel_body"], "glass": ["diesel_glass"],
                           "wheels": [["wheel_small", y, z] for y, z in _bogie_axles(DI_BOGIES, DI_AXLE_GAP)],
@@ -719,6 +730,7 @@ LANG = [
     ("gui.factoryascent.station.mode.2", "No transfers", "Sin transferencias"),
     ("gui.factoryascent.station.no_track", "No rails next to the station!", "¡No hay rieles junto a la estación!"),
     ("gui.factoryascent.station.empty", "No train", "Sin tren"),
+    ("gui.factoryascent.station.departing", "Train departing", "Tren saliendo"),
     ("gui.factoryascent.station.arriving", "Train arriving: braking", "Tren llegando: frenando"),
     ("gui.factoryascent.station.docked", "%s vehicles docked", "%s vehículos detenidos"),
     ("gui.factoryascent.station.leaves", "Departs in %s s", "Sale en %s s"),
@@ -835,7 +847,7 @@ def vehicle_elements(name, wheel_deg=30, fill=0.8, lit=True, doors_open=False):
         for side, phase in (("l", 0), ("r", 90)):
             a = math.radians(wheel_deg + phase)
             py, pz = -ST_CRANK * math.sin(a), ST_CRANK * math.cos(a)
-            els += [e.moved(0, py, pz) for e in P[f"steam_rod_{side}"][0]]
+            els += [e.moved(0, ST_AXLES[0][0] + py, pz) for e in P[f"steam_rod_{side}"][0]]
             ay, az = ST_AXLES[-1]
             pin = [ay + py, az + pz]
             cy = ST_CYL_Y

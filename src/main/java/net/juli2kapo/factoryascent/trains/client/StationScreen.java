@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** The Train Station's settings: stop rule, waiting time, load/unload, and a status display. */
 public class StationScreen extends AbstractContainerScreen<StationMenu> {
-    private static final int W = 196, H = 150, ACCENT = 0xFFE8C22A;
+    private static final int W = 196, H = 160, ACCENT = 0xFFE8C22A;
     private Button stop, dwell, mode;
 
     public StationScreen(StationMenu menu, Inventory inventory, Component title) {
@@ -55,8 +55,8 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
         super.extractBackground(g, mouseX, mouseY, partial);
         FactoryGui.panel(g, leftPos, topPos, W, H, ACCENT);
-        FactoryGui.display(g, leftPos + 7, topPos + 88, W - 14, 54);
-        boolean holding = menu.get(3) != 0;
+        FactoryGui.display(g, leftPos + 7, topPos + 88, W - 14, 64);
+        boolean holding = menu.get(3) == 1;
         FactoryGui.lamp(g, leftPos + W - 18, topPos + 6, holding ? FactoryGui.GOOD : 0xFF803030);
     }
 
@@ -67,6 +67,8 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         Component status;
         if (menu.get(6) == 0) {
             status = Component.translatable("gui.factoryascent.station.no_track").withStyle(ChatFormatting.RED);
+        } else if (menu.get(3) == 2) {
+            status = Component.translatable("gui.factoryascent.station.departing").withStyle(ChatFormatting.AQUA);
         } else if (menu.get(3) == 0) {
             status = Component.translatable("gui.factoryascent.station.empty").withStyle(ChatFormatting.GRAY);
         } else if (menu.get(4) == 0) {
@@ -75,7 +77,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
             status = Component.translatable("gui.factoryascent.station.docked", menu.get(4)).withStyle(ChatFormatting.GREEN);
         }
         g.text(font, status, 12, y, FactoryGui.DISPLAY_TEXT, false);
-        if (menu.get(3) != 0 && menu.get(4) > 0) {
+        if (menu.get(3) == 1 && menu.get(4) > 0) {
             Component when = menu.get(0) == 1 ? Component.translatable("gui.factoryascent.station.waiting_signal")
                     : menu.get(5) >= 0 ? Component.translatable("gui.factoryascent.station.leaves", menu.get(5))
                     : Component.translatable("gui.factoryascent.station.waiting_done");
@@ -85,6 +87,6 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
                 Component.translatable(menu.get(7) != 0 ? "gui.factoryascent.train.on" : "gui.factoryascent.train.off"));
         g.text(font, power, 12, y + 22, FactoryGui.DISPLAY_MUTED, false);
         var help = font.split(Component.translatable("gui.factoryascent.station.help"), W - 24);
-        for (int i = 0; i < Math.min(2, help.size()); i++) g.text(font, help.get(i), 12, y + 33 + i * 9, FactoryGui.DISPLAY_MUTED, false);
+        for (int i = 0; i < Math.min(3, help.size()); i++) g.text(font, help.get(i), 12, y + 33 + i * 9, FactoryGui.DISPLAY_MUTED, false);
     }
 }

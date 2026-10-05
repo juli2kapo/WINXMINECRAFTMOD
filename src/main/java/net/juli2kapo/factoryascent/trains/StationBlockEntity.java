@@ -60,7 +60,8 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     int stopMode = STOP_ALWAYS;
     int dwell = 10;
     int transfer = MODE_LOAD;
-    private int timer, idle;
+    private int timer, idle, emptyTicks;
+    private boolean departing;
     private boolean holding;
     private final Set<UUID> released = new HashSet<>();
     private List<RollingStock> docked = List.of();
@@ -109,13 +110,17 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
         return out;
     }
 
-    /** Vehicles standing on the zone's rails. */
+    /** Vehicles whose body (its whole length, not just its hit box) is over the zone's rails. */
     public List<RollingStock> zoneMembers() {
         List<RollingStock> out = new ArrayList<>();
         if (level == null) return out;
         for (BlockPos p : zoneRails()) {
-            for (RollingStock r : level.getEntitiesOfClass(RollingStock.class, new AABB(p).deflate(0.2, 0, 0.2).expandTowards(0, 0.5, 0))) {
-                if (!out.contains(r)) out.add(r);
+            AABB rail = new AABB(p).deflate(0.1, 0, 0.1).expandTowards(0, 0.5, 0);
+            for (RollingStock r : level.getEntitiesOfClass(RollingStock.class, rail.inflate(2.0, 0.5, 2.0))) {
+                if (out.contains(r)) continue;
+                var f = r.front().scale(r.length() / 2 - 0.15);
+                AABB body = new AABB(r.position().add(f), r.position().subtract(f)).inflate(0.3, 0, 0.3).expandTowards(0, 1, 0);
+                if (body.intersects(rail)) out.add(r);
             }
         }
         return out;
@@ -126,12 +131,15 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     public void serverTick(ServerLevel level) {
         List<RollingStock> zone = zoneMembers();
         if (zone.isEmpty()) {
-            released.clear();
+            // forget the train we let go only once it has been gone for a while (gaps between its cars)
+            if (++emptyTicks > 60) released.clear();
             reset();
             return;
         }
+        emptyTicks = 0;
         if (zone.stream().anyMatch(r -> released.contains(r.getUUID()))) {
             reset(); // the train we let go is still pulling out
+            departing = true;
             return;
         }
         boolean powered = level.hasNeighborSignal(worldPosition);
@@ -158,6 +166,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
 
     private void reset() {
         holding = false;
+        departing = false;
         timer = 0;
         idle = 0;
         docked = List.of();
@@ -291,7 +300,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
                 case 0 -> stopMode;
                 case 1 -> dwell;
                 case 2 -> transfer;
-                case 3 -> holding ? 1 : 0;
+                case 3 -> holding ? 1 : departing ? 2 : 0;
                 case 4 -> docked.size();
                 case 5 -> secondsLeft();
                 case 6 -> zoneRails().size();

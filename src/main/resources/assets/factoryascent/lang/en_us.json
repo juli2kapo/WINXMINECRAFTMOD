@@ -2208,6 +2208,7 @@
   "gui.factoryascent.station.mode.2": "No transfers",
   "gui.factoryascent.station.no_track": "No rails next to the station!",
   "gui.factoryascent.station.empty": "No train",
+  "gui.factoryascent.station.departing": "Train departing",
   "gui.factoryascent.station.arriving": "Train arriving: braking",
   "gui.factoryascent.station.docked": "%s vehicles docked",
   "gui.factoryascent.station.leaves": "Departs in %s s",
